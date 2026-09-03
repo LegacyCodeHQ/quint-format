@@ -1,50 +1,35 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker reports noncanonical field-access comment formatting 1`] = `
-"test/fixtures/field-access-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+exports[`command-line checker reports noncanonical tuple-pattern comment formatting 1`] = `
+"test/fixtures/tuple-pattern-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
   |               ^
   |
-test/fixtures/field-access-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+test/fixtures/tuple-pattern-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
-2 | pure val source={field:1}
+2 | pure val first=((
   | ^
   |
-test/fixtures/field-access-comment.qnt:2:16: error[format/equals-spacing]: expected one space around '='
+test/fixtures/tuple-pattern-comment.qnt:2:15: error[format/equals-spacing]: expected one space around '='
   |
-2 | pure val source={field:1}
-  |                ^
+2 | pure val first=((
+  |               ^
   |
-test/fixtures/field-access-comment.qnt:2:18: error[format/expression-delimiter-spacing]: expected one space after '{'
+test/fixtures/tuple-pattern-comment.qnt:2:18: error[format/pattern-delimiter-spacing]: expected no space after '('
   |
-2 | pure val source={field:1}
-  |                  ^
+2 | pure val first=((
+  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
-test/fixtures/field-access-comment.qnt:2:24: error[format/expression-colon-spacing]: expected one space after ':'
+test/fixtures/tuple-pattern-comment.qnt:4:2: error[format/pattern-separator-spacing]: expected ', ' between pattern elements
   |
-2 | pure val source={field:1}
-  |                        ^
+4 | x,
+  |  ^
   |
-test/fixtures/field-access-comment.qnt:2:25: error[format/expression-delimiter-spacing]: expected one space before '}'
+test/fixtures/tuple-pattern-comment.qnt:5:4: error[format/lambda-arrow-spacing]: expected one space around '=>'
   |
-2 | pure val source={field:1}
-  |                         ^
-  |
-test/fixtures/field-access-comment.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
-  |
-3 | pure val answer=source
-  | ^
-  |
-test/fixtures/field-access-comment.qnt:3:6: error[format/definition-spacing]: expected one blank line between definitions
-  |
-3 | pure val answer=source
-  |      ^^^
-  |
-test/fixtures/field-access-comment.qnt:3:16: error[format/equals-spacing]: expected one space around '='
-  |
-3 | pure val answer=source
-  |                ^
+5 | y))=>x
+  |    ^^
   |
 "
 `;
@@ -809,6 +794,55 @@ exports[`command-line checker reports noncanonical field-access formatting 1`] =
   |
 2 |   val answer = { value: 1 } . value
   |                             ^
+  |
+"
+`;
+
+exports[`command-line checker reports noncanonical field-access comment formatting 1`] = `
+"test/fixtures/field-access-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/field-access-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | pure val source={field:1}
+  | ^
+  |
+test/fixtures/field-access-comment.qnt:2:16: error[format/equals-spacing]: expected one space around '='
+  |
+2 | pure val source={field:1}
+  |                ^
+  |
+test/fixtures/field-access-comment.qnt:2:18: error[format/expression-delimiter-spacing]: expected one space after '{'
+  |
+2 | pure val source={field:1}
+  |                  ^
+  |
+test/fixtures/field-access-comment.qnt:2:24: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 | pure val source={field:1}
+  |                        ^
+  |
+test/fixtures/field-access-comment.qnt:2:25: error[format/expression-delimiter-spacing]: expected one space before '}'
+  |
+2 | pure val source={field:1}
+  |                         ^
+  |
+test/fixtures/field-access-comment.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+3 | pure val answer=source
+  | ^
+  |
+test/fixtures/field-access-comment.qnt:3:6: error[format/definition-spacing]: expected one blank line between definitions
+  |
+3 | pure val answer=source
+  |      ^^^
+  |
+test/fixtures/field-access-comment.qnt:3:16: error[format/equals-spacing]: expected one space around '='
+  |
+3 | pure val answer=source
+  |                ^
   |
 "
 `;

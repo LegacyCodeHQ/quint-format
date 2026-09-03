@@ -1,12 +1,12 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a comment before a field selector 1`] = `
+exports[`formatter preserves comments in a tuple destructuring pattern 1`] = `
 "module Example {
-  pure val source = { field: 1 }
-
-  pure val answer = source
-  // Preserve this chain comment.
-  .field
+  pure val first = ((
+    // Preserve this tuple field comment.
+    x,
+    y
+  )) => x
 }
 "
 `;
@@ -314,6 +314,17 @@ exports[`formatter formats an index expression 1`] = `
 exports[`formatter formats a field-access expression 1`] = `
 "module Example {
   val answer = { value: 1 }.value
+}
+"
+`;
+
+exports[`formatter preserves a comment before a field selector 1`] = `
+"module Example {
+  pure val source = { field: 1 }
+
+  pure val answer = source
+  // Preserve this chain comment.
+  .field
 }
 "
 `;

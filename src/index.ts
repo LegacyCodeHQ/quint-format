@@ -421,6 +421,24 @@ function formatPattern(node: Parser.SyntaxNode): string {
   throw new Error("Formatting this binding pattern is not implemented yet");
 }
 
+function formatCommentedTuplePattern(node: Parser.SyntaxNode): Doc {
+  const elements = node.childrenForFieldName("element");
+  const entries = node.namedChildren.map((child) => {
+    if (child.type === "comment" || child.type === "documentation_comment") {
+      return commentDocument(child);
+    }
+    const index = elements.findIndex((element) => element.id === child.id);
+    if (index < 0) throw new Error("Formatting this tuple pattern content is not implemented yet");
+    return text(`${formatPattern(child)}${index < elements.length - 1 ? "," : ""}`);
+  });
+  return concat([
+    text("("),
+    indent(concat(entries.flatMap((entry) => [hardLine, entry]))),
+    hardLine,
+    text(")"),
+  ]);
+}
+
 function collectNodes(node: Parser.SyntaxNode, type: string): Parser.SyntaxNode[] {
   return [
     ...(node.type === type ? [node] : []),
@@ -720,8 +738,20 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       throw new Error("Unable to locate the lambda parameters or body");
     }
     const parameterDocument = openParen
-      ? `(${parameters.map(formatPattern).join(", ")})`
-      : formatPattern(parameters[0] as Parser.SyntaxNode);
+      ? concat([
+          text("("),
+          ...parameters.flatMap((parameter, index) => [
+            ...(index === 0 ? [] : [text(", ")]),
+            parameter.type === "tuple_pattern" &&
+            parameter.namedChildren.some(
+              (child) => child.type === "comment" || child.type === "documentation_comment",
+            )
+              ? formatCommentedTuplePattern(parameter)
+              : text(formatPattern(parameter)),
+          ]),
+          text(")"),
+        ])
+      : text(formatPattern(parameters[0] as Parser.SyntaxNode));
     const analysis = analyzeExpression(body);
     const comments = node.namedChildren.filter(
       (child) =>
@@ -731,9 +761,10 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     return {
       document:
         comments.length === 0
-          ? concat([text(`${parameterDocument} => `), analysis.document])
+          ? concat([parameterDocument, text(" => "), analysis.document])
           : concat([
-              text(`${parameterDocument} =>`),
+              parameterDocument,
+              text(" =>"),
               indent(
                 concat([
                   ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
