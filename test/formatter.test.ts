@@ -458,6 +458,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a single multiline UFCS continuation", () => {
+    const input = readFileSync(
+      new URL("fixtures/single-ufcs-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      'pure val error = ensure(true, "first message")\n    .andEnsure(false, "second message")',
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats an index expression", () => {
     const input = "module Example {\n  val first = List(1, 2)[ 0 ]\n}\n";
     const output = formatQuint(input);

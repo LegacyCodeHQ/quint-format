@@ -444,12 +444,10 @@ function isMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
   if (node.type !== "field_access_expression") return false;
   const object = node.childForFieldName("object");
   const dot = node.children.find((child) => child.type === ".");
-  return Boolean(
-    object &&
-      dot &&
-      ufcsChainFields(node).length >= 2 &&
-      dot.startPosition.row > object.endPosition.row,
+  const hasComments = node.namedChildren.some(
+    (child) => child.type === "comment" || child.type === "documentation_comment",
   );
+  return Boolean(object && dot && !hasComments && dot.startPosition.row > object.endPosition.row);
 }
 
 function ufcsContinuationIndentation(node: Parser.SyntaxNode): number {
