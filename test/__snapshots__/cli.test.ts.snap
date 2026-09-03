@@ -1690,3 +1690,112 @@ exports[`command-line checker reports a misindented trailing module-body comment
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical empty parameter lists 1`] = `
+"test/fixtures/empty-parameter-lists.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 |  action step(  ) :bool=true
+  | ^
+  |
+test/fixtures/empty-parameter-lists.qnt:2:13: error[format/parameter-list-spacing]: expected no space around an empty parameter list
+  |
+2 |  action step(  ) :bool=true
+  |             ^
+  |
+test/fixtures/empty-parameter-lists.qnt:2:17: error[format/type-colon-spacing]: expected no space before ':'
+  |
+2 |  action step(  ) :bool=true
+  |                 ^
+  |
+test/fixtures/empty-parameter-lists.qnt:2:19: error[format/type-colon-spacing]: expected one space after ':'
+  |
+2 |  action step(  ) :bool=true
+  |                   ^
+  |
+test/fixtures/empty-parameter-lists.qnt:2:23: error[format/equals-spacing]: expected one space around '='
+  |
+2 |  action step(  ) :bool=true
+  |                       ^
+  |
+test/fixtures/empty-parameter-lists.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+3 |  run scenario( ):bool=true
+  | ^
+  |
+test/fixtures/empty-parameter-lists.qnt:3:2: error[format/definition-spacing]: expected one blank line between definitions
+  |
+3 |  run scenario( ):bool=true
+  |  ^^^
+  |
+test/fixtures/empty-parameter-lists.qnt:3:14: error[format/parameter-list-spacing]: expected no space around an empty parameter list
+  |
+3 |  run scenario( ):bool=true
+  |              ^
+  |
+test/fixtures/empty-parameter-lists.qnt:3:18: error[format/type-colon-spacing]: expected one space after ':'
+  |
+3 |  run scenario( ):bool=true
+  |                  ^
+  |
+test/fixtures/empty-parameter-lists.qnt:3:22: error[format/equals-spacing]: expected one space around '='
+  |
+3 |  run scenario( ):bool=true
+  |                      ^
+  |
+test/fixtures/empty-parameter-lists.qnt:4:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+4 |  temporal property(  ):bool=true
+  | ^
+  |
+test/fixtures/empty-parameter-lists.qnt:4:2: error[format/definition-spacing]: expected one blank line between definitions
+  |
+4 |  temporal property(  ):bool=true
+  |  ^^^^^^^^
+  |
+test/fixtures/empty-parameter-lists.qnt:4:19: error[format/parameter-list-spacing]: expected no space around an empty parameter list
+  |
+4 |  temporal property(  ):bool=true
+  |                   ^
+  |
+test/fixtures/empty-parameter-lists.qnt:4:24: error[format/type-colon-spacing]: expected one space after ':'
+  |
+4 |  temporal property(  ):bool=true
+  |                        ^
+  |
+test/fixtures/empty-parameter-lists.qnt:4:28: error[format/equals-spacing]: expected one space around '='
+  |
+4 |  temporal property(  ):bool=true
+  |                            ^
+  |
+test/fixtures/empty-parameter-lists.qnt:5:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+5 |  nondet choose( ) :int=1
+  | ^
+  |
+test/fixtures/empty-parameter-lists.qnt:5:2: error[format/definition-spacing]: expected one blank line between definitions
+  |
+5 |  nondet choose( ) :int=1
+  |  ^^^^^^
+  |
+test/fixtures/empty-parameter-lists.qnt:5:15: error[format/parameter-list-spacing]: expected no space around an empty parameter list
+  |
+5 |  nondet choose( ) :int=1
+  |               ^
+  |
+test/fixtures/empty-parameter-lists.qnt:5:18: error[format/type-colon-spacing]: expected no space before ':'
+  |
+5 |  nondet choose( ) :int=1
+  |                  ^
+  |
+test/fixtures/empty-parameter-lists.qnt:5:20: error[format/type-colon-spacing]: expected one space after ':'
+  |
+5 |  nondet choose( ) :int=1
+  |                    ^
+  |
+test/fixtures/empty-parameter-lists.qnt:5:23: error[format/equals-spacing]: expected one space around '='
+  |
+5 |  nondet choose( ) :int=1
+  |                       ^
+  |
+"
+`;

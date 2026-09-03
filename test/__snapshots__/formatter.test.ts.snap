@@ -759,3 +759,16 @@ exports[`formatter preserves a trailing module-body comment 1`] = `
 }
 "
 `;
+
+exports[`formatter formats empty parameter lists across definition modes 1`] = `
+"module Example {
+  action step(): bool = true
+
+  run scenario(): bool = true
+
+  temporal property(): bool = true
+
+  nondet choose(): int = 1
+}
+"
+`;

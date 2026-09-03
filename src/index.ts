@@ -1064,7 +1064,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       );
       const hasSupportedParameters =
         parameters.length === 0
-          ? !openParen && !closeParen
+          ? (!openParen && !closeParen) || Boolean(openParen && closeParen)
           : Boolean(openParen) &&
             Boolean(closeParen) &&
             parameterCommas.length === parameters.length - 1 &&
@@ -1093,7 +1093,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         ? qualifier.text
         : `${qualifier ? `${qualifier.text} ` : ""}def`;
       const parameterList =
-        parameterNames.length > 0
+        openParen && closeParen
           ? `(${parameterNames
               .map((parameterName, index) => {
                 const parameterType = parameterTypes[index];
@@ -2811,6 +2811,29 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       }
 
       checkPatternSpacing(declaration.nameNode, source, lines, filePath, diagnostics);
+
+      if (declaration.openParen && declaration.closeParen && declaration.parameters?.length === 0) {
+        const beforeOpenParen = source.slice(
+          declaration.nameNode.endIndex,
+          declaration.openParen.startIndex,
+        );
+        const insideParentheses = source.slice(
+          declaration.openParen.endIndex,
+          declaration.closeParen.startIndex,
+        );
+        if (beforeOpenParen !== "" || insideParentheses !== "") {
+          const row = declaration.openParen.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.openParen.startPosition.column + 1,
+            length: 1,
+            rule: "format/parameter-list-spacing",
+            message: "expected no space around an empty parameter list",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
 
       if (declaration.openParen && declaration.closeParen && declaration.parameters?.length) {
         const firstParameter = declaration.parameters[0];
