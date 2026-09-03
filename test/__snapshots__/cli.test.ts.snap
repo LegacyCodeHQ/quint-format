@@ -2229,3 +2229,42 @@ test/fixtures/match-arm-body-comment.qnt:7:8: error[format/match-arrow-spacing]:
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical sum-type comment formatting 1`] = `
+"test/fixtures/sum-type-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/sum-type-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | type Step=
+  | ^
+  |
+test/fixtures/sum-type-comment.qnt:2:10: error[format/equals-spacing]: expected one space around '='
+  |
+2 | type Step=
+  |          ^
+  |
+test/fixtures/sum-type-comment.qnt:3:1: error[format/sum-variant-indentation]: expected 4 spaces of indentation
+  |
+3 | |First
+  | ^
+  |
+test/fixtures/sum-type-comment.qnt:3:1: error[format/type-separator-spacing]: expected one space after '|'
+  |
+3 | |First
+  | ^
+  |
+test/fixtures/sum-type-comment.qnt:5:1: error[format/sum-variant-indentation]: expected 4 spaces of indentation
+  |
+5 | |Second
+  | ^
+  |
+test/fixtures/sum-type-comment.qnt:5:1: error[format/type-separator-spacing]: expected one space after '|'
+  |
+5 | |Second
+  | ^
+  |
+"
+`;

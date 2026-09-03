@@ -926,6 +926,16 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves comments between sum-type variants", () => {
+    const input = readFileSync(new URL("fixtures/sum-type-comment.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this variant comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a pure definition", () => {
     const input = "module Example {\n  pure   def answer=42\n}\n";
     const output = formatQuint(input);

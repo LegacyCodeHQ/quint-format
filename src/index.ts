@@ -1361,8 +1361,16 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           : "";
       const isMultilineSumType =
         value.type === "sum_type" && value.startPosition.row < value.endPosition.row;
-      const variants = isMultilineSumType
-        ? value.namedChildren.filter((child) => child.type === "sum_type_variant")
+      const sumEntries = isMultilineSumType
+        ? value.namedChildren.map((child) => {
+            if (child.type === "comment" || child.type === "documentation_comment") {
+              return commentDocument(child);
+            }
+            if (child.type === "sum_type_variant") {
+              return text(`| ${formatSumVariant(child)}`);
+            }
+            throw new Error("Formatting this multiline sum type syntax is not implemented yet");
+          })
         : [];
       const hasRecordComments =
         value.type === "record_type" &&
@@ -1372,11 +1380,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const aliasDocument = isMultilineSumType
         ? concat([
             text(`type ${declarationName.text}${typeParameterList} =`),
-            indent(
-              concat(
-                variants.flatMap((variant) => [hardLine, text(`| ${formatSumVariant(variant)}`)]),
-              ),
-            ),
+            indent(concat(sumEntries.flatMap((entry) => [hardLine, entry]))),
           ])
         : hasRecordComments
           ? concat([

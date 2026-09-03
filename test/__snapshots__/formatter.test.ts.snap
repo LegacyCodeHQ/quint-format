@@ -1,15 +1,11 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a comment before a match-arm body 1`] = `
+exports[`formatter preserves comments between sum-type variants 1`] = `
 "module Example {
-  type Step = First | Second
-
-  pure def value(step) = match step {
-    | First =>
-      // Preserve this arm body comment.
-      1
-    | Second => 2
-  }
+  type Step =
+    | First
+    // Preserve this variant comment.
+    | Second
 }
 "
 `;
@@ -434,6 +430,20 @@ exports[`formatter preserves comments between match arms 1`] = `
   pure def value(step) = match step {
     // Preserve this arm comment.
     | First => 1
+    | Second => 2
+  }
+}
+"
+`;
+
+exports[`formatter preserves a comment before a match-arm body 1`] = `
+"module Example {
+  type Step = First | Second
+
+  pure def value(step) = match step {
+    | First =>
+      // Preserve this arm body comment.
+      1
     | Second => 2
   }
 }
