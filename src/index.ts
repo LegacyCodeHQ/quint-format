@@ -944,6 +944,11 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startIndex >= consequence.endIndex &&
         child.endIndex <= alternative.startIndex,
     );
+    const preservesAlternativeLineBreak =
+      alternative.type === "nested_definition_expression" &&
+      alternative.startPosition.row >
+        (node.children.find((child) => child.type === "else")?.endPosition.row ??
+          alternative.startPosition.row);
     return {
       document: concat([
         text("if ("),
@@ -961,7 +966,9 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
               ),
             ]),
         ...(alternativeComments.length === 0
-          ? [text(" else "), alternativeAnalysis.document]
+          ? preservesAlternativeLineBreak
+            ? [text(" else"), indent(concat([hardLine, alternativeAnalysis.document]))]
+            : [text(" else "), alternativeAnalysis.document]
           : [
               text(" else"),
               indent(
@@ -4107,9 +4114,15 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               sourceLine: lines[row] ?? "",
             });
           }
+          const preservesAlternativeLineBreak =
+            alternative.type === "nested_definition_expression" &&
+            alternative.startPosition.row > elseKeyword.endPosition.row;
+          const expectedAlternativeGap = preservesAlternativeLineBreak
+            ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
+            : " ";
           if (
             source.slice(consequence.endIndex, elseKeyword.startIndex) !== " " ||
-            source.slice(elseKeyword.endIndex, alternative.startIndex) !== " "
+            source.slice(elseKeyword.endIndex, alternative.startIndex) !== expectedAlternativeGap
           ) {
             const row = elseKeyword.startPosition.row;
             diagnostics.push({
@@ -4118,7 +4131,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               column: elseKeyword.startPosition.column + 1,
               length: 4,
               rule: "format/conditional-else-spacing",
-              message: "expected one space around 'else'",
+              message: preservesAlternativeLineBreak
+                ? "expected a line break and two-space indentation after 'else'"
+                : "expected one space around 'else'",
               sourceLine: lines[row] ?? "",
             });
           }

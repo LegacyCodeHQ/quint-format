@@ -1293,3 +1293,19 @@ exports[`formatter preserves an explicit line break in a primed assignment chain
 }
 "
 `;
+
+exports[`formatter preserves an explicit line break after else 1`] = `
+"module Example {
+  type State = { value: int }
+
+  pure def update(condition: bool, state: State): State =
+    if (condition) {
+      value: state.value,
+    } else
+      pure val nextValue = state.value + 1
+      {
+        value: nextValue,
+      }
+}
+"
+`;

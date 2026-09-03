@@ -563,6 +563,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves an explicit line break after else", () => {
+    const input = readFileSync(
+      new URL("fixtures/explicit-else-break.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("    } else\n      pure val nextValue = state.value + 1");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("places a block-bodied conditional below a definition header", () => {
     const input = readFileSync(
       new URL("fixtures/block-if-definition.qnt", import.meta.url),
