@@ -452,6 +452,40 @@ test/fixtures/tuple-literal.qnt:2:21: error[format/expression-delimiter-spacing]
 "
 `;
 
+exports[`command-line checker reports noncanonical record-literal formatting 1`] = `
+"test/fixtures/record-literal.qnt:2:15: error[format/expression-delimiter-spacing]: expected one space after '{'
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |               ^
+  |
+test/fixtures/record-literal.qnt:2:19: error[format/expression-colon-spacing]: expected no space before ':'
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |                   ^
+  |
+test/fixtures/record-literal.qnt:2:21: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |                     ^
+  |
+test/fixtures/record-literal.qnt:2:29: error[format/expression-separator-spacing]: expected ', ' between record fields
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |                             ^
+  |
+test/fixtures/record-literal.qnt:2:34: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |                                  ^
+  |
+test/fixtures/record-literal.qnt:2:36: error[format/unnecessary-trailing-comma]: trailing commas are omitted from inline records
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |                                    ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

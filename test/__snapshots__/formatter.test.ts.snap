@@ -224,6 +224,13 @@ exports[`formatter formats a tuple literal 1`] = `
 "
 `;
 
+exports[`formatter formats a record literal 1`] = `
+"module Example {
+  val user = { name: "Alice", age: 42 }
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

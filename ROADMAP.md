@@ -121,10 +121,10 @@ that every subsequent formatter preserves them by construction.
   - [x] Holes
   - [x] Unit types
   - [x] Unit literals
-- [ ] Lists, tuples, and records
+- [x] Lists, tuples, and records
   - [x] Lists
   - [x] Tuples
-  - [ ] Records
+  - [x] Records
 - [ ] Record spreads
 - [ ] Tuple and record destructuring patterns
 

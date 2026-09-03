@@ -105,6 +105,7 @@ interface ModuleDeclaration {
   binaryOperators?: BinaryOperator[];
   unitLiterals?: Parser.SyntaxNode[];
   sequenceLiterals?: Parser.SyntaxNode[];
+  recordLiterals?: Parser.SyntaxNode[];
   document: Doc;
 }
 
@@ -120,6 +121,7 @@ interface ExpressionAnalysis {
   binaryOperators: BinaryOperator[];
   unitLiterals: Parser.SyntaxNode[];
   sequenceLiterals: Parser.SyntaxNode[];
+  recordLiterals: Parser.SyntaxNode[];
 }
 
 function canFormatType(node: Parser.SyntaxNode): boolean {
@@ -347,6 +349,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       binaryOperators: [],
       unitLiterals: [],
       sequenceLiterals: [],
+      recordLiterals: [],
     };
   }
 
@@ -356,6 +359,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       binaryOperators: [],
       unitLiterals: [node],
       sequenceLiterals: [],
+      recordLiterals: [],
     };
   }
 
@@ -375,6 +379,37 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
       sequenceLiterals: [node, ...analyses.flatMap((analysis) => analysis.sequenceLiterals)],
+      recordLiterals: analyses.flatMap((analysis) => analysis.recordLiterals),
+    };
+  }
+
+  if (node.type === "record_literal") {
+    const fields = node.namedChildren.filter((child) => child.type === "record_literal_field");
+    if (fields.length !== node.namedChildren.length) {
+      throw new Error("Formatting record spreads is not implemented yet");
+    }
+    const fieldAnalyses = fields.map((field) => {
+      const name = field.childForFieldName("name");
+      const value = field.childForFieldName("value");
+      if (!name || !value) {
+        throw new Error("Unable to locate a record literal field");
+      }
+      return { name, value: analyzeExpression(value) };
+    });
+    return {
+      document: concat([
+        text("{ "),
+        ...fieldAnalyses.flatMap(({ name, value }, index) => [
+          ...(index === 0 ? [] : [text(", ")]),
+          text(`${name.text}: `),
+          value.document,
+        ]),
+        text(" }"),
+      ]),
+      binaryOperators: fieldAnalyses.flatMap(({ value }) => value.binaryOperators),
+      unitLiterals: fieldAnalyses.flatMap(({ value }) => value.unitLiterals),
+      sequenceLiterals: fieldAnalyses.flatMap(({ value }) => value.sequenceLiterals),
+      recordLiterals: [node, ...fieldAnalyses.flatMap(({ value }) => value.recordLiterals)],
     };
   }
 
@@ -413,6 +448,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       ],
       unitLiterals: [...leftAnalysis.unitLiterals, ...rightAnalysis.unitLiterals],
       sequenceLiterals: [...leftAnalysis.sequenceLiterals, ...rightAnalysis.sequenceLiterals],
+      recordLiterals: [...leftAnalysis.recordLiterals, ...rightAnalysis.recordLiterals],
     };
   }
 
@@ -428,6 +464,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       binaryOperators: analysis.binaryOperators,
       unitLiterals: analysis.unitLiterals,
       sequenceLiterals: analysis.sequenceLiterals,
+      recordLiterals: analysis.recordLiterals,
     };
   }
 
@@ -505,6 +542,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         binaryOperators: expression.binaryOperators,
         unitLiterals: expression.unitLiterals,
         sequenceLiterals: expression.sequenceLiterals,
+        recordLiterals: expression.recordLiterals,
         document: concat([text(`assume ${declarationName.text} = `), expression.document]),
       });
       continue;
@@ -546,6 +584,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         binaryOperators: expression.binaryOperators,
         unitLiterals: expression.unitLiterals,
         sequenceLiterals: expression.sequenceLiterals,
+        recordLiterals: expression.recordLiterals,
         document: concat([
           text(`${qualifier ? "pure " : ""}val ${declarationName.text}${typeAnnotation} = `),
           expression.document,
@@ -653,6 +692,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         binaryOperators: expression.binaryOperators,
         unitLiterals: expression.unitLiterals,
         sequenceLiterals: expression.sequenceLiterals,
+        recordLiterals: expression.recordLiterals,
         document: concat([
           text(
             `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} = `,
@@ -2039,6 +2079,117 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               sourceLine: lines[row] ?? "",
             });
           }
+        }
+      }
+
+      for (const recordLiteral of declaration.recordLiterals ?? []) {
+        const openBrace = recordLiteral.children.find((child) => child.type === "{");
+        const closeBrace = recordLiteral.children.find((child) => child.type === "}");
+        const fields = recordLiteral.namedChildren.filter(
+          (child) => child.type === "record_literal_field",
+        );
+        const commas = recordLiteral.children.filter((child) => child.type === ",");
+        const firstField = fields[0];
+        const lastField = fields.at(-1);
+        if (!openBrace || !closeBrace || !firstField || !lastField) {
+          throw new Error("Unable to locate the record literal delimiters");
+        }
+
+        const afterOpenBrace = source.slice(openBrace.endIndex, firstField.startIndex);
+        if (afterOpenBrace !== " ") {
+          const row = openBrace.endPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: openBrace.endPosition.column + 1,
+            length: Math.max(1, afterOpenBrace.length),
+            rule: "format/expression-delimiter-spacing",
+            message: "expected one space after '{'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+
+        for (const field of fields) {
+          const name = field.childForFieldName("name");
+          const value = field.childForFieldName("value");
+          const colon = field.children.find((child) => child.type === ":");
+          if (!name || !value || !colon) {
+            throw new Error("Unable to locate a record literal field");
+          }
+          const beforeColon = source.slice(name.endIndex, colon.startIndex);
+          if (beforeColon !== "") {
+            const row = name.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: name.endPosition.column + 1,
+              length: Math.max(1, beforeColon.length),
+              rule: "format/expression-colon-spacing",
+              message: "expected no space before ':'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          const afterColon = source.slice(colon.endIndex, value.startIndex);
+          if (afterColon !== " ") {
+            const row = colon.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: colon.endPosition.column + 1,
+              length: Math.max(1, afterColon.length),
+              rule: "format/expression-colon-spacing",
+              message: "expected one space after ':'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+
+        for (const [index, comma] of commas.entries()) {
+          const previousField = fields[index];
+          const nextField = fields[index + 1];
+          if (!previousField || !nextField) {
+            const row = comma.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: comma.startPosition.column + 1,
+              length: 1,
+              rule: "format/unnecessary-trailing-comma",
+              message: "trailing commas are omitted from inline records",
+              sourceLine: lines[row] ?? "",
+            });
+            continue;
+          }
+          const beforeComma = source.slice(previousField.endIndex, comma.startIndex);
+          const afterComma = source.slice(comma.endIndex, nextField.startIndex);
+          if (beforeComma !== "" || afterComma !== " ") {
+            const row = comma.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: comma.startPosition.column + 1,
+              length: 1,
+              rule: "format/expression-separator-spacing",
+              message: "expected ', ' between record fields",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+
+        const trailingComma = commas.find((comma) => comma.startIndex >= lastField.endIndex);
+        const closeAnchor = trailingComma ?? lastField;
+        const beforeCloseBrace = source.slice(closeAnchor.endIndex, closeBrace.startIndex);
+        if (beforeCloseBrace !== " ") {
+          const row = closeBrace.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: closeAnchor.endPosition.column + 1,
+            length: Math.max(1, beforeCloseBrace.length),
+            rule: "format/expression-delimiter-spacing",
+            message: "expected one space before '}'",
+            sourceLine: lines[row] ?? "",
+          });
         }
       }
     }
