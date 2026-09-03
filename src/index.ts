@@ -614,6 +614,24 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     };
   }
 
+  if (node.type === "assignment_expression") {
+    const target = node.childForFieldName("target");
+    const value = node.childForFieldName("value");
+    const name = target?.childForFieldName("name");
+    if (!target || !name || !value) {
+      throw new Error("Unable to locate the assignment target or value");
+    }
+    const analysis = analyzeExpression(value);
+    return {
+      document: concat([text(`${formatPattern(name)}' = `), analysis.document]),
+      binaryOperators: analysis.binaryOperators,
+      unitLiterals: analysis.unitLiterals,
+      sequenceLiterals: analysis.sequenceLiterals,
+      recordLiterals: analysis.recordLiterals,
+      callExpressions: analysis.callExpressions,
+    };
+  }
+
   if (node.type === "call_expression") {
     const functionNode = node.childForFieldName("function");
     const arguments_ = node.childrenForFieldName("argument");
@@ -2846,6 +2864,45 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 sourceLine: lines[row] ?? "",
               });
             }
+          }
+        }
+
+        for (const assignment of collectNodes(declaration.valueNode, "assignment_expression")) {
+          const target = assignment.childForFieldName("target");
+          const value = assignment.childForFieldName("value");
+          const name = target?.childForFieldName("name");
+          const prime = target?.children.find((child) => child.type === "'");
+          const equals = assignment.children.find((child) => child.type === "=");
+          if (!target || !value || !name || !prime || !equals) {
+            throw new Error("Unable to locate the primed assignment syntax");
+          }
+          const primeGap = source.slice(name.endIndex, prime.startIndex);
+          if (primeGap !== "") {
+            const row = name.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: name.endPosition.column + 1,
+              length: Math.max(1, primeGap.length),
+              rule: "format/prime-spacing",
+              message: 'expected no space before "\'"',
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          if (
+            source.slice(target.endIndex, equals.startIndex) !== " " ||
+            source.slice(equals.endIndex, value.startIndex) !== " "
+          ) {
+            const row = equals.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: equals.startPosition.column + 1,
+              length: 1,
+              rule: "format/assignment-spacing",
+              message: "expected one space around '='",
+              sourceLine: lines[row] ?? "",
+            });
           }
         }
       }

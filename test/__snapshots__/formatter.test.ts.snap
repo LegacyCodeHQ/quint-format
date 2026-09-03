@@ -366,6 +366,15 @@ exports[`formatter formats namespace access 1`] = `
 "
 `;
 
+exports[`formatter formats a primed assignment 1`] = `
+"module Example {
+  var count: int
+
+  action increment = count' = count + 1
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

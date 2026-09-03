@@ -148,7 +148,7 @@ that every subsequent formatter preserves them by construction.
 
 ## 8. Stateful and block expressions
 
-- [ ] Primed assignments
+- [x] Primed assignments
 - [ ] Ordinary blocks
 - [ ] `all`, `any`, `and`, and `or`
 - [ ] `nondet` bindings
