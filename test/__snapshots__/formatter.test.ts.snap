@@ -1,5 +1,16 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`formatter preserves a comment after a nested definition 1`] = `
+"module Example {
+  action step = {
+    val answer = 42
+    // Preserve this comment.
+    answer
+  }
+}
+"
+`;
+
 exports[`formatter formats an empty module 1`] = `
 "module Example {
 }
@@ -76,6 +87,13 @@ exports[`formatter formats a tuple type 1`] = `
 exports[`formatter formats a record type 1`] = `
 "module Example {
   const User: { name: str, active: bool }
+}
+"
+`;
+
+exports[`formatter formats an empty record type 1`] = `
+"module Example {
+  type Empty = {}
 }
 "
 `;
@@ -234,6 +252,16 @@ exports[`formatter formats a record literal 1`] = `
 exports[`formatter formats a record spread 1`] = `
 "module Example {
   val extended = { b: 2, ...{ a: 1 } }
+}
+"
+`;
+
+exports[`formatter preserves comments in record literals 1`] = `
+"module Example {
+  val state = {
+    first: 1, // first value
+    second: 2,
+  }
 }
 "
 `;
@@ -425,6 +453,77 @@ exports[`formatter formats a nondeterministic binding 1`] = `
 "
 `;
 
+exports[`formatter formats nested definitions 1`] = `
+"module Example {
+  pure def calculate(value: int): int = {
+    pure val doubled: int = value * 2
+    pure def increment(number: int): int = number + 1
+    increment(doubled)
+  }
+}
+"
+`;
+
+exports[`formatter formats named and wildcard imports and exports 1`] = `
+"module Library {
+  pure val value = 1
+}
+
+module Consumer {
+  import Library
+
+  import Library as Lib
+
+  import Library.value
+
+  import Library.*
+
+  export Library
+
+  export Library as Public
+
+  export Library.value
+
+  export Library.*
+}
+"
+`;
+
+exports[`formatter formats source-qualified imports 1`] = `
+"module Example {
+  import Library from "./quint-format-source-library"
+
+  import Library.value from "./quint-format-source-library"
+
+  import Library.* from "./quint-format-source-library"
+}
+"
+`;
+
+exports[`formatter formats module instances and overrides 1`] = `
+"module Library {
+  const N: int
+
+  const Flag: bool
+}
+
+module Example {
+  import Library(N = 1, Flag = true) as Lib
+}
+"
+`;
+
+exports[`formatter formats anonymous instances 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(N = 1).*
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)
@@ -512,6 +611,24 @@ exports[`formatter preserves a trailing line comment 1`] = `
 "
 `;
 
+exports[`formatter preserves a trailing module-body comment 1`] = `
+"module Example {
+  pure val answer = 42
+  // Kept for future work
+}
+"
+`;
+
+exports[`formatter preserves trailing source comments 1`] = `
+"module Example {
+}
+
+/*! answer !*/
+
+/*! 1 + 1 !*/
+"
+`;
+
 exports[`formatter preserves a comment inside an otherwise empty module 1`] = `
 "module Example {
   // Intentionally empty
@@ -566,6 +683,13 @@ exports[`formatter formats multiple def parameters 1`] = `
 exports[`formatter formats a typed def header 1`] = `
 "module Example {
   def identity(value: int): int = value
+}
+"
+`;
+
+exports[`formatter formats an untyped parameter with a return type 1`] = `
+"module Example {
+  def identity(value): int = value
 }
 "
 `;
@@ -681,85 +805,6 @@ exports[`formatter formats a parameterless nondet definition 1`] = `
 "
 `;
 
-exports[`formatter formats nested definitions 1`] = `
-"module Example {
-  pure def calculate(value: int): int = {
-    pure val doubled: int = value * 2
-    pure def increment(number: int): int = number + 1
-    increment(doubled)
-  }
-}
-"
-`;
-
-exports[`formatter formats named and wildcard imports and exports 1`] = `
-"module Library {
-  pure val value = 1
-}
-
-module Consumer {
-  import Library
-
-  import Library as Lib
-
-  import Library.value
-
-  import Library.*
-
-  export Library
-
-  export Library as Public
-
-  export Library.value
-
-  export Library.*
-}
-"
-`;
-
-exports[`formatter formats source-qualified imports 1`] = `
-"module Example {
-  import Library from \"./quint-format-source-library\"
-
-  import Library.value from \"./quint-format-source-library\"
-
-  import Library.* from \"./quint-format-source-library\"
-}
-"
-`;
-
-exports[`formatter formats module instances and overrides 1`] = `
-"module Library {
-  const N: int
-
-  const Flag: bool
-}
-
-module Example {
-  import Library(N = 1, Flag = true) as Lib
-}
-"
-`;
-
-exports[`formatter formats anonymous instances 1`] = `
-"module Library {
-  const N: int
-}
-
-module Example {
-  import Library(N = 1).*
-}
-"
-`;
-
-exports[`formatter preserves a trailing module-body comment 1`] = `
-"module Example {
-  pure val answer = 42
-  // Kept for future work
-}
-"
-`;
-
 exports[`formatter formats empty parameter lists across definition modes 1`] = `
 "module Example {
   action step(): bool = true
@@ -769,40 +814,6 @@ exports[`formatter formats empty parameter lists across definition modes 1`] = `
   temporal property(): bool = true
 
   nondet choose(): int = 1
-}
-"
-`;
-
-exports[`formatter formats an untyped parameter with a return type 1`] = `
-"module Example {
-  def identity(value): int = value
-}
-"
-`;
-
-exports[`formatter preserves comments in record literals 1`] = `
-"module Example {
-  val state = {
-    first: 1, // first value
-    second: 2,
-  }
-}
-"
-`;
-
-exports[`formatter preserves trailing source comments 1`] = `
-"module Example {
-}
-
-/*! answer !*/
-
-/*! 1 + 1 !*/
-"
-`;
-
-exports[`formatter formats an empty record type 1`] = `
-"module Example {
-  type Empty = {}
 }
 "
 `;

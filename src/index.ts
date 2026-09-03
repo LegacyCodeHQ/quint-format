@@ -751,9 +751,20 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     }
     const definitionAnalysis = analyzeLocalDefinition(definition);
     const bodyAnalysis = analyzeExpression(body);
+    const comments = node.namedChildren.filter(
+      (child) =>
+        (child.type === "comment" || child.type === "documentation_comment") &&
+        child.startIndex >= definition.endIndex &&
+        child.endIndex <= body.startIndex,
+    );
     const analyses = [definitionAnalysis, bodyAnalysis];
     return {
-      document: concat([definitionAnalysis.document, hardLine, bodyAnalysis.document]),
+      document: concat([
+        definitionAnalysis.document,
+        hardLine,
+        ...comments.flatMap((comment) => [commentDocument(comment), hardLine]),
+        bodyAnalysis.document,
+      ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
       sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
