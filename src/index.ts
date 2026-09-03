@@ -116,7 +116,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   if (node.type === "binary_expression") {
     const left = node.childForFieldName("left");
     const right = node.childForFieldName("right");
-    const operator = node.children.find((child) => child.type === "+");
+    const operator = node.children.find((child) => child.type === "+" || child.type === "-");
     if (!left || !right || !operator) {
       throw new Error("Formatting this binary expression syntax is not implemented yet");
     }
@@ -124,7 +124,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const leftAnalysis = analyzeExpression(left);
     const rightAnalysis = analyzeExpression(right);
     return {
-      document: concat([leftAnalysis.document, text(" + "), rightAnalysis.document]),
+      document: concat([leftAnalysis.document, text(` ${operator.text} `), rightAnalysis.document]),
       binaryOperators: [
         ...leftAnalysis.binaryOperators,
         { node: operator, left, right },

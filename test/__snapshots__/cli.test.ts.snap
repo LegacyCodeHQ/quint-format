@@ -219,3 +219,22 @@ test/fixtures/parenthesized-expression.qnt:2:13: error[format/binary-operator-sp
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical subtraction formatting 1`] = `
+"test/fixtures/subtraction-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | val delta=3-1
+  | ^
+  |
+test/fixtures/subtraction-expression.qnt:2:10: error[format/equals-spacing]: expected one space around '='
+  |
+2 | val delta=3-1
+  |          ^
+  |
+test/fixtures/subtraction-expression.qnt:2:12: error[format/binary-operator-spacing]: expected one space around '-'
+  |
+2 | val delta=3-1
+  |            ^
+  |
+"
+`;

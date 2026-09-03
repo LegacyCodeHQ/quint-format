@@ -130,3 +130,10 @@ exports[`formatter formats a parenthesized expression 1`] = `
 }
 "
 `;
+
+exports[`formatter formats an integer subtraction expression 1`] = `
+"module Example {
+  val delta = 3 - 1
+}
+"
+`;

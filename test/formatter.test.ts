@@ -172,4 +172,13 @@ describe("formatter", () => {
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
+
+  test("formats an integer subtraction expression", () => {
+    const input = "module Example {\nval delta=3-1\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
 });
