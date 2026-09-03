@@ -53,7 +53,8 @@ that every subsequent formatter preserves them by construction.
   - [x] Parameterless definitions
   - [x] Untyped parameters
   - [x] Primitive typed parameters and return types
-  - [ ] Rich parameter types, qualifiers, and semicolons
+  - [x] Optional semicolons
+  - [ ] Rich parameter types and additional qualifiers
 - [ ] `pure`
   - [x] `pure def`
   - [x] `pure val`
@@ -77,6 +78,8 @@ that every subsequent formatter preserves them by construction.
   - [x] Primitive return type annotations
   - [ ] Rich return type annotations
 - [ ] Optional semicolons where Quint permits them
+  - [x] Operator definitions
+  - [ ] Value definitions
 - [ ] Type aliases and uninterpreted types
 
 ## 5. Types

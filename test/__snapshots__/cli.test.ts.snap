@@ -483,6 +483,20 @@ test/fixtures/typed-def-header.qnt:2:32: error[format/equals-spacing]: expected 
 "
 `;
 
+exports[`command-line checker reports an optional definition semicolon 1`] = `
+"test/fixtures/definition-semicolon.qnt:2:13: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   def answer=42;
+  |             ^
+  |
+test/fixtures/definition-semicolon.qnt:2:16: error[format/unnecessary-semicolon]: optional semicolons are omitted
+  |
+2 |   def answer=42;
+  |                ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |

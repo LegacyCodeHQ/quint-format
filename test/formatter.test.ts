@@ -326,6 +326,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("removes an optional definition semicolon", () => {
+    const input = "module Example {\n  def answer=42;\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a pure definition", () => {
     const input = "module Example {\n  pure   def answer=42\n}\n";
     const output = formatQuint(input);

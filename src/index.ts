@@ -94,6 +94,7 @@ interface ModuleDeclaration {
   closeParen?: Parser.SyntaxNode;
   parameters?: Parser.SyntaxNode[];
   parameterCommas?: Parser.SyntaxNode[];
+  semicolon?: Parser.SyntaxNode;
   equals?: Parser.SyntaxNode;
   valueNode?: Parser.SyntaxNode;
   binaryOperators?: BinaryOperator[];
@@ -324,9 +325,9 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const parameterCommas = node.children.filter((child) => child.type === ",");
       const returnType = node.childForFieldName("return_type");
       const returnColon = node.children.find((child) => child.type === ":");
+      const semicolon = node.children.find((child) => child.type === ";");
       const body = node.childForFieldName("body");
       const equals = node.children.find((child) => child.type === "=");
-      const hasUnsupportedHeader = node.children.some((child) => child.type === ";");
       const parameterNames = parameters.map((parameter) => parameter.childForFieldName("name"));
       const parameterTypes = parameters.map((parameter) => parameter.childForFieldName("type"));
       const parameterColons = parameters.map((parameter) =>
@@ -357,7 +358,6 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         !declarationName ||
         !equals ||
         !body ||
-        hasUnsupportedHeader ||
         !hasSupportedParameters ||
         !hasSupportedReturnType ||
         (!isPureDefinition && !isStandaloneDefinition)
@@ -391,6 +391,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         closeParen,
         parameters,
         parameterCommas,
+        semicolon,
         equals,
         valueNode: body,
         binaryOperators: expression.binaryOperators,
@@ -927,6 +928,19 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             sourceLine: lines[row] ?? "",
           });
         }
+      }
+
+      if (declaration.semicolon) {
+        const row = declaration.semicolon.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: declaration.semicolon.startPosition.column + 1,
+          length: 1,
+          rule: "format/unnecessary-semicolon",
+          message: "optional semicolons are omitted",
+          sourceLine: lines[row] ?? "",
+        });
       }
 
       for (const operator of declaration.binaryOperators ?? []) {

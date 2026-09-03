@@ -264,6 +264,13 @@ exports[`formatter formats a typed def header 1`] = `
 "
 `;
 
+exports[`formatter removes an optional definition semicolon 1`] = `
+"module Example {
+  def answer = 42
+}
+"
+`;
+
 exports[`formatter formats a pure definition 1`] = `
 "module Example {
   pure def answer = 42
