@@ -1,30 +1,20 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker reports noncanonical local definition-body comment formatting 1`] = `
-"test/fixtures/local-definition-body-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+exports[`command-line checker reports noncanonical call-argument comment formatting 1`] = `
+"test/fixtures/call-argument-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
   |               ^
   |
-test/fixtures/local-definition-body-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+test/fixtures/call-argument-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
-2 | action step={
+2 | val result=Set(
   | ^
   |
-test/fixtures/local-definition-body-comment.qnt:2:12: error[format/equals-spacing]: expected one space around '='
+test/fixtures/call-argument-comment.qnt:2:11: error[format/equals-spacing]: expected one space around '='
   |
-2 | action step={
-  |            ^
-  |
-test/fixtures/local-definition-body-comment.qnt:3:11: error[format/equals-spacing]: expected one space around '='
-  |
-3 | val answer=
+2 | val result=Set(
   |           ^
-  |
-test/fixtures/local-definition-body-comment.qnt:6:1: error[format/nested-definition-layout]: expected the nested definition body on a new line
-  |
-6 | answer
-  | ^^^^^^
   |
 "
 `;
@@ -1973,6 +1963,35 @@ test/fixtures/local-definition-trailing-comment.qnt:3:11: error[format/equals-sp
 test/fixtures/local-definition-trailing-comment.qnt:4:1: error[format/nested-definition-layout]: expected the nested definition body on a new line
   |
 4 | answer
+  | ^^^^^^
+  |
+"
+`;
+
+exports[`command-line checker reports noncanonical local definition-body comment formatting 1`] = `
+"test/fixtures/local-definition-body-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/local-definition-body-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | action step={
+  | ^
+  |
+test/fixtures/local-definition-body-comment.qnt:2:12: error[format/equals-spacing]: expected one space around '='
+  |
+2 | action step={
+  |            ^
+  |
+test/fixtures/local-definition-body-comment.qnt:3:11: error[format/equals-spacing]: expected one space around '='
+  |
+3 | val answer=
+  |           ^
+  |
+test/fixtures/local-definition-body-comment.qnt:6:1: error[format/nested-definition-layout]: expected the nested definition body on a new line
+  |
+6 | answer
   | ^^^^^^
   |
 "

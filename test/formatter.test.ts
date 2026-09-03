@@ -380,6 +380,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a comment before a call argument", () => {
+    const input = readFileSync(
+      new URL("fixtures/call-argument-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this call argument comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a UFCS call expression", () => {
     const input = "module Example {\n  val count = Set(1).size( )\n}\n";
     const output = formatQuint(input);

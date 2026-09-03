@@ -1057,16 +1057,46 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     if (!functionNode) throw new Error("Unable to locate the call target");
     const functionAnalysis = analyzeExpression(functionNode);
     const analyses = arguments_.map(analyzeExpression);
+    const hasComments = node.namedChildren.some(
+      (child) => child.type === "comment" || child.type === "documentation_comment",
+    );
+    const contentDocuments = hasComments
+      ? node.namedChildren.flatMap((child) => {
+          if (child.id === functionNode.id) return [];
+          if (child.type === "comment" || child.type === "documentation_comment") {
+            return [commentDocument(child)];
+          }
+          const argumentIndex = arguments_.findIndex((argument) => argument.id === child.id);
+          const analysis = analyses[argumentIndex];
+          if (!analysis) {
+            throw new Error("Formatting this commented call content is not implemented yet");
+          }
+          return [
+            concat([
+              analysis.document,
+              ...(argumentIndex < arguments_.length - 1 ? [text(",")] : []),
+            ]),
+          ];
+        })
+      : [];
     return {
-      document: concat([
-        functionAnalysis.document,
-        text("("),
-        ...analyses.flatMap((analysis, index) => [
-          ...(index === 0 ? [] : [text(", ")]),
-          analysis.document,
-        ]),
-        text(")"),
-      ]),
+      document: hasComments
+        ? concat([
+            functionAnalysis.document,
+            text("("),
+            indent(concat(contentDocuments.flatMap((document) => [hardLine, document]))),
+            hardLine,
+            text(")"),
+          ])
+        : concat([
+            functionAnalysis.document,
+            text("("),
+            ...analyses.flatMap((analysis, index) => [
+              ...(index === 0 ? [] : [text(", ")]),
+              analysis.document,
+            ]),
+            text(")"),
+          ]),
       binaryOperators: [
         ...functionAnalysis.binaryOperators,
         ...analyses.flatMap((analysis) => analysis.binaryOperators),
@@ -3500,6 +3530,13 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         const arguments_ = callExpression.childrenForFieldName("argument");
         const commas = callExpression.children.filter((child) => child.type === ",");
         if (!openParen || !closeParen) throw new Error("Unable to locate the call delimiters");
+        if (
+          callExpression.namedChildren.some(
+            (child) => child.type === "comment" || child.type === "documentation_comment",
+          )
+        ) {
+          continue;
+        }
         const first = arguments_[0];
         const last = arguments_.at(-1);
         if (first && last) {
