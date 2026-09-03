@@ -142,6 +142,11 @@ function canFormatType(node: Parser.SyntaxNode): boolean {
     );
   }
 
+  if (node.type === "tuple_type") {
+    const elements = node.childrenForFieldName("element");
+    return elements.length >= 2 && elements.every((element) => canFormatType(element));
+  }
+
   return false;
 }
 
@@ -177,6 +182,14 @@ function formatType(node: Parser.SyntaxNode): string {
       throw new Error("Unable to locate the applied type fields");
     }
     return `${typeConstructor.text}[${arguments_.map(formatType).join(", ")}]`;
+  }
+
+  if (node.type === "tuple_type") {
+    const elements = node.childrenForFieldName("element");
+    if (elements.length < 2) {
+      throw new Error("Unable to locate the tuple element types");
+    }
+    return `(${elements.map(formatType).join(", ")})`;
   }
 
   throw new Error("Formatting this type syntax is not implemented yet");
@@ -645,32 +658,41 @@ function checkTypeDelimiterSpacing(
   filePath: string,
   diagnostics: FormatDiagnostic[],
 ) {
-  if (node.type !== "set_type" && node.type !== "list_type" && node.type !== "type_application") {
+  if (
+    node.type !== "set_type" &&
+    node.type !== "list_type" &&
+    node.type !== "type_application" &&
+    node.type !== "tuple_type"
+  ) {
     return;
   }
 
-  const openBracket = node.children.find((child) => child.type === "[");
-  const closeBracket = node.children.find((child) => child.type === "]");
+  const openDelimiterText = node.type === "tuple_type" ? "(" : "[";
+  const closeDelimiterText = node.type === "tuple_type" ? ")" : "]";
+  const openDelimiter = node.children.find((child) => child.type === openDelimiterText);
+  const closeDelimiter = node.children.find((child) => child.type === closeDelimiterText);
   const elements =
     node.type === "type_application"
       ? node.childrenForFieldName("argument")
-      : [node.childForFieldName("element")].filter((element) => element !== null);
+      : node.type === "tuple_type"
+        ? node.childrenForFieldName("element")
+        : [node.childForFieldName("element")].filter((element) => element !== null);
   const firstElement = elements[0];
   const lastElement = elements.at(-1);
-  if (!openBracket || !closeBracket || !firstElement || !lastElement) {
+  if (!openDelimiter || !closeDelimiter || !firstElement || !lastElement) {
     throw new Error("Unable to locate the parameterized type delimiters");
   }
 
-  const afterOpenBracket = source.slice(openBracket.endIndex, firstElement.startIndex);
-  if (afterOpenBracket !== "") {
-    const row = openBracket.endPosition.row;
+  const afterOpenDelimiter = source.slice(openDelimiter.endIndex, firstElement.startIndex);
+  if (afterOpenDelimiter !== "") {
+    const row = openDelimiter.endPosition.row;
     diagnostics.push({
       filePath,
       line: row + 1,
-      column: openBracket.endPosition.column + 1,
-      length: Math.max(1, afterOpenBracket.length),
+      column: openDelimiter.endPosition.column + 1,
+      length: Math.max(1, afterOpenDelimiter.length),
       rule: "format/type-delimiter-spacing",
-      message: "expected no space after '['",
+      message: `expected no space after '${openDelimiterText}'`,
       sourceLine: lines[row] ?? "",
     });
   }
@@ -698,16 +720,16 @@ function checkTypeDelimiterSpacing(
     }
   }
 
-  const beforeCloseBracket = source.slice(lastElement.endIndex, closeBracket.startIndex);
-  if (beforeCloseBracket !== "") {
-    const row = closeBracket.startPosition.row;
+  const beforeCloseDelimiter = source.slice(lastElement.endIndex, closeDelimiter.startIndex);
+  if (beforeCloseDelimiter !== "") {
+    const row = closeDelimiter.startPosition.row;
     diagnostics.push({
       filePath,
       line: row + 1,
       column: lastElement.endPosition.column + 1,
-      length: Math.max(1, beforeCloseBracket.length),
+      length: Math.max(1, beforeCloseDelimiter.length),
       rule: "format/type-delimiter-spacing",
-      message: "expected no space before ']'",
+      message: `expected no space before '${closeDelimiterText}'`,
       sourceLine: lines[row] ?? "",
     });
   }

@@ -66,6 +66,13 @@ exports[`formatter formats a Set type 1`] = `
 "
 `;
 
+exports[`formatter formats a tuple type 1`] = `
+"module Example {
+  const Pair: (int, str)
+}
+"
+`;
+
 exports[`formatter places declarations on separate lines 1`] = `
 "module Example {
   var a: int
