@@ -134,23 +134,34 @@ function analyzeModule(source: string) {
     if (node.type === "value_definition") {
       const keyword = node.children.find((child) => child.type === "val");
       const declarationName = node.childForFieldName("name");
+      const declarationType = node.childForFieldName("type");
       const value = node.childForFieldName("value");
+      const colon = node.children.find((child) => child.type === ":");
       const equals = node.children.find((child) => child.type === "=");
       const isSupportedLiteral =
         value?.type === "integer_literal" ||
         value?.type === "boolean_literal" ||
         value?.type === "string_literal";
-      if (!keyword || !declarationName || !equals || !isSupportedLiteral) {
+      if (
+        !keyword ||
+        !declarationName ||
+        !equals ||
+        !isSupportedLiteral ||
+        Boolean(declarationType) !== Boolean(colon)
+      ) {
         throw new Error("Formatting this value definition syntax is not implemented yet");
       }
 
+      const typeAnnotation = declarationType ? `: ${declarationType.text}` : "";
       declarations.push({
         node,
         keyword,
         nameNode: declarationName,
+        colon: colon ?? undefined,
+        typeNode: declarationType ?? undefined,
         equals,
         valueNode: value,
-        document: text(`val ${declarationName.text} = ${value.text}`),
+        document: text(`val ${declarationName.text}${typeAnnotation} = ${value.text}`),
       });
       continue;
     }
@@ -311,29 +322,6 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       });
     }
 
-    if (declaration.equals && declaration.valueNode) {
-      const beforeEquals = source.slice(
-        declaration.nameNode.endIndex,
-        declaration.equals.startIndex,
-      );
-      const afterEquals = source.slice(
-        declaration.equals.endIndex,
-        declaration.valueNode.startIndex,
-      );
-      if (beforeEquals !== " " || afterEquals !== " ") {
-        const row = declaration.equals.startPosition.row;
-        diagnostics.push({
-          filePath,
-          line: row + 1,
-          column: declaration.equals.startPosition.column + 1,
-          length: 1,
-          rule: "format/equals-spacing",
-          message: "expected one space around '='",
-          sourceLine: lines[row] ?? "",
-        });
-      }
-    }
-
     if (declaration.colon && declaration.typeNode) {
       const colonGap = source.slice(declaration.nameNode.endIndex, declaration.colon.startIndex);
       if (colonGap.length > 0) {
@@ -370,6 +358,27 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           ),
           rule: "format/type-colon-spacing",
           message: "expected one space after ':'",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
+
+    if (declaration.equals && declaration.valueNode) {
+      const equalsAnchor = declaration.typeNode ?? declaration.nameNode;
+      const beforeEquals = source.slice(equalsAnchor.endIndex, declaration.equals.startIndex);
+      const afterEquals = source.slice(
+        declaration.equals.endIndex,
+        declaration.valueNode.startIndex,
+      );
+      if (beforeEquals !== " " || afterEquals !== " ") {
+        const row = declaration.equals.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: declaration.equals.startPosition.column + 1,
+          length: 1,
+          rule: "format/equals-spacing",
+          message: "expected one space around '='",
           sourceLine: lines[row] ?? "",
         });
       }

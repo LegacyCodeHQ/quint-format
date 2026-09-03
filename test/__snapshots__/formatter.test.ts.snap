@@ -101,3 +101,10 @@ exports[`formatter formats a string value definition 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a typed value definition 1`] = `
+"module Example {
+  val answer: int = 42
+}
+"
+`;
