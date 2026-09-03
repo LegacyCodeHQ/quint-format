@@ -50,6 +50,8 @@ that every subsequent formatter preserves them by construction.
 - [x] Literal and identifier `val`
 - [x] General `assume` expressions
 - [ ] `def`
+  - [x] Parameterless definitions
+  - [ ] Parameters, return types, qualifiers, and semicolons
 - [ ] `pure`
 - [ ] `action`
 - [ ] `run`

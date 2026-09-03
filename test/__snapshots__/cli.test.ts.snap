@@ -411,3 +411,12 @@ exports[`command-line checker reports noncanonical general assumption formatting
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical parameterless def formatting 1`] = `
+"test/fixtures/def-definition.qnt:2:13: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   def answer=42
+  |             ^
+  |
+"
+`;

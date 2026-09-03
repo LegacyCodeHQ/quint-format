@@ -293,6 +293,33 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       continue;
     }
 
+    if (node.type === "operator_definition") {
+      const keyword = node.children.find((child) => child.type === "def");
+      const declarationName = node.childForFieldName("name");
+      const body = node.childForFieldName("body");
+      const equals = node.children.find((child) => child.type === "=");
+      const hasUnsupportedHeader =
+        node.childForFieldName("qualifier") !== null ||
+        node.children.some(
+          (child) => child.type === "(" || child.type === ":" || child.type === ";",
+        );
+      if (!keyword || !declarationName || !equals || !body || hasUnsupportedHeader) {
+        throw new Error("Formatting this operator definition syntax is not implemented yet");
+      }
+
+      const expression = analyzeExpression(body);
+      addDeclaration({
+        node,
+        keyword,
+        nameNode: declarationName,
+        equals,
+        valueNode: body,
+        binaryOperators: expression.binaryOperators,
+        document: concat([text(`def ${declarationName.text} = `), expression.document]),
+      });
+      continue;
+    }
+
     const keywordType =
       node.type === "variable_declaration"
         ? "var"

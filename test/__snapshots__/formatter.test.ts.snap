@@ -235,3 +235,10 @@ exports[`formatter formats a general assumption expression 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a parameterless def definition 1`] = `
+"module Example {
+  def answer = 42
+}
+"
+`;
