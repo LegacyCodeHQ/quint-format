@@ -1,50 +1,45 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker reports noncanonical instance-override comment formatting 1`] = `
-"test/fixtures/instance-override-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+exports[`command-line checker reports noncanonical anonymous-instance comment formatting 1`] = `
+"test/fixtures/anonymous-instance-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Library{
   |               ^
   |
-test/fixtures/instance-override-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+test/fixtures/anonymous-instance-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | const N:int
   | ^
   |
-test/fixtures/instance-override-comment.qnt:2:9: error[format/type-colon-spacing]: expected one space after ':'
+test/fixtures/anonymous-instance-comment.qnt:2:9: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 | const N:int
   |         ^
   |
-test/fixtures/instance-override-comment.qnt:4:1: error[format/module-separation]: expected one blank line between modules
+test/fixtures/anonymous-instance-comment.qnt:4:1: error[format/module-separation]: expected one blank line between modules
   |
 4 | module Example{
   | ^^^^^^
   |
-test/fixtures/instance-override-comment.qnt:4:15: error[format/module-brace-spacing]: expected one space before '{'
+test/fixtures/anonymous-instance-comment.qnt:4:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 4 | module Example{
   |               ^
   |
-test/fixtures/instance-override-comment.qnt:5:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+test/fixtures/anonymous-instance-comment.qnt:5:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 5 | import Library(
   | ^
   |
-test/fixtures/instance-override-comment.qnt:5:15: error[format/instance-delimiter-spacing]: expected no space around instance parentheses
+test/fixtures/anonymous-instance-comment.qnt:5:15: error[format/instance-delimiter-spacing]: expected no space around instance parentheses
   |
 5 | import Library(
   |               ^
   |
-test/fixtures/instance-override-comment.qnt:7:2: error[format/instance-override-spacing]: expected one space around '='
+test/fixtures/anonymous-instance-comment.qnt:7:2: error[format/instance-override-spacing]: expected one space around '='
   |
 7 | N=1
   |  ^
-  |
-test/fixtures/instance-override-comment.qnt:8:2: error[format/import-alias-spacing]: expected one space around 'as'
-  |
-8 | )as Lib
-  |  ^^
   |
 "
 `;
@@ -1570,6 +1565,55 @@ test/fixtures/module-instance.qnt:6:38: error[format/import-alias-spacing]: expe
   |
 6 |  import Library ( N=1 ,Flag=true, )  as   Lib
   |                                      ^^
+  |
+"
+`;
+
+exports[`command-line checker reports noncanonical instance-override comment formatting 1`] = `
+"test/fixtures/instance-override-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Library{
+  |               ^
+  |
+test/fixtures/instance-override-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | const N:int
+  | ^
+  |
+test/fixtures/instance-override-comment.qnt:2:9: error[format/type-colon-spacing]: expected one space after ':'
+  |
+2 | const N:int
+  |         ^
+  |
+test/fixtures/instance-override-comment.qnt:4:1: error[format/module-separation]: expected one blank line between modules
+  |
+4 | module Example{
+  | ^^^^^^
+  |
+test/fixtures/instance-override-comment.qnt:4:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+4 | module Example{
+  |               ^
+  |
+test/fixtures/instance-override-comment.qnt:5:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+5 | import Library(
+  | ^
+  |
+test/fixtures/instance-override-comment.qnt:5:15: error[format/instance-delimiter-spacing]: expected no space around instance parentheses
+  |
+5 | import Library(
+  |               ^
+  |
+test/fixtures/instance-override-comment.qnt:7:2: error[format/instance-override-spacing]: expected one space around '='
+  |
+7 | N=1
+  |  ^
+  |
+test/fixtures/instance-override-comment.qnt:8:2: error[format/import-alias-spacing]: expected one space around 'as'
+  |
+8 | )as Lib
+  |  ^^
   |
 "
 `;

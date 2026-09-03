@@ -1608,8 +1608,32 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         const overrideName = override.childForFieldName("name");
         const value = override.childForFieldName("value");
         if (!overrideName || !value) throw new Error("Unable to locate the instance override");
-        return { name: overrideName, value: analyzeExpression(value) };
+        return { node: override, name: overrideName, value: analyzeExpression(value) };
       });
+      const hasComments = node.namedChildren.some(
+        (child) => child.type === "comment" || child.type === "documentation_comment",
+      );
+      const overrideDocuments = hasComments
+        ? node.namedChildren
+            .filter((child) => child.id !== importedModule.id && child.id !== sourceNode?.id)
+            .map((child) => {
+              if (child.type === "comment" || child.type === "documentation_comment") {
+                return commentDocument(child);
+              }
+              const index = overrideAnalyses.findIndex((override) => override.node.id === child.id);
+              const override = overrideAnalyses[index];
+              if (!override) {
+                throw new Error(
+                  "Formatting this anonymous override content is not implemented yet",
+                );
+              }
+              return concat([
+                text(`${formatPattern(override.name)} = `),
+                override.value.document,
+                ...(index < overrideAnalyses.length - 1 ? [text(",")] : []),
+              ]);
+            })
+        : [];
       addDeclaration({
         node,
         keyword,
@@ -1627,15 +1651,22 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         sequenceLiterals: overrideAnalyses.flatMap(({ value }) => value.sequenceLiterals),
         recordLiterals: overrideAnalyses.flatMap(({ value }) => value.recordLiterals),
         callExpressions: overrideAnalyses.flatMap(({ value }) => value.callExpressions),
-        document: concat([
-          text(`import ${formatPattern(importedModule)}(`),
-          ...overrideAnalyses.flatMap(({ name, value }, index) => [
-            ...(index === 0 ? [] : [text(", ")]),
-            text(`${formatPattern(name)} = `),
-            value.document,
-          ]),
-          text(`).*${sourceNode ? ` from ${sourceNode.text}` : ""}`),
-        ]),
+        document: hasComments
+          ? concat([
+              text(`import ${formatPattern(importedModule)}(`),
+              indent(concat(overrideDocuments.flatMap((document) => [hardLine, document]))),
+              hardLine,
+              text(`).*${sourceNode ? ` from ${sourceNode.text}` : ""}`),
+            ])
+          : concat([
+              text(`import ${formatPattern(importedModule)}(`),
+              ...overrideAnalyses.flatMap(({ name, value }, index) => [
+                ...(index === 0 ? [] : [text(", ")]),
+                text(`${formatPattern(name)} = `),
+                value.document,
+              ]),
+              text(`).*${sourceNode ? ` from ${sourceNode.text}` : ""}`),
+            ]),
       });
       continue;
     }

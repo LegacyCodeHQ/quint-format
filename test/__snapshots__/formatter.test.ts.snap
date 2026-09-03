@@ -1,15 +1,15 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves comments among module instance overrides 1`] = `
+exports[`formatter preserves comments in anonymous instance overrides 1`] = `
 "module Library {
   const N: int
 }
 
 module Example {
   import Library(
-    // Preserve this override comment.
+    // Preserve this anonymous override comment.
     N = 1
-  ) as Lib
+  ).*
 }
 "
 `;
@@ -639,6 +639,20 @@ exports[`formatter formats module instances and overrides 1`] = `
 
 module Example {
   import Library(N = 1, Flag = true) as Lib
+}
+"
+`;
+
+exports[`formatter preserves comments among module instance overrides 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(
+    // Preserve this override comment.
+    N = 1
+  ) as Lib
 }
 "
 `;
