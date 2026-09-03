@@ -51,3 +51,10 @@ exports[`formatter formats spacing after var 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a constant declaration 1`] = `
+"module Example {
+  const N: int
+}
+"
+`;

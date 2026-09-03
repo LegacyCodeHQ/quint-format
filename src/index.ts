@@ -109,13 +109,19 @@ function analyzeModule(source: string) {
       continue;
     }
 
-    if (node.type !== "variable_declaration") {
+    const keywordType =
+      node.type === "variable_declaration"
+        ? "var"
+        : node.type === "constant_declaration"
+          ? "const"
+          : undefined;
+    if (!keywordType) {
       throw new Error("Formatting this Quint syntax is not implemented yet");
     }
 
     const declarationName = node.childForFieldName("name");
     const declarationType = node.childForFieldName("type");
-    const keyword = node.children.find((child) => child.type === "var");
+    const keyword = node.children.find((child) => child.type === keywordType);
     const colon = node.children.find((child) => child.type === ":");
     if (!declarationName || !declarationType || !keyword || !colon) {
       throw new Error("Unable to locate the variable declaration fields");
@@ -127,7 +133,7 @@ function analyzeModule(source: string) {
       nameNode: declarationName,
       colon,
       typeNode: declarationType,
-      document: text(`var ${declarationName.text}: ${declarationType.text}`),
+      document: text(`${keywordType} ${declarationName.text}: ${declarationType.text}`),
     });
   }
 
@@ -239,7 +245,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           declaration.nameNode.startPosition.column - declaration.keyword.endPosition.column,
         ),
         rule: "format/declaration-keyword-spacing",
-        message: "expected one space after 'var'",
+        message: `expected one space after '${declaration.keyword.text}'`,
         sourceLine: lines[row] ?? "",
       });
     }
