@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
+import { formatQuint } from "../src/index";
 
 describe("test harness", () => {
   test("runs regular assertions", () => {
@@ -21,5 +22,11 @@ describe("test harness", () => {
 
     expect(root.type).toBe("source_file");
     expect(root.hasError).toBe(false);
+  });
+});
+
+describe("formatter", () => {
+  test("formats an empty module", () => {
+    expect(formatQuint("module Example {}")).toMatchSnapshot();
   });
 });

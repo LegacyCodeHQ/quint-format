@@ -5,3 +5,9 @@ exports[`test harness records snapshot approvals 1`] = `
   val answer = 42
 }"
 `;
+
+exports[`formatter formats an empty module 1`] = `
+"module Example {
+}
+"
+`;
