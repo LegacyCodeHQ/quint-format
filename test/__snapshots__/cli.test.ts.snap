@@ -1362,3 +1362,127 @@ test/fixtures/nested-definitions.qnt:4:54: error[format/unnecessary-semicolon]: 
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical named and wildcard imports and exports 1`] = `
+"test/fixtures/imports-exports.qnt:4:1: error[format/module-separation]: expected one blank line between modules
+  |
+4 | module Consumer {
+  | ^^^^^^
+  |
+test/fixtures/imports-exports.qnt:5:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+5 |  import   Library
+  | ^
+  |
+test/fixtures/imports-exports.qnt:5:8: error[format/declaration-keyword-spacing]: expected one space after 'import'
+  |
+5 |  import   Library
+  |        ^^^
+  |
+test/fixtures/imports-exports.qnt:6:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+6 |  import Library  as   Lib
+  | ^
+  |
+test/fixtures/imports-exports.qnt:6:2: error[format/definition-spacing]: expected one blank line between definitions
+  |
+6 |  import Library  as   Lib
+  |  ^^^^^^
+  |
+test/fixtures/imports-exports.qnt:6:18: error[format/import-alias-spacing]: expected one space around 'as'
+  |
+6 |  import Library  as   Lib
+  |                  ^^
+  |
+test/fixtures/imports-exports.qnt:7:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+7 |  import Library . value
+  | ^
+  |
+test/fixtures/imports-exports.qnt:7:2: error[format/definition-spacing]: expected one blank line between definitions
+  |
+7 |  import Library . value
+  |  ^^^^^^
+  |
+test/fixtures/imports-exports.qnt:7:17: error[format/import-selector-spacing]: expected no space around '.'
+  |
+7 |  import Library . value
+  |                 ^
+  |
+test/fixtures/imports-exports.qnt:8:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+8 |  import Library . *
+  | ^
+  |
+test/fixtures/imports-exports.qnt:8:2: error[format/definition-spacing]: expected one blank line between definitions
+  |
+8 |  import Library . *
+  |  ^^^^^^
+  |
+test/fixtures/imports-exports.qnt:8:17: error[format/import-selector-spacing]: expected no space around '.'
+  |
+8 |  import Library . *
+  |                 ^
+  |
+test/fixtures/imports-exports.qnt:9:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+9 |  export  Library
+  | ^
+  |
+test/fixtures/imports-exports.qnt:9:2: error[format/definition-spacing]: expected one blank line between definitions
+  |
+9 |  export  Library
+  |  ^^^^^^
+  |
+test/fixtures/imports-exports.qnt:9:8: error[format/declaration-keyword-spacing]: expected one space after 'export'
+  |
+9 |  export  Library
+  |        ^^
+  |
+test/fixtures/imports-exports.qnt:10:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+   |
+10 |  export Library  as   Public
+   | ^
+   |
+test/fixtures/imports-exports.qnt:10:2: error[format/definition-spacing]: expected one blank line between definitions
+   |
+10 |  export Library  as   Public
+   |  ^^^^^^
+   |
+test/fixtures/imports-exports.qnt:10:18: error[format/import-alias-spacing]: expected one space around 'as'
+   |
+10 |  export Library  as   Public
+   |                  ^^
+   |
+test/fixtures/imports-exports.qnt:11:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+   |
+11 |  export Library . value
+   | ^
+   |
+test/fixtures/imports-exports.qnt:11:2: error[format/definition-spacing]: expected one blank line between definitions
+   |
+11 |  export Library . value
+   |  ^^^^^^
+   |
+test/fixtures/imports-exports.qnt:11:17: error[format/import-selector-spacing]: expected no space around '.'
+   |
+11 |  export Library . value
+   |                 ^
+   |
+test/fixtures/imports-exports.qnt:12:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+   |
+12 |  export Library . *
+   | ^
+   |
+test/fixtures/imports-exports.qnt:12:2: error[format/definition-spacing]: expected one blank line between definitions
+   |
+12 |  export Library . *
+   |  ^^^^^^
+   |
+test/fixtures/imports-exports.qnt:12:17: error[format/import-selector-spacing]: expected no space around '.'
+   |
+12 |  export Library . *
+   |                 ^
+   |
+"
+`;

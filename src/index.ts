@@ -99,6 +99,10 @@ interface ModuleDeclaration {
   typeCloseBracket?: Parser.SyntaxNode;
   typeParameters?: Parser.SyntaxNode[];
   typeParameterCommas?: Parser.SyntaxNode[];
+  aliasNode?: Parser.SyntaxNode;
+  asKeyword?: Parser.SyntaxNode;
+  dot?: Parser.SyntaxNode;
+  selectorNode?: Parser.SyntaxNode;
   semicolon?: Parser.SyntaxNode;
   equals?: Parser.SyntaxNode;
   valueNode?: Parser.SyntaxNode;
@@ -1195,6 +1199,47 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         keyword,
         nameNode: declarationName,
         document: text(`type ${declarationName.text}`),
+      });
+      continue;
+    }
+
+    if (
+      node.type === "module_import_declaration" ||
+      node.type === "module_export_declaration" ||
+      node.type === "named_import_declaration" ||
+      node.type === "named_export_declaration" ||
+      node.type === "wildcard_import_declaration" ||
+      node.type === "wildcard_export_declaration"
+    ) {
+      const keywordType = node.type.includes("import") ? "import" : "export";
+      const keyword = node.children.find((child) => child.type === keywordType);
+      const importedModule = node.childForFieldName("module");
+      const alias = node.childForFieldName("alias");
+      const name = node.childForFieldName("name");
+      const asKeyword = node.children.find((child) => child.type === "as");
+      const dot = node.children.find((child) => child.type === ".");
+      const star = node.children.find((child) => child.type === "*");
+      const selector = name ?? star;
+      if (!keyword || !importedModule || Boolean(alias) !== Boolean(asKeyword)) {
+        throw new Error("Unable to locate the import or export declaration");
+      }
+      if (node.type.startsWith("named_") && (!dot || !name)) {
+        throw new Error("Unable to locate the named import or export selector");
+      }
+      if (node.type.startsWith("wildcard_") && (!dot || !star)) {
+        throw new Error("Unable to locate the wildcard import or export selector");
+      }
+      addDeclaration({
+        node,
+        keyword,
+        nameNode: importedModule,
+        aliasNode: alias ?? undefined,
+        asKeyword,
+        dot,
+        selectorNode: selector ?? undefined,
+        document: text(
+          `${keywordType} ${formatPattern(importedModule)}${dot && selector ? `.${selector.type === "*" ? "*" : formatPattern(selector)}` : ""}${alias ? ` as ${formatPattern(alias)}` : ""}`,
+        ),
       });
       continue;
     }
@@ -2306,6 +2351,49 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           message: `expected one space after '${declaration.keyword.text}'`,
           sourceLine: lines[row] ?? "",
         });
+      }
+
+      if (declaration.dot && declaration.selectorNode) {
+        const beforeDot = source.slice(declaration.nameNode.endIndex, declaration.dot.startIndex);
+        const afterDot = source.slice(
+          declaration.dot.endIndex,
+          declaration.selectorNode.startIndex,
+        );
+        if (beforeDot !== "" || afterDot !== "") {
+          const row = declaration.dot.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.dot.startPosition.column + 1,
+            length: 1,
+            rule: "format/import-selector-spacing",
+            message: "expected no space around '.'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
+
+      if (declaration.aliasNode && declaration.asKeyword) {
+        const beforeAs = source.slice(
+          declaration.nameNode.endIndex,
+          declaration.asKeyword.startIndex,
+        );
+        const afterAs = source.slice(
+          declaration.asKeyword.endIndex,
+          declaration.aliasNode.startIndex,
+        );
+        if (beforeAs !== " " || afterAs !== " ") {
+          const row = declaration.asKeyword.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.asKeyword.startPosition.column + 1,
+            length: 2,
+            rule: "format/import-alias-spacing",
+            message: "expected one space around 'as'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
       }
 
       if (
