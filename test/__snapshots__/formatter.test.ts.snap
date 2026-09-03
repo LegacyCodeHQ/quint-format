@@ -217,6 +217,13 @@ exports[`formatter formats a list literal 1`] = `
 "
 `;
 
+exports[`formatter formats a tuple literal 1`] = `
+"module Example {
+  val pair = (1, 2)
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

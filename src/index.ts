@@ -104,7 +104,7 @@ interface ModuleDeclaration {
   valueNode?: Parser.SyntaxNode;
   binaryOperators?: BinaryOperator[];
   unitLiterals?: Parser.SyntaxNode[];
-  listLiterals?: Parser.SyntaxNode[];
+  sequenceLiterals?: Parser.SyntaxNode[];
   document: Doc;
 }
 
@@ -119,7 +119,7 @@ interface ExpressionAnalysis {
   document: Doc;
   binaryOperators: BinaryOperator[];
   unitLiterals: Parser.SyntaxNode[];
-  listLiterals: Parser.SyntaxNode[];
+  sequenceLiterals: Parser.SyntaxNode[];
 }
 
 function canFormatType(node: Parser.SyntaxNode): boolean {
@@ -346,7 +346,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       document: text(node.text),
       binaryOperators: [],
       unitLiterals: [],
-      listLiterals: [],
+      sequenceLiterals: [],
     };
   }
 
@@ -355,25 +355,26 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       document: text("()"),
       binaryOperators: [],
       unitLiterals: [node],
-      listLiterals: [],
+      sequenceLiterals: [],
     };
   }
 
-  if (node.type === "list_literal") {
+  if (node.type === "list_literal" || node.type === "tuple_literal") {
     const elements = node.childrenForFieldName("element");
     const analyses = elements.map(analyzeExpression);
+    const [openDelimiter, closeDelimiter] = node.type === "list_literal" ? ["[", "]"] : ["(", ")"];
     return {
       document: concat([
-        text("["),
+        text(openDelimiter),
         ...analyses.flatMap((analysis, index) => [
           ...(index === 0 ? [] : [text(", ")]),
           analysis.document,
         ]),
-        text("]"),
+        text(closeDelimiter),
       ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
-      listLiterals: [node, ...analyses.flatMap((analysis) => analysis.listLiterals)],
+      sequenceLiterals: [node, ...analyses.flatMap((analysis) => analysis.sequenceLiterals)],
     };
   }
 
@@ -411,7 +412,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         ...rightAnalysis.binaryOperators,
       ],
       unitLiterals: [...leftAnalysis.unitLiterals, ...rightAnalysis.unitLiterals],
-      listLiterals: [...leftAnalysis.listLiterals, ...rightAnalysis.listLiterals],
+      sequenceLiterals: [...leftAnalysis.sequenceLiterals, ...rightAnalysis.sequenceLiterals],
     };
   }
 
@@ -426,7 +427,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       document: concat([text("("), analysis.document, text(")")]),
       binaryOperators: analysis.binaryOperators,
       unitLiterals: analysis.unitLiterals,
-      listLiterals: analysis.listLiterals,
+      sequenceLiterals: analysis.sequenceLiterals,
     };
   }
 
@@ -503,7 +504,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         valueNode: condition,
         binaryOperators: expression.binaryOperators,
         unitLiterals: expression.unitLiterals,
-        listLiterals: expression.listLiterals,
+        sequenceLiterals: expression.sequenceLiterals,
         document: concat([text(`assume ${declarationName.text} = `), expression.document]),
       });
       continue;
@@ -544,7 +545,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         valueNode: value,
         binaryOperators: expression.binaryOperators,
         unitLiterals: expression.unitLiterals,
-        listLiterals: expression.listLiterals,
+        sequenceLiterals: expression.sequenceLiterals,
         document: concat([
           text(`${qualifier ? "pure " : ""}val ${declarationName.text}${typeAnnotation} = `),
           expression.document,
@@ -651,7 +652,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         valueNode: body,
         binaryOperators: expression.binaryOperators,
         unitLiterals: expression.unitLiterals,
-        listLiterals: expression.listLiterals,
+        sequenceLiterals: expression.sequenceLiterals,
         document: concat([
           text(
             `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} = `,
@@ -1940,28 +1941,32 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         }
       }
 
-      for (const listLiteral of declaration.listLiterals ?? []) {
-        const openBracket = listLiteral.children.find((child) => child.type === "[");
-        const closeBracket = listLiteral.children.find((child) => child.type === "]");
-        const elements = listLiteral.childrenForFieldName("element");
-        const commas = listLiteral.children.filter((child) => child.type === ",");
-        if (!openBracket || !closeBracket) {
-          throw new Error("Unable to locate the list literal delimiters");
+      for (const sequenceLiteral of declaration.sequenceLiterals ?? []) {
+        const isList = sequenceLiteral.type === "list_literal";
+        const kind = isList ? "list" : "tuple";
+        const openType = isList ? "[" : "(";
+        const closeType = isList ? "]" : ")";
+        const openDelimiter = sequenceLiteral.children.find((child) => child.type === openType);
+        const closeDelimiter = sequenceLiteral.children.find((child) => child.type === closeType);
+        const elements = sequenceLiteral.childrenForFieldName("element");
+        const commas = sequenceLiteral.children.filter((child) => child.type === ",");
+        if (!openDelimiter || !closeDelimiter) {
+          throw new Error(`Unable to locate the ${kind} literal delimiters`);
         }
 
         const firstElement = elements[0];
         const lastElement = elements.at(-1);
         if (firstElement && lastElement) {
-          const afterOpenBracket = source.slice(openBracket.endIndex, firstElement.startIndex);
-          if (afterOpenBracket !== "") {
-            const row = openBracket.endPosition.row;
+          const afterOpenDelimiter = source.slice(openDelimiter.endIndex, firstElement.startIndex);
+          if (afterOpenDelimiter !== "") {
+            const row = openDelimiter.endPosition.row;
             diagnostics.push({
               filePath,
               line: row + 1,
-              column: openBracket.endPosition.column + 1,
-              length: Math.max(1, afterOpenBracket.length),
+              column: openDelimiter.endPosition.column + 1,
+              length: Math.max(1, afterOpenDelimiter.length),
               rule: "format/expression-delimiter-spacing",
-              message: "expected no space after '['",
+              message: `expected no space after '${openType}'`,
               sourceLine: lines[row] ?? "",
             });
           }
@@ -1977,7 +1982,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 column: comma.startPosition.column + 1,
                 length: 1,
                 rule: "format/unnecessary-trailing-comma",
-                message: "trailing commas are omitted from inline lists",
+                message: `trailing commas are omitted from inline ${kind}s`,
                 sourceLine: lines[row] ?? "",
               });
               continue;
@@ -1992,39 +1997,45 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 column: comma.startPosition.column + 1,
                 length: 1,
                 rule: "format/expression-separator-spacing",
-                message: "expected ', ' between list elements",
+                message: `expected ', ' between ${kind} elements`,
                 sourceLine: lines[row] ?? "",
               });
             }
           }
 
-          const beforeCloseBracket = source.slice(lastElement.endIndex, closeBracket.startIndex);
+          const beforeCloseDelimiter = source.slice(
+            lastElement.endIndex,
+            closeDelimiter.startIndex,
+          );
           const trailingComma = commas.find((comma) => comma.startIndex >= lastElement.endIndex);
           const closeAnchor = trailingComma ?? lastElement;
-          const closeGap = source.slice(closeAnchor.endIndex, closeBracket.startIndex);
-          if ((!trailingComma && beforeCloseBracket !== "") || (trailingComma && closeGap !== "")) {
-            const row = closeBracket.startPosition.row;
+          const closeGap = source.slice(closeAnchor.endIndex, closeDelimiter.startIndex);
+          if (
+            (!trailingComma && beforeCloseDelimiter !== "") ||
+            (trailingComma && closeGap !== "")
+          ) {
+            const row = closeDelimiter.startPosition.row;
             diagnostics.push({
               filePath,
               line: row + 1,
               column: closeAnchor.endPosition.column + 1,
               length: Math.max(1, closeGap.length),
               rule: "format/expression-delimiter-spacing",
-              message: "expected no space before ']'",
+              message: `expected no space before '${closeType}'`,
               sourceLine: lines[row] ?? "",
             });
           }
         } else {
-          const insideBrackets = source.slice(openBracket.endIndex, closeBracket.startIndex);
-          if (insideBrackets !== "") {
-            const row = openBracket.endPosition.row;
+          const insideDelimiters = source.slice(openDelimiter.endIndex, closeDelimiter.startIndex);
+          if (insideDelimiters !== "") {
+            const row = openDelimiter.endPosition.row;
             diagnostics.push({
               filePath,
               line: row + 1,
-              column: openBracket.endPosition.column + 1,
-              length: Math.max(1, insideBrackets.length),
+              column: openDelimiter.endPosition.column + 1,
+              length: Math.max(1, insideDelimiters.length),
               rule: "format/expression-delimiter-spacing",
-              message: "expected no space inside '[]'",
+              message: `expected no space inside '${openType}${closeType}'`,
               sourceLine: lines[row] ?? "",
             });
           }

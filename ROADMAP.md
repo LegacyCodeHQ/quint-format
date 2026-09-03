@@ -123,7 +123,7 @@ that every subsequent formatter preserves them by construction.
   - [x] Unit literals
 - [ ] Lists, tuples, and records
   - [x] Lists
-  - [ ] Tuples
+  - [x] Tuples
   - [ ] Records
 - [ ] Record spreads
 - [ ] Tuple and record destructuring patterns
