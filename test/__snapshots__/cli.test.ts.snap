@@ -35,3 +35,12 @@ exports[`command-line checker reports missing spacing before the module brace 1`
   |
 "
 `;
+
+exports[`command-line checker reports an excess final newline 1`] = `
+"extra-final-newline.qnt:3:1: error[format/final-newline]: expected exactly one final newline
+  |
+3 |
+  | ^
+  |
+"
+`;

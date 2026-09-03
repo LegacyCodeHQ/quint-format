@@ -17,3 +17,9 @@ exports[`formatter formats spacing before the module brace 1`] = `
 }
 "
 `;
+
+exports[`formatter formats excess final newlines 1`] = `
+"module Example {
+}
+"
+`;
