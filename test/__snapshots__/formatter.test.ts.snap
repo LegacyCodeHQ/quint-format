@@ -322,6 +322,15 @@ exports[`formatter formats a polymorphic type alias 1`] = `
 "
 `;
 
+exports[`formatter formats a polymorphic type application 1`] = `
+"module Example {
+  type Box[a] = List[a]
+
+  const boxes: Box[int]
+}
+"
+`;
+
 exports[`formatter formats a pure definition 1`] = `
 "module Example {
   pure def answer = 42

@@ -97,7 +97,7 @@ that every subsequent formatter preserves them by construction.
 - [ ] `Set`, `List`, and polymorphic applications
   - [x] `Set` types
   - [x] `List` types
-  - [ ] Polymorphic type applications
+  - [x] Polymorphic type applications
 - [ ] Tuples and records
 - [ ] Open record rows
 - [ ] Function and operator types

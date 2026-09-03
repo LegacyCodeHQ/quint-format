@@ -600,6 +600,25 @@ test/fixtures/polymorphic-type-alias.qnt:2:16: error[format/equals-spacing]: exp
 "
 `;
 
+exports[`command-line checker reports noncanonical type-application formatting 1`] = `
+"test/fixtures/type-application.qnt:4:15: error[format/type-colon-spacing]: expected one space after ':'
+  |
+4 |   const boxes:Box[ int ]
+  |               ^
+  |
+test/fixtures/type-application.qnt:4:19: error[format/type-delimiter-spacing]: expected no space after '['
+  |
+4 |   const boxes:Box[ int ]
+  |                   ^
+  |
+test/fixtures/type-application.qnt:4:23: error[format/type-delimiter-spacing]: expected no space before ']'
+  |
+4 |   const boxes:Box[ int ]
+  |                       ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |

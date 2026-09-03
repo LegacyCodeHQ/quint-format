@@ -132,6 +132,16 @@ function canFormatType(node: Parser.SyntaxNode): boolean {
     return Boolean(element && canFormatType(element));
   }
 
+  if (node.type === "type_application") {
+    const typeConstructor = node.childForFieldName("constructor");
+    const arguments_ = node.childrenForFieldName("argument");
+    return Boolean(
+      typeConstructor &&
+        arguments_.length > 0 &&
+        arguments_.every((argument) => canFormatType(argument)),
+    );
+  }
+
   return false;
 }
 
@@ -158,6 +168,15 @@ function formatType(node: Parser.SyntaxNode): string {
       throw new Error("Unable to locate the set element type");
     }
     return `Set[${formatType(element)}]`;
+  }
+
+  if (node.type === "type_application") {
+    const typeConstructor = node.childForFieldName("constructor");
+    const arguments_ = node.childrenForFieldName("argument");
+    if (!typeConstructor || arguments_.length === 0) {
+      throw new Error("Unable to locate the applied type fields");
+    }
+    return `${typeConstructor.text}[${arguments_.map(formatType).join(", ")}]`;
   }
 
   throw new Error("Formatting this type syntax is not implemented yet");
@@ -626,18 +645,23 @@ function checkTypeDelimiterSpacing(
   filePath: string,
   diagnostics: FormatDiagnostic[],
 ) {
-  if (node.type !== "set_type" && node.type !== "list_type") {
+  if (node.type !== "set_type" && node.type !== "list_type" && node.type !== "type_application") {
     return;
   }
 
   const openBracket = node.children.find((child) => child.type === "[");
   const closeBracket = node.children.find((child) => child.type === "]");
-  const element = node.childForFieldName("element");
-  if (!openBracket || !closeBracket || !element) {
-    throw new Error("Unable to locate the collection type delimiters");
+  const elements =
+    node.type === "type_application"
+      ? node.childrenForFieldName("argument")
+      : [node.childForFieldName("element")].filter((element) => element !== null);
+  const firstElement = elements[0];
+  const lastElement = elements.at(-1);
+  if (!openBracket || !closeBracket || !firstElement || !lastElement) {
+    throw new Error("Unable to locate the parameterized type delimiters");
   }
 
-  const afterOpenBracket = source.slice(openBracket.endIndex, element.startIndex);
+  const afterOpenBracket = source.slice(openBracket.endIndex, firstElement.startIndex);
   if (afterOpenBracket !== "") {
     const row = openBracket.endPosition.row;
     diagnostics.push({
@@ -651,13 +675,36 @@ function checkTypeDelimiterSpacing(
     });
   }
 
-  const beforeCloseBracket = source.slice(element.endIndex, closeBracket.startIndex);
+  const commas = node.children.filter((child) => child.type === ",");
+  for (const [index, comma] of commas.entries()) {
+    const previousElement = elements[index];
+    const nextElement = elements[index + 1];
+    if (!previousElement || !nextElement) {
+      throw new Error("Unable to locate types around ','");
+    }
+    const beforeComma = source.slice(previousElement.endIndex, comma.startIndex);
+    const afterComma = source.slice(comma.endIndex, nextElement.startIndex);
+    if (beforeComma !== "" || afterComma !== " ") {
+      const row = comma.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: comma.startPosition.column + 1,
+        length: 1,
+        rule: "format/type-separator-spacing",
+        message: "expected ', ' between types",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+  }
+
+  const beforeCloseBracket = source.slice(lastElement.endIndex, closeBracket.startIndex);
   if (beforeCloseBracket !== "") {
     const row = closeBracket.startPosition.row;
     diagnostics.push({
       filePath,
       line: row + 1,
-      column: element.endPosition.column + 1,
+      column: lastElement.endPosition.column + 1,
       length: Math.max(1, beforeCloseBracket.length),
       rule: "format/type-delimiter-spacing",
       message: "expected no space before ']'",
@@ -665,7 +712,9 @@ function checkTypeDelimiterSpacing(
     });
   }
 
-  checkTypeDelimiterSpacing(element, source, lines, filePath, diagnostics);
+  for (const element of elements) {
+    checkTypeDelimiterSpacing(element, source, lines, filePath, diagnostics);
+  }
 }
 
 export function checkQuint(source: string, filePath: string): FormatDiagnostic[] {
