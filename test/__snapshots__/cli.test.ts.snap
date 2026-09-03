@@ -1,20 +1,35 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker reports noncanonical call-argument comment formatting 1`] = `
-"test/fixtures/call-argument-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+exports[`command-line checker reports noncanonical tuple-pattern comment formatting 1`] = `
+"test/fixtures/tuple-pattern-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
   |               ^
   |
-test/fixtures/call-argument-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+test/fixtures/tuple-pattern-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
-2 | val result=Set(
+2 | pure val first=((
   | ^
   |
-test/fixtures/call-argument-comment.qnt:2:11: error[format/equals-spacing]: expected one space around '='
+test/fixtures/tuple-pattern-comment.qnt:2:15: error[format/equals-spacing]: expected one space around '='
   |
-2 | val result=Set(
-  |           ^
+2 | pure val first=((
+  |               ^
+  |
+test/fixtures/tuple-pattern-comment.qnt:2:18: error[format/pattern-delimiter-spacing]: expected no space after '('
+  |
+2 | pure val first=((
+  |                  ^
+  |
+test/fixtures/tuple-pattern-comment.qnt:4:2: error[format/pattern-separator-spacing]: expected ', ' between pattern elements
+  |
+4 | x,
+  |  ^
+  |
+test/fixtures/tuple-pattern-comment.qnt:5:4: error[format/lambda-arrow-spacing]: expected one space around '=>'
+  |
+5 | y))=>x
+  |    ^^
   |
 "
 `;
@@ -708,40 +723,6 @@ test/fixtures/tuple-pattern.qnt:2:22: error[format/pattern-delimiter-spacing]: e
 "
 `;
 
-exports[`command-line checker reports noncanonical tuple-pattern comment formatting 1`] = `
-"test/fixtures/tuple-pattern-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
-  |
-1 | module Example{
-  |               ^
-  |
-test/fixtures/tuple-pattern-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
-  |
-2 | pure val first=((
-  | ^
-  |
-test/fixtures/tuple-pattern-comment.qnt:2:15: error[format/equals-spacing]: expected one space around '='
-  |
-2 | pure val first=((
-  |               ^
-  |
-test/fixtures/tuple-pattern-comment.qnt:2:18: error[format/pattern-delimiter-spacing]: expected no space after '('
-  |
-2 | pure val first=((
-  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  |
-test/fixtures/tuple-pattern-comment.qnt:4:2: error[format/pattern-separator-spacing]: expected ', ' between pattern elements
-  |
-4 | x,
-  |  ^
-  |
-test/fixtures/tuple-pattern-comment.qnt:5:4: error[format/lambda-arrow-spacing]: expected one space around '=>'
-  |
-5 | y))=>x
-  |    ^^
-  |
-"
-`;
-
 exports[`command-line checker reports noncanonical record-pattern formatting 1`] = `
 "test/fixtures/record-pattern.qnt:2:13: error[format/pattern-delimiter-spacing]: expected one space after '{'
   |
@@ -781,6 +762,25 @@ test/fixtures/call-expression.qnt:2:26: error[format/call-delimiter-spacing]: ex
   |
 2 |   val values = Set( 1 ,2, )
   |                          ^
+  |
+"
+`;
+
+exports[`command-line checker reports noncanonical call-argument comment formatting 1`] = `
+"test/fixtures/call-argument-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/call-argument-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | val result=Set(
+  | ^
+  |
+test/fixtures/call-argument-comment.qnt:2:11: error[format/equals-spacing]: expected one space around '='
+  |
+2 | val result=Set(
+  |           ^
   |
 "
 `;

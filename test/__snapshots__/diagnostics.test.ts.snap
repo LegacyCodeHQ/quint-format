@@ -1,0 +1,60 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`diagnostic hardening reports Unicode-aware source columns 1`] = `
+{
+  "column": 19,
+  "filePath": "unicode.qnt",
+  "length": 1,
+  "line": 2,
+  "message": "expected one space around '+'",
+  "rule": "format/binary-operator-spacing",
+  "sourceLine": "  val label = "🙂"+ "x"",
+}
+`;
+
+exports[`diagnostic hardening reports Unicode-aware source columns 2`] = `
+"unicode.qnt:2:19: error[format/binary-operator-spacing]: expected one space around '+'
+  |
+2 |   val label = "🙂"+ "x"
+  |                   ^
+  |
+"
+`;
+
+exports[`diagnostic hardening aligns source frames containing tabs 1`] = `
+"tab.qnt:2:12: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   val answer=42
+  |             ^
+  |
+"
+`;
+
+exports[`diagnostic hardening normalizes CRLF input deterministically 1`] = `
+"module Example {
+  val answer = 42
+}
+"
+`;
+
+exports[`diagnostic hardening anchors multiline syntax failures to the failing range 1`] = `
+[
+  {
+    "column": 8,
+    "length": 1,
+    "line": 3,
+    "message": "expected 'identifier'",
+    "rule": "parse/missing-token",
+    "sourceLine": "    1 +",
+  },
+]
+`;
+
+exports[`diagnostic hardening anchors multiline syntax failures to the failing range 2`] = `
+"multiline.qnt:3:8: error[parse/missing-token]: expected 'identifier'
+  |
+3 |     1 +
+  |        ^
+  |
+"
+`;
