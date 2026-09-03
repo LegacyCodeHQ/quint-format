@@ -1026,16 +1026,42 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       throw new Error("Unable to locate the block combinator entries");
     }
     const analyses = entries.map(analyzeExpression);
-    const contentDocuments = node.namedChildren.map((child) => {
+    const contentDocuments: Doc[] = [];
+    let previousEntry: Parser.SyntaxNode | undefined;
+    for (const child of node.namedChildren) {
       if (child.type === "comment" || child.type === "documentation_comment") {
-        return commentDocument(child);
+        const isTrailingEntryComment = previousEntry?.endPosition.row === child.startPosition.row;
+        if (isTrailingEntryComment) {
+          const entryDocument = contentDocuments.pop();
+          const comma = [...node.children]
+            .reverse()
+            .find(
+              (candidate) =>
+                candidate.type === "," &&
+                candidate.startIndex >= (previousEntry?.endIndex ?? child.startIndex) &&
+                candidate.endIndex <= child.startIndex,
+            );
+          const commentAnchor = comma ?? previousEntry;
+          if (!entryDocument || !commentAnchor) {
+            throw new Error("Unable to attach the trailing block entry comment");
+          }
+          const commentGap = node.text.slice(
+            commentAnchor.endIndex - node.startIndex,
+            child.startIndex - node.startIndex,
+          );
+          contentDocuments.push(concat([entryDocument, text(commentGap), commentDocument(child)]));
+        } else {
+          contentDocuments.push(commentDocument(child));
+        }
+        continue;
       }
       const entryIndex = entries.findIndex((entry) => entry.id === child.id);
       const entry = analyses[entryIndex];
       if (!entry)
         throw new Error("Formatting this block combinator content is not implemented yet");
-      return concat([entry.document, text(",")]);
-    });
+      contentDocuments.push(concat([entry.document, text(",")]));
+      previousEntry = child;
+    }
     return {
       document: concat([
         text(`${keyword.text} {`),

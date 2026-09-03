@@ -597,6 +597,22 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves aligned trailing comments in a block combinator", () => {
+    const input = readFileSync(
+      new URL("fixtures/block-trailing-comments.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("first' = 1,  // First value");
+    expect(output).toContain("second' = 2, // Second value");
+    expect(output).toContain("third' = 3,  // Third value");
+    expect(output).toContain("fourth' = 4,  // Fourth value");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a nondeterministic binding", () => {
     const input = readFileSync(new URL("fixtures/nondet-binding.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);
