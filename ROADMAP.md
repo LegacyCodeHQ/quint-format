@@ -176,5 +176,5 @@ that every subsequent formatter preserves them by construction.
 - [x] Entire official Quint example corpus
 - [x] Parse-tree preservation checks
 - [x] Unicode, tabs, CRLF, and multiline diagnostic ranges
-- [ ] Property and fuzz testing
+- [x] Property and fuzz testing
 - [ ] Performance and large-file tests
