@@ -133,6 +133,10 @@ that every subsequent formatter preserves them by construction.
 ## 7. Expressions
 
 - [ ] Calls, UFCS calls, indexing, and field access
+  - [x] Calls
+  - [ ] UFCS calls
+  - [ ] Indexing
+  - [ ] Field access
 - [ ] Unary operators
 - [ ] All binary operators
 - [x] Addition and subtraction

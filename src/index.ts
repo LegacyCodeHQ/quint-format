@@ -106,6 +106,7 @@ interface ModuleDeclaration {
   unitLiterals?: Parser.SyntaxNode[];
   sequenceLiterals?: Parser.SyntaxNode[];
   recordLiterals?: Parser.SyntaxNode[];
+  callExpressions?: Parser.SyntaxNode[];
   document: Doc;
 }
 
@@ -122,6 +123,7 @@ interface ExpressionAnalysis {
   unitLiterals: Parser.SyntaxNode[];
   sequenceLiterals: Parser.SyntaxNode[];
   recordLiterals: Parser.SyntaxNode[];
+  callExpressions: Parser.SyntaxNode[];
 }
 
 function canFormatType(node: Parser.SyntaxNode): boolean {
@@ -363,6 +365,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       unitLiterals: [],
       sequenceLiterals: [],
       recordLiterals: [],
+      callExpressions: [],
     };
   }
 
@@ -373,6 +376,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       unitLiterals: [node],
       sequenceLiterals: [],
       recordLiterals: [],
+      callExpressions: [],
     };
   }
 
@@ -393,6 +397,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
       sequenceLiterals: [node, ...analyses.flatMap((analysis) => analysis.sequenceLiterals)],
       recordLiterals: analyses.flatMap((analysis) => analysis.recordLiterals),
+      callExpressions: analyses.flatMap((analysis) => analysis.callExpressions),
     };
   }
 
@@ -428,6 +433,34 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       unitLiterals: elementAnalyses.flatMap(({ analysis }) => analysis.unitLiterals),
       sequenceLiterals: elementAnalyses.flatMap(({ analysis }) => analysis.sequenceLiterals),
       recordLiterals: [node, ...elementAnalyses.flatMap(({ analysis }) => analysis.recordLiterals)],
+      callExpressions: elementAnalyses.flatMap(({ analysis }) => analysis.callExpressions),
+    };
+  }
+
+  if (node.type === "call_expression") {
+    const functionNode = node.childForFieldName("function");
+    const arguments_ = node.childrenForFieldName("argument");
+    if (
+      !functionNode ||
+      (functionNode.type !== "name_reference" && functionNode.type !== "reserved_operator")
+    ) {
+      throw new Error("Formatting this call target is not implemented yet");
+    }
+    const analyses = arguments_.map(analyzeExpression);
+    return {
+      document: concat([
+        text(`${functionNode.text}(`),
+        ...analyses.flatMap((analysis, index) => [
+          ...(index === 0 ? [] : [text(", ")]),
+          analysis.document,
+        ]),
+        text(")"),
+      ]),
+      binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
+      unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
+      sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
+      recordLiterals: analyses.flatMap((analysis) => analysis.recordLiterals),
+      callExpressions: [node, ...analyses.flatMap((analysis) => analysis.callExpressions)],
     };
   }
 
@@ -467,6 +500,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       unitLiterals: [...leftAnalysis.unitLiterals, ...rightAnalysis.unitLiterals],
       sequenceLiterals: [...leftAnalysis.sequenceLiterals, ...rightAnalysis.sequenceLiterals],
       recordLiterals: [...leftAnalysis.recordLiterals, ...rightAnalysis.recordLiterals],
+      callExpressions: [...leftAnalysis.callExpressions, ...rightAnalysis.callExpressions],
     };
   }
 
@@ -483,6 +517,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       unitLiterals: analysis.unitLiterals,
       sequenceLiterals: analysis.sequenceLiterals,
       recordLiterals: analysis.recordLiterals,
+      callExpressions: analysis.callExpressions,
     };
   }
 
@@ -561,6 +596,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         unitLiterals: expression.unitLiterals,
         sequenceLiterals: expression.sequenceLiterals,
         recordLiterals: expression.recordLiterals,
+        callExpressions: expression.callExpressions,
         document: concat([text(`assume ${declarationName.text} = `), expression.document]),
       });
       continue;
@@ -603,6 +639,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         unitLiterals: expression.unitLiterals,
         sequenceLiterals: expression.sequenceLiterals,
         recordLiterals: expression.recordLiterals,
+        callExpressions: expression.callExpressions,
         document: concat([
           text(
             `${qualifier ? "pure " : ""}val ${formatPattern(declarationName)}${typeAnnotation} = `,
@@ -713,6 +750,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         unitLiterals: expression.unitLiterals,
         sequenceLiterals: expression.sequenceLiterals,
         recordLiterals: expression.recordLiterals,
+        callExpressions: expression.callExpressions,
         document: concat([
           text(
             `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} = `,
@@ -2170,6 +2208,92 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               length: Math.max(1, insideDelimiters.length),
               rule: "format/expression-delimiter-spacing",
               message: `expected no space inside '${openType}${closeType}'`,
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+      }
+
+      for (const callExpression of declaration.callExpressions ?? []) {
+        const openParen = callExpression.children.find((child) => child.type === "(");
+        const closeParen = callExpression.children.find((child) => child.type === ")");
+        const arguments_ = callExpression.childrenForFieldName("argument");
+        const commas = callExpression.children.filter((child) => child.type === ",");
+        if (!openParen || !closeParen) throw new Error("Unable to locate the call delimiters");
+        const first = arguments_[0];
+        const last = arguments_.at(-1);
+        if (first && last) {
+          const afterOpen = source.slice(openParen.endIndex, first.startIndex);
+          if (afterOpen !== "") {
+            const row = openParen.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: openParen.endPosition.column + 1,
+              length: Math.max(1, afterOpen.length),
+              rule: "format/call-delimiter-spacing",
+              message: "expected no space after '('",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          for (const [index, comma] of commas.entries()) {
+            const previous = arguments_[index];
+            const next = arguments_[index + 1];
+            if (!previous || !next) {
+              const row = comma.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: comma.startPosition.column + 1,
+                length: 1,
+                rule: "format/unnecessary-trailing-comma",
+                message: "trailing commas are omitted from inline calls",
+                sourceLine: lines[row] ?? "",
+              });
+              continue;
+            }
+            if (
+              source.slice(previous.endIndex, comma.startIndex) !== "" ||
+              source.slice(comma.endIndex, next.startIndex) !== " "
+            ) {
+              const row = comma.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: comma.startPosition.column + 1,
+                length: 1,
+                rule: "format/argument-separator-spacing",
+                message: "expected ', ' between arguments",
+                sourceLine: lines[row] ?? "",
+              });
+            }
+          }
+          const trailingComma = commas.find((comma) => comma.startIndex >= last.endIndex);
+          const anchor = trailingComma ?? last;
+          const beforeClose = source.slice(anchor.endIndex, closeParen.startIndex);
+          if (beforeClose !== "") {
+            const row = closeParen.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: anchor.endPosition.column + 1,
+              length: Math.max(1, beforeClose.length),
+              rule: "format/call-delimiter-spacing",
+              message: "expected no space before ')'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        } else {
+          const inside = source.slice(openParen.endIndex, closeParen.startIndex);
+          if (inside !== "") {
+            const row = openParen.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: openParen.endPosition.column + 1,
+              length: Math.max(1, inside.length),
+              rule: "format/call-delimiter-spacing",
+              message: "expected no space inside '()'",
               sourceLine: lines[row] ?? "",
             });
           }

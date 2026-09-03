@@ -252,6 +252,13 @@ exports[`formatter formats a record destructuring pattern 1`] = `
 "
 `;
 
+exports[`formatter formats a call expression 1`] = `
+"module Example {
+  val values = Set(1, 2)
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)
