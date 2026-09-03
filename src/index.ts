@@ -2816,22 +2816,6 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           sourceLine: lines[row] ?? "",
         });
       } else {
-        if (
-          previousDeclaration &&
-          declarationStart.startPosition.row - previousDeclaration.node.endPosition.row !== 2
-        ) {
-          const row = declaration.node.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: declaration.keyword.startPosition.column + 1,
-            length: declaration.keyword.text.length,
-            rule: "format/definition-spacing",
-            message: "expected one blank line between definitions",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-
         if (declaration.node.startPosition.column !== 2) {
           const row = declaration.node.startPosition.row;
           diagnostics.push({
@@ -4414,9 +4398,18 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 }
 
 function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
-  const declarations = module.declarations.flatMap(({ document }, index) =>
-    index === 0 ? [hardLine, document] : [hardLine, hardLine, document],
-  );
+  const declarations = module.declarations.flatMap((declaration, index, allDeclarations) => {
+    if (index === 0) return [hardLine, declaration.document];
+    const previous = allDeclarations[index - 1];
+    if (!previous) return [hardLine, declaration.document];
+    const previousEnd = previous.trailingComments?.at(-1) ?? previous.node;
+    const declarationStart = declaration.leadingComments?.[0] ?? declaration.node;
+    const lineBreaks = Math.max(
+      1,
+      declarationStart.startPosition.row - previousEnd.endPosition.row,
+    );
+    return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
+  });
   const danglingComments = module.danglingComments.flatMap((comment) => [
     hardLine,
     commentDocument(comment),

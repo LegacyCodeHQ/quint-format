@@ -955,15 +955,15 @@ describe("command-line checker", () => {
     expect(result.stderr.toString()).toMatchSnapshot();
   });
 
-  test("reports adjacent definitions without a blank line", () => {
+  test("accepts adjacent definitions without a blank line", () => {
     const result = Bun.spawnSync(
       ["bun", "run", "src/cli.ts", "--check", "test/fixtures/definition-spacing.qnt"],
       { cwd: projectRoot },
     );
 
-    expect(result.exitCode).toBe(1);
+    expect(result.exitCode).toBe(0);
     expect(result.stdout.toString()).toBe("");
-    expect(result.stderr.toString()).toMatchSnapshot();
+    expect(result.stderr.toString()).toBe("");
   });
 
   test("reports noncanonical leading line-comment formatting", () => {

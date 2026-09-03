@@ -4,7 +4,7 @@ exports[`large-file hardening formats one thousand definitions within a generous
 {
   "definitions": 1000,
   "inputBytes": 18796,
-  "outputBytes": 25796,
-  "outputLines": 2001,
+  "outputBytes": 24797,
+  "outputLines": 1002,
 }
 `;

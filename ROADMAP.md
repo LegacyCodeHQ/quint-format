@@ -18,7 +18,7 @@ implement the smallest fix, validate the output, verify, and commit atomically.
 - [x] Hashbangs
 - [x] Module braces
 - [x] Multiple modules
-- [x] Blank lines between definitions
+- [x] Preservation of blank-line grouping between definitions
 - [x] Exactly one trailing newline
 
 ## 3. Comments

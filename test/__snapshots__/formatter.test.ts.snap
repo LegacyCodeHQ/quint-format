@@ -1,15 +1,5 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a comment before a call argument 1`] = `
-"module Example {
-  val result = Set(
-    // Preserve this call argument comment.
-    1
-  )
-}
-"
-`;
-
 exports[`formatter formats an empty module 1`] = `
 "module Example {
 }
@@ -159,7 +149,6 @@ exports[`formatter formats a unit type 1`] = `
 exports[`formatter places declarations on separate lines 1`] = `
 "module Example {
   var a: int
-
   var b: int
 }
 "
@@ -224,7 +213,6 @@ exports[`formatter formats an integer addition expression 1`] = `
 exports[`formatter formats an identifier value expression 1`] = `
 "module Example {
   const source: int
-
   val copy = source
 }
 "
@@ -307,6 +295,16 @@ exports[`formatter formats a call expression 1`] = `
 "
 `;
 
+exports[`formatter preserves a comment before a call argument 1`] = `
+"module Example {
+  val result = Set(
+    // Preserve this call argument comment.
+    1
+  )
+}
+"
+`;
+
 exports[`formatter formats a UFCS call expression 1`] = `
 "module Example {
   val count = Set(1).size()
@@ -331,7 +329,6 @@ exports[`formatter formats a field-access expression 1`] = `
 exports[`formatter preserves a comment before a field selector 1`] = `
 "module Example {
   pure val source = { field: 1 }
-
   pure val answer = source
   // Preserve this chain comment.
   .field
@@ -448,7 +445,6 @@ exports[`formatter formats a match expression 1`] = `
 exports[`formatter preserves comments between match arms 1`] = `
 "module Example {
   type Step = First | Second
-
   pure def value(step) = match step {
     // Preserve this arm comment.
     | First => 1
@@ -461,7 +457,6 @@ exports[`formatter preserves comments between match arms 1`] = `
 exports[`formatter preserves a comment before a match-arm body 1`] = `
 "module Example {
   type Step = First | Second
-
   pure def value(step) = match step {
     | First =>
       // Preserve this arm body comment.
@@ -609,19 +604,12 @@ exports[`formatter formats named and wildcard imports and exports 1`] = `
 
 module Consumer {
   import Library
-
   import Library as Lib
-
   import Library.value
-
   import Library.*
-
   export Library
-
   export Library as Public
-
   export Library.value
-
   export Library.*
 }
 "
@@ -630,9 +618,7 @@ module Consumer {
 exports[`formatter formats source-qualified imports 1`] = `
 "module Example {
   import Library from "./quint-format-source-library"
-
   import Library.value from "./quint-format-source-library"
-
   import Library.* from "./quint-format-source-library"
 }
 "
@@ -641,7 +627,6 @@ exports[`formatter formats source-qualified imports 1`] = `
 exports[`formatter formats module instances and overrides 1`] = `
 "module Library {
   const N: int
-
   const Flag: bool
 }
 
@@ -720,7 +705,15 @@ module Second {
 "
 `;
 
-exports[`formatter places a blank line between definitions 1`] = `
+exports[`formatter preserves adjacent definitions 1`] = `
+"module Example {
+  var first: int
+  var second: int
+}
+"
+`;
+
+exports[`formatter preserves a blank line between grouped definitions 1`] = `
 "module Example {
   var first: int
 
@@ -1002,11 +995,8 @@ exports[`formatter formats a parameterless nondet definition 1`] = `
 exports[`formatter formats empty parameter lists across definition modes 1`] = `
 "module Example {
   action step(): bool = true
-
   run scenario(): bool = true
-
   temporal property(): bool = true
-
   nondet choose(): int = 1
 }
 "
@@ -1015,26 +1005,17 @@ exports[`formatter formats empty parameter lists across definition modes 1`] = `
 exports[`formatter formats rich definitions and types across every mode 1`] = `
 "module Matrix {
   type Pair[a, b] = (a, b)
-
   type Callback[a, b] = (a) => b
-
   var n: int
-
   pure def identity(value: List[Set[int]]): List[Set[int]] = value
-
   pure def apply(value: int, callback: (int) => str): str = callback(value)
-
   def stateValue(offset: int): int = n + offset
-
   action advance(amount: int): bool = all {
     amount > 0,
     n' = n + amount,
   }
-
   run scenario(start: int): bool = (n' = start).then(n' = start + 1)
-
   temporal positive(limit: int): bool = always(n >= limit)
-
   nondet choose(values: Set[int]): int = values.oneOf()
 }
 "

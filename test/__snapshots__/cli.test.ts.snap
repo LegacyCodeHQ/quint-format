@@ -1,39 +1,5 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker reports noncanonical tuple-pattern comment formatting 1`] = `
-"test/fixtures/tuple-pattern-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
-  |
-1 | module Example{
-  |               ^
-  |
-test/fixtures/tuple-pattern-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
-  |
-2 | pure val first=((
-  | ^
-  |
-test/fixtures/tuple-pattern-comment.qnt:2:15: error[format/equals-spacing]: expected one space around '='
-  |
-2 | pure val first=((
-  |               ^
-  |
-test/fixtures/tuple-pattern-comment.qnt:2:18: error[format/pattern-delimiter-spacing]: expected no space after '('
-  |
-2 | pure val first=((
-  |                  ^
-  |
-test/fixtures/tuple-pattern-comment.qnt:4:2: error[format/pattern-separator-spacing]: expected ', ' between pattern elements
-  |
-4 | x,
-  |  ^
-  |
-test/fixtures/tuple-pattern-comment.qnt:5:4: error[format/lambda-arrow-spacing]: expected one space around '=>'
-  |
-5 | y))=>x
-  |    ^^
-  |
-"
-`;
-
 exports[`command-line checker formats one file to standard output 1`] = `
 "module Example {
 }
@@ -512,11 +478,6 @@ exports[`command-line checker reports noncanonical identifier value formatting 1
 2 | const source: int
   | ^
   |
-test/fixtures/identifier-value-definition.qnt:3:1: error[format/definition-spacing]: expected one blank line between definitions
-  |
-3 | val copy=source
-  | ^^^
-  |
 test/fixtures/identifier-value-definition.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 3 | val copy=source
@@ -723,6 +684,40 @@ test/fixtures/tuple-pattern.qnt:2:22: error[format/pattern-delimiter-spacing]: e
 "
 `;
 
+exports[`command-line checker reports noncanonical tuple-pattern comment formatting 1`] = `
+"test/fixtures/tuple-pattern-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/tuple-pattern-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | pure val first=((
+  | ^
+  |
+test/fixtures/tuple-pattern-comment.qnt:2:15: error[format/equals-spacing]: expected one space around '='
+  |
+2 | pure val first=((
+  |               ^
+  |
+test/fixtures/tuple-pattern-comment.qnt:2:18: error[format/pattern-delimiter-spacing]: expected no space after '('
+  |
+2 | pure val first=((
+  |                  ^
+  |
+test/fixtures/tuple-pattern-comment.qnt:4:2: error[format/pattern-separator-spacing]: expected ', ' between pattern elements
+  |
+4 | x,
+  |  ^
+  |
+test/fixtures/tuple-pattern-comment.qnt:5:4: error[format/lambda-arrow-spacing]: expected one space around '=>'
+  |
+5 | y))=>x
+  |    ^^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical record-pattern formatting 1`] = `
 "test/fixtures/record-pattern.qnt:2:13: error[format/pattern-delimiter-spacing]: expected one space after '{'
   |
@@ -852,11 +847,6 @@ test/fixtures/field-access-comment.qnt:3:1: error[format/module-body-indentation
   |
 3 | pure val answer=source
   | ^
-  |
-test/fixtures/field-access-comment.qnt:3:6: error[format/definition-spacing]: expected one blank line between definitions
-  |
-3 | pure val answer=source
-  |      ^^^
   |
 test/fixtures/field-access-comment.qnt:3:16: error[format/equals-spacing]: expected one space around '='
   |
@@ -1074,11 +1064,6 @@ test/fixtures/match-comment.qnt:3:1: error[format/module-body-indentation]: expe
 3 | pure def value(step)=match step{
   | ^
   |
-test/fixtures/match-comment.qnt:3:6: error[format/definition-spacing]: expected one blank line between definitions
-  |
-3 | pure def value(step)=match step{
-  |      ^^^
-  |
 test/fixtures/match-comment.qnt:3:21: error[format/equals-spacing]: expected one space around '='
   |
 3 | pure def value(step)=match step{
@@ -1122,11 +1107,6 @@ test/fixtures/match-arm-body-comment.qnt:3:1: error[format/module-body-indentati
   |
 3 | pure def value(step)=match step{
   | ^
-  |
-test/fixtures/match-arm-body-comment.qnt:3:6: error[format/definition-spacing]: expected one blank line between definitions
-  |
-3 | pure def value(step)=match step{
-  |      ^^^
   |
 test/fixtures/match-arm-body-comment.qnt:3:21: error[format/equals-spacing]: expected one space around '='
   |
@@ -1338,11 +1318,6 @@ test/fixtures/imports-exports.qnt:6:1: error[format/module-body-indentation]: ex
 6 |  import Library  as   Lib
   | ^
   |
-test/fixtures/imports-exports.qnt:6:2: error[format/definition-spacing]: expected one blank line between definitions
-  |
-6 |  import Library  as   Lib
-  |  ^^^^^^
-  |
 test/fixtures/imports-exports.qnt:6:18: error[format/import-alias-spacing]: expected one space around 'as'
   |
 6 |  import Library  as   Lib
@@ -1352,11 +1327,6 @@ test/fixtures/imports-exports.qnt:7:1: error[format/module-body-indentation]: ex
   |
 7 |  import Library . value
   | ^
-  |
-test/fixtures/imports-exports.qnt:7:2: error[format/definition-spacing]: expected one blank line between definitions
-  |
-7 |  import Library . value
-  |  ^^^^^^
   |
 test/fixtures/imports-exports.qnt:7:17: error[format/import-selector-spacing]: expected no space around '.'
   |
@@ -1368,11 +1338,6 @@ test/fixtures/imports-exports.qnt:8:1: error[format/module-body-indentation]: ex
 8 |  import Library . *
   | ^
   |
-test/fixtures/imports-exports.qnt:8:2: error[format/definition-spacing]: expected one blank line between definitions
-  |
-8 |  import Library . *
-  |  ^^^^^^
-  |
 test/fixtures/imports-exports.qnt:8:17: error[format/import-selector-spacing]: expected no space around '.'
   |
 8 |  import Library . *
@@ -1382,11 +1347,6 @@ test/fixtures/imports-exports.qnt:9:1: error[format/module-body-indentation]: ex
   |
 9 |  export  Library
   | ^
-  |
-test/fixtures/imports-exports.qnt:9:2: error[format/definition-spacing]: expected one blank line between definitions
-  |
-9 |  export  Library
-  |  ^^^^^^
   |
 test/fixtures/imports-exports.qnt:9:8: error[format/declaration-keyword-spacing]: expected one space after 'export'
   |
@@ -1398,11 +1358,6 @@ test/fixtures/imports-exports.qnt:10:1: error[format/module-body-indentation]: e
 10 |  export Library  as   Public
    | ^
    |
-test/fixtures/imports-exports.qnt:10:2: error[format/definition-spacing]: expected one blank line between definitions
-   |
-10 |  export Library  as   Public
-   |  ^^^^^^
-   |
 test/fixtures/imports-exports.qnt:10:18: error[format/import-alias-spacing]: expected one space around 'as'
    |
 10 |  export Library  as   Public
@@ -1413,11 +1368,6 @@ test/fixtures/imports-exports.qnt:11:1: error[format/module-body-indentation]: e
 11 |  export Library . value
    | ^
    |
-test/fixtures/imports-exports.qnt:11:2: error[format/definition-spacing]: expected one blank line between definitions
-   |
-11 |  export Library . value
-   |  ^^^^^^
-   |
 test/fixtures/imports-exports.qnt:11:17: error[format/import-selector-spacing]: expected no space around '.'
    |
 11 |  export Library . value
@@ -1427,11 +1377,6 @@ test/fixtures/imports-exports.qnt:12:1: error[format/module-body-indentation]: e
    |
 12 |  export Library . *
    | ^
-   |
-test/fixtures/imports-exports.qnt:12:2: error[format/definition-spacing]: expected one blank line between definitions
-   |
-12 |  export Library . *
-   |  ^^^^^^
    |
 test/fixtures/imports-exports.qnt:12:17: error[format/import-selector-spacing]: expected no space around '.'
    |
@@ -1457,11 +1402,6 @@ test/fixtures/source-imports.qnt:3:1: error[format/module-body-indentation]: exp
 3 |  import Library . value from"./quint-format-source-library"
   | ^
   |
-test/fixtures/source-imports.qnt:3:2: error[format/definition-spacing]: expected one blank line between definitions
-  |
-3 |  import Library . value from"./quint-format-source-library"
-  |  ^^^^^^
-  |
 test/fixtures/source-imports.qnt:3:17: error[format/import-selector-spacing]: expected no space around '.'
   |
 3 |  import Library . value from"./quint-format-source-library"
@@ -1477,11 +1417,6 @@ test/fixtures/source-imports.qnt:4:1: error[format/module-body-indentation]: exp
 4 |  import Library . *  from  "./quint-format-source-library"
   | ^
   |
-test/fixtures/source-imports.qnt:4:2: error[format/definition-spacing]: expected one blank line between definitions
-  |
-4 |  import Library . *  from  "./quint-format-source-library"
-  |  ^^^^^^
-  |
 test/fixtures/source-imports.qnt:4:17: error[format/import-selector-spacing]: expected no space around '.'
   |
 4 |  import Library . *  from  "./quint-format-source-library"
@@ -1496,12 +1431,7 @@ test/fixtures/source-imports.qnt:4:22: error[format/import-source-spacing]: expe
 `;
 
 exports[`command-line checker reports noncanonical module instances and overrides 1`] = `
-"test/fixtures/module-instance.qnt:3:3: error[format/definition-spacing]: expected one blank line between definitions
-  |
-3 |   const Flag: bool
-  |   ^^^^^
-  |
-test/fixtures/module-instance.qnt:5:1: error[format/module-separation]: expected one blank line between modules
+"test/fixtures/module-instance.qnt:5:1: error[format/module-separation]: expected one blank line between modules
   |
 5 | module Example {
   | ^^^^^^
@@ -1733,15 +1663,6 @@ test/fixtures/multiple-modules.qnt:1:31: error[format/empty-module]: empty modul
   |
 1 | module First {} module Second {}
   |                               ^^
-  |
-"
-`;
-
-exports[`command-line checker reports adjacent definitions without a blank line 1`] = `
-"test/fixtures/definition-spacing.qnt:3:3: error[format/definition-spacing]: expected one blank line between definitions
-  |
-3 |   var second: int
-  |   ^^^
   |
 "
 `;
@@ -2434,11 +2355,6 @@ test/fixtures/empty-parameter-lists.qnt:3:1: error[format/module-body-indentatio
 3 |  run scenario( ):bool=true
   | ^
   |
-test/fixtures/empty-parameter-lists.qnt:3:2: error[format/definition-spacing]: expected one blank line between definitions
-  |
-3 |  run scenario( ):bool=true
-  |  ^^^
-  |
 test/fixtures/empty-parameter-lists.qnt:3:14: error[format/parameter-list-spacing]: expected no space around an empty parameter list
   |
 3 |  run scenario( ):bool=true
@@ -2459,11 +2375,6 @@ test/fixtures/empty-parameter-lists.qnt:4:1: error[format/module-body-indentatio
 4 |  temporal property(  ):bool=true
   | ^
   |
-test/fixtures/empty-parameter-lists.qnt:4:2: error[format/definition-spacing]: expected one blank line between definitions
-  |
-4 |  temporal property(  ):bool=true
-  |  ^^^^^^^^
-  |
 test/fixtures/empty-parameter-lists.qnt:4:19: error[format/parameter-list-spacing]: expected no space around an empty parameter list
   |
 4 |  temporal property(  ):bool=true
@@ -2483,11 +2394,6 @@ test/fixtures/empty-parameter-lists.qnt:5:1: error[format/module-body-indentatio
   |
 5 |  nondet choose( ) :int=1
   | ^
-  |
-test/fixtures/empty-parameter-lists.qnt:5:2: error[format/definition-spacing]: expected one blank line between definitions
-  |
-5 |  nondet choose( ) :int=1
-  |  ^^^^^^
   |
 test/fixtures/empty-parameter-lists.qnt:5:15: error[format/parameter-list-spacing]: expected no space around an empty parameter list
   |
@@ -2538,11 +2444,6 @@ test/fixtures/definition-matrix.qnt:2:18: error[format/type-separator-spacing]: 
 2 | type Pair[a,b]=(a,b)
   |                  ^
   |
-test/fixtures/definition-matrix.qnt:3:1: error[format/definition-spacing]: expected one blank line between definitions
-  |
-3 | type Callback[a,b]=(a)=>b
-  | ^^^^
-  |
 test/fixtures/definition-matrix.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 3 | type Callback[a,b]=(a)=>b
@@ -2563,11 +2464,6 @@ test/fixtures/definition-matrix.qnt:3:23: error[format/type-operator-spacing]: e
 3 | type Callback[a,b]=(a)=>b
   |                       ^^
   |
-test/fixtures/definition-matrix.qnt:4:1: error[format/definition-spacing]: expected one blank line between definitions
-  |
-4 | var n:int
-  | ^^^
-  |
 test/fixtures/definition-matrix.qnt:4:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 4 | var n:int
@@ -2582,11 +2478,6 @@ test/fixtures/definition-matrix.qnt:5:1: error[format/module-body-indentation]: 
   |
 5 | pure def identity(value:List[Set[int]]):List[Set[int]]=value
   | ^
-  |
-test/fixtures/definition-matrix.qnt:5:6: error[format/definition-spacing]: expected one blank line between definitions
-  |
-5 | pure def identity(value:List[Set[int]]):List[Set[int]]=value
-  |      ^^^
   |
 test/fixtures/definition-matrix.qnt:5:25: error[format/type-colon-spacing]: expected one space after ':'
   |
@@ -2607,11 +2498,6 @@ test/fixtures/definition-matrix.qnt:6:1: error[format/module-body-indentation]: 
   |
 6 | pure def apply(value:int,callback:(int)=>str):str=callback(value)
   | ^
-  |
-test/fixtures/definition-matrix.qnt:6:6: error[format/definition-spacing]: expected one blank line between definitions
-  |
-6 | pure def apply(value:int,callback:(int)=>str):str=callback(value)
-  |      ^^^
   |
 test/fixtures/definition-matrix.qnt:6:22: error[format/type-colon-spacing]: expected one space after ':'
   |
@@ -2643,11 +2529,6 @@ test/fixtures/definition-matrix.qnt:6:50: error[format/equals-spacing]: expected
 6 | pure def apply(value:int,callback:(int)=>str):str=callback(value)
   |                                                  ^
   |
-test/fixtures/definition-matrix.qnt:7:1: error[format/definition-spacing]: expected one blank line between definitions
-  |
-7 | def stateValue(offset:int):int=n+offset
-  | ^^^
-  |
 test/fixtures/definition-matrix.qnt:7:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 7 | def stateValue(offset:int):int=n+offset
@@ -2672,11 +2553,6 @@ test/fixtures/definition-matrix.qnt:7:33: error[format/binary-operator-spacing]:
   |
 7 | def stateValue(offset:int):int=n+offset
   |                                 ^
-  |
-test/fixtures/definition-matrix.qnt:8:1: error[format/definition-spacing]: expected one blank line between definitions
-  |
-8 | action advance(amount:int):bool=all{
-  | ^^^^^^
   |
 test/fixtures/definition-matrix.qnt:8:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
@@ -2713,11 +2589,6 @@ test/fixtures/definition-matrix.qnt:10:5: error[format/binary-operator-spacing]:
 10 | n'=n+amount,
    |     ^
    |
-test/fixtures/definition-matrix.qnt:12:1: error[format/definition-spacing]: expected one blank line between definitions
-   |
-12 | run scenario(start:int):bool=(n'=start).then(n'=start+1)
-   | ^^^
-   |
 test/fixtures/definition-matrix.qnt:12:1: error[format/module-body-indentation]: expected 2 spaces of indentation
    |
 12 | run scenario(start:int):bool=(n'=start).then(n'=start+1)
@@ -2753,11 +2624,6 @@ test/fixtures/definition-matrix.qnt:12:54: error[format/binary-operator-spacing]
 12 | run scenario(start:int):bool=(n'=start).then(n'=start+1)
    |                                                      ^
    |
-test/fixtures/definition-matrix.qnt:13:1: error[format/definition-spacing]: expected one blank line between definitions
-   |
-13 | temporal positive(limit:int):bool=always(n>=limit)
-   | ^^^^^^^^
-   |
 test/fixtures/definition-matrix.qnt:13:1: error[format/module-body-indentation]: expected 2 spaces of indentation
    |
 13 | temporal positive(limit:int):bool=always(n>=limit)
@@ -2782,11 +2648,6 @@ test/fixtures/definition-matrix.qnt:13:43: error[format/binary-operator-spacing]
    |
 13 | temporal positive(limit:int):bool=always(n>=limit)
    |                                           ^^
-   |
-test/fixtures/definition-matrix.qnt:14:1: error[format/definition-spacing]: expected one blank line between definitions
-   |
-14 | nondet choose(values:Set[int]):int=values.oneOf()
-   | ^^^^^^
    |
 test/fixtures/definition-matrix.qnt:14:1: error[format/module-body-indentation]: expected 2 spaces of indentation
    |
