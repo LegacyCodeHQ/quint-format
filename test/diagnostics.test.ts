@@ -9,8 +9,9 @@ describe("diagnostic hardening", () => {
     );
 
     expect(diagnostic).toBeDefined();
+    if (!diagnostic) throw new Error("Expected a binary-operator diagnostic");
     expect(diagnostic).toMatchSnapshot();
-    expect(renderDiagnostic(diagnostic!)).toMatchSnapshot();
+    expect(renderDiagnostic(diagnostic)).toMatchSnapshot();
   });
 
   test("aligns source frames containing tabs", () => {
@@ -20,7 +21,8 @@ describe("diagnostic hardening", () => {
     );
 
     expect(diagnostic).toBeDefined();
-    const rendered = renderDiagnostic(diagnostic!);
+    if (!diagnostic) throw new Error("Expected an equals-spacing diagnostic");
+    const rendered = renderDiagnostic(diagnostic);
     expect(rendered).toContain("2 |   val answer=42");
     expect(rendered).toMatchSnapshot();
   });
