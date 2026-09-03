@@ -1234,3 +1234,13 @@ exports[`formatter preserves all aligned dots in a nondet UFCS chain 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a multiline record type 1`] = `
+"module Example {
+  type Account = {
+    owner: str,
+    balance: int,
+  }
+}
+"
+`;

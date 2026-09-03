@@ -336,7 +336,7 @@ function formatType(node: Parser.SyntaxNode): string {
   throw new Error("Formatting this type syntax is not implemented yet");
 }
 
-function formatCommentedRecordType(node: Parser.SyntaxNode): Doc {
+function formatExpandedRecordType(node: Parser.SyntaxNode): Doc {
   const row = node.childForFieldName("row");
   const entries = node.namedChildren.map((child) => {
     if (child.type === "comment" || child.type === "documentation_comment") {
@@ -1713,15 +1713,17 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         value.namedChildren.some(
           (child) => child.type === "comment" || child.type === "documentation_comment",
         );
+      const isMultilineRecordType =
+        value.type === "record_type" && value.startPosition.row < value.endPosition.row;
       const aliasDocument = isMultilineSumType
         ? concat([
             text(`type ${declarationName.text}${typeParameterList} =`),
             indent(concat(sumEntries.flatMap((entry) => [hardLine, entry]))),
           ])
-        : hasRecordComments
+        : hasRecordComments || isMultilineRecordType
           ? concat([
               text(`type ${declarationName.text}${typeParameterList} = `),
-              formatCommentedRecordType(value),
+              formatExpandedRecordType(value),
             ])
           : text(`type ${declarationName.text}${typeParameterList} = ${formatType(value)}`);
 
@@ -2400,6 +2402,7 @@ function checkTypeDelimiterSpacing(
     const hasComments = node.namedChildren.some(
       (child) => child.type === "comment" || child.type === "documentation_comment",
     );
+    const isExpanded = hasComments || node.startPosition.row < node.endPosition.row;
     const firstField = fields[0];
     const lastField = fields.at(-1);
     if (!openBrace || !closeBrace) {
@@ -2423,7 +2426,7 @@ function checkTypeDelimiterSpacing(
     }
 
     const afterOpenBrace = source.slice(openBrace.endIndex, firstField.startIndex);
-    if (!hasComments && afterOpenBrace !== " ") {
+    if (!isExpanded && afterOpenBrace !== " ") {
       const row = openBrace.endPosition.row;
       diagnostics.push({
         filePath,
@@ -2438,7 +2441,7 @@ function checkTypeDelimiterSpacing(
 
     const commas = node.children.filter((child) => child.type === ",");
     for (const [index, comma] of commas.entries()) {
-      if (hasComments && index === fields.length - 1) continue;
+      if (isExpanded) continue;
       const previousField = fields[index];
       const nextField = fields[index + 1];
       if (!previousField || !nextField) {
@@ -2496,7 +2499,7 @@ function checkTypeDelimiterSpacing(
       checkTypeDelimiterSpacing(fieldType, source, lines, filePath, diagnostics);
     }
 
-    if (row && !hasComments) {
+    if (row && !isExpanded) {
       const pipe = node.children.find((child) => child.type === "|");
       if (!pipe) {
         throw new Error("Unable to locate the record row separator");
@@ -2519,7 +2522,7 @@ function checkTypeDelimiterSpacing(
 
     const recordEnd = row ?? lastField;
     const beforeCloseBrace = source.slice(recordEnd.endIndex, closeBrace.startIndex);
-    if (!hasComments && beforeCloseBrace !== " ") {
+    if (!isExpanded && beforeCloseBrace !== " ") {
       const row = closeBrace.startPosition.row;
       diagnostics.push({
         filePath,
