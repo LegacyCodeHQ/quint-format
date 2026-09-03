@@ -1,15 +1,19 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a nested definition below an action header 1`] = `
+exports[`formatter preserves aligned dots in a multiline UFCS chain 1`] = `
 "module Example {
   var n: int
 
-  action step =
-    nondet value = Set(1, 2, 3).oneOf()
-    all {
-      n' = value,
-      value > 0,
-    }
+  action init = n' = 0
+  action step = n' = n + 1
+
+  run trace =
+    init.then(step)
+        .then(step)
+        .then(all {
+          n' = n,
+          assert(n >= 0),
+        })
 }
 "
 `;
@@ -710,6 +714,20 @@ exports[`formatter formats nested definitions 1`] = `
     pure def increment(number: int): int = number + 1
     increment(doubled)
   }
+}
+"
+`;
+
+exports[`formatter preserves a nested definition below an action header 1`] = `
+"module Example {
+  var n: int
+
+  action step =
+    nondet value = Set(1, 2, 3).oneOf()
+    all {
+      n' = value,
+      value > 0,
+    }
 }
 "
 `;

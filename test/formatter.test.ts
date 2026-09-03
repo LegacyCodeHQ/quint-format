@@ -402,6 +402,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves aligned dots in a multiline UFCS chain", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-ufcs-chain.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "run trace =\n    init.then(step)\n        .then(step)\n        .then(all {",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats an index expression", () => {
     const input = "module Example {\n  val first = List(1, 2)[ 0 ]\n}\n";
     const output = formatQuint(input);

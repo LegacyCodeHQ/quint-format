@@ -403,6 +403,24 @@ function isBlockCombinatorExpression(node: Parser.SyntaxNode): boolean {
   ].includes(node.type);
 }
 
+function containsFieldAccess(node: Parser.SyntaxNode): boolean {
+  return node.type === "field_access_expression" || node.namedChildren.some(containsFieldAccess);
+}
+
+function isMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
+  if (node.type !== "field_access_expression") return false;
+  const object = node.childForFieldName("object");
+  const dot = node.children.find((child) => child.type === ".");
+  return Boolean(
+    object && dot && dot.startPosition.row > object.endPosition.row && containsFieldAccess(object),
+  );
+}
+
+function hasMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
+  if (isMultilineUfcsContinuation(node)) return true;
+  return node.namedChildren.some(hasMultilineUfcsContinuation);
+}
+
 function preservesDefinitionBodyLineBreak(
   definition: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
@@ -410,7 +428,9 @@ function preservesDefinitionBodyLineBreak(
   const equals = definition.children.find((child) => child.type === "=");
   return Boolean(
     equals &&
-      (isBlockCombinatorExpression(body) || body.type === "nested_definition_expression") &&
+      (isBlockCombinatorExpression(body) ||
+        body.type === "nested_definition_expression" ||
+        hasMultilineUfcsContinuation(body)) &&
       body.startPosition.row > equals.endPosition.row,
   );
 }
@@ -707,7 +727,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   if (node.type === "field_access_expression") {
     const object = node.childForFieldName("object");
     const field = node.childForFieldName("field");
-    if (!object || !field) {
+    const dot = node.children.find((child) => child.type === ".");
+    if (!object || !field || !dot) {
       throw new Error("Unable to locate the field access operands");
     }
     const analysis = analyzeExpression(object);
@@ -717,10 +738,16 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startIndex >= object.endIndex &&
         child.endIndex <= field.startIndex,
     );
+    const isMultilineContinuation = isMultilineUfcsContinuation(node);
     return {
       document:
         comments.length === 0
-          ? concat([analysis.document, text(`.${field.text}`)])
+          ? isMultilineContinuation
+            ? concat([
+                analysis.document,
+                indent(indent(concat([hardLine, text(`.${field.text}`)]))),
+              ])
+            : concat([analysis.document, text(`.${field.text}`)])
           : concat([
               analysis.document,
               ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
@@ -1162,6 +1189,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     );
     const multilineLambdaArgument =
       arguments_.length === 1 && isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
+    const multilineUfcsCall = hasMultilineUfcsContinuation(functionNode);
     const contentDocuments = hasComments
       ? node.namedChildren.flatMap((child) => {
           if (child.id === functionNode.id) return [];
@@ -1198,15 +1226,31 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
               hardLine,
               text(")"),
             ])
-          : concat([
-              functionAnalysis.document,
-              text("("),
-              ...analyses.flatMap((analysis, index) => [
-                ...(index === 0 ? [] : [text(", ")]),
-                analysis.document,
+          : multilineUfcsCall
+            ? concat([
+                functionAnalysis.document,
+                indent(
+                  indent(
+                    concat([
+                      text("("),
+                      ...analyses.flatMap((analysis, index) => [
+                        ...(index === 0 ? [] : [text(", ")]),
+                        analysis.document,
+                      ]),
+                      text(")"),
+                    ]),
+                  ),
+                ),
+              ])
+            : concat([
+                functionAnalysis.document,
+                text("("),
+                ...analyses.flatMap((analysis, index) => [
+                  ...(index === 0 ? [] : [text(", ")]),
+                  analysis.document,
+                ]),
+                text(")"),
               ]),
-              text(")"),
-            ]),
       binaryOperators: [
         ...functionAnalysis.binaryOperators,
         ...analyses.flatMap((analysis) => analysis.binaryOperators),
@@ -3795,10 +3839,14 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           }
           const beforeDot = source.slice(object.endIndex, dot.startIndex);
           const afterDot = source.slice(dot.endIndex, field.startIndex);
+          const isMultilineContinuation = isMultilineUfcsContinuation(fieldAccess);
+          const hasCanonicalBeforeDot = isMultilineContinuation
+            ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeDot)
+            : beforeDot === "";
           const hasComments = fieldAccess.namedChildren.some(
             (child) => child.type === "comment" || child.type === "documentation_comment",
           );
-          if ((!hasComments && beforeDot !== "") || afterDot !== "") {
+          if ((!hasComments && !hasCanonicalBeforeDot) || afterDot !== "") {
             const row = dot.startPosition.row;
             diagnostics.push({
               filePath,
@@ -3807,6 +3855,21 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               length: 1,
               rule: "format/field-access-spacing",
               message: "expected no space around '.'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          if (
+            isMultilineContinuation &&
+            dot.startPosition.column !== fieldAccess.startPosition.column + 4
+          ) {
+            const row = dot.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: 1,
+              length: Math.max(1, dot.startPosition.column),
+              rule: "format/field-access-indentation",
+              message: "expected the continuation dot to align with the first chain dot",
               sourceLine: lines[row] ?? "",
             });
           }
