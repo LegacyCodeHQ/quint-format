@@ -158,7 +158,7 @@ that every subsequent formatter preserves them by construction.
 
 - [x] Named and wildcard imports and exports
 - [x] Source-qualified imports
-- [ ] Module instances and overrides
+- [x] Module instances and overrides
 - [ ] Anonymous instances
 
 ## 10. CLI completion

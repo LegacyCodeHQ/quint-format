@@ -105,6 +105,10 @@ interface ModuleDeclaration {
   selectorNode?: Parser.SyntaxNode;
   fromKeyword?: Parser.SyntaxNode;
   sourceNode?: Parser.SyntaxNode;
+  instanceOpenParen?: Parser.SyntaxNode;
+  instanceCloseParen?: Parser.SyntaxNode;
+  instanceOverrides?: Parser.SyntaxNode[];
+  instanceCommas?: Parser.SyntaxNode[];
   semicolon?: Parser.SyntaxNode;
   equals?: Parser.SyntaxNode;
   valueNode?: Parser.SyntaxNode;
@@ -1201,6 +1205,65 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         keyword,
         nameNode: declarationName,
         document: text(`type ${declarationName.text}`),
+      });
+      continue;
+    }
+
+    if (node.type === "instance_declaration") {
+      const keyword = node.children.find((child) => child.type === "import");
+      const importedModule = node.childForFieldName("module");
+      const openParen = node.children.find((child) => child.type === "(");
+      const closeParen = node.children.find((child) => child.type === ")");
+      const overrides = node.namedChildren.filter((child) => child.type === "instance_override");
+      const commas = node.children.filter((child) => child.type === ",");
+      const alias = node.childForFieldName("alias");
+      const asKeyword = node.children.find((child) => child.type === "as");
+      const sourceNode = node.childForFieldName("source");
+      const fromKeyword = node.children.find((child) => child.type === "from");
+      if (
+        !keyword ||
+        !importedModule ||
+        !openParen ||
+        !closeParen ||
+        Boolean(alias) !== Boolean(asKeyword) ||
+        Boolean(sourceNode) !== Boolean(fromKeyword)
+      ) {
+        throw new Error("Unable to locate the module instance declaration");
+      }
+      const overrideAnalyses = overrides.map((override) => {
+        const overrideName = override.childForFieldName("name");
+        const value = override.childForFieldName("value");
+        if (!overrideName || !value) throw new Error("Unable to locate the instance override");
+        return { name: overrideName, value: analyzeExpression(value) };
+      });
+      addDeclaration({
+        node,
+        keyword,
+        nameNode: importedModule,
+        aliasNode: alias ?? undefined,
+        asKeyword,
+        fromKeyword,
+        sourceNode: sourceNode ?? undefined,
+        instanceOpenParen: openParen,
+        instanceCloseParen: closeParen,
+        instanceOverrides: overrides,
+        instanceCommas: commas,
+        binaryOperators: overrideAnalyses.flatMap(({ value }) => value.binaryOperators),
+        unitLiterals: overrideAnalyses.flatMap(({ value }) => value.unitLiterals),
+        sequenceLiterals: overrideAnalyses.flatMap(({ value }) => value.sequenceLiterals),
+        recordLiterals: overrideAnalyses.flatMap(({ value }) => value.recordLiterals),
+        callExpressions: overrideAnalyses.flatMap(({ value }) => value.callExpressions),
+        document: concat([
+          text(`import ${formatPattern(importedModule)}(`),
+          ...overrideAnalyses.flatMap(({ name, value }, index) => [
+            ...(index === 0 ? [] : [text(", ")]),
+            text(`${formatPattern(name)} = `),
+            value.document,
+          ]),
+          text(
+            `)${alias ? ` as ${formatPattern(alias)}` : ""}${sourceNode ? ` from ${sourceNode.text}` : ""}`,
+          ),
+        ]),
       });
       continue;
     }
@@ -2385,10 +2448,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       }
 
       if (declaration.aliasNode && declaration.asKeyword) {
-        const beforeAs = source.slice(
-          declaration.nameNode.endIndex,
-          declaration.asKeyword.startIndex,
-        );
+        const aliasAnchor = declaration.instanceCloseParen ?? declaration.nameNode;
+        const beforeAs = source.slice(aliasAnchor.endIndex, declaration.asKeyword.startIndex);
         const afterAs = source.slice(
           declaration.asKeyword.endIndex,
           declaration.aliasNode.startIndex,
@@ -2409,7 +2470,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
       if (declaration.sourceNode && declaration.fromKeyword) {
         const sourceAnchor =
-          declaration.aliasNode ?? declaration.selectorNode ?? declaration.nameNode;
+          declaration.aliasNode ??
+          declaration.instanceCloseParen ??
+          declaration.selectorNode ??
+          declaration.nameNode;
         const beforeFrom = source.slice(sourceAnchor.endIndex, declaration.fromKeyword.startIndex);
         const afterFrom = source.slice(
           declaration.fromKeyword.endIndex,
@@ -2426,6 +2490,90 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             message: "expected one space around 'from'",
             sourceLine: lines[row] ?? "",
           });
+        }
+      }
+
+      if (declaration.instanceOpenParen && declaration.instanceCloseParen) {
+        const overrides = declaration.instanceOverrides ?? [];
+        const afterModule = source.slice(
+          declaration.nameNode.endIndex,
+          declaration.instanceOpenParen.startIndex,
+        );
+        const first = overrides[0];
+        const last = overrides.at(-1);
+        const insideStart = first
+          ? source.slice(declaration.instanceOpenParen.endIndex, first.startIndex)
+          : source.slice(
+              declaration.instanceOpenParen.endIndex,
+              declaration.instanceCloseParen.startIndex,
+            );
+        const insideEnd = last
+          ? source.slice(last.endIndex, declaration.instanceCloseParen.startIndex)
+          : "";
+        if (afterModule !== "" || insideStart !== "" || insideEnd !== "") {
+          const row = declaration.instanceOpenParen.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.instanceOpenParen.startPosition.column + 1,
+            length: 1,
+            rule: "format/instance-delimiter-spacing",
+            message: "expected no space around instance parentheses",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+        for (const override of overrides) {
+          const overrideName = override.childForFieldName("name");
+          const value = override.childForFieldName("value");
+          const equals = override.children.find((child) => child.type === "=");
+          if (!overrideName || !value || !equals) {
+            throw new Error("Unable to locate the instance override syntax");
+          }
+          if (
+            source.slice(overrideName.endIndex, equals.startIndex) !== " " ||
+            source.slice(equals.endIndex, value.startIndex) !== " "
+          ) {
+            const row = equals.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: equals.startPosition.column + 1,
+              length: 1,
+              rule: "format/instance-override-spacing",
+              message: "expected one space around '='",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+        for (const [index, comma] of (declaration.instanceCommas ?? []).entries()) {
+          const previous = overrides[index];
+          const next = overrides[index + 1];
+          if (!previous || !next) {
+            const row = comma.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: comma.startPosition.column + 1,
+              length: 1,
+              rule: "format/instance-trailing-comma",
+              message: "trailing commas are omitted from inline instances",
+              sourceLine: lines[row] ?? "",
+            });
+          } else if (
+            source.slice(previous.endIndex, comma.startIndex) !== "" ||
+            source.slice(comma.endIndex, next.startIndex) !== " "
+          ) {
+            const row = comma.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: comma.startPosition.column + 1,
+              length: 1,
+              rule: "format/instance-override-separator-spacing",
+              message: "expected ', ' between instance overrides",
+              sourceLine: lines[row] ?? "",
+            });
+          }
         }
       }
 

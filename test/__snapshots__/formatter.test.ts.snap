@@ -727,3 +727,16 @@ exports[`formatter formats source-qualified imports 1`] = `
 }
 "
 `;
+
+exports[`formatter formats module instances and overrides 1`] = `
+"module Library {
+  const N: int
+
+  const Flag: bool
+}
+
+module Example {
+  import Library(N = 1, Flag = true) as Lib
+}
+"
+`;

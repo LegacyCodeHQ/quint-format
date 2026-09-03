@@ -1540,3 +1540,52 @@ exports[`command-line checker reports noncanonical nondet formatting 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical module instances and overrides 1`] = `
+"test/fixtures/module-instance.qnt:3:3: error[format/definition-spacing]: expected one blank line between definitions
+  |
+3 |   const Flag: bool
+  |   ^^^^^
+  |
+test/fixtures/module-instance.qnt:5:1: error[format/module-separation]: expected one blank line between modules
+  |
+5 | module Example {
+  | ^^^^^^
+  |
+test/fixtures/module-instance.qnt:6:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+6 |  import Library ( N=1 ,Flag=true, )  as   Lib
+  | ^
+  |
+test/fixtures/module-instance.qnt:6:17: error[format/instance-delimiter-spacing]: expected no space around instance parentheses
+  |
+6 |  import Library ( N=1 ,Flag=true, )  as   Lib
+  |                 ^
+  |
+test/fixtures/module-instance.qnt:6:20: error[format/instance-override-spacing]: expected one space around '='
+  |
+6 |  import Library ( N=1 ,Flag=true, )  as   Lib
+  |                    ^
+  |
+test/fixtures/module-instance.qnt:6:23: error[format/instance-override-separator-spacing]: expected ', ' between instance overrides
+  |
+6 |  import Library ( N=1 ,Flag=true, )  as   Lib
+  |                       ^
+  |
+test/fixtures/module-instance.qnt:6:28: error[format/instance-override-spacing]: expected one space around '='
+  |
+6 |  import Library ( N=1 ,Flag=true, )  as   Lib
+  |                            ^
+  |
+test/fixtures/module-instance.qnt:6:33: error[format/instance-trailing-comma]: trailing commas are omitted from inline instances
+  |
+6 |  import Library ( N=1 ,Flag=true, )  as   Lib
+  |                                 ^
+  |
+test/fixtures/module-instance.qnt:6:38: error[format/import-alias-spacing]: expected one space around 'as'
+  |
+6 |  import Library ( N=1 ,Flag=true, )  as   Lib
+  |                                      ^^
+  |
+"
+`;
