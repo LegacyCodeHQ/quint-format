@@ -346,6 +346,19 @@ exports[`formatter formats a conditional expression 1`] = `
 "
 `;
 
+exports[`formatter formats a match expression 1`] = `
+"module Example {
+  type Option = Some(int) | None
+
+  pure def getOrZero(value: Option): int = match value {
+    | Some(x) => x
+    | None => 0
+    | _ => 0
+  }
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

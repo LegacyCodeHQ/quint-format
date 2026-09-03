@@ -143,7 +143,7 @@ that every subsequent formatter preserves them by construction.
 - [x] Parentheses and basic precedence preservation
 - [x] Lambdas
 - [x] Conditionals
-- [ ] Match expressions
+- [x] Match expressions
 - [ ] Namespace access
 
 ## 8. Stateful and block expressions

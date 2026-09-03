@@ -547,6 +547,49 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     };
   }
 
+  if (node.type === "match_expression") {
+    const value = node.childForFieldName("value");
+    const arms = node.childrenForFieldName("arm");
+    if (!value || arms.length === 0) {
+      throw new Error("Unable to locate the match value or arms");
+    }
+    const valueAnalysis = analyzeExpression(value);
+    const armAnalyses = arms.map((arm) => {
+      const variant = arm.childForFieldName("variant");
+      const parameter = arm.childForFieldName("parameter");
+      const body = arm.childForFieldName("body");
+      if (!variant || !body) throw new Error("Unable to locate a match arm");
+      return {
+        pattern: `${variant.text}${parameter ? `(${parameter.text})` : ""}`,
+        body: analyzeExpression(body),
+      };
+    });
+    const analyses = [valueAnalysis, ...armAnalyses.map(({ body }) => body)];
+    return {
+      document: concat([
+        text("match "),
+        valueAnalysis.document,
+        text(" {"),
+        indent(
+          concat(
+            armAnalyses.flatMap(({ pattern, body }) => [
+              hardLine,
+              text(`| ${pattern} => `),
+              body.document,
+            ]),
+          ),
+        ),
+        hardLine,
+        text("}"),
+      ]),
+      binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
+      unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
+      sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
+      recordLiterals: analyses.flatMap((analysis) => analysis.recordLiterals),
+      callExpressions: analyses.flatMap((analysis) => analysis.callExpressions),
+    };
+  }
+
   if (node.type === "call_expression") {
     const functionNode = node.childForFieldName("function");
     const arguments_ = node.childrenForFieldName("argument");
@@ -2668,6 +2711,88 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               message: "expected one space around 'else'",
               sourceLine: lines[row] ?? "",
             });
+          }
+        }
+
+        for (const matchExpression of collectNodes(declaration.valueNode, "match_expression")) {
+          const openBrace = matchExpression.children.find((child) => child.type === "{");
+          const closeBrace = matchExpression.children.find((child) => child.type === "}");
+          const arms = matchExpression.childrenForFieldName("arm");
+          if (!openBrace || !closeBrace || arms.length === 0) {
+            throw new Error("Unable to locate the match layout");
+          }
+          const rows = arms.map((arm) => arm.startPosition.row);
+          const hasCanonicalLines =
+            rows[0] !== openBrace.startPosition.row &&
+            rows.every((row, index) => index === 0 || row > (rows[index - 1] as number)) &&
+            closeBrace.startPosition.row > (rows.at(-1) as number);
+          if (!hasCanonicalLines) {
+            const row = openBrace.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: openBrace.startPosition.column + 1,
+              length: 1,
+              rule: "format/match-layout",
+              message: "expected match arms and the closing brace on separate lines",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          for (const arm of arms) {
+            const variant = arm.childForFieldName("variant");
+            const parameter = arm.childForFieldName("parameter");
+            const body = arm.childForFieldName("body");
+            const arrow = arm.children.find((child) => child.type === "=>");
+            if (!variant || !body || !arrow) throw new Error("Unable to locate a match arm");
+            let patternEnd = variant;
+            if (parameter) {
+              const openParen = arm.children.find((child) => child.type === "(");
+              const closeParen = arm.children.find((child) => child.type === ")");
+              if (!openParen || !closeParen)
+                throw new Error("Unable to locate the match payload pattern");
+              const afterOpen = source.slice(openParen.endIndex, parameter.startIndex);
+              if (afterOpen !== "") {
+                const row = openParen.endPosition.row;
+                diagnostics.push({
+                  filePath,
+                  line: row + 1,
+                  column: openParen.endPosition.column + 1,
+                  length: Math.max(1, afterOpen.length),
+                  rule: "format/match-pattern-spacing",
+                  message: "expected no space after '('",
+                  sourceLine: lines[row] ?? "",
+                });
+              }
+              const beforeClose = source.slice(parameter.endIndex, closeParen.startIndex);
+              if (beforeClose !== "") {
+                const row = closeParen.startPosition.row;
+                diagnostics.push({
+                  filePath,
+                  line: row + 1,
+                  column: parameter.endPosition.column + 1,
+                  length: Math.max(1, beforeClose.length),
+                  rule: "format/match-pattern-spacing",
+                  message: "expected no space before ')'",
+                  sourceLine: lines[row] ?? "",
+                });
+              }
+              patternEnd = closeParen;
+            }
+            if (
+              source.slice(patternEnd.endIndex, arrow.startIndex) !== " " ||
+              source.slice(arrow.endIndex, body.startIndex) !== " "
+            ) {
+              const row = arrow.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: arrow.startPosition.column + 1,
+                length: 2,
+                rule: "format/match-arrow-spacing",
+                message: "expected one space around '=>'",
+                sourceLine: lines[row] ?? "",
+              });
+            }
           }
         }
       }

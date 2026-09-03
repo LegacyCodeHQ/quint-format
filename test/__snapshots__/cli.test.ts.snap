@@ -695,6 +695,49 @@ test/fixtures/conditional-expression.qnt:2:34: error[format/conditional-else-spa
 "
 `;
 
+exports[`command-line checker reports noncanonical match-arm formatting 1`] = `
+"test/fixtures/match-check.qnt:5:12: error[format/match-pattern-spacing]: expected no space after '('
+  |
+5 |     | Some( x )=>x
+  |            ^
+  |
+test/fixtures/match-check.qnt:5:14: error[format/match-pattern-spacing]: expected no space before ')'
+  |
+5 |     | Some( x )=>x
+  |              ^
+  |
+test/fixtures/match-check.qnt:5:16: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+5 |     | Some( x )=>x
+  |                ^^
+  |
+"
+`;
+
+exports[`command-line checker reports an inline match layout 1`] = `
+"test/fixtures/match-expression.qnt:4:56: error[format/match-layout]: expected match arms and the closing brace on separate lines
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                        ^
+  |
+test/fixtures/match-expression.qnt:4:64: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                ^^
+  |
+test/fixtures/match-expression.qnt:4:72: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                        ^^
+  |
+test/fixtures/match-expression.qnt:4:77: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                             ^^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
