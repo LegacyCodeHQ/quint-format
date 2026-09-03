@@ -375,6 +375,17 @@ exports[`formatter formats a primed assignment 1`] = `
 "
 `;
 
+exports[`formatter formats an ordinary block expression 1`] = `
+"module Example {
+  var count: int
+
+  action initialize = {
+    count' = 0
+  }
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

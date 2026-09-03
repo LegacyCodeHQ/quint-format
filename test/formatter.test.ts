@@ -427,6 +427,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats an ordinary block expression", () => {
+    const input = "module Example {\n  var count: int\n\n  action initialize = {count' = 0}\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a parenthesized expression", () => {
     const input = "module Example {\nval total=(1+2)\n}\n";
     const output = formatQuint(input);

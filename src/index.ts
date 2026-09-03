@@ -632,6 +632,28 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     };
   }
 
+  if (node.type === "block_expression") {
+    const bindings = node.childrenForFieldName("binding");
+    const expression = node.childForFieldName("expression");
+    if (bindings.length > 0 || !expression) {
+      throw new Error("Formatting block bindings is not implemented yet");
+    }
+    const analysis = analyzeExpression(expression);
+    return {
+      document: concat([
+        text("{"),
+        indent(concat([hardLine, analysis.document])),
+        hardLine,
+        text("}"),
+      ]),
+      binaryOperators: analysis.binaryOperators,
+      unitLiterals: analysis.unitLiterals,
+      sequenceLiterals: analysis.sequenceLiterals,
+      recordLiterals: analysis.recordLiterals,
+      callExpressions: analysis.callExpressions,
+    };
+  }
+
   if (node.type === "call_expression") {
     const functionNode = node.childForFieldName("function");
     const arguments_ = node.childrenForFieldName("argument");
@@ -2901,6 +2923,35 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               length: 1,
               rule: "format/assignment-spacing",
               message: "expected one space around '='",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+
+        for (const block of collectNodes(declaration.valueNode, "block_expression")) {
+          const openBrace = block.children.find((child) => child.type === "{");
+          const closeBrace = block.children.find((child) => child.type === "}");
+          const expression = block.childForFieldName("expression");
+          const bindings = block.childrenForFieldName("binding");
+          const firstContent = bindings[0] ?? expression;
+          if (!openBrace || !closeBrace || !expression || !firstContent) {
+            throw new Error("Unable to locate the block layout");
+          }
+          const contentNodes = [...bindings, expression];
+          const rows = contentNodes.map((content) => content.startPosition.row);
+          const hasCanonicalLines =
+            rows[0] !== openBrace.startPosition.row &&
+            rows.every((row, index) => index === 0 || row > (rows[index - 1] as number)) &&
+            closeBrace.startPosition.row > (rows.at(-1) as number);
+          if (!hasCanonicalLines) {
+            const row = openBrace.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: openBrace.startPosition.column + 1,
+              length: 1,
+              rule: "format/block-layout",
+              message: "expected block contents and the closing brace on separate lines",
               sourceLine: lines[row] ?? "",
             });
           }
