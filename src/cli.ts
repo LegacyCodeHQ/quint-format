@@ -42,7 +42,9 @@ if (command && command !== "--check" && filePaths.length === 0) {
     process.stdout.write(formatQuint(source));
   } catch (error) {
     if (error instanceof QuintSyntaxError) {
-      process.stderr.write(renderDiagnostic({ filePath: command, ...error.diagnostic }));
+      for (const diagnostic of error.diagnostics) {
+        process.stderr.write(renderDiagnostic({ filePath: command, ...diagnostic }));
+      }
     } else {
       const message = error instanceof Error ? error.message : String(error);
       process.stderr.write(`${command}:1:1: error[internal]: ${message}\n`);
@@ -84,7 +86,9 @@ if (command && command !== "--check" && filePaths.length === 0) {
     } catch (error) {
       hasOperationalFailure = true;
       if (error instanceof QuintSyntaxError) {
-        process.stderr.write(renderDiagnostic({ filePath, ...error.diagnostic }));
+        for (const diagnostic of error.diagnostics) {
+          process.stderr.write(renderDiagnostic({ filePath, ...diagnostic }));
+        }
       } else {
         const message = error instanceof Error ? error.message : String(error);
         process.stderr.write(`${filePath}:1:1: error[internal]: ${message}\n`);

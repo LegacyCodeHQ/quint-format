@@ -118,6 +118,19 @@ describe("command-line checker", () => {
     expect(result.stderr.toString()).toMatchSnapshot();
   });
 
+  test("reports every recoverable syntax error precisely", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "--check", "test/fixtures/multiple-syntax-errors.qnt"],
+      { cwd: projectRoot },
+    );
+    const stderr = result.stderr.toString();
+
+    expect(result.exitCode).toBe(2);
+    expect(result.stdout.toString()).toBe("");
+    expect(stderr.match(/error\[parse\/unexpected-token\]/g)).toHaveLength(2);
+    expect(stderr).toMatchSnapshot();
+  });
+
   test("reports noncanonical spacing after the module keyword", () => {
     const result = Bun.spawnSync(
       ["bun", "run", "src/cli.ts", "--check", "test/fixtures/module-keyword-spacing.qnt"],

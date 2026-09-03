@@ -164,7 +164,7 @@ that every subsequent formatter preserves them by construction.
 ## 10. CLI completion
 
 - [x] Precise basic syntax diagnostics
-- [ ] Complete syntax diagnostic coverage
+- [x] Complete syntax diagnostic coverage
 - [x] Multiple files
 - [x] Recursive directory discovery
 - [x] Standard output mode

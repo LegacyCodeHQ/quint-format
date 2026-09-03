@@ -19,29 +19,26 @@ type SourceDiagnostic = Omit<FormatDiagnostic, "filePath">;
 
 export class QuintSyntaxError extends SyntaxError {
   readonly diagnostic: SourceDiagnostic;
+  readonly diagnostics: SourceDiagnostic[];
 
-  constructor(diagnostic: SourceDiagnostic) {
+  constructor(diagnostics: SourceDiagnostic[]) {
+    const diagnostic = diagnostics[0];
+    if (!diagnostic) throw new Error("A Quint syntax error requires at least one diagnostic");
     super(diagnostic.message);
     this.name = "QuintSyntaxError";
     this.diagnostic = diagnostic;
+    this.diagnostics = diagnostics;
   }
 }
 
-function findSyntaxProblem(node: Parser.SyntaxNode): Parser.SyntaxNode | undefined {
-  if (node.isError || node.isMissing) {
-    return node;
+function findSyntaxProblems(node: Parser.SyntaxNode): Parser.SyntaxNode[] {
+  if (node.isMissing || (node.isError && !node.hasError)) {
+    return [node];
   }
 
-  for (const child of node.children) {
-    if (child.hasError) {
-      const problem = findSyntaxProblem(child);
-      if (problem) {
-        return problem;
-      }
-    }
-  }
-
-  return undefined;
+  return node.children
+    .filter((child) => child.hasError || child.isError || child.isMissing)
+    .flatMap(findSyntaxProblems);
 }
 
 function parseQuint(source: string): Parser.SyntaxNode {
@@ -51,27 +48,32 @@ function parseQuint(source: string): Parser.SyntaxNode {
     return root;
   }
 
-  const problem = findSyntaxProblem(root);
-  if (!problem) {
+  const problems = findSyntaxProblems(root);
+  if (problems.length === 0) {
     throw new SyntaxError("Cannot locate the Quint syntax error");
   }
 
-  const isMissingAtEndOfFile = problem.isMissing && source.slice(problem.endIndex).trim() === "";
-  const position = isMissingAtEndOfFile ? root.endPosition : problem.startPosition;
-  const sourceLine = source.split(/\r?\n/)[position.row] ?? "";
-  const length =
-    problem.isMissing || problem.startPosition.row !== problem.endPosition.row
-      ? 1
-      : Math.max(1, problem.endPosition.column - problem.startPosition.column);
-
-  throw new QuintSyntaxError({
-    line: position.row + 1,
-    column: position.column + 1,
-    length,
-    rule: problem.isMissing ? "parse/missing-token" : "parse/unexpected-token",
-    message: problem.isMissing ? `expected '${problem.type}'` : `unexpected '${problem.text}'`,
-    sourceLine,
-  });
+  const lines = source.split(/\r?\n/);
+  throw new QuintSyntaxError(
+    problems.map((problem) => {
+      const isMissingAtEndOfFile =
+        problem.isMissing && source.slice(problem.endIndex).trim() === "";
+      const position = isMissingAtEndOfFile ? root.endPosition : problem.startPosition;
+      const sourceLine = lines[position.row] ?? "";
+      const length =
+        problem.isMissing || problem.startPosition.row !== problem.endPosition.row
+          ? 1
+          : Math.max(1, problem.endPosition.column - problem.startPosition.column);
+      return {
+        line: position.row + 1,
+        column: position.column + 1,
+        length,
+        rule: problem.isMissing ? "parse/missing-token" : "parse/unexpected-token",
+        message: problem.isMissing ? `expected '${problem.type}'` : `unexpected '${problem.text}'`,
+        sourceLine,
+      };
+    }),
+  );
 }
 
 function positionAtIndex(source: string, index: number) {
