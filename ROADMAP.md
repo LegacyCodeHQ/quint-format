@@ -117,10 +117,10 @@ that every subsequent formatter preserves them by construction.
 - [x] Integers
 - [x] Strings
 - [x] Booleans
-- [ ] Holes and unit
-  - [ ] Holes
-  - [x] Unit types
-  - [ ] Unit literals
+  - [ ] Holes and unit
+    - [ ] Holes
+    - [x] Unit types
+    - [x] Unit literals
 - [ ] Lists, tuples, and records
 - [ ] Record spreads
 - [ ] Tuple and record destructuring patterns

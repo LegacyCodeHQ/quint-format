@@ -395,6 +395,15 @@ test/fixtures/identifier-value-definition.qnt:3:9: error[format/equals-spacing]:
 "
 `;
 
+exports[`command-line checker reports noncanonical unit-literal formatting 1`] = `
+"test/fixtures/unit-literal.qnt:2:16: error[format/expression-delimiter-spacing]: expected no space inside '()'
+  |
+2 |   val empty = ( )
+  |                ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

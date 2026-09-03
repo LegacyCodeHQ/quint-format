@@ -103,6 +103,7 @@ interface ModuleDeclaration {
   equals?: Parser.SyntaxNode;
   valueNode?: Parser.SyntaxNode;
   binaryOperators?: BinaryOperator[];
+  unitLiterals?: Parser.SyntaxNode[];
   document: Doc;
 }
 
@@ -116,6 +117,7 @@ interface BinaryOperator {
 interface ExpressionAnalysis {
   document: Doc;
   binaryOperators: BinaryOperator[];
+  unitLiterals: Parser.SyntaxNode[];
 }
 
 function canFormatType(node: Parser.SyntaxNode): boolean {
@@ -338,7 +340,11 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     node.type === "string_literal" ||
     node.type === "name_reference"
   ) {
-    return { document: text(node.text), binaryOperators: [] };
+    return { document: text(node.text), binaryOperators: [], unitLiterals: [] };
+  }
+
+  if (node.type === "unit_literal") {
+    return { document: text("()"), binaryOperators: [], unitLiterals: [node] };
   }
 
   if (node.type === "binary_expression") {
@@ -374,6 +380,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         { node: operator, left, right, inlineComments },
         ...rightAnalysis.binaryOperators,
       ],
+      unitLiterals: [...leftAnalysis.unitLiterals, ...rightAnalysis.unitLiterals],
     };
   }
 
@@ -387,6 +394,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     return {
       document: concat([text("("), analysis.document, text(")")]),
       binaryOperators: analysis.binaryOperators,
+      unitLiterals: analysis.unitLiterals,
     };
   }
 
@@ -462,6 +470,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         equals,
         valueNode: condition,
         binaryOperators: expression.binaryOperators,
+        unitLiterals: expression.unitLiterals,
         document: concat([text(`assume ${declarationName.text} = `), expression.document]),
       });
       continue;
@@ -501,6 +510,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         equals,
         valueNode: value,
         binaryOperators: expression.binaryOperators,
+        unitLiterals: expression.unitLiterals,
         document: concat([
           text(`${qualifier ? "pure " : ""}val ${declarationName.text}${typeAnnotation} = `),
           expression.document,
@@ -603,6 +613,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         equals,
         valueNode: body,
         binaryOperators: expression.binaryOperators,
+        unitLiterals: expression.unitLiterals,
         document: concat([
           text(
             `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} = `,
@@ -1865,6 +1876,27 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             length: operator.node.text.length,
             rule: "format/binary-operator-spacing",
             message: `expected one space around '${operator.node.text}'`,
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
+
+      for (const unitLiteral of declaration.unitLiterals ?? []) {
+        const openParen = unitLiteral.children.find((child) => child.type === "(");
+        const closeParen = unitLiteral.children.find((child) => child.type === ")");
+        if (!openParen || !closeParen) {
+          throw new Error("Unable to locate the unit literal delimiters");
+        }
+        const insideParentheses = source.slice(openParen.endIndex, closeParen.startIndex);
+        if (insideParentheses !== "") {
+          const row = openParen.endPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: openParen.endPosition.column + 1,
+            length: Math.max(1, insideParentheses.length),
+            rule: "format/expression-delimiter-spacing",
+            message: "expected no space inside '()'",
             sourceLine: lines[row] ?? "",
           });
         }
