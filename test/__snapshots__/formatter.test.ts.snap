@@ -1,15 +1,13 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves comments in anonymous instance overrides 1`] = `
-"module Library {
-  const N: int
-}
-
-module Example {
-  import Library(
-    // Preserve this anonymous override comment.
-    N = 1
-  ).*
+exports[`formatter preserves a comment before a local definition body 1`] = `
+"module Example {
+  action step = {
+    val answer =
+      // Preserve this local body comment.
+      42
+    answer
+  }
 }
 "
 `;
@@ -664,6 +662,20 @@ exports[`formatter formats anonymous instances 1`] = `
 
 module Example {
   import Library(N = 1).*
+}
+"
+`;
+
+exports[`formatter preserves comments in anonymous instance overrides 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(
+    // Preserve this anonymous override comment.
+    N = 1
+  ).*
 }
 "
 `;

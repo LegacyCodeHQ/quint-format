@@ -1,45 +1,30 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker reports noncanonical anonymous-instance comment formatting 1`] = `
-"test/fixtures/anonymous-instance-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+exports[`command-line checker reports noncanonical local definition-body comment formatting 1`] = `
+"test/fixtures/local-definition-body-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
-1 | module Library{
+1 | module Example{
   |               ^
   |
-test/fixtures/anonymous-instance-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+test/fixtures/local-definition-body-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
-2 | const N:int
+2 | action step={
   | ^
   |
-test/fixtures/anonymous-instance-comment.qnt:2:9: error[format/type-colon-spacing]: expected one space after ':'
+test/fixtures/local-definition-body-comment.qnt:2:12: error[format/equals-spacing]: expected one space around '='
   |
-2 | const N:int
-  |         ^
+2 | action step={
+  |            ^
   |
-test/fixtures/anonymous-instance-comment.qnt:4:1: error[format/module-separation]: expected one blank line between modules
+test/fixtures/local-definition-body-comment.qnt:3:11: error[format/equals-spacing]: expected one space around '='
   |
-4 | module Example{
+3 | val answer=
+  |           ^
+  |
+test/fixtures/local-definition-body-comment.qnt:6:1: error[format/nested-definition-layout]: expected the nested definition body on a new line
+  |
+6 | answer
   | ^^^^^^
-  |
-test/fixtures/anonymous-instance-comment.qnt:4:15: error[format/module-brace-spacing]: expected one space before '{'
-  |
-4 | module Example{
-  |               ^
-  |
-test/fixtures/anonymous-instance-comment.qnt:5:1: error[format/module-body-indentation]: expected 2 spaces of indentation
-  |
-5 | import Library(
-  | ^
-  |
-test/fixtures/anonymous-instance-comment.qnt:5:15: error[format/instance-delimiter-spacing]: expected no space around instance parentheses
-  |
-5 | import Library(
-  |               ^
-  |
-test/fixtures/anonymous-instance-comment.qnt:7:2: error[format/instance-override-spacing]: expected one space around '='
-  |
-7 | N=1
-  |  ^
   |
 "
 `;
@@ -1648,6 +1633,50 @@ test/fixtures/anonymous-instance.qnt:5:26: error[format/import-selector-spacing]
   |
 5 |  import Library ( N=1, ) . *
   |                          ^
+  |
+"
+`;
+
+exports[`command-line checker reports noncanonical anonymous-instance comment formatting 1`] = `
+"test/fixtures/anonymous-instance-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Library{
+  |               ^
+  |
+test/fixtures/anonymous-instance-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | const N:int
+  | ^
+  |
+test/fixtures/anonymous-instance-comment.qnt:2:9: error[format/type-colon-spacing]: expected one space after ':'
+  |
+2 | const N:int
+  |         ^
+  |
+test/fixtures/anonymous-instance-comment.qnt:4:1: error[format/module-separation]: expected one blank line between modules
+  |
+4 | module Example{
+  | ^^^^^^
+  |
+test/fixtures/anonymous-instance-comment.qnt:4:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+4 | module Example{
+  |               ^
+  |
+test/fixtures/anonymous-instance-comment.qnt:5:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+5 | import Library(
+  | ^
+  |
+test/fixtures/anonymous-instance-comment.qnt:5:15: error[format/instance-delimiter-spacing]: expected no space around instance parentheses
+  |
+5 | import Library(
+  |               ^
+  |
+test/fixtures/anonymous-instance-comment.qnt:7:2: error[format/instance-override-spacing]: expected one space around '='
+  |
+7 | N=1
+  |  ^
   |
 "
 `;

@@ -465,10 +465,16 @@ function analyzeLocalDefinition(node: Parser.SyntaxNode): ExpressionAnalysis {
       : [];
     return {
       document: concat([
-        text(
-          `${qualifier ? "pure " : ""}val ${formatPattern(name)}${typeNode ? `: ${formatType(typeNode)}` : ""}${value ? " = " : ""}`,
-        ),
-        ...(valueAnalysis ? [valueAnalysis.document] : []),
+        value && valueAnalysis
+          ? definitionBodyDocument(
+              `${qualifier ? "pure " : ""}val ${formatPattern(name)}${typeNode ? `: ${formatType(typeNode)}` : ""} =`,
+              node,
+              value,
+              valueAnalysis.document,
+            )
+          : text(
+              `${qualifier ? "pure " : ""}val ${formatPattern(name)}${typeNode ? `: ${formatType(typeNode)}` : ""}`,
+            ),
         ...trailingComments.flatMap((comment) => [text(" "), commentDocument(comment)]),
       ]),
       binaryOperators: valueAnalysis?.binaryOperators ?? [],
@@ -511,10 +517,16 @@ function analyzeLocalDefinition(node: Parser.SyntaxNode): ExpressionAnalysis {
         : "";
     return {
       document: concat([
-        text(
-          `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""}${body ? " = " : ""}`,
-        ),
-        ...(bodyAnalysis ? [bodyAnalysis.document] : []),
+        body && bodyAnalysis
+          ? definitionBodyDocument(
+              `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""} =`,
+              node,
+              body,
+              bodyAnalysis.document,
+            )
+          : text(
+              `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""}`,
+            ),
         ...trailingComments.flatMap((comment) => [text(" "), commentDocument(comment)]),
       ]),
       binaryOperators: bodyAnalysis?.binaryOperators ?? [],
