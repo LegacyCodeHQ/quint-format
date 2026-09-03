@@ -88,7 +88,7 @@ function fits(remainingWidth: number, commands: Command[]): boolean {
 }
 
 export function renderDoc(document: Doc, options: RenderOptions = {}): string {
-  const lineWidth = options.lineWidth ?? 100;
+  const lineWidth = options.lineWidth ?? 120;
   let output = "";
   let atLineStart = true;
   let column = 0;

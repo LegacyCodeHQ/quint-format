@@ -18,3 +18,5 @@ exports[`document renderer breaks groups when they exceed the line width 1`] = `
 }
 "
 `;
+
+exports[`document renderer uses a 120-column default line width 1`] = `"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"`;

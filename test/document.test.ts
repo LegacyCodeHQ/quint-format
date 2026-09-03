@@ -35,4 +35,13 @@ describe("document renderer", () => {
   test("breaks groups when they exceed the line width", () => {
     expect(renderDoc(groupedModule(), { lineWidth: 20 })).toMatchSnapshot();
   });
+
+  test("uses a 120-column default line width", () => {
+    const left = "x".repeat(60);
+    const right = "y".repeat(50);
+    const output = renderDoc(group(concat([text(left), line, text(right)])));
+
+    expect(output).toBe(`${left} ${right}`);
+    expect(output).toMatchSnapshot();
+  });
 });
