@@ -196,6 +196,15 @@ function canFormatType(node: Parser.SyntaxNode): boolean {
   return false;
 }
 
+function formatSumVariant(variant: Parser.SyntaxNode): string {
+  const name = variant.childForFieldName("name");
+  const payload = variant.childForFieldName("payload");
+  if (!name) {
+    throw new Error("Unable to locate the sum variant name");
+  }
+  return `${name.text}${payload ? `(${formatType(payload)})` : ""}`;
+}
+
 function formatType(node: Parser.SyntaxNode): string {
   if (
     node.type === "primitive_type" ||
@@ -296,16 +305,7 @@ function formatType(node: Parser.SyntaxNode): string {
     if (variants.length === 0) {
       throw new Error("Unable to locate the sum type variants");
     }
-    return variants
-      .map((variant) => {
-        const name = variant.childForFieldName("name");
-        const payload = variant.childForFieldName("payload");
-        if (!name) {
-          throw new Error("Unable to locate the sum variant name");
-        }
-        return `${name.text}${payload ? `(${formatType(payload)})` : ""}`;
-      })
-      .join(" | ");
+    return variants.map(formatSumVariant).join(" | ");
   }
 
   throw new Error("Formatting this type syntax is not implemented yet");
@@ -635,6 +635,21 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         typeParameterNames.length > 0
           ? `[${typeParameterNames.map((name) => name?.text).join(", ")}]`
           : "";
+      const isMultilineSumType =
+        value.type === "sum_type" && value.startPosition.row < value.endPosition.row;
+      const variants = isMultilineSumType
+        ? value.namedChildren.filter((child) => child.type === "sum_type_variant")
+        : [];
+      const aliasDocument = isMultilineSumType
+        ? concat([
+            text(`type ${declarationName.text}${typeParameterList} =`),
+            indent(
+              concat(
+                variants.flatMap((variant) => [hardLine, text(`| ${formatSumVariant(variant)}`)]),
+              ),
+            ),
+          ])
+        : text(`type ${declarationName.text}${typeParameterList} = ${formatType(value)}`);
 
       addDeclaration({
         node,
@@ -647,7 +662,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         equals,
         valueNode: value,
         typeRoots: [value],
-        document: text(`type ${declarationName.text}${typeParameterList} = ${formatType(value)}`),
+        document: aliasDocument,
       });
       continue;
     }
@@ -777,27 +792,66 @@ function checkTypeDelimiterSpacing(
   if (node.type === "sum_type") {
     const variants = node.namedChildren.filter((child) => child.type === "sum_type_variant");
     const pipes = node.children.filter((child) => child.type === "|");
-    for (const pipe of pipes) {
-      const previousVariant = [...variants]
-        .reverse()
-        .find((variant) => variant.endIndex <= pipe.startIndex);
-      const nextVariant = variants.find((variant) => variant.startIndex >= pipe.endIndex);
-      if (!previousVariant || !nextVariant) {
-        continue;
+    const isMultiline = node.startPosition.row < node.endPosition.row;
+    if (isMultiline) {
+      for (const variant of variants) {
+        const pipe = pipes.find(
+          (candidate) =>
+            candidate.startPosition.row === variant.startPosition.row &&
+            candidate.endIndex <= variant.startIndex,
+        );
+        if (!pipe) {
+          throw new Error("Unable to locate the multiline sum variant separator");
+        }
+        if (pipe.startPosition.column !== 4) {
+          const row = pipe.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: 1,
+            length: Math.max(1, pipe.startPosition.column),
+            rule: "format/sum-variant-indentation",
+            message: "expected 4 spaces of indentation",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+        const afterPipe = source.slice(pipe.endIndex, variant.startIndex);
+        if (afterPipe !== " ") {
+          const row = pipe.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: pipe.startPosition.column + 1,
+            length: 1,
+            rule: "format/type-separator-spacing",
+            message: "expected one space after '|'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
       }
-      const beforePipe = source.slice(previousVariant.endIndex, pipe.startIndex);
-      const afterPipe = source.slice(pipe.endIndex, nextVariant.startIndex);
-      if (beforePipe !== " " || afterPipe !== " ") {
-        const row = pipe.startPosition.row;
-        diagnostics.push({
-          filePath,
-          line: row + 1,
-          column: pipe.startPosition.column + 1,
-          length: 1,
-          rule: "format/type-separator-spacing",
-          message: "expected one space around '|'",
-          sourceLine: lines[row] ?? "",
-        });
+    } else {
+      for (const pipe of pipes) {
+        const previousVariant = [...variants]
+          .reverse()
+          .find((variant) => variant.endIndex <= pipe.startIndex);
+        const nextVariant = variants.find((variant) => variant.startIndex >= pipe.endIndex);
+        if (!previousVariant || !nextVariant) {
+          continue;
+        }
+        const beforePipe = source.slice(previousVariant.endIndex, pipe.startIndex);
+        const afterPipe = source.slice(pipe.endIndex, nextVariant.startIndex);
+        if (beforePipe !== " " || afterPipe !== " ") {
+          const row = pipe.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: pipe.startPosition.column + 1,
+            length: 1,
+            rule: "format/type-separator-spacing",
+            message: "expected one space around '|'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
       }
     }
 
@@ -1721,7 +1775,13 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           declaration.equals.endIndex,
           declaration.valueNode.startIndex,
         );
-        if (beforeEquals !== " " || afterEquals !== " ") {
+        const isMultilineSum =
+          declaration.valueNode.type === "sum_type" &&
+          declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
+        const hasCanonicalAfterEquals = isMultilineSum
+          ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterEquals)
+          : afterEquals === " ";
+        if (beforeEquals !== " " || !hasCanonicalAfterEquals) {
           const row = declaration.equals.startPosition.row;
           diagnostics.push({
             filePath,
