@@ -427,6 +427,22 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       continue;
     }
 
+    if (node.type === "uninterpreted_type_declaration") {
+      const keyword = node.children.find((child) => child.type === "type");
+      const declarationName = node.childForFieldName("name");
+      if (!keyword || !declarationName) {
+        throw new Error("Formatting this uninterpreted type syntax is not implemented yet");
+      }
+
+      addDeclaration({
+        node,
+        keyword,
+        nameNode: declarationName,
+        document: text(`type ${declarationName.text}`),
+      });
+      continue;
+    }
+
     const keywordType =
       node.type === "variable_declaration"
         ? "var"

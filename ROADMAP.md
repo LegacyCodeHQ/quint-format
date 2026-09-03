@@ -83,7 +83,7 @@ that every subsequent formatter preserves them by construction.
 - [ ] Type aliases and uninterpreted types
   - [x] Primitive type aliases
   - [ ] Rich and polymorphic aliases
-  - [ ] Uninterpreted types
+  - [x] Uninterpreted types
 
 ## 5. Types
 

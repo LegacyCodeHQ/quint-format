@@ -520,6 +520,15 @@ exports[`command-line checker reports noncanonical type-alias formatting 1`] = `
 "
 `;
 
+exports[`command-line checker reports noncanonical uninterpreted-type formatting 1`] = `
+"test/fixtures/uninterpreted-type.qnt:2:7: error[format/declaration-keyword-spacing]: expected one space after 'type'
+  |
+2 |   type   DOMAIN
+  |       ^^^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |
