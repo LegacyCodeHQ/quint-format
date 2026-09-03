@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { readFile } from "node:fs/promises";
-import { checkQuint, renderDiagnostic } from "./index";
+import { checkQuint, QuintSyntaxError, renderDiagnostic } from "./index";
 
 const [command, filePath, ...rest] = process.argv.slice(2);
 
@@ -21,8 +21,13 @@ if (command !== "--check" || !filePath || rest.length > 0) {
       process.exitCode = 1;
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    process.stderr.write(`${filePath}:1:1: error[internal]: ${message}\n`);
-    process.exitCode = 2;
+    if (error instanceof QuintSyntaxError) {
+      process.stderr.write(renderDiagnostic({ filePath, ...error.diagnostic }));
+      process.exitCode = 2;
+    } else {
+      const message = error instanceof Error ? error.message : String(error);
+      process.stderr.write(`${filePath}:1:1: error[internal]: ${message}\n`);
+      process.exitCode = 2;
+    }
   }
 }

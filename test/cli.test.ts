@@ -14,4 +14,15 @@ describe("command-line checker", () => {
     expect(result.stdout.toString()).toBe("");
     expect(result.stderr.toString()).toMatchSnapshot();
   });
+
+  test("reports a missing module brace at end of file", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "--check", "test/fixtures/missing-module-brace.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(2);
+    expect(result.stdout.toString()).toBe("");
+    expect(result.stderr.toString()).toMatchSnapshot();
+  });
 });

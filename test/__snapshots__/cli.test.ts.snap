@@ -8,3 +8,12 @@ exports[`command-line checker reports a compact empty module 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports a missing module brace at end of file 1`] = `
+"test/fixtures/missing-module-brace.qnt:2:1: error[parse/missing-token]: expected '}'
+  |
+2 |
+  | ^
+  |
+"
+`;

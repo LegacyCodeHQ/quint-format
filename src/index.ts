@@ -15,12 +15,67 @@ export interface FormatDiagnostic {
   sourceLine: string;
 }
 
-function analyzeEmptyModule(source: string) {
+type SourceDiagnostic = Omit<FormatDiagnostic, "filePath">;
+
+export class QuintSyntaxError extends SyntaxError {
+  readonly diagnostic: SourceDiagnostic;
+
+  constructor(diagnostic: SourceDiagnostic) {
+    super(diagnostic.message);
+    this.name = "QuintSyntaxError";
+    this.diagnostic = diagnostic;
+  }
+}
+
+function findSyntaxProblem(node: Parser.SyntaxNode): Parser.SyntaxNode | undefined {
+  if (node.isError || node.isMissing) {
+    return node;
+  }
+
+  for (const child of node.children) {
+    if (child.hasError) {
+      const problem = findSyntaxProblem(child);
+      if (problem) {
+        return problem;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+function parseQuint(source: string): Parser.SyntaxNode {
   const root = parser.parse(source).rootNode;
 
-  if (root.hasError) {
-    throw new SyntaxError("Cannot format invalid Quint source");
+  if (!root.hasError) {
+    return root;
   }
+
+  const problem = findSyntaxProblem(root);
+  if (!problem) {
+    throw new SyntaxError("Cannot locate the Quint syntax error");
+  }
+
+  const isMissingAtEndOfFile = problem.isMissing && source.slice(problem.endIndex).trim() === "";
+  const position = isMissingAtEndOfFile ? root.endPosition : problem.startPosition;
+  const sourceLine = source.split(/\r?\n/)[position.row] ?? "";
+  const length =
+    problem.isMissing || problem.startPosition.row !== problem.endPosition.row
+      ? 1
+      : Math.max(1, problem.endPosition.column - problem.startPosition.column);
+
+  throw new QuintSyntaxError({
+    line: position.row + 1,
+    column: position.column + 1,
+    length,
+    rule: problem.isMissing ? "parse/missing-token" : "parse/unexpected-token",
+    message: problem.isMissing ? `expected '${problem.type}'` : `unexpected '${problem.text}'`,
+    sourceLine,
+  });
+}
+
+function analyzeEmptyModule(source: string) {
+  const root = parseQuint(source);
 
   const moduleNode = root.namedChild(0);
   const nameNode = moduleNode?.childForFieldName("name");
@@ -90,7 +145,7 @@ export function renderDiagnostic(diagnostic: FormatDiagnostic): string {
   return [
     `${diagnostic.filePath}:${diagnostic.line}:${diagnostic.column}: error[${diagnostic.rule}]: ${diagnostic.message}`,
     `${gutter} |`,
-    `${lineNumber} | ${diagnostic.sourceLine}`,
+    `${lineNumber} |${diagnostic.sourceLine.length > 0 ? ` ${diagnostic.sourceLine}` : ""}`,
     `${gutter} | ${underline}`,
     `${gutter} |`,
     "",
