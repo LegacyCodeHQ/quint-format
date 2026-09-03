@@ -1867,3 +1867,22 @@ test/fixtures/commented-record.qnt:3:9: error[format/commented-record-layout]: e
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical trailing source comments 1`] = `
+"test/fixtures/trailing-source-comments.qnt:3:1: error[format/comment-indentation]: expected no indentation at the source level
+  |
+3 |  /*! answer !*/
+  | ^
+  |
+test/fixtures/trailing-source-comments.qnt:3:2: error[format/source-comment-separation]: expected one blank line before a trailing source comment
+  |
+3 |  /*! answer !*/
+  |  ^^^^^^^^^^^^^^
+  |
+test/fixtures/trailing-source-comments.qnt:4:1: error[format/source-comment-separation]: expected one blank line before a trailing source comment
+  |
+4 | /*! 1 + 1 !*/
+  | ^^^^^^^^^^^^^
+  |
+"
+`;

@@ -1498,11 +1498,11 @@ function analyzeSource(source: string) {
     throw new Error("Formatting this Quint syntax is not implemented yet");
   }
 
-  if (modules.length === 0 || pendingComments.length > 0) {
+  if (modules.length === 0) {
     throw new Error("Formatting this Quint syntax is not implemented yet");
   }
 
-  return { hashbang, modules };
+  return { hashbang, modules, trailingComments: pendingComments };
 }
 
 export function formatQuint(source: string): string {
@@ -3980,6 +3980,37 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
     }
   }
 
+  for (const [index, comment] of analyzedSource.trailingComments.entries()) {
+    if (comment.startPosition.column !== 0) {
+      const row = comment.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: 1,
+        length: Math.max(1, comment.startPosition.column),
+        rule: "format/comment-indentation",
+        message: "expected no indentation at the source level",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+    const previous =
+      index === 0
+        ? analyzedSource.modules.at(-1)?.node
+        : analyzedSource.trailingComments[index - 1];
+    if (previous && source.slice(previous.endIndex, comment.startIndex) !== "\n\n") {
+      const row = comment.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: comment.startPosition.column + 1,
+        length: Math.max(1, comment.text.length),
+        rule: "format/source-comment-separation",
+        message: "expected one blank line before a trailing source comment",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+  }
+
   const trailingNewlines = source.match(/(?:\r\n|\r|\n)+$/)?.[0] ?? "";
 
   if (trailingNewlines !== "\n") {
@@ -4022,7 +4053,13 @@ function renderSource(source: ReturnType<typeof analyzeSource>): string {
     );
     return `${leadingComments}${renderModule(module)}`;
   });
-  return `${hashbang}${modules.join("\n")}`;
+  const renderedModules = modules.join("\n");
+  const trailingComments = source.trailingComments
+    .map((comment) => renderDoc(commentDocument(comment)))
+    .join("\n\n");
+  return trailingComments
+    ? `${hashbang}${renderedModules}\n${trailingComments}\n`
+    : `${hashbang}${renderedModules}`;
 }
 
 export function renderDiagnostic(diagnostic: FormatDiagnostic): string {

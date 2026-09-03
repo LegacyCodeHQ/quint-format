@@ -789,3 +789,13 @@ exports[`formatter preserves comments in record literals 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves trailing source comments 1`] = `
+"module Example {
+}
+
+/*! answer !*/
+
+/*! 1 + 1 !*/
+"
+`;
