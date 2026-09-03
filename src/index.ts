@@ -104,6 +104,21 @@ interface ExpressionAnalysis {
   binaryOperators: BinaryOperator[];
 }
 
+function commentDocument(node: Parser.SyntaxNode): Doc {
+  const continuationPrefix = " ".repeat(node.startPosition.column);
+  const lines = node.text.split(/\r\n|\r|\n/).map((line, index) => {
+    if (index === 0 || continuationPrefix.length === 0) {
+      return line;
+    }
+
+    return line.startsWith(continuationPrefix) ? line.slice(continuationPrefix.length) : line;
+  });
+
+  return concat(
+    lines.flatMap((line, index) => (index === 0 ? [text(line)] : [hardLine, text(line)])),
+  );
+}
+
 function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   if (
     node.type === "integer_literal" ||
@@ -166,7 +181,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       ...declaration,
       leadingComments,
       document: concat([
-        ...leadingComments.flatMap((comment) => [text(comment.text), hardLine]),
+        ...leadingComments.flatMap((comment) => [commentDocument(comment), hardLine]),
         declaration.document,
       ]),
     });
@@ -177,10 +192,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       continue;
     }
 
-    if (
-      node.type === "documentation_comment" ||
-      (node.type === "comment" && !/[\r\n]/.test(node.text))
-    ) {
+    if (node.type === "documentation_comment" || node.type === "comment") {
       pendingComments.push(node);
       continue;
     }

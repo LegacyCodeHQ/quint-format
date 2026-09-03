@@ -188,3 +188,13 @@ exports[`formatter preserves a leading single-line block comment 1`] = `
 }
 "
 `;
+
+exports[`formatter indents a leading multiline block comment 1`] = `
+"module Example {
+  /*
+   * The answer
+   */
+  val answer = 42
+}
+"
+`;
