@@ -249,3 +249,10 @@ exports[`formatter formats a pure definition 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a parameterless action 1`] = `
+"module Example {
+  action initialize = true
+}
+"
+`;

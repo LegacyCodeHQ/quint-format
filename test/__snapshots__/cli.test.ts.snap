@@ -434,3 +434,12 @@ test/fixtures/pure-definition.qnt:2:20: error[format/equals-spacing]: expected o
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical action formatting 1`] = `
+"test/fixtures/action-definition.qnt:2:20: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   action initialize=true
+  |                    ^
+  |
+"
+`;

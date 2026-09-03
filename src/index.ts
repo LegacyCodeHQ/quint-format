@@ -295,8 +295,11 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
     }
 
     if (node.type === "operator_definition") {
-      const keyword = node.children.find((child) => child.type === "def");
+      const defKeyword = node.children.find((child) => child.type === "def");
       const qualifier = node.childForFieldName("qualifier");
+      const isPureDefinition = defKeyword && (!qualifier || qualifier.type === "pure");
+      const isAction = !defKeyword && qualifier?.type === "action";
+      const keyword = isPureDefinition ? defKeyword : isAction ? qualifier : undefined;
       const declarationName = node.childForFieldName("name");
       const body = node.childForFieldName("body");
       const equals = node.children.find((child) => child.type === "=");
@@ -309,23 +312,23 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         !equals ||
         !body ||
         hasUnsupportedHeader ||
-        (qualifier && qualifier.type !== "pure")
+        (!isPureDefinition && !isAction)
       ) {
         throw new Error("Formatting this operator definition syntax is not implemented yet");
       }
 
       const expression = analyzeExpression(body);
-      const qualifierText = qualifier ? `${qualifier.text} ` : "";
+      const definitionHead = isAction ? "action" : `${qualifier ? `${qualifier.text} ` : ""}def`;
       addDeclaration({
         node,
-        qualifier: qualifier ?? undefined,
+        qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
         keyword,
         nameNode: declarationName,
         equals,
         valueNode: body,
         binaryOperators: expression.binaryOperators,
         document: concat([
-          text(`${qualifierText}def ${declarationName.text} = `),
+          text(`${definitionHead} ${declarationName.text} = `),
           expression.document,
         ]),
       });
