@@ -1072,12 +1072,16 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const target = node.childForFieldName("target");
     const value = node.childForFieldName("value");
     const name = target?.childForFieldName("name");
-    if (!target || !name || !value) {
+    const equals = node.children.find((child) => child.type === "=");
+    if (!target || !name || !value || !equals) {
       throw new Error("Unable to locate the assignment target or value");
     }
     const analysis = analyzeExpression(value);
+    const preservesLineBreak = value.startPosition.row > equals.endPosition.row;
     return {
-      document: concat([text(`${formatPattern(name)}' = `), analysis.document]),
+      document: preservesLineBreak
+        ? concat([text(`${formatPattern(name)}' =`), indent(concat([hardLine, analysis.document]))])
+        : concat([text(`${formatPattern(name)}' = `), analysis.document]),
       binaryOperators: analysis.binaryOperators,
       unitLiterals: analysis.unitLiterals,
       sequenceLiterals: analysis.sequenceLiterals,
@@ -4286,9 +4290,13 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               sourceLine: lines[row] ?? "",
             });
           }
+          const preservesLineBreak = value.startPosition.row > equals.endPosition.row;
+          const expectedValueGap = preservesLineBreak
+            ? `\n${" ".repeat(assignment.startPosition.column + 2)}`
+            : " ";
           if (
             source.slice(target.endIndex, equals.startIndex) !== " " ||
-            source.slice(equals.endIndex, value.startIndex) !== " "
+            source.slice(equals.endIndex, value.startIndex) !== expectedValueGap
           ) {
             const row = equals.startPosition.row;
             diagnostics.push({
@@ -4297,7 +4305,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               column: equals.startPosition.column + 1,
               length: 1,
               rule: "format/assignment-spacing",
-              message: "expected one space around '='",
+              message: preservesLineBreak
+                ? "expected a line break and two-space indentation after '='"
+                : "expected one space around '='",
               sourceLine: lines[row] ?? "",
             });
           }

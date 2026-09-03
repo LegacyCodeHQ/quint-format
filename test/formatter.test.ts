@@ -691,6 +691,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves an explicit line break in a primed assignment chain", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-primed-assignment-chain.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      '    state\' =\n      state.with("first", 1)\n        .with("second", 2),',
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats an ordinary block expression", () => {
     const input = "module Example {\n  var count: int\n\n  action initialize = {count' = 0}\n}\n";
     const output = formatQuint(input);
