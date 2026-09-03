@@ -375,6 +375,30 @@ function commentDocument(node: Parser.SyntaxNode): Doc {
   );
 }
 
+function definitionBodyDocument(
+  head: string,
+  definition: Parser.SyntaxNode,
+  body: Parser.SyntaxNode,
+  bodyDocument: Doc,
+): Doc {
+  const comments = definition.namedChildren.filter(
+    (child) =>
+      (child.type === "comment" || child.type === "documentation_comment") &&
+      child.endIndex <= body.startIndex,
+  );
+  if (comments.length === 0) return concat([text(`${head} `), bodyDocument]);
+  return concat([
+    text(head),
+    indent(
+      concat([
+        ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
+        hardLine,
+        bodyDocument,
+      ]),
+    ),
+  ]);
+}
+
 function formatPattern(node: Parser.SyntaxNode): string {
   if (node.type === "identifier" || node.type === "hole") {
     return node.text;
@@ -1163,12 +1187,12 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         sequenceLiterals: expression.sequenceLiterals,
         recordLiterals: expression.recordLiterals,
         callExpressions: expression.callExpressions,
-        document: concat([
-          text(
-            `${qualifier ? "pure " : ""}val ${formatPattern(declarationName)}${typeAnnotation} = `,
-          ),
+        document: definitionBodyDocument(
+          `${qualifier ? "pure " : ""}val ${formatPattern(declarationName)}${typeAnnotation} =`,
+          node,
+          value,
           expression.document,
-        ]),
+        ),
       });
       continue;
     }
@@ -1276,12 +1300,12 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         sequenceLiterals: expression.sequenceLiterals,
         recordLiterals: expression.recordLiterals,
         callExpressions: expression.callExpressions,
-        document: concat([
-          text(
-            `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} = `,
-          ),
+        document: definitionBodyDocument(
+          `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} =`,
+          node,
+          body,
           expression.document,
-        ]),
+        ),
       });
       continue;
     }

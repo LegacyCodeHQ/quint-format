@@ -930,6 +930,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a comment before a definition body", () => {
+    const input = readFileSync(
+      new URL("fixtures/definition-body-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this body comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a parameterless run", () => {
     const input = "module Example {\n  run scenario=true\n}\n";
     const output = formatQuint(input);
