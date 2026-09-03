@@ -1948,3 +1948,22 @@ test/fixtures/block-expression-comment.qnt:2:12: error[format/equals-spacing]: e
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical block-combinator comment formatting 1`] = `
+"test/fixtures/combinator-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/combinator-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | action step=all{
+  | ^
+  |
+test/fixtures/combinator-comment.qnt:2:12: error[format/equals-spacing]: expected one space around '='
+  |
+2 | action step=all{
+  |            ^
+  |
+"
+`;

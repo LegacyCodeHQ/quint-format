@@ -712,6 +712,17 @@ describe("command-line checker", () => {
     expect(result.stderr.toString()).toMatchSnapshot();
   });
 
+  test("reports noncanonical block-combinator comment formatting", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "--check", "test/fixtures/combinator-comment.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout.toString()).toBe("");
+    expect(result.stderr.toString()).toMatchSnapshot();
+  });
+
   test("reports noncanonical nondet-binding formatting", () => {
     const result = Bun.spawnSync(
       ["bun", "run", "src/cli.ts", "--check", "test/fixtures/nondet-binding.qnt"],

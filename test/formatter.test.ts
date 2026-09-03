@@ -476,6 +476,16 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a comment inside a block combinator", () => {
+    const input = readFileSync(new URL("fixtures/combinator-comment.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this conjunct comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a nondeterministic binding", () => {
     const input = readFileSync(new URL("fixtures/nondet-binding.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

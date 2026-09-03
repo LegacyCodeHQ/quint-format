@@ -1,10 +1,10 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a comment inside an ordinary block 1`] = `
+exports[`formatter preserves a comment inside a block combinator 1`] = `
 "module Example {
-  action step = {
-    // Preserve this block comment.
-    true
+  action step = all {
+    // Preserve this conjunct comment.
+    true,
   }
 }
 "
@@ -408,6 +408,16 @@ exports[`formatter formats an ordinary block expression 1`] = `
 
   action initialize = {
     count' = 0
+  }
+}
+"
+`;
+
+exports[`formatter preserves a comment inside an ordinary block 1`] = `
+"module Example {
+  action step = {
+    // Preserve this block comment.
+    true
   }
 }
 "

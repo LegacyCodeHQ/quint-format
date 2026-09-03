@@ -832,10 +832,20 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       throw new Error("Unable to locate the block combinator entries");
     }
     const analyses = entries.map(analyzeExpression);
+    const contentDocuments = node.namedChildren.map((child) => {
+      if (child.type === "comment" || child.type === "documentation_comment") {
+        return commentDocument(child);
+      }
+      const entryIndex = entries.findIndex((entry) => entry.id === child.id);
+      const entry = analyses[entryIndex];
+      if (!entry)
+        throw new Error("Formatting this block combinator content is not implemented yet");
+      return concat([entry.document, text(",")]);
+    });
     return {
       document: concat([
         text(`${keyword.text} {`),
-        indent(concat(analyses.flatMap((analysis) => [hardLine, analysis.document, text(",")]))),
+        indent(concat(contentDocuments.flatMap((document) => [hardLine, document]))),
         hardLine,
         text("}"),
       ]),
