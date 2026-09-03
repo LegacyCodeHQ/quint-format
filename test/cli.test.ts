@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,6 +23,27 @@ describe("command-line checker", () => {
     expect(result.exitCode).toBe(1);
     expect(result.stdout.toString()).toBe("");
     expect(result.stderr.toString()).toMatchSnapshot();
+  });
+
+  test("discovers Quint files recursively", () => {
+    const scratch = mkdtempSync(join(tmpdir(), "quint-format-discovery-"));
+    const nested = join(scratch, "nested");
+    mkdirSync(nested);
+    writeFileSync(join(scratch, "clean.qnt"), "module Clean {\n}\n");
+    writeFileSync(join(nested, "dirty.qnt"), "module Dirty {}\n");
+    writeFileSync(join(nested, "ignored.txt"), "module Ignored {}\n");
+
+    try {
+      const result = Bun.spawnSync(["bun", "run", "src/cli.ts", "--check", scratch], {
+        cwd: projectRoot,
+      });
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stdout.toString()).toBe("");
+      expect(result.stderr.toString().replaceAll(scratch, "fixtures")).toMatchSnapshot();
+    } finally {
+      rmSync(scratch, { recursive: true, force: true });
+    }
   });
 
   test("reports a compact empty module", () => {

@@ -1637,3 +1637,12 @@ test/fixtures/module-brace-spacing.qnt:1:15: error[format/module-brace-spacing]:
   |
 "
 `;
+
+exports[`command-line checker discovers Quint files recursively 1`] = `
+"fixtures/nested/dirty.qnt:1:14: error[format/empty-module]: empty module braces must be on separate lines
+  |
+1 | module Dirty {}
+  |              ^^
+  |
+"
+`;

@@ -1,9 +1,27 @@
 #!/usr/bin/env bun
 
-import { readFile } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
+import { join } from "node:path";
 import { checkQuint, QuintSyntaxError, renderDiagnostic } from "./index";
 
 const [command, ...filePaths] = process.argv.slice(2);
+
+async function discoverQuintFiles(path: string): Promise<string[]> {
+  const metadata = await stat(path);
+  if (!metadata.isDirectory()) return [path];
+
+  const entries = await readdir(path, { withFileTypes: true });
+  const discovered: string[] = [];
+  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+    const entryPath = join(path, entry.name);
+    if (entry.isDirectory()) {
+      discovered.push(...(await discoverQuintFiles(entryPath)));
+    } else if (entry.isFile() && entry.name.endsWith(".qnt")) {
+      discovered.push(entryPath);
+    }
+  }
+  return discovered;
+}
 
 if (command !== "--check" || filePaths.length === 0) {
   process.stderr.write("Usage: quint-format --check <file>...\n");
@@ -11,8 +29,19 @@ if (command !== "--check" || filePaths.length === 0) {
 } else {
   let hasFormattingViolations = false;
   let hasOperationalFailure = false;
+  const discoveredFilePaths: string[] = [];
 
   for (const filePath of filePaths) {
+    try {
+      discoveredFilePaths.push(...(await discoverQuintFiles(filePath)));
+    } catch (error) {
+      hasOperationalFailure = true;
+      const message = error instanceof Error ? error.message : String(error);
+      process.stderr.write(`${filePath}:1:1: error[internal]: ${message}\n`);
+    }
+  }
+
+  for (const filePath of discoveredFilePaths) {
     try {
       const source = await readFile(filePath, "utf8");
       const diagnostics = checkQuint(source, filePath);
