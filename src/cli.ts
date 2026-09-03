@@ -3,31 +3,35 @@
 import { readFile } from "node:fs/promises";
 import { checkQuint, QuintSyntaxError, renderDiagnostic } from "./index";
 
-const [command, filePath, ...rest] = process.argv.slice(2);
+const [command, ...filePaths] = process.argv.slice(2);
 
-if (command !== "--check" || !filePath || rest.length > 0) {
-  process.stderr.write("Usage: quint-format --check <file>\n");
+if (command !== "--check" || filePaths.length === 0) {
+  process.stderr.write("Usage: quint-format --check <file>...\n");
   process.exitCode = 2;
 } else {
-  try {
-    const source = await readFile(filePath, "utf8");
-    const diagnostics = checkQuint(source, filePath);
+  let hasFormattingViolations = false;
+  let hasOperationalFailure = false;
 
-    for (const diagnostic of diagnostics) {
-      process.stderr.write(renderDiagnostic(diagnostic));
-    }
+  for (const filePath of filePaths) {
+    try {
+      const source = await readFile(filePath, "utf8");
+      const diagnostics = checkQuint(source, filePath);
 
-    if (diagnostics.length > 0) {
-      process.exitCode = 1;
-    }
-  } catch (error) {
-    if (error instanceof QuintSyntaxError) {
-      process.stderr.write(renderDiagnostic({ filePath, ...error.diagnostic }));
-      process.exitCode = 2;
-    } else {
-      const message = error instanceof Error ? error.message : String(error);
-      process.stderr.write(`${filePath}:1:1: error[internal]: ${message}\n`);
-      process.exitCode = 2;
+      for (const diagnostic of diagnostics) {
+        process.stderr.write(renderDiagnostic(diagnostic));
+      }
+
+      hasFormattingViolations ||= diagnostics.length > 0;
+    } catch (error) {
+      hasOperationalFailure = true;
+      if (error instanceof QuintSyntaxError) {
+        process.stderr.write(renderDiagnostic({ filePath, ...error.diagnostic }));
+      } else {
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`${filePath}:1:1: error[internal]: ${message}\n`);
+      }
     }
   }
+
+  process.exitCode = hasOperationalFailure ? 2 : hasFormattingViolations ? 1 : 0;
 }

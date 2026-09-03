@@ -165,7 +165,7 @@ that every subsequent formatter preserves them by construction.
 
 - [x] Precise basic syntax diagnostics
 - [ ] Complete syntax diagnostic coverage
-- [ ] Multiple files
+- [x] Multiple files
 - [ ] Recursive directory discovery
 - [ ] Standard output mode
 - [ ] `--write` with safe atomic replacement

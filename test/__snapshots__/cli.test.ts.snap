@@ -1623,3 +1623,17 @@ test/fixtures/anonymous-instance.qnt:5:26: error[format/import-selector-spacing]
   |
 "
 `;
+
+exports[`command-line checker checks multiple files 1`] = `
+"test/fixtures/module-keyword-spacing.qnt:1:7: error[format/module-keyword-spacing]: expected one space after 'module'
+  |
+1 | module   Example {
+  |       ^^^
+  |
+test/fixtures/module-brace-spacing.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+"
+`;
