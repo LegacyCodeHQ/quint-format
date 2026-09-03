@@ -337,6 +337,16 @@ function commentDocument(node: Parser.SyntaxNode): Doc {
   );
 }
 
+function formatPattern(node: Parser.SyntaxNode): string {
+  if (node.type === "identifier" || node.type === "hole") {
+    return node.text;
+  }
+  if (node.type === "tuple_pattern") {
+    return `(${node.childrenForFieldName("element").map(formatPattern).join(", ")})`;
+  }
+  throw new Error("Formatting this binding pattern is not implemented yet");
+}
+
 function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   if (
     node.type === "integer_literal" ||
@@ -591,7 +601,9 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         sequenceLiterals: expression.sequenceLiterals,
         recordLiterals: expression.recordLiterals,
         document: concat([
-          text(`${qualifier ? "pure " : ""}val ${declarationName.text}${typeAnnotation} = `),
+          text(
+            `${qualifier ? "pure " : ""}val ${formatPattern(declarationName)}${typeAnnotation} = `,
+          ),
           expression.document,
         ]),
       });
@@ -1391,6 +1403,74 @@ function checkTypeDelimiterSpacing(
   }
 }
 
+function checkPatternSpacing(
+  node: Parser.SyntaxNode,
+  source: string,
+  lines: string[],
+  filePath: string,
+  diagnostics: FormatDiagnostic[],
+) {
+  if (node.type !== "tuple_pattern") return;
+  const openParen = node.children.find((child) => child.type === "(");
+  const closeParen = node.children.find((child) => child.type === ")");
+  const elements = node.childrenForFieldName("element");
+  const commas = node.children.filter((child) => child.type === ",");
+  const first = elements[0];
+  const last = elements.at(-1);
+  if (!openParen || !closeParen || !first || !last) {
+    throw new Error("Unable to locate the tuple pattern delimiters");
+  }
+  const afterOpen = source.slice(openParen.endIndex, first.startIndex);
+  if (afterOpen !== "") {
+    const row = openParen.endPosition.row;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: openParen.endPosition.column + 1,
+      length: Math.max(1, afterOpen.length),
+      rule: "format/pattern-delimiter-spacing",
+      message: "expected no space after '('",
+      sourceLine: lines[row] ?? "",
+    });
+  }
+  for (const [index, comma] of commas.entries()) {
+    const previous = elements[index];
+    const next = elements[index + 1];
+    if (
+      previous &&
+      next &&
+      (source.slice(previous.endIndex, comma.startIndex) !== "" ||
+        source.slice(comma.endIndex, next.startIndex) !== " ")
+    ) {
+      const row = comma.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: comma.startPosition.column + 1,
+        length: 1,
+        rule: "format/pattern-separator-spacing",
+        message: "expected ', ' between pattern elements",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+  }
+  const beforeClose = source.slice(last.endIndex, closeParen.startIndex);
+  if (beforeClose !== "") {
+    const row = closeParen.startPosition.row;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: last.endPosition.column + 1,
+      length: Math.max(1, beforeClose.length),
+      rule: "format/pattern-delimiter-spacing",
+      message: "expected no space before ')'",
+      sourceLine: lines[row] ?? "",
+    });
+  }
+  for (const element of elements)
+    checkPatternSpacing(element, source, lines, filePath, diagnostics);
+}
+
 export function checkQuint(source: string, filePath: string): FormatDiagnostic[] {
   const analyzedSource = analyzeSource(source);
   const formatted = renderSource(analyzedSource);
@@ -1805,6 +1885,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       for (const typeRoot of declaration.typeRoots ?? []) {
         checkTypeDelimiterSpacing(typeRoot, source, lines, filePath, diagnostics);
       }
+
+      checkPatternSpacing(declaration.nameNode, source, lines, filePath, diagnostics);
 
       if (declaration.openParen && declaration.closeParen && declaration.parameters?.length) {
         const firstParameter = declaration.parameters[0];

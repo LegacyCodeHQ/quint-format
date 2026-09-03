@@ -530,6 +530,25 @@ test/fixtures/record-spread.qnt:2:33: error[format/expression-delimiter-spacing]
 "
 `;
 
+exports[`command-line checker reports noncanonical tuple-pattern formatting 1`] = `
+"test/fixtures/tuple-pattern.qnt:2:13: error[format/pattern-delimiter-spacing]: expected no space after '('
+  |
+2 |   pure val ( first ,_ ) = (1, 2)
+  |             ^
+  |
+test/fixtures/tuple-pattern.qnt:2:20: error[format/pattern-separator-spacing]: expected ', ' between pattern elements
+  |
+2 |   pure val ( first ,_ ) = (1, 2)
+  |                    ^
+  |
+test/fixtures/tuple-pattern.qnt:2:22: error[format/pattern-delimiter-spacing]: expected no space before ')'
+  |
+2 |   pure val ( first ,_ ) = (1, 2)
+  |                      ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
