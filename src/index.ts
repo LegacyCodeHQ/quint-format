@@ -259,6 +259,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
     }
 
     if (node.type === "value_definition") {
+      const qualifier = node.childForFieldName("qualifier");
       const keyword = node.children.find((child) => child.type === "val");
       const declarationName = node.childForFieldName("name");
       const declarationType = node.childForFieldName("type");
@@ -270,6 +271,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         !declarationName ||
         !equals ||
         !value ||
+        (qualifier && qualifier.type !== "pure") ||
         Boolean(declarationType) !== Boolean(colon)
       ) {
         throw new Error("Formatting this value definition syntax is not implemented yet");
@@ -279,6 +281,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const typeAnnotation = declarationType ? `: ${declarationType.text}` : "";
       addDeclaration({
         node,
+        qualifier: qualifier ?? undefined,
         keyword,
         nameNode: declarationName,
         colon: colon ?? undefined,
@@ -287,7 +290,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         valueNode: value,
         binaryOperators: expression.binaryOperators,
         document: concat([
-          text(`val ${declarationName.text}${typeAnnotation} = `),
+          text(`${qualifier ? "pure " : ""}val ${declarationName.text}${typeAnnotation} = `),
           expression.document,
         ]),
       });

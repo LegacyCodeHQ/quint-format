@@ -250,6 +250,13 @@ exports[`formatter formats a pure definition 1`] = `
 "
 `;
 
+exports[`formatter formats a pure value definition 1`] = `
+"module Example {
+  pure val answer = 42
+}
+"
+`;
+
 exports[`formatter formats a parameterless action 1`] = `
 "module Example {
   action initialize = true

@@ -435,6 +435,20 @@ test/fixtures/pure-definition.qnt:2:20: error[format/equals-spacing]: expected o
 "
 `;
 
+exports[`command-line checker reports noncanonical pure-value formatting 1`] = `
+"test/fixtures/pure-value-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
+  |
+2 |   pure   val answer=42
+  |       ^^^
+  |
+test/fixtures/pure-value-definition.qnt:2:20: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   pure   val answer=42
+  |                    ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical action formatting 1`] = `
 "test/fixtures/action-definition.qnt:2:20: error[format/equals-spacing]: expected one space around '='
   |

@@ -54,7 +54,7 @@ that every subsequent formatter preserves them by construction.
   - [ ] Parameters, return types, qualifiers, and semicolons
 - [ ] `pure`
   - [x] `pure def`
-  - [ ] `pure val`
+  - [x] `pure val`
 - [ ] `action`
   - [x] Parameterless expression-bodied actions
   - [ ] Parameters and block bodies
