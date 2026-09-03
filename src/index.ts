@@ -1074,7 +1074,9 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
             ) &&
             (parametersAreUntyped || parametersAreTyped);
       const hasSupportedReturnType = returnType
-        ? canFormatType(returnType) && Boolean(returnColon) && parametersAreTyped
+        ? canFormatType(returnType) &&
+          Boolean(returnColon) &&
+          (parametersAreTyped || parametersAreUntyped)
         : !returnColon && parametersAreUntyped;
       if (
         !keyword ||

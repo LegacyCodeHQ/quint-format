@@ -682,6 +682,18 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats an untyped parameter with a return type", () => {
+    const input = readFileSync(
+      new URL("fixtures/untyped-parameter-return.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats List types in a def header", () => {
     const input = "module Example {\n  def identity(xs: List[ int ]): List[ int ] = xs\n}\n";
     const output = formatQuint(input);

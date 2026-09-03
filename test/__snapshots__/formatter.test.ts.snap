@@ -772,3 +772,10 @@ exports[`formatter formats empty parameter lists across definition modes 1`] = `
 }
 "
 `;
+
+exports[`formatter formats an untyped parameter with a return type 1`] = `
+"module Example {
+  def identity(value): int = value
+}
+"
+`;

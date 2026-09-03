@@ -1799,3 +1799,32 @@ test/fixtures/empty-parameter-lists.qnt:5:23: error[format/equals-spacing]: expe
   |
 "
 `;
+
+exports[`command-line checker reports a noncanonical untyped parameter with a return type 1`] = `
+"test/fixtures/untyped-parameter-return.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 |  def identity( value ) : int=value
+  | ^
+  |
+test/fixtures/untyped-parameter-return.qnt:2:15: error[format/parameter-list-spacing]: expected no space after '('
+  |
+2 |  def identity( value ) : int=value
+  |               ^
+  |
+test/fixtures/untyped-parameter-return.qnt:2:21: error[format/parameter-list-spacing]: expected no space before ')'
+  |
+2 |  def identity( value ) : int=value
+  |                     ^
+  |
+test/fixtures/untyped-parameter-return.qnt:2:23: error[format/type-colon-spacing]: expected no space before ':'
+  |
+2 |  def identity( value ) : int=value
+  |                       ^
+  |
+test/fixtures/untyped-parameter-return.qnt:2:29: error[format/equals-spacing]: expected one space around '='
+  |
+2 |  def identity( value ) : int=value
+  |                             ^
+  |
+"
+`;
