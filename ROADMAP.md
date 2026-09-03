@@ -93,6 +93,9 @@ that every subsequent formatter preserves them by construction.
   - [x] Named types
   - [x] Type variables
 - [ ] `Set`, `List`, and polymorphic applications
+  - [x] `Set` types
+  - [ ] `List` types
+  - [ ] Polymorphic type applications
 - [ ] Tuples and records
 - [ ] Open record rows
 - [ ] Function and operator types

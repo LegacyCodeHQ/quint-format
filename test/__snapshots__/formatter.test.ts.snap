@@ -59,6 +59,13 @@ exports[`formatter formats a constant declaration 1`] = `
 "
 `;
 
+exports[`formatter formats a Set type 1`] = `
+"module Example {
+  const Values: Set[int]
+}
+"
+`;
+
 exports[`formatter places declarations on separate lines 1`] = `
 "module Example {
   var a: int

@@ -90,6 +90,7 @@ interface ModuleDeclaration {
   colon?: Parser.SyntaxNode;
   typeNode?: Parser.SyntaxNode;
   typeAnchor?: Parser.SyntaxNode;
+  typeRoots?: Parser.SyntaxNode[];
   openParen?: Parser.SyntaxNode;
   closeParen?: Parser.SyntaxNode;
   parameters?: Parser.SyntaxNode[];
@@ -132,6 +133,14 @@ function formatType(node: Parser.SyntaxNode): string {
       throw new Error("Unable to locate the list element type");
     }
     return `List[${formatType(element)}]`;
+  }
+
+  if (node.type === "set_type") {
+    const element = node.childForFieldName("element");
+    if (!element) {
+      throw new Error("Unable to locate the set element type");
+    }
+    return `Set[${formatType(element)}]`;
   }
 
   throw new Error("Formatting this type syntax is not implemented yet");
@@ -309,7 +318,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       }
 
       const expression = analyzeExpression(value);
-      const typeAnnotation = declarationType ? `: ${declarationType.text}` : "";
+      const typeAnnotation = declarationType ? `: ${formatType(declarationType)}` : "";
       addDeclaration({
         node,
         qualifier: qualifier ?? undefined,
@@ -317,6 +326,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         nameNode: declarationName,
         colon: colon ?? undefined,
         typeNode: declarationType ?? undefined,
+        typeRoots: declarationType ? [declarationType] : undefined,
         semicolon,
         equals,
         valueNode: value,
@@ -400,11 +410,11 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           ? `(${parameterNames
               .map((parameterName, index) => {
                 const parameterType = parameterTypes[index];
-                return `${parameterName?.text}${parameterType ? `: ${parameterType.text}` : ""}`;
+                return `${parameterName?.text}${parameterType ? `: ${formatType(parameterType)}` : ""}`;
               })
               .join(", ")})`
           : "";
-      const returnTypeAnnotation = returnType ? `: ${returnType.text}` : "";
+      const returnTypeAnnotation = returnType ? `: ${formatType(returnType)}` : "";
       addDeclaration({
         node,
         qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
@@ -413,6 +423,10 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         colon: returnColon,
         typeNode: returnType ?? undefined,
         typeAnchor: closeParen ?? declarationName,
+        typeRoots: [
+          ...parameterTypes.filter((type) => type !== null),
+          ...(returnType ? [returnType] : []),
+        ],
         openParen,
         closeParen,
         parameters,
@@ -469,6 +483,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         typeParameterCommas,
         equals,
         valueNode: value,
+        typeRoots: [value],
         document: text(`type ${declarationName.text}${typeParameterList} = ${formatType(value)}`),
       });
       continue;
@@ -514,7 +529,8 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       nameNode: declarationName,
       colon,
       typeNode: declarationType,
-      document: text(`${keywordType} ${declarationName.text}: ${declarationType.text}`),
+      typeRoots: [declarationType],
+      document: text(`${keywordType} ${declarationName.text}: ${formatType(declarationType)}`),
     });
   }
 
@@ -586,6 +602,55 @@ function analyzeSource(source: string) {
 
 export function formatQuint(source: string): string {
   return renderSource(analyzeSource(source));
+}
+
+function checkTypeDelimiterSpacing(
+  node: Parser.SyntaxNode,
+  source: string,
+  lines: string[],
+  filePath: string,
+  diagnostics: FormatDiagnostic[],
+) {
+  if (node.type !== "set_type" && node.type !== "list_type") {
+    return;
+  }
+
+  const openBracket = node.children.find((child) => child.type === "[");
+  const closeBracket = node.children.find((child) => child.type === "]");
+  const element = node.childForFieldName("element");
+  if (!openBracket || !closeBracket || !element) {
+    throw new Error("Unable to locate the collection type delimiters");
+  }
+
+  const afterOpenBracket = source.slice(openBracket.endIndex, element.startIndex);
+  if (afterOpenBracket !== "") {
+    const row = openBracket.endPosition.row;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: openBracket.endPosition.column + 1,
+      length: Math.max(1, afterOpenBracket.length),
+      rule: "format/type-delimiter-spacing",
+      message: "expected no space after '['",
+      sourceLine: lines[row] ?? "",
+    });
+  }
+
+  const beforeCloseBracket = source.slice(element.endIndex, closeBracket.startIndex);
+  if (beforeCloseBracket !== "") {
+    const row = closeBracket.startPosition.row;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: element.endPosition.column + 1,
+      length: Math.max(1, beforeCloseBracket.length),
+      rule: "format/type-delimiter-spacing",
+      message: "expected no space before ']'",
+      sourceLine: lines[row] ?? "",
+    });
+  }
+
+  checkTypeDelimiterSpacing(element, source, lines, filePath, diagnostics);
 }
 
 export function checkQuint(source: string, filePath: string): FormatDiagnostic[] {
@@ -997,6 +1062,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             sourceLine: lines[row] ?? "",
           });
         }
+      }
+
+      for (const typeRoot of declaration.typeRoots ?? []) {
+        checkTypeDelimiterSpacing(typeRoot, source, lines, filePath, diagnostics);
       }
 
       if (declaration.openParen && declaration.closeParen && declaration.parameters?.length) {
