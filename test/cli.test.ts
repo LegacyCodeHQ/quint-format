@@ -533,6 +533,17 @@ describe("command-line checker", () => {
     expect(result.stderr.toString()).toMatchSnapshot();
   });
 
+  test("reports noncanonical ignored-parameter formatting", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "--check", "test/fixtures/hole-parameter.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout.toString()).toBe("");
+    expect(result.stderr.toString()).toMatchSnapshot();
+  });
+
   test("reports noncanonical multiple-def-parameter formatting", () => {
     const result = Bun.spawnSync(
       ["bun", "run", "src/cli.ts", "--check", "test/fixtures/multiple-def-parameters.qnt"],

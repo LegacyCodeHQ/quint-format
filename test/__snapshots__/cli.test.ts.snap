@@ -638,6 +638,20 @@ test/fixtures/def-parameter.qnt:2:24: error[format/equals-spacing]: expected one
 "
 `;
 
+exports[`command-line checker reports noncanonical ignored-parameter formatting 1`] = `
+"test/fixtures/hole-parameter.qnt:2:19: error[format/parameter-list-spacing]: expected no space after '('
+  |
+2 |   pure def ignore( _: int ): int = 0
+  |                   ^
+  |
+test/fixtures/hole-parameter.qnt:2:26: error[format/parameter-list-spacing]: expected no space before ')'
+  |
+2 |   pure def ignore( _: int ): int = 0
+  |                          ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical multiple-def-parameter formatting 1`] = `
 "test/fixtures/multiple-def-parameters.qnt:2:19: error[format/parameter-separator-spacing]: expected ', ' between parameters
   |

@@ -334,6 +334,13 @@ exports[`formatter formats a def parameter 1`] = `
 "
 `;
 
+exports[`formatter formats an ignored def parameter 1`] = `
+"module Example {
+  pure def ignore(_: int): int = 0
+}
+"
+`;
+
 exports[`formatter formats multiple def parameters 1`] = `
 "module Example {
   def choose(left, right) = left

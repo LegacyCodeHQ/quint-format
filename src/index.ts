@@ -562,7 +562,10 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           : Boolean(openParen) &&
             Boolean(closeParen) &&
             parameterCommas.length === parameters.length - 1 &&
-            parameterNames.every((parameterName) => parameterName?.type === "identifier") &&
+            parameterNames.every(
+              (parameterName) =>
+                parameterName?.type === "identifier" || parameterName?.type === "hole",
+            ) &&
             (parametersAreUntyped || parametersAreTyped);
       const hasSupportedReturnType = returnType
         ? canFormatType(returnType) && Boolean(returnColon) && parametersAreTyped

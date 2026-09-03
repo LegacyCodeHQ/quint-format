@@ -416,6 +416,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats an ignored def parameter", () => {
+    const input = "module Example {\n  pure def ignore( _: int ): int = 0\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats multiple def parameters", () => {
     const input = "module Example {\n  def choose(left ,right)=left\n}\n";
     const output = formatQuint(input);
