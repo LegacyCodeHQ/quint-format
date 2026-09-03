@@ -250,6 +250,13 @@ exports[`formatter formats a def parameter 1`] = `
 "
 `;
 
+exports[`formatter formats multiple def parameters 1`] = `
+"module Example {
+  def choose(left, right) = left
+}
+"
+`;
+
 exports[`formatter formats a pure definition 1`] = `
 "module Example {
   pure def answer = 42

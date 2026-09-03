@@ -92,6 +92,7 @@ interface ModuleDeclaration {
   openParen?: Parser.SyntaxNode;
   closeParen?: Parser.SyntaxNode;
   parameters?: Parser.SyntaxNode[];
+  parameterCommas?: Parser.SyntaxNode[];
   equals?: Parser.SyntaxNode;
   valueNode?: Parser.SyntaxNode;
   binaryOperators?: BinaryOperator[];
@@ -319,20 +320,21 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const parameters = node.childrenForFieldName("parameter");
       const openParen = node.children.find((child) => child.type === "(");
       const closeParen = node.children.find((child) => child.type === ")");
+      const parameterCommas = node.children.filter((child) => child.type === ",");
       const body = node.childForFieldName("body");
       const equals = node.children.find((child) => child.type === "=");
       const hasUnsupportedHeader = node.children.some(
         (child) => child.type === ":" || child.type === ";",
       );
-      const parameterName = parameters[0]?.childForFieldName("name");
+      const parameterNames = parameters.map((parameter) => parameter.childForFieldName("name"));
       const hasSupportedParameters =
         parameters.length === 0
           ? !openParen && !closeParen
-          : parameters.length === 1 &&
-            Boolean(openParen) &&
+          : Boolean(openParen) &&
             Boolean(closeParen) &&
-            parameterName?.type === "identifier" &&
-            !parameters[0]?.childForFieldName("type");
+            parameterCommas.length === parameters.length - 1 &&
+            parameterNames.every((parameterName) => parameterName?.type === "identifier") &&
+            parameters.every((parameter) => !parameter.childForFieldName("type"));
       if (
         !keyword ||
         !declarationName ||
@@ -349,7 +351,10 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const definitionHead = isStandaloneDefinition
         ? qualifier.text
         : `${qualifier ? `${qualifier.text} ` : ""}def`;
-      const parameterList = parameterName ? `(${parameterName.text})` : "";
+      const parameterList =
+        parameterNames.length > 0
+          ? `(${parameterNames.map((parameterName) => parameterName?.text).join(", ")})`
+          : "";
       addDeclaration({
         node,
         qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
@@ -358,6 +363,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         openParen,
         closeParen,
         parameters,
+        parameterCommas,
         equals,
         valueNode: body,
         binaryOperators: expression.binaryOperators,
@@ -747,8 +753,12 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         }
       }
 
-      if (declaration.openParen && declaration.closeParen && declaration.parameters?.length === 1) {
-        const parameter = declaration.parameters[0];
+      if (declaration.openParen && declaration.closeParen && declaration.parameters?.length) {
+        const firstParameter = declaration.parameters[0];
+        const lastParameter = declaration.parameters.at(-1);
+        if (!firstParameter || !lastParameter) {
+          throw new Error("Unable to locate the definition parameters");
+        }
         const beforeOpenParen = source.slice(
           declaration.nameNode.endIndex,
           declaration.openParen.startIndex,
@@ -766,7 +776,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           });
         }
 
-        const afterOpenParen = source.slice(declaration.openParen.endIndex, parameter.startIndex);
+        const afterOpenParen = source.slice(
+          declaration.openParen.endIndex,
+          firstParameter.startIndex,
+        );
         if (afterOpenParen !== "") {
           const row = declaration.openParen.endPosition.row;
           diagnostics.push({
@@ -780,8 +793,30 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           });
         }
 
+        for (const [index, comma] of (declaration.parameterCommas ?? []).entries()) {
+          const previousParameter = declaration.parameters[index];
+          const nextParameter = declaration.parameters[index + 1];
+          if (!previousParameter || !nextParameter) {
+            throw new Error("Unable to locate parameters around ','");
+          }
+          const beforeComma = source.slice(previousParameter.endIndex, comma.startIndex);
+          const afterComma = source.slice(comma.endIndex, nextParameter.startIndex);
+          if (beforeComma !== "" || afterComma !== " ") {
+            const row = comma.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: comma.startPosition.column + 1,
+              length: 1,
+              rule: "format/parameter-separator-spacing",
+              message: "expected ', ' between parameters",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+
         const beforeCloseParen = source.slice(
-          parameter.endIndex,
+          lastParameter.endIndex,
           declaration.closeParen.startIndex,
         );
         if (beforeCloseParen !== "") {
@@ -789,7 +824,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           diagnostics.push({
             filePath,
             line: row + 1,
-            column: parameter.endPosition.column + 1,
+            column: lastParameter.endPosition.column + 1,
             length: Math.max(1, beforeCloseParen.length),
             rule: "format/parameter-list-spacing",
             message: "expected no space before ')'",

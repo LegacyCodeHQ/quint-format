@@ -440,6 +440,20 @@ test/fixtures/def-parameter.qnt:2:24: error[format/equals-spacing]: expected one
 "
 `;
 
+exports[`command-line checker reports noncanonical multiple-def-parameter formatting 1`] = `
+"test/fixtures/multiple-def-parameters.qnt:2:19: error[format/parameter-separator-spacing]: expected ', ' between parameters
+  |
+2 |   def choose(left ,right)=left
+  |                   ^
+  |
+test/fixtures/multiple-def-parameters.qnt:2:26: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   def choose(left ,right)=left
+  |                          ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |
