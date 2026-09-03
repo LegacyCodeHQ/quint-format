@@ -1646,3 +1646,9 @@ exports[`command-line checker discovers Quint files recursively 1`] = `
   |
 "
 `;
+
+exports[`command-line checker formats one file to standard output 1`] = `
+"module Example {
+}
+"
+`;

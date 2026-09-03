@@ -2,7 +2,7 @@
 
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
-import { checkQuint, QuintSyntaxError, renderDiagnostic } from "./index";
+import { checkQuint, formatQuint, QuintSyntaxError, renderDiagnostic } from "./index";
 
 const [command, ...filePaths] = process.argv.slice(2);
 
@@ -23,8 +23,21 @@ async function discoverQuintFiles(path: string): Promise<string[]> {
   return discovered;
 }
 
-if (command !== "--check" || filePaths.length === 0) {
-  process.stderr.write("Usage: quint-format --check <file>...\n");
+if (command && command !== "--check" && filePaths.length === 0) {
+  try {
+    const source = await readFile(command, "utf8");
+    process.stdout.write(formatQuint(source));
+  } catch (error) {
+    if (error instanceof QuintSyntaxError) {
+      process.stderr.write(renderDiagnostic({ filePath: command, ...error.diagnostic }));
+    } else {
+      const message = error instanceof Error ? error.message : String(error);
+      process.stderr.write(`${command}:1:1: error[internal]: ${message}\n`);
+    }
+    process.exitCode = 2;
+  }
+} else if (command !== "--check" || filePaths.length === 0) {
+  process.stderr.write("Usage: quint-format <file> | quint-format --check <file>...\n");
   process.exitCode = 2;
 } else {
   let hasFormattingViolations = false;

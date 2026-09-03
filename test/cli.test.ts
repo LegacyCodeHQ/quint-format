@@ -7,6 +7,17 @@ import { fileURLToPath } from "node:url";
 const projectRoot = fileURLToPath(new URL("..", import.meta.url));
 
 describe("command-line checker", () => {
+  test("formats one file to standard output", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "test/fixtures/compact-empty-module.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout.toString()).toMatchSnapshot();
+    expect(result.stderr.toString()).toBe("");
+  });
+
   test("checks multiple files", () => {
     const result = Bun.spawnSync(
       [

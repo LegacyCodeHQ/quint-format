@@ -167,7 +167,7 @@ that every subsequent formatter preserves them by construction.
 - [ ] Complete syntax diagnostic coverage
 - [x] Multiple files
 - [x] Recursive directory discovery
-- [ ] Standard output mode
+- [x] Standard output mode
 - [ ] `--write` with safe atomic replacement
 - [x] Exit codes: 0 clean, 1 formatting violations, 2 operational or syntax failure
 
