@@ -666,6 +666,35 @@ test/fixtures/lambda-check.qnt:2:26: error[format/lambda-arrow-spacing]: expecte
 "
 `;
 
+exports[`command-line checker reports noncanonical conditional formatting 1`] = `
+"test/fixtures/conditional-expression.qnt:2:23: error[format/conditional-keyword-spacing]: expected one space after 'if'
+  |
+2 |   pure val answer = if( true )1  else  2
+  |                       ^
+  |
+test/fixtures/conditional-expression.qnt:2:24: error[format/conditional-delimiter-spacing]: expected no space after '('
+  |
+2 |   pure val answer = if( true )1  else  2
+  |                        ^
+  |
+test/fixtures/conditional-expression.qnt:2:29: error[format/conditional-delimiter-spacing]: expected no space before ')'
+  |
+2 |   pure val answer = if( true )1  else  2
+  |                             ^
+  |
+test/fixtures/conditional-expression.qnt:2:31: error[format/conditional-branch-spacing]: expected one space after ')'
+  |
+2 |   pure val answer = if( true )1  else  2
+  |                               ^
+  |
+test/fixtures/conditional-expression.qnt:2:34: error[format/conditional-else-spacing]: expected one space around 'else'
+  |
+2 |   pure val answer = if( true )1  else  2
+  |                                  ^^^^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

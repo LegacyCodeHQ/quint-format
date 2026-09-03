@@ -518,6 +518,35 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     };
   }
 
+  if (node.type === "if_expression") {
+    const condition = node.childForFieldName("condition");
+    const consequence = node.childForFieldName("consequence");
+    const alternative = node.childForFieldName("alternative");
+    if (!condition || !consequence || !alternative) {
+      throw new Error("Unable to locate the conditional branches");
+    }
+    const analyses = [condition, consequence, alternative].map(analyzeExpression);
+    const [conditionAnalysis, consequenceAnalysis, alternativeAnalysis] = analyses;
+    if (!conditionAnalysis || !consequenceAnalysis || !alternativeAnalysis) {
+      throw new Error("Unable to analyze the conditional branches");
+    }
+    return {
+      document: concat([
+        text("if ("),
+        conditionAnalysis.document,
+        text(") "),
+        consequenceAnalysis.document,
+        text(" else "),
+        alternativeAnalysis.document,
+      ]),
+      binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
+      unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
+      sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
+      recordLiterals: analyses.flatMap((analysis) => analysis.recordLiterals),
+      callExpressions: analyses.flatMap((analysis) => analysis.callExpressions),
+    };
+  }
+
   if (node.type === "call_expression") {
     const functionNode = node.childForFieldName("function");
     const arguments_ = node.childrenForFieldName("argument");
@@ -2553,6 +2582,92 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           }
           for (const parameter of parameters) {
             checkPatternSpacing(parameter, source, lines, filePath, diagnostics);
+          }
+        }
+
+        for (const conditional of collectNodes(declaration.valueNode, "if_expression")) {
+          const keyword = conditional.children.find((child) => child.type === "if");
+          const openParen = conditional.children.find((child) => child.type === "(");
+          const closeParen = conditional.children.find((child) => child.type === ")");
+          const elseKeyword = conditional.children.find((child) => child.type === "else");
+          const condition = conditional.childForFieldName("condition");
+          const consequence = conditional.childForFieldName("consequence");
+          const alternative = conditional.childForFieldName("alternative");
+          if (
+            !keyword ||
+            !openParen ||
+            !closeParen ||
+            !elseKeyword ||
+            !condition ||
+            !consequence ||
+            !alternative
+          ) {
+            throw new Error("Unable to locate the conditional syntax");
+          }
+          if (source.slice(keyword.endIndex, openParen.startIndex) !== " ") {
+            const row = openParen.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: openParen.startPosition.column + 1,
+              length: 1,
+              rule: "format/conditional-keyword-spacing",
+              message: "expected one space after 'if'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          const afterOpen = source.slice(openParen.endIndex, condition.startIndex);
+          if (afterOpen !== "") {
+            const row = openParen.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: openParen.endPosition.column + 1,
+              length: Math.max(1, afterOpen.length),
+              rule: "format/conditional-delimiter-spacing",
+              message: "expected no space after '('",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          const beforeClose = source.slice(condition.endIndex, closeParen.startIndex);
+          if (beforeClose !== "") {
+            const row = closeParen.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: condition.endPosition.column + 1,
+              length: Math.max(1, beforeClose.length),
+              rule: "format/conditional-delimiter-spacing",
+              message: "expected no space before ')'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          if (source.slice(closeParen.endIndex, consequence.startIndex) !== " ") {
+            const row = closeParen.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: closeParen.endPosition.column + 1,
+              length: 1,
+              rule: "format/conditional-branch-spacing",
+              message: "expected one space after ')'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          if (
+            source.slice(consequence.endIndex, elseKeyword.startIndex) !== " " ||
+            source.slice(elseKeyword.endIndex, alternative.startIndex) !== " "
+          ) {
+            const row = elseKeyword.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: elseKeyword.startPosition.column + 1,
+              length: 4,
+              rule: "format/conditional-else-spacing",
+              message: "expected one space around 'else'",
+              sourceLine: lines[row] ?? "",
+            });
           }
         }
       }

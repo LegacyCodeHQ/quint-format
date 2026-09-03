@@ -142,7 +142,7 @@ that every subsequent formatter preserves them by construction.
 - [x] Addition and subtraction
 - [x] Parentheses and basic precedence preservation
 - [x] Lambdas
-- [ ] Conditionals
+- [x] Conditionals
 - [ ] Match expressions
 - [ ] Namespace access
 

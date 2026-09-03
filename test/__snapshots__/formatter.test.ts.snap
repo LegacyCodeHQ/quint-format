@@ -339,6 +339,13 @@ exports[`formatter formats lambda parameter forms 1`] = `
 "
 `;
 
+exports[`formatter formats a conditional expression 1`] = `
+"module Example {
+  pure val answer = if (true) 1 else 2
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)
