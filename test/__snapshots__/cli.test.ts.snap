@@ -89,3 +89,12 @@ exports[`command-line checker reports an unindented constant declaration 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports adjacent declarations on the same line 1`] = `
+"test/fixtures/declaration-line-break.qnt:2:15: error[format/declaration-line-break]: expected each declaration on a separate line
+  |
+2 |   var a: int  var b: int
+  |               ^^^
+  |
+"
+`;

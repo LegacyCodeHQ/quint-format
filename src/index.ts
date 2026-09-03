@@ -219,8 +219,23 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
     });
   }
 
-  for (const declaration of module.declarations) {
-    if (declaration.node.startPosition.column !== 2) {
+  for (const [index, declaration] of module.declarations.entries()) {
+    const previousDeclaration = index > 0 ? module.declarations[index - 1] : undefined;
+    const sharesLineWithPrevious =
+      previousDeclaration?.node.endPosition.row === declaration.node.startPosition.row;
+
+    if (sharesLineWithPrevious) {
+      const row = declaration.node.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: declaration.node.startPosition.column + 1,
+        length: declaration.keyword.text.length,
+        rule: "format/declaration-line-break",
+        message: "expected each declaration on a separate line",
+        sourceLine: lines[row] ?? "",
+      });
+    } else if (declaration.node.startPosition.column !== 2) {
       const row = declaration.node.startPosition.row;
       diagnostics.push({
         filePath,
