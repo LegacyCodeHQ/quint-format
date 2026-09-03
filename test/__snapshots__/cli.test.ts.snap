@@ -26,3 +26,12 @@ exports[`command-line checker reports noncanonical spacing after the module keyw
   |
 "
 `;
+
+exports[`command-line checker reports missing spacing before the module brace 1`] = `
+"test/fixtures/module-brace-spacing.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+"
+`;

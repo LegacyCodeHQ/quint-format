@@ -11,3 +11,9 @@ exports[`formatter formats spacing after the module keyword 1`] = `
 }
 "
 `;
+
+exports[`formatter formats spacing before the module brace 1`] = `
+"module Example {
+}
+"
+`;

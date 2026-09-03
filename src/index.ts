@@ -133,6 +133,26 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
     });
   }
 
+  const braceGap = source.slice(module.nameNode.endIndex, module.openBrace.startIndex);
+
+  if (braceGap !== " ") {
+    const row = module.nameNode.endPosition.row;
+    const hasGap = module.openBrace.startPosition.column > module.nameNode.endPosition.column;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column:
+        (hasGap ? module.nameNode.endPosition.column : module.openBrace.startPosition.column) + 1,
+      length: Math.max(
+        1,
+        module.openBrace.startPosition.column - module.nameNode.endPosition.column,
+      ),
+      rule: "format/module-brace-spacing",
+      message: "expected one space before '{'",
+      sourceLine: lines[row] ?? "",
+    });
+  }
+
   if (module.openBrace.startPosition.row === module.closeBrace.startPosition.row) {
     const row = module.openBrace.startPosition.row;
     diagnostics.push({
