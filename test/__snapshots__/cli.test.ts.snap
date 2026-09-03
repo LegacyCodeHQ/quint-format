@@ -152,6 +152,20 @@ test/fixtures/record-type.qnt:2:33: error[format/type-colon-spacing]: expected o
 "
 `;
 
+exports[`command-line checker reports noncanonical open-record-type formatting 1`] = `
+"test/fixtures/open-record-type.qnt:2:14: error[format/type-colon-spacing]: expected one space after ':'
+  |
+2 |   const User:{ name: str|r }
+  |              ^
+  |
+test/fixtures/open-record-type.qnt:2:25: error[format/record-row-spacing]: expected one space around '|'
+  |
+2 |   const User:{ name: str|r }
+  |                         ^
+  |
+"
+`;
+
 exports[`command-line checker reports adjacent declarations on the same line 1`] = `
 "test/fixtures/declaration-line-break.qnt:2:15: error[format/declaration-line-break]: expected each declaration on a separate line
   |

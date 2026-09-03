@@ -101,7 +101,7 @@ that every subsequent formatter preserves them by construction.
 - [ ] Tuples and records
   - [x] Tuple types
   - [x] Record types
-- [ ] Open record rows
+- [x] Open record rows
 - [ ] Function and operator types
 - [ ] Parenthesized types
 - [ ] Sum types and variants

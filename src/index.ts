@@ -149,8 +149,11 @@ function canFormatType(node: Parser.SyntaxNode): boolean {
 
   if (node.type === "record_type") {
     const fields = node.namedChildren.filter((child) => child.type === "record_type_field");
+    const row = node.childForFieldName("row");
+    const rowName = row?.childForFieldName("name");
     return (
       fields.length > 0 &&
+      (!row || rowName?.type === "identifier") &&
       fields.every((field) => {
         const name = field.childForFieldName("name");
         const fieldType = field.childForFieldName("type");
@@ -217,7 +220,9 @@ function formatType(node: Parser.SyntaxNode): string {
       }
       return `${name.text}: ${formatType(fieldType)}`;
     });
-    return `{ ${formattedFields.join(", ")} }`;
+    const row = node.childForFieldName("row");
+    const rowSuffix = row ? ` | ${row.text}` : "";
+    return `{ ${formattedFields.join(", ")}${rowSuffix} }`;
   }
 
   throw new Error("Formatting this type syntax is not implemented yet");
@@ -690,6 +695,7 @@ function checkTypeDelimiterSpacing(
     const openBrace = node.children.find((child) => child.type === "{");
     const closeBrace = node.children.find((child) => child.type === "}");
     const fields = node.namedChildren.filter((child) => child.type === "record_type_field");
+    const row = node.childForFieldName("row");
     const firstField = fields[0];
     const lastField = fields.at(-1);
     if (!openBrace || !closeBrace || !firstField || !lastField) {
@@ -769,13 +775,35 @@ function checkTypeDelimiterSpacing(
       checkTypeDelimiterSpacing(fieldType, source, lines, filePath, diagnostics);
     }
 
-    const beforeCloseBrace = source.slice(lastField.endIndex, closeBrace.startIndex);
+    if (row) {
+      const pipe = node.children.find((child) => child.type === "|");
+      if (!pipe) {
+        throw new Error("Unable to locate the record row separator");
+      }
+      const beforePipe = source.slice(lastField.endIndex, pipe.startIndex);
+      const afterPipe = source.slice(pipe.endIndex, row.startIndex);
+      if (beforePipe !== " " || afterPipe !== " ") {
+        const rowIndex = pipe.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: rowIndex + 1,
+          column: pipe.startPosition.column + 1,
+          length: 1,
+          rule: "format/record-row-spacing",
+          message: "expected one space around '|'",
+          sourceLine: lines[rowIndex] ?? "",
+        });
+      }
+    }
+
+    const recordEnd = row ?? lastField;
+    const beforeCloseBrace = source.slice(recordEnd.endIndex, closeBrace.startIndex);
     if (beforeCloseBrace !== " ") {
       const row = closeBrace.startPosition.row;
       diagnostics.push({
         filePath,
         line: row + 1,
-        column: lastField.endPosition.column + 1,
+        column: recordEnd.endPosition.column + 1,
         length: Math.max(1, beforeCloseBrace.length),
         rule: "format/type-delimiter-spacing",
         message: "expected one space before '}'",
