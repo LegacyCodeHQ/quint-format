@@ -727,8 +727,9 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const hasComments = entries.some(
       ({ node: entry }) => entry.type === "comment" || entry.type === "documentation_comment",
     );
+    const isExpanded = hasComments || node.startPosition.row < node.endPosition.row;
     const lineDocuments: Doc[] = [];
-    if (hasComments) {
+    if (isExpanded) {
       for (const [index, entry] of entries.entries()) {
         const isComment =
           entry.node.type === "comment" || entry.node.type === "documentation_comment";
@@ -747,7 +748,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       }
     }
     return {
-      document: hasComments
+      document: isExpanded
         ? concat([
             text("{"),
             indent(concat(lineDocuments.flatMap((document) => [hardLine, document]))),
@@ -4467,7 +4468,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
         const afterOpenBrace = source.slice(openBrace.endIndex, firstElement.startIndex);
         const isCommentedRecord = comments.length > 0;
-        const hasCanonicalOpening = isCommentedRecord
+        const isExpandedRecord =
+          isCommentedRecord || recordLiteral.startPosition.row < recordLiteral.endPosition.row;
+        const hasCanonicalOpening = isExpandedRecord
           ? firstElement.startPosition.row > openBrace.startPosition.row
           : afterOpenBrace === " ";
         if (!hasCanonicalOpening) {
@@ -4477,11 +4480,15 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             line: row + 1,
             column: openBrace.endPosition.column + 1,
             length: Math.max(1, afterOpenBrace.length),
-            rule: isCommentedRecord
-              ? "format/commented-record-layout"
+            rule: isExpandedRecord
+              ? isCommentedRecord
+                ? "format/commented-record-layout"
+                : "format/multiline-record-layout"
               : "format/expression-delimiter-spacing",
-            message: isCommentedRecord
-              ? "expected commented record contents on separate lines"
+            message: isExpandedRecord
+              ? isCommentedRecord
+                ? "expected commented record contents on separate lines"
+                : "expected record contents on separate lines"
               : "expected one space after '{'",
             sourceLine: lines[row] ?? "",
           });
@@ -4543,7 +4550,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           }
         }
 
-        if (isCommentedRecord) {
+        if (isExpandedRecord) {
           for (const [index, element] of elements.entries()) {
             const nextElement = elements[index + 1];
             const comma = commas.find(
@@ -4558,7 +4565,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 line: row + 1,
                 column: element.endPosition.column + 1,
                 length: 1,
-                rule: "format/commented-record-separator",
+                rule: isCommentedRecord
+                  ? "format/commented-record-separator"
+                  : "format/multiline-record-separator",
                 message: "expected a trailing comma after each record element",
                 sourceLine: lines[row] ?? "",
               });
@@ -4625,7 +4634,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         const trailingComma = commas.find((comma) => comma.startIndex >= lastElement.endIndex);
         const closeAnchor = trailingComma ?? lastElement;
         const beforeCloseBrace = source.slice(closeAnchor.endIndex, closeBrace.startIndex);
-        const hasCanonicalClosing = isCommentedRecord
+        const hasCanonicalClosing = isExpandedRecord
           ? closeBrace.startPosition.row > closeAnchor.endPosition.row
           : beforeCloseBrace === " ";
         if (!hasCanonicalClosing) {
@@ -4635,10 +4644,12 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             line: row + 1,
             column: closeAnchor.endPosition.column + 1,
             length: Math.max(1, beforeCloseBrace.length),
-            rule: isCommentedRecord
-              ? "format/commented-record-layout"
+            rule: isExpandedRecord
+              ? isCommentedRecord
+                ? "format/commented-record-layout"
+                : "format/multiline-record-layout"
               : "format/expression-delimiter-spacing",
-            message: isCommentedRecord
+            message: isExpandedRecord
               ? "expected the closing brace on its own line"
               : "expected one space before '}'",
             sourceLine: lines[row] ?? "",

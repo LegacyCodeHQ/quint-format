@@ -1244,3 +1244,13 @@ exports[`formatter preserves a multiline record type 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a multiline record literal 1`] = `
+"module Example {
+  pure val account = {
+    owner: "alice",
+    balance: 0,
+  }
+}
+"
+`;

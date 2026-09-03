@@ -335,6 +335,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a multiline record literal", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-record-literal.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain('pure val account = {\n    owner: "alice",\n    balance: 0,\n  }');
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a record spread", () => {
     const input = "module Example {\n  val extended = {b:2 ,... {a:1}}\n}\n";
     const output = formatQuint(input);
