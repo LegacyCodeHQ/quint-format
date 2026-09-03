@@ -1,5 +1,6 @@
 import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
+import { concat, hardLine, renderDoc, text } from "./document";
 
 const parser = new Parser();
 parser.setLanguage(Quint);
@@ -45,12 +46,12 @@ function analyzeEmptyModule(source: string) {
 
 export function formatQuint(source: string): string {
   const module = analyzeEmptyModule(source);
-  return `module ${module.name} {\n}\n`;
+  return renderEmptyModule(module.name);
 }
 
 export function checkQuint(source: string, filePath: string): FormatDiagnostic[] {
   const module = analyzeEmptyModule(source);
-  const formatted = `module ${module.name} {\n}\n`;
+  const formatted = renderEmptyModule(module.name);
 
   if (
     source === formatted ||
@@ -75,6 +76,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       sourceLine: source.split(/\r?\n/)[row] ?? "",
     },
   ];
+}
+
+function renderEmptyModule(name: string): string {
+  return renderDoc(concat([text(`module ${name} {`), hardLine, text("}"), hardLine]));
 }
 
 export function renderDiagnostic(diagnostic: FormatDiagnostic): string {
