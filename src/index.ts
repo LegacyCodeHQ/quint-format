@@ -103,6 +103,8 @@ interface ModuleDeclaration {
   asKeyword?: Parser.SyntaxNode;
   dot?: Parser.SyntaxNode;
   selectorNode?: Parser.SyntaxNode;
+  fromKeyword?: Parser.SyntaxNode;
+  sourceNode?: Parser.SyntaxNode;
   semicolon?: Parser.SyntaxNode;
   equals?: Parser.SyntaxNode;
   valueNode?: Parser.SyntaxNode;
@@ -1219,8 +1221,15 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const asKeyword = node.children.find((child) => child.type === "as");
       const dot = node.children.find((child) => child.type === ".");
       const star = node.children.find((child) => child.type === "*");
+      const fromKeyword = node.children.find((child) => child.type === "from");
+      const sourceNode = node.childForFieldName("source");
       const selector = name ?? star;
-      if (!keyword || !importedModule || Boolean(alias) !== Boolean(asKeyword)) {
+      if (
+        !keyword ||
+        !importedModule ||
+        Boolean(alias) !== Boolean(asKeyword) ||
+        Boolean(sourceNode) !== Boolean(fromKeyword)
+      ) {
         throw new Error("Unable to locate the import or export declaration");
       }
       if (node.type.startsWith("named_") && (!dot || !name)) {
@@ -1237,8 +1246,10 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         asKeyword,
         dot,
         selectorNode: selector ?? undefined,
+        fromKeyword,
+        sourceNode: sourceNode ?? undefined,
         document: text(
-          `${keywordType} ${formatPattern(importedModule)}${dot && selector ? `.${selector.type === "*" ? "*" : formatPattern(selector)}` : ""}${alias ? ` as ${formatPattern(alias)}` : ""}`,
+          `${keywordType} ${formatPattern(importedModule)}${dot && selector ? `.${selector.type === "*" ? "*" : formatPattern(selector)}` : ""}${alias ? ` as ${formatPattern(alias)}` : ""}${sourceNode ? ` from ${sourceNode.text}` : ""}`,
         ),
       });
       continue;
@@ -2391,6 +2402,28 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             length: 2,
             rule: "format/import-alias-spacing",
             message: "expected one space around 'as'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
+
+      if (declaration.sourceNode && declaration.fromKeyword) {
+        const sourceAnchor =
+          declaration.aliasNode ?? declaration.selectorNode ?? declaration.nameNode;
+        const beforeFrom = source.slice(sourceAnchor.endIndex, declaration.fromKeyword.startIndex);
+        const afterFrom = source.slice(
+          declaration.fromKeyword.endIndex,
+          declaration.sourceNode.startIndex,
+        );
+        if (beforeFrom !== " " || afterFrom !== " ") {
+          const row = declaration.fromKeyword.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.fromKeyword.startPosition.column + 1,
+            length: 4,
+            rule: "format/import-source-spacing",
+            message: "expected one space around 'from'",
             sourceLine: lines[row] ?? "",
           });
         }

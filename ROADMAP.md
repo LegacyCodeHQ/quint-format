@@ -157,7 +157,7 @@ that every subsequent formatter preserves them by construction.
 ## 9. Imports, exports, and instances
 
 - [x] Named and wildcard imports and exports
-- [ ] Source-qualified imports
+- [x] Source-qualified imports
 - [ ] Module instances and overrides
 - [ ] Anonymous instances
 
