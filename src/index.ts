@@ -118,6 +118,23 @@ interface ExpressionAnalysis {
   binaryOperators: BinaryOperator[];
 }
 
+function canFormatType(node: Parser.SyntaxNode): boolean {
+  if (
+    node.type === "primitive_type" ||
+    node.type === "named_type" ||
+    node.type === "type_variable"
+  ) {
+    return true;
+  }
+
+  if (node.type === "list_type" || node.type === "set_type") {
+    const element = node.childForFieldName("element");
+    return Boolean(element && canFormatType(element));
+  }
+
+  return false;
+}
+
 function formatType(node: Parser.SyntaxNode): string {
   if (
     node.type === "primitive_type" ||
@@ -372,9 +389,9 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const parametersAreUntyped = parameterTypes.every(
         (parameterType, index) => !parameterType && !parameterColons[index],
       );
-      const parametersArePrimitiveTyped = parameterTypes.every(
+      const parametersAreTyped = parameterTypes.every(
         (parameterType, index) =>
-          parameterType?.type === "primitive_type" && Boolean(parameterColons[index]),
+          Boolean(parameterType && canFormatType(parameterType)) && Boolean(parameterColons[index]),
       );
       const hasSupportedParameters =
         parameters.length === 0
@@ -383,11 +400,9 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
             Boolean(closeParen) &&
             parameterCommas.length === parameters.length - 1 &&
             parameterNames.every((parameterName) => parameterName?.type === "identifier") &&
-            (parametersAreUntyped || parametersArePrimitiveTyped);
+            (parametersAreUntyped || parametersAreTyped);
       const hasSupportedReturnType = returnType
-        ? returnType.type === "primitive_type" &&
-          Boolean(returnColon) &&
-          parametersArePrimitiveTyped
+        ? canFormatType(returnType) && Boolean(returnColon) && parametersAreTyped
         : !returnColon && parametersAreUntyped;
       if (
         !keyword ||

@@ -344,6 +344,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats List types in a def header", () => {
+    const input = "module Example {\n  def identity(xs: List[ int ]): List[ int ] = xs\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("removes an optional definition semicolon", () => {
     const input = "module Example {\n  def answer=42;\n}\n";
     const output = formatQuint(input);

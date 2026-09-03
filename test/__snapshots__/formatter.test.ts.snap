@@ -278,6 +278,13 @@ exports[`formatter formats a typed def header 1`] = `
 "
 `;
 
+exports[`formatter formats List types in a def header 1`] = `
+"module Example {
+  def identity(xs: List[int]): List[int] = xs
+}
+"
+`;
+
 exports[`formatter removes an optional definition semicolon 1`] = `
 "module Example {
   def answer = 42

@@ -516,6 +516,30 @@ test/fixtures/typed-def-header.qnt:2:32: error[format/equals-spacing]: expected 
 "
 `;
 
+exports[`command-line checker reports noncanonical List-typed-header formatting 1`] = `
+"test/fixtures/list-typed-header.qnt:2:25: error[format/type-delimiter-spacing]: expected no space after '['
+  |
+2 |   def identity(xs: List[ int ]): List[ int ] = xs
+  |                         ^
+  |
+test/fixtures/list-typed-header.qnt:2:29: error[format/type-delimiter-spacing]: expected no space before ']'
+  |
+2 |   def identity(xs: List[ int ]): List[ int ] = xs
+  |                             ^
+  |
+test/fixtures/list-typed-header.qnt:2:39: error[format/type-delimiter-spacing]: expected no space after '['
+  |
+2 |   def identity(xs: List[ int ]): List[ int ] = xs
+  |                                       ^
+  |
+test/fixtures/list-typed-header.qnt:2:43: error[format/type-delimiter-spacing]: expected no space before ']'
+  |
+2 |   def identity(xs: List[ int ]): List[ int ] = xs
+  |                                           ^
+  |
+"
+`;
+
 exports[`command-line checker reports an optional definition semicolon 1`] = `
 "test/fixtures/definition-semicolon.qnt:2:13: error[format/equals-spacing]: expected one space around '='
   |

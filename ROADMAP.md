@@ -74,9 +74,11 @@ that every subsequent formatter preserves them by construction.
   - [x] Untyped `def` parameters
   - [ ] Parameters across other definition modes
   - [x] Primitive typed `def` parameters
-  - [ ] Rich typed parameters
+  - [x] Collection-typed `def` parameters
+  - [ ] Remaining rich typed parameters
   - [x] Primitive return type annotations
-  - [ ] Rich return type annotations
+  - [x] Collection return type annotations
+  - [ ] Remaining rich return type annotations
 - [x] Optional semicolons where Quint permits them
   - [x] Operator definitions
   - [x] Value definitions
@@ -94,7 +96,7 @@ that every subsequent formatter preserves them by construction.
   - [x] Type variables
 - [ ] `Set`, `List`, and polymorphic applications
   - [x] `Set` types
-  - [ ] `List` types
+  - [x] `List` types
   - [ ] Polymorphic type applications
 - [ ] Tuples and records
 - [ ] Open record rows
