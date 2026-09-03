@@ -181,6 +181,18 @@ function canFormatType(node: Parser.SyntaxNode): boolean {
     return Boolean(innerType && canFormatType(innerType));
   }
 
+  if (node.type === "sum_type") {
+    const variants = node.namedChildren.filter((child) => child.type === "sum_type_variant");
+    return (
+      variants.length > 0 &&
+      variants.every((variant) => {
+        const name = variant.childForFieldName("name");
+        const payload = variant.childForFieldName("payload");
+        return Boolean(name && (!payload || canFormatType(payload)));
+      })
+    );
+  }
+
   return false;
 }
 
@@ -277,6 +289,23 @@ function formatType(node: Parser.SyntaxNode): string {
       throw new Error("Unable to locate the parenthesized type");
     }
     return `(${formatType(innerType)})`;
+  }
+
+  if (node.type === "sum_type") {
+    const variants = node.namedChildren.filter((child) => child.type === "sum_type_variant");
+    if (variants.length === 0) {
+      throw new Error("Unable to locate the sum type variants");
+    }
+    return variants
+      .map((variant) => {
+        const name = variant.childForFieldName("name");
+        const payload = variant.childForFieldName("payload");
+        if (!name) {
+          throw new Error("Unable to locate the sum variant name");
+        }
+        return `${name.text}${payload ? `(${formatType(payload)})` : ""}`;
+      })
+      .join(" | ");
   }
 
   throw new Error("Formatting this type syntax is not implemented yet");
@@ -745,6 +774,74 @@ function checkTypeDelimiterSpacing(
   filePath: string,
   diagnostics: FormatDiagnostic[],
 ) {
+  if (node.type === "sum_type") {
+    const variants = node.namedChildren.filter((child) => child.type === "sum_type_variant");
+    const pipes = node.children.filter((child) => child.type === "|");
+    for (const pipe of pipes) {
+      const previousVariant = [...variants]
+        .reverse()
+        .find((variant) => variant.endIndex <= pipe.startIndex);
+      const nextVariant = variants.find((variant) => variant.startIndex >= pipe.endIndex);
+      if (!previousVariant || !nextVariant) {
+        continue;
+      }
+      const beforePipe = source.slice(previousVariant.endIndex, pipe.startIndex);
+      const afterPipe = source.slice(pipe.endIndex, nextVariant.startIndex);
+      if (beforePipe !== " " || afterPipe !== " ") {
+        const row = pipe.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: pipe.startPosition.column + 1,
+          length: 1,
+          rule: "format/type-separator-spacing",
+          message: "expected one space around '|'",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
+
+    for (const variant of variants) {
+      const payload = variant.childForFieldName("payload");
+      if (!payload) {
+        continue;
+      }
+      const openParen = variant.children.find((child) => child.type === "(");
+      const closeParen = variant.children.find((child) => child.type === ")");
+      if (!openParen || !closeParen) {
+        throw new Error("Unable to locate the sum variant payload delimiters");
+      }
+      const afterOpenParen = source.slice(openParen.endIndex, payload.startIndex);
+      if (afterOpenParen !== "") {
+        const row = openParen.endPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: openParen.endPosition.column + 1,
+          length: Math.max(1, afterOpenParen.length),
+          rule: "format/type-delimiter-spacing",
+          message: "expected no space after '('",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+      const beforeCloseParen = source.slice(payload.endIndex, closeParen.startIndex);
+      if (beforeCloseParen !== "") {
+        const row = closeParen.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: payload.endPosition.column + 1,
+          length: Math.max(1, beforeCloseParen.length),
+          rule: "format/type-delimiter-spacing",
+          message: "expected no space before ')'",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+      checkTypeDelimiterSpacing(payload, source, lines, filePath, diagnostics);
+    }
+    return;
+  }
+
   if (node.type === "parenthesized_type") {
     const openParen = node.children.find((child) => child.type === "(");
     const closeParen = node.children.find((child) => child.type === ")");
@@ -1705,7 +1802,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
     });
   }
 
-  return diagnostics;
+  return diagnostics.sort((left, right) => left.line - right.line || left.column - right.column);
 }
 
 function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {

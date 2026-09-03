@@ -470,6 +470,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats an inline sum type", () => {
+    const input = "module Example {\n  type Elem=S( str )|I( int )\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a pure definition", () => {
     const input = "module Example {\n  pure   def answer=42\n}\n";
     const output = formatQuint(input);

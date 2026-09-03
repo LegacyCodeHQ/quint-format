@@ -752,6 +752,40 @@ test/fixtures/type-application.qnt:4:23: error[format/type-delimiter-spacing]: e
 "
 `;
 
+exports[`command-line checker reports noncanonical sum-type formatting 1`] = `
+"test/fixtures/sum-type.qnt:2:12: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   type Elem=S( str )|I( int )
+  |            ^
+  |
+test/fixtures/sum-type.qnt:2:15: error[format/type-delimiter-spacing]: expected no space after '('
+  |
+2 |   type Elem=S( str )|I( int )
+  |               ^
+  |
+test/fixtures/sum-type.qnt:2:19: error[format/type-delimiter-spacing]: expected no space before ')'
+  |
+2 |   type Elem=S( str )|I( int )
+  |                   ^
+  |
+test/fixtures/sum-type.qnt:2:21: error[format/type-separator-spacing]: expected one space around '|'
+  |
+2 |   type Elem=S( str )|I( int )
+  |                     ^
+  |
+test/fixtures/sum-type.qnt:2:24: error[format/type-delimiter-spacing]: expected no space after '('
+  |
+2 |   type Elem=S( str )|I( int )
+  |                        ^
+  |
+test/fixtures/sum-type.qnt:2:28: error[format/type-delimiter-spacing]: expected no space before ')'
+  |
+2 |   type Elem=S( str )|I( int )
+  |                            ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |

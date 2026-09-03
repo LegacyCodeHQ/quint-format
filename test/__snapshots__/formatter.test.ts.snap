@@ -380,6 +380,13 @@ exports[`formatter formats a polymorphic type application 1`] = `
 "
 `;
 
+exports[`formatter formats an inline sum type 1`] = `
+"module Example {
+  type Elem = S(str) | I(int)
+}
+"
+`;
+
 exports[`formatter formats a pure definition 1`] = `
 "module Example {
   pure def answer = 42

@@ -109,6 +109,8 @@ that every subsequent formatter preserves them by construction.
   - [ ] Direct operator types
 - [x] Parenthesized types
 - [ ] Sum types and variants
+  - [x] Inline sum types and payload variants
+  - [ ] Multiline sum types and leading separators
 
 ## 6. Literals and patterns
 
