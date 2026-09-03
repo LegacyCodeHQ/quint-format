@@ -486,6 +486,50 @@ test/fixtures/record-literal.qnt:2:36: error[format/unnecessary-trailing-comma]:
 "
 `;
 
+exports[`command-line checker reports noncanonical record-spread formatting 1`] = `
+"test/fixtures/record-spread.qnt:2:19: error[format/expression-delimiter-spacing]: expected one space after '{'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                   ^
+  |
+test/fixtures/record-spread.qnt:2:21: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                     ^
+  |
+test/fixtures/record-spread.qnt:2:23: error[format/expression-separator-spacing]: expected ', ' between record elements
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                       ^
+  |
+test/fixtures/record-spread.qnt:2:27: error[format/record-spread-spacing]: expected no space after '...'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                           ^
+  |
+test/fixtures/record-spread.qnt:2:29: error[format/expression-delimiter-spacing]: expected one space after '{'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                             ^
+  |
+test/fixtures/record-spread.qnt:2:31: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                               ^
+  |
+test/fixtures/record-spread.qnt:2:32: error[format/expression-delimiter-spacing]: expected one space before '}'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                                ^
+  |
+test/fixtures/record-spread.qnt:2:33: error[format/expression-delimiter-spacing]: expected one space before '}'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                                 ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

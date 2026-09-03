@@ -384,32 +384,37 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   }
 
   if (node.type === "record_literal") {
-    const fields = node.namedChildren.filter((child) => child.type === "record_literal_field");
-    if (fields.length !== node.namedChildren.length) {
-      throw new Error("Formatting record spreads is not implemented yet");
-    }
-    const fieldAnalyses = fields.map((field) => {
-      const name = field.childForFieldName("name");
-      const value = field.childForFieldName("value");
-      if (!name || !value) {
-        throw new Error("Unable to locate a record literal field");
+    const elementAnalyses = node.namedChildren.map((element) => {
+      const value = element.childForFieldName("value");
+      if (!value) {
+        throw new Error("Unable to locate a record literal element value");
       }
-      return { name, value: analyzeExpression(value) };
+      const analysis = analyzeExpression(value);
+      if (element.type === "record_spread") {
+        return { document: concat([text("..."), analysis.document]), analysis };
+      }
+      const name = element.childForFieldName("name");
+      if (element.type !== "record_literal_field" || !name) {
+        throw new Error("Formatting this record literal element is not implemented yet");
+      }
+      return {
+        document: concat([text(`${name.text}: `), analysis.document]),
+        analysis,
+      };
     });
     return {
       document: concat([
         text("{ "),
-        ...fieldAnalyses.flatMap(({ name, value }, index) => [
+        ...elementAnalyses.flatMap(({ document }, index) => [
           ...(index === 0 ? [] : [text(", ")]),
-          text(`${name.text}: `),
-          value.document,
+          document,
         ]),
         text(" }"),
       ]),
-      binaryOperators: fieldAnalyses.flatMap(({ value }) => value.binaryOperators),
-      unitLiterals: fieldAnalyses.flatMap(({ value }) => value.unitLiterals),
-      sequenceLiterals: fieldAnalyses.flatMap(({ value }) => value.sequenceLiterals),
-      recordLiterals: [node, ...fieldAnalyses.flatMap(({ value }) => value.recordLiterals)],
+      binaryOperators: elementAnalyses.flatMap(({ analysis }) => analysis.binaryOperators),
+      unitLiterals: elementAnalyses.flatMap(({ analysis }) => analysis.unitLiterals),
+      sequenceLiterals: elementAnalyses.flatMap(({ analysis }) => analysis.sequenceLiterals),
+      recordLiterals: [node, ...elementAnalyses.flatMap(({ analysis }) => analysis.recordLiterals)],
     };
   }
 
@@ -2088,14 +2093,18 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         const fields = recordLiteral.namedChildren.filter(
           (child) => child.type === "record_literal_field",
         );
+        const spreads = recordLiteral.namedChildren.filter(
+          (child) => child.type === "record_spread",
+        );
+        const elements = recordLiteral.namedChildren;
         const commas = recordLiteral.children.filter((child) => child.type === ",");
-        const firstField = fields[0];
-        const lastField = fields.at(-1);
-        if (!openBrace || !closeBrace || !firstField || !lastField) {
+        const firstElement = elements[0];
+        const lastElement = elements.at(-1);
+        if (!openBrace || !closeBrace || !firstElement || !lastElement) {
           throw new Error("Unable to locate the record literal delimiters");
         }
 
-        const afterOpenBrace = source.slice(openBrace.endIndex, firstField.startIndex);
+        const afterOpenBrace = source.slice(openBrace.endIndex, firstElement.startIndex);
         if (afterOpenBrace !== " ") {
           const row = openBrace.endPosition.row;
           diagnostics.push({
@@ -2144,10 +2153,31 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           }
         }
 
+        for (const spread of spreads) {
+          const spreadOperator = spread.children.find((child) => child.type === "...");
+          const value = spread.childForFieldName("value");
+          if (!spreadOperator || !value) {
+            throw new Error("Unable to locate a record spread value");
+          }
+          const afterSpread = source.slice(spreadOperator.endIndex, value.startIndex);
+          if (afterSpread !== "") {
+            const row = spreadOperator.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: spreadOperator.endPosition.column + 1,
+              length: Math.max(1, afterSpread.length),
+              rule: "format/record-spread-spacing",
+              message: "expected no space after '...'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+
         for (const [index, comma] of commas.entries()) {
-          const previousField = fields[index];
-          const nextField = fields[index + 1];
-          if (!previousField || !nextField) {
+          const previousElement = elements[index];
+          const nextElement = elements[index + 1];
+          if (!previousElement || !nextElement) {
             const row = comma.startPosition.row;
             diagnostics.push({
               filePath,
@@ -2160,8 +2190,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             });
             continue;
           }
-          const beforeComma = source.slice(previousField.endIndex, comma.startIndex);
-          const afterComma = source.slice(comma.endIndex, nextField.startIndex);
+          const beforeComma = source.slice(previousElement.endIndex, comma.startIndex);
+          const afterComma = source.slice(comma.endIndex, nextElement.startIndex);
           if (beforeComma !== "" || afterComma !== " ") {
             const row = comma.startPosition.row;
             diagnostics.push({
@@ -2170,14 +2200,14 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               column: comma.startPosition.column + 1,
               length: 1,
               rule: "format/expression-separator-spacing",
-              message: "expected ', ' between record fields",
+              message: `expected ', ' between record ${spreads.length > 0 ? "elements" : "fields"}`,
               sourceLine: lines[row] ?? "",
             });
           }
         }
 
-        const trailingComma = commas.find((comma) => comma.startIndex >= lastField.endIndex);
-        const closeAnchor = trailingComma ?? lastField;
+        const trailingComma = commas.find((comma) => comma.startIndex >= lastElement.endIndex);
+        const closeAnchor = trailingComma ?? lastElement;
         const beforeCloseBrace = source.slice(closeAnchor.endIndex, closeBrace.startIndex);
         if (beforeCloseBrace !== " ") {
           const row = closeBrace.startPosition.row;

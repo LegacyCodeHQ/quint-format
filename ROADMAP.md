@@ -125,7 +125,7 @@ that every subsequent formatter preserves them by construction.
   - [x] Lists
   - [x] Tuples
   - [x] Records
-- [ ] Record spreads
+- [x] Record spreads
 - [ ] Tuple and record destructuring patterns
 
 ## 7. Expressions
