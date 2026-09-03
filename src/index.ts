@@ -272,6 +272,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const value = node.childForFieldName("value");
       const colon = node.children.find((child) => child.type === ":");
       const equals = node.children.find((child) => child.type === "=");
+      const semicolon = node.children.find((child) => child.type === ";");
       if (
         !keyword ||
         !declarationName ||
@@ -292,6 +293,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         nameNode: declarationName,
         colon: colon ?? undefined,
         typeNode: declarationType ?? undefined,
+        semicolon,
         equals,
         valueNode: value,
         binaryOperators: expression.binaryOperators,

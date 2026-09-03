@@ -89,6 +89,13 @@ exports[`formatter formats an integer value definition 1`] = `
 "
 `;
 
+exports[`formatter removes an optional value semicolon 1`] = `
+"module Example {
+  val answer = 42
+}
+"
+`;
+
 exports[`formatter formats a Boolean value definition 1`] = `
 "module Example {
   val ready = true

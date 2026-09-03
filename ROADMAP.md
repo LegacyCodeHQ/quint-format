@@ -77,9 +77,9 @@ that every subsequent formatter preserves them by construction.
   - [ ] Rich typed parameters
   - [x] Primitive return type annotations
   - [ ] Rich return type annotations
-- [ ] Optional semicolons where Quint permits them
+- [x] Optional semicolons where Quint permits them
   - [x] Operator definitions
-  - [ ] Value definitions
+  - [x] Value definitions
 - [ ] Type aliases and uninterpreted types
 
 ## 5. Types

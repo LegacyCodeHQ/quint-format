@@ -126,6 +126,20 @@ exports[`command-line checker reports an unindented integer value definition 1`]
 "
 `;
 
+exports[`command-line checker reports an optional value semicolon 1`] = `
+"test/fixtures/value-semicolon.qnt:2:13: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   val answer=42;
+  |             ^
+  |
+test/fixtures/value-semicolon.qnt:2:16: error[format/unnecessary-semicolon]: optional semicolons are omitted
+  |
+2 |   val answer=42;
+  |                ^
+  |
+"
+`;
+
 exports[`command-line checker reports an unindented Boolean value definition 1`] = `
 "test/fixtures/boolean-value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
