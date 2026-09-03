@@ -62,3 +62,12 @@ exports[`command-line checker reports missing spacing after a type colon 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports whitespace before a type colon 1`] = `
+"test/fixtures/before-type-colon.qnt:2:8: error[format/type-colon-spacing]: expected no space before ':'
+  |
+2 |   var n : int
+  |        ^
+  |
+"
+`;

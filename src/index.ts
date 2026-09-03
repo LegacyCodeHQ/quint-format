@@ -224,6 +224,23 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       });
     }
 
+    const colonGap = source.slice(declaration.nameNode.endIndex, declaration.colon.startIndex);
+    if (colonGap.length > 0) {
+      const row = declaration.nameNode.endPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: declaration.nameNode.endPosition.column + 1,
+        length: Math.max(
+          1,
+          declaration.colon.startPosition.column - declaration.nameNode.endPosition.column,
+        ),
+        rule: "format/type-colon-spacing",
+        message: "expected no space before ':'",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+
     const typeGap = source.slice(declaration.colon.endIndex, declaration.typeNode.startIndex);
     if (typeGap !== " ") {
       const row = declaration.colon.endPosition.row;

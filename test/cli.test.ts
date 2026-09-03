@@ -92,4 +92,15 @@ describe("command-line checker", () => {
     expect(result.stdout.toString()).toBe("");
     expect(result.stderr.toString()).toMatchSnapshot();
   });
+
+  test("reports whitespace before a type colon", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "--check", "test/fixtures/before-type-colon.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout.toString()).toBe("");
+    expect(result.stderr.toString()).toMatchSnapshot();
+  });
 });
