@@ -723,14 +723,30 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     if (!conditionAnalysis || !consequenceAnalysis || !alternativeAnalysis) {
       throw new Error("Unable to analyze the conditional branches");
     }
+    const alternativeComments = node.namedChildren.filter(
+      (child) =>
+        (child.type === "comment" || child.type === "documentation_comment") &&
+        child.startIndex >= consequence.endIndex &&
+        child.endIndex <= alternative.startIndex,
+    );
     return {
       document: concat([
         text("if ("),
         conditionAnalysis.document,
         text(") "),
         consequenceAnalysis.document,
-        text(" else "),
-        alternativeAnalysis.document,
+        ...(alternativeComments.length === 0
+          ? [text(" else "), alternativeAnalysis.document]
+          : [
+              text(" else"),
+              indent(
+                concat([
+                  ...alternativeComments.flatMap((comment) => [hardLine, commentDocument(comment)]),
+                  hardLine,
+                  alternativeAnalysis.document,
+                ]),
+              ),
+            ]),
       ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),

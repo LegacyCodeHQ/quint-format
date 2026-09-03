@@ -2049,3 +2049,37 @@ test/fixtures/empty-parameter-lists.qnt:5:23: error[format/equals-spacing]: expe
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical conditional-comment formatting 1`] = `
+"test/fixtures/conditional-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/conditional-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | pure val answer=if(true)1 else
+  | ^
+  |
+test/fixtures/conditional-comment.qnt:2:16: error[format/equals-spacing]: expected one space around '='
+  |
+2 | pure val answer=if(true)1 else
+  |                ^
+  |
+test/fixtures/conditional-comment.qnt:2:19: error[format/conditional-keyword-spacing]: expected one space after 'if'
+  |
+2 | pure val answer=if(true)1 else
+  |                   ^
+  |
+test/fixtures/conditional-comment.qnt:2:25: error[format/conditional-branch-spacing]: expected one space after ')'
+  |
+2 | pure val answer=if(true)1 else
+  |                         ^
+  |
+test/fixtures/conditional-comment.qnt:2:27: error[format/conditional-else-spacing]: expected one space around 'else'
+  |
+2 | pure val answer=if(true)1 else
+  |                           ^^^^
+  |
+"
+`;

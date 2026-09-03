@@ -1,11 +1,10 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves comments in a record type 1`] = `
+exports[`formatter preserves a comment before a conditional alternative 1`] = `
 "module Example {
-  type Item = {
-    // Preserve this field comment.
-    id: int,
-  }
+  pure val answer = if (true) 1 else
+    // Preserve this alternative comment.
+    2
 }
 "
 `;
@@ -86,6 +85,16 @@ exports[`formatter formats a tuple type 1`] = `
 exports[`formatter formats a record type 1`] = `
 "module Example {
   const User: { name: str, active: bool }
+}
+"
+`;
+
+exports[`formatter preserves comments in a record type 1`] = `
+"module Example {
+  type Item = {
+    // Preserve this field comment.
+    id: int,
+  }
 }
 "
 `;
