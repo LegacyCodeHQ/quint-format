@@ -799,3 +799,10 @@ exports[`formatter preserves trailing source comments 1`] = `
 /*! 1 + 1 !*/
 "
 `;
+
+exports[`formatter formats an empty record type 1`] = `
+"module Example {
+  type Empty = {}
+}
+"
+`;

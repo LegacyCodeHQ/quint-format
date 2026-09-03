@@ -1886,3 +1886,22 @@ test/fixtures/trailing-source-comments.qnt:4:1: error[format/source-comment-sepa
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical empty-record-type formatting 1`] = `
+"test/fixtures/empty-record-type.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 |  type Empty={  }
+  | ^
+  |
+test/fixtures/empty-record-type.qnt:2:12: error[format/equals-spacing]: expected one space around '='
+  |
+2 |  type Empty={  }
+  |            ^
+  |
+test/fixtures/empty-record-type.qnt:2:14: error[format/type-delimiter-spacing]: expected no space inside an empty record type
+  |
+2 |  type Empty={  }
+  |              ^^
+  |
+"
+`;

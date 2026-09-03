@@ -173,7 +173,6 @@ function canFormatType(node: Parser.SyntaxNode): boolean {
     const row = node.childForFieldName("row");
     const rowName = row?.childForFieldName("name");
     return (
-      fields.length > 0 &&
       (!row || rowName?.type === "identifier") &&
       fields.every((field) => {
         const name = field.childForFieldName("name");
@@ -275,7 +274,7 @@ function formatType(node: Parser.SyntaxNode): string {
   if (node.type === "record_type") {
     const fields = node.namedChildren.filter((child) => child.type === "record_type_field");
     if (fields.length === 0) {
-      throw new Error("Unable to locate the record fields");
+      return "{}";
     }
     const formattedFields = fields.map((field) => {
       const name = field.childForFieldName("name");
@@ -1822,8 +1821,24 @@ function checkTypeDelimiterSpacing(
     const row = node.childForFieldName("row");
     const firstField = fields[0];
     const lastField = fields.at(-1);
-    if (!openBrace || !closeBrace || !firstField || !lastField) {
+    if (!openBrace || !closeBrace) {
       throw new Error("Unable to locate the record type delimiters");
+    }
+    if (!firstField || !lastField) {
+      const insideBraces = source.slice(openBrace.endIndex, closeBrace.startIndex);
+      if (insideBraces !== "") {
+        const row = openBrace.endPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: openBrace.endPosition.column + 1,
+          length: Math.max(1, insideBraces.length),
+          rule: "format/type-delimiter-spacing",
+          message: "expected no space inside an empty record type",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+      return;
     }
 
     const afterOpenBrace = source.slice(openBrace.endIndex, firstField.startIndex);

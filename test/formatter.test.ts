@@ -111,6 +111,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats an empty record type", () => {
+    const input = readFileSync(new URL("fixtures/empty-record-type.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats an open record type", () => {
     const input = "module Example {\n  const User:{ name: str|r }\n}\n";
     const output = formatQuint(input);
