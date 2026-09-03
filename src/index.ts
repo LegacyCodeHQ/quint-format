@@ -407,8 +407,37 @@ function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   return Boolean(arrow && body && body.startPosition.row > arrow.endPosition.row);
 }
 
-function containsFieldAccess(node: Parser.SyntaxNode): boolean {
-  return node.type === "field_access_expression" || node.namedChildren.some(containsFieldAccess);
+function ufcsChainRoot(node: Parser.SyntaxNode): Parser.SyntaxNode {
+  let current = node;
+  while (current.parent) {
+    const parent = current.parent;
+    const continuesThroughCall =
+      parent.type === "call_expression" && parent.childForFieldName("function")?.id === current.id;
+    const continuesThroughField =
+      parent.type === "field_access_expression" &&
+      parent.childForFieldName("object")?.id === current.id;
+    if (!continuesThroughCall && !continuesThroughField) break;
+    current = parent;
+  }
+  return current;
+}
+
+function ufcsChainFields(node: Parser.SyntaxNode): Parser.SyntaxNode[] {
+  const fields: Parser.SyntaxNode[] = [];
+  let current: Parser.SyntaxNode | null = ufcsChainRoot(node);
+  while (current) {
+    if (current.type === "call_expression") {
+      current = current.childForFieldName("function");
+      continue;
+    }
+    if (current.type === "field_access_expression") {
+      fields.push(current);
+      current = current.childForFieldName("object");
+      continue;
+    }
+    break;
+  }
+  return fields.reverse();
 }
 
 function isMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
@@ -416,13 +445,25 @@ function isMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
   const object = node.childForFieldName("object");
   const dot = node.children.find((child) => child.type === ".");
   return Boolean(
-    object && dot && dot.startPosition.row > object.endPosition.row && containsFieldAccess(object),
+    object &&
+      dot &&
+      ufcsChainFields(node).length >= 2 &&
+      dot.startPosition.row > object.endPosition.row,
   );
 }
 
-function hasMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
-  if (isMultilineUfcsContinuation(node)) return true;
-  return node.namedChildren.some(hasMultilineUfcsContinuation);
+function ufcsContinuationIndentation(node: Parser.SyntaxNode): number {
+  const root = ufcsChainRoot(node);
+  const firstContinuation = ufcsChainFields(node).find(isMultilineUfcsContinuation);
+  const dot = firstContinuation?.children.find((child) => child.type === ".");
+  const spaces = dot ? dot.startPosition.column - root.startPosition.column : 2;
+  return Math.max(1, Math.round(spaces / 2));
+}
+
+function indentBy(document: Doc, levels: number): Doc {
+  let indented = document;
+  for (let level = 0; level < levels; level += 1) indented = indent(indented);
+  return indented;
 }
 
 function preservesDefinitionBodyLineBreak(
@@ -750,7 +791,10 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
           ? isMultilineContinuation
             ? concat([
                 analysis.document,
-                indent(indent(concat([hardLine, text(`.${field.text}`)]))),
+                indentBy(
+                  concat([hardLine, text(`.${field.text}`)]),
+                  ufcsContinuationIndentation(node),
+                ),
               ])
             : concat([analysis.document, text(`.${field.text}`)])
           : concat([
@@ -1194,7 +1238,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     );
     const multilineLambdaArgument =
       arguments_.length === 1 && isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
-    const multilineUfcsCall = hasMultilineUfcsContinuation(functionNode);
+    const multilineUfcsCall = isMultilineUfcsContinuation(functionNode);
     const contentDocuments = hasComments
       ? node.namedChildren.flatMap((child) => {
           if (child.id === functionNode.id) return [];
@@ -1234,17 +1278,16 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
           : multilineUfcsCall
             ? concat([
                 functionAnalysis.document,
-                indent(
-                  indent(
-                    concat([
-                      text("("),
-                      ...analyses.flatMap((analysis, index) => [
-                        ...(index === 0 ? [] : [text(", ")]),
-                        analysis.document,
-                      ]),
-                      text(")"),
+                indentBy(
+                  concat([
+                    text("("),
+                    ...analyses.flatMap((analysis, index) => [
+                      ...(index === 0 ? [] : [text(", ")]),
+                      analysis.document,
                     ]),
-                  ),
+                    text(")"),
+                  ]),
+                  ufcsContinuationIndentation(functionNode),
                 ),
               ])
             : concat([
@@ -3865,7 +3908,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           }
           if (
             isMultilineContinuation &&
-            dot.startPosition.column !== fieldAccess.startPosition.column + 4
+            dot.startPosition.column !==
+              ufcsChainRoot(fieldAccess).startPosition.column +
+                ufcsContinuationIndentation(fieldAccess) * 2
           ) {
             const row = dot.startPosition.row;
             diagnostics.push({

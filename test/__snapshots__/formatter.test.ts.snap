@@ -1220,3 +1220,17 @@ exports[`formatter preserves an explicit line break after definition equals 1`] 
 }
 "
 `;
+
+exports[`formatter preserves all aligned dots in a nondet UFCS chain 1`] = `
+"module Example {
+  var selected: int
+
+  action step =
+    nondet choice =
+      Set(1, 2, 3)
+        .filter(value => value > 1)
+        .oneOf()
+    selected' = choice
+}
+"
+`;

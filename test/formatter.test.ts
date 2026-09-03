@@ -417,6 +417,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves all aligned dots in a nondet UFCS chain", () => {
+    const input = readFileSync(
+      new URL("fixtures/nondet-multiline-ufcs-chain.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "      Set(1, 2, 3)\n        .filter(value => value > 1)\n        .oneOf()",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats an index expression", () => {
     const input = "module Example {\n  val first = List(1, 2)[ 0 ]\n}\n";
     const output = formatQuint(input);
