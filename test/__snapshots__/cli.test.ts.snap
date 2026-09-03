@@ -280,3 +280,22 @@ exports[`command-line checker reports adjacent definitions without a blank line 
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical leading line-comment formatting 1`] = `
+"test/fixtures/leading-line-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
+  |
+2 | // The answer
+  | ^
+  |
+test/fixtures/leading-line-comment.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+3 | val answer=42
+  | ^
+  |
+test/fixtures/leading-line-comment.qnt:3:11: error[format/equals-spacing]: expected one space around '='
+  |
+3 | val answer=42
+  |           ^
+  |
+"
+`;

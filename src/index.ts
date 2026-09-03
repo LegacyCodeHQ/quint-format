@@ -82,6 +82,7 @@ function positionAtIndex(source: string, index: number) {
 
 interface ModuleDeclaration {
   node: Parser.SyntaxNode;
+  leadingComments?: Parser.SyntaxNode[];
   keyword: Parser.SyntaxNode;
   nameNode: Parser.SyntaxNode;
   colon?: Parser.SyntaxNode;
@@ -157,8 +158,27 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
   }
 
   const declarations: ModuleDeclaration[] = [];
+  let pendingLineComments: Parser.SyntaxNode[] = [];
+  const addDeclaration = (declaration: ModuleDeclaration) => {
+    const leadingComments = pendingLineComments;
+    pendingLineComments = [];
+    declarations.push({
+      ...declaration,
+      leadingComments,
+      document: concat([
+        ...leadingComments.flatMap((comment) => [text(comment.text), hardLine]),
+        declaration.document,
+      ]),
+    });
+  };
+
   for (const node of moduleNode.namedChildren) {
     if (node.id === nameNode.id) {
+      continue;
+    }
+
+    if (node.type === "comment" && node.text.startsWith("//")) {
+      pendingLineComments.push(node);
       continue;
     }
 
@@ -171,7 +191,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         throw new Error("Formatting this assumption syntax is not implemented yet");
       }
 
-      declarations.push({
+      addDeclaration({
         node,
         keyword,
         nameNode: declarationName,
@@ -201,7 +221,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
 
       const expression = analyzeExpression(value);
       const typeAnnotation = declarationType ? `: ${declarationType.text}` : "";
-      declarations.push({
+      addDeclaration({
         node,
         keyword,
         nameNode: declarationName,
@@ -236,7 +256,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       throw new Error("Unable to locate the variable declaration fields");
     }
 
-    declarations.push({
+    addDeclaration({
       node,
       keyword,
       nameNode: declarationName,
@@ -244,6 +264,10 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       typeNode: declarationType,
       document: text(`${keywordType} ${declarationName.text}: ${declarationType.text}`),
     });
+  }
+
+  if (pendingLineComments.length > 0) {
+    throw new Error("Formatting trailing line comments is not implemented yet");
   }
 
   const openBrace = moduleNode.children.find((child) => child.type === "{");
@@ -369,8 +393,24 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
     for (const [index, declaration] of module.declarations.entries()) {
       const previousDeclaration = index > 0 ? module.declarations[index - 1] : undefined;
+      const declarationStart = declaration.leadingComments?.[0] ?? declaration.node;
       const sharesLineWithPrevious =
-        previousDeclaration?.node.endPosition.row === declaration.node.startPosition.row;
+        previousDeclaration?.node.endPosition.row === declarationStart.startPosition.row;
+
+      for (const comment of declaration.leadingComments ?? []) {
+        if (comment.startPosition.column !== 2) {
+          const row = comment.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: 1,
+            length: Math.max(1, comment.startPosition.column),
+            rule: "format/comment-indentation",
+            message: "expected 2 spaces of indentation",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
 
       if (sharesLineWithPrevious) {
         const row = declaration.node.startPosition.row;
@@ -386,7 +426,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       } else {
         if (
           previousDeclaration &&
-          declaration.node.startPosition.row - previousDeclaration.node.endPosition.row !== 2
+          declarationStart.startPosition.row - previousDeclaration.node.endPosition.row !== 2
         ) {
           const row = declaration.node.startPosition.row;
           diagnostics.push({

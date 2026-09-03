@@ -164,3 +164,11 @@ exports[`formatter places a blank line between definitions 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a leading line comment 1`] = `
+"module Example {
+  // The answer
+  val answer = 42
+}
+"
+`;

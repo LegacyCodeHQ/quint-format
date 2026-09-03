@@ -24,6 +24,8 @@ implement the smallest fix, validate the output, verify, and commit atomically.
 ## 3. Comments
 
 - [ ] Line comments
+  - [x] Leading comments on definitions
+  - [ ] Trailing and inline comments
 - [ ] Documentation comments
 - [ ] Block comments
 - [ ] Leading, trailing, and inline attachment
