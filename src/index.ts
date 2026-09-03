@@ -84,8 +84,8 @@ interface ModuleDeclaration {
   node: Parser.SyntaxNode;
   keyword: Parser.SyntaxNode;
   nameNode: Parser.SyntaxNode;
-  colon: Parser.SyntaxNode;
-  typeNode: Parser.SyntaxNode;
+  colon?: Parser.SyntaxNode;
+  typeNode?: Parser.SyntaxNode;
   document: Doc;
 }
 
@@ -106,6 +106,23 @@ function analyzeModule(source: string) {
   const declarations: ModuleDeclaration[] = [];
   for (const node of moduleNode.namedChildren) {
     if (node.id === nameNode.id) {
+      continue;
+    }
+
+    if (node.type === "assumption_declaration") {
+      const keyword = node.children.find((child) => child.type === "assume");
+      const declarationName = node.childForFieldName("name");
+      const condition = node.childForFieldName("condition");
+      if (!keyword || !declarationName || condition?.type !== "boolean_literal") {
+        throw new Error("Formatting this assumption syntax is not implemented yet");
+      }
+
+      declarations.push({
+        node,
+        keyword,
+        nameNode: declarationName,
+        document: text(`assume ${declarationName.text} = ${condition.text}`),
+      });
       continue;
     }
 
@@ -265,43 +282,45 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       });
     }
 
-    const colonGap = source.slice(declaration.nameNode.endIndex, declaration.colon.startIndex);
-    if (colonGap.length > 0) {
-      const row = declaration.nameNode.endPosition.row;
-      diagnostics.push({
-        filePath,
-        line: row + 1,
-        column: declaration.nameNode.endPosition.column + 1,
-        length: Math.max(
-          1,
-          declaration.colon.startPosition.column - declaration.nameNode.endPosition.column,
-        ),
-        rule: "format/type-colon-spacing",
-        message: "expected no space before ':'",
-        sourceLine: lines[row] ?? "",
-      });
-    }
+    if (declaration.colon && declaration.typeNode) {
+      const colonGap = source.slice(declaration.nameNode.endIndex, declaration.colon.startIndex);
+      if (colonGap.length > 0) {
+        const row = declaration.nameNode.endPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: declaration.nameNode.endPosition.column + 1,
+          length: Math.max(
+            1,
+            declaration.colon.startPosition.column - declaration.nameNode.endPosition.column,
+          ),
+          rule: "format/type-colon-spacing",
+          message: "expected no space before ':'",
+          sourceLine: lines[row] ?? "",
+        });
+      }
 
-    const typeGap = source.slice(declaration.colon.endIndex, declaration.typeNode.startIndex);
-    if (typeGap !== " ") {
-      const row = declaration.colon.endPosition.row;
-      const hasGap =
-        declaration.typeNode.startPosition.column > declaration.colon.endPosition.column;
-      diagnostics.push({
-        filePath,
-        line: row + 1,
-        column:
-          (hasGap
-            ? declaration.colon.endPosition.column
-            : declaration.typeNode.startPosition.column) + 1,
-        length: Math.max(
-          1,
-          declaration.typeNode.startPosition.column - declaration.colon.endPosition.column,
-        ),
-        rule: "format/type-colon-spacing",
-        message: "expected one space after ':'",
-        sourceLine: lines[row] ?? "",
-      });
+      const typeGap = source.slice(declaration.colon.endIndex, declaration.typeNode.startIndex);
+      if (typeGap !== " ") {
+        const row = declaration.colon.endPosition.row;
+        const hasGap =
+          declaration.typeNode.startPosition.column > declaration.colon.endPosition.column;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column:
+            (hasGap
+              ? declaration.colon.endPosition.column
+              : declaration.typeNode.startPosition.column) + 1,
+          length: Math.max(
+            1,
+            declaration.typeNode.startPosition.column - declaration.colon.endPosition.column,
+          ),
+          rule: "format/type-colon-spacing",
+          message: "expected one space after ':'",
+          sourceLine: lines[row] ?? "",
+        });
+      }
     }
   }
 
