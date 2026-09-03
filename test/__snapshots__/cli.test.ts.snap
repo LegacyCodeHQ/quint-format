@@ -318,3 +318,22 @@ test/fixtures/documentation-comment.qnt:3:11: error[format/equals-spacing]: expe
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical block-comment formatting 1`] = `
+"test/fixtures/block-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
+  |
+2 | /* The answer */
+  | ^
+  |
+test/fixtures/block-comment.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+3 | val answer=42
+  | ^
+  |
+test/fixtures/block-comment.qnt:3:11: error[format/equals-spacing]: expected one space around '='
+  |
+3 | val answer=42
+  |           ^
+  |
+"
+`;

@@ -179,7 +179,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
 
     if (
       node.type === "documentation_comment" ||
-      (node.type === "comment" && node.text.startsWith("//"))
+      (node.type === "comment" && !/[\r\n]/.test(node.text))
     ) {
       pendingComments.push(node);
       continue;
