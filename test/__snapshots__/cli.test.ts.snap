@@ -615,6 +615,15 @@ test/fixtures/index-expression.qnt:2:28: error[format/index-delimiter-spacing]: 
 "
 `;
 
+exports[`command-line checker reports noncanonical field-access formatting 1`] = `
+"test/fixtures/field-access.qnt:2:29: error[format/field-access-spacing]: expected no space around '.'
+  |
+2 |   val answer = { value: 1 } . value
+  |                             ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

@@ -273,6 +273,13 @@ exports[`formatter formats an index expression 1`] = `
 "
 `;
 
+exports[`formatter formats a field-access expression 1`] = `
+"module Example {
+  val answer = { value: 1 }.value
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

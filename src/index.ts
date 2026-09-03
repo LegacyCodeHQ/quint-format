@@ -2391,6 +2391,29 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             });
           }
         }
+
+        for (const fieldAccess of collectNodes(declaration.valueNode, "field_access_expression")) {
+          const object = fieldAccess.childForFieldName("object");
+          const field = fieldAccess.childForFieldName("field");
+          const dot = fieldAccess.children.find((child) => child.type === ".");
+          if (!object || !field || !dot) {
+            throw new Error("Unable to locate the field access operator");
+          }
+          const beforeDot = source.slice(object.endIndex, dot.startIndex);
+          const afterDot = source.slice(dot.endIndex, field.startIndex);
+          if (beforeDot !== "" || afterDot !== "") {
+            const row = dot.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: dot.startPosition.column + 1,
+              length: 1,
+              rule: "format/field-access-spacing",
+              message: "expected no space around '.'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
       }
 
       for (const recordLiteral of declaration.recordLiterals ?? []) {
