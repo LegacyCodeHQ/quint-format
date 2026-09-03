@@ -177,4 +177,4 @@ that every subsequent formatter preserves them by construction.
 - [x] Parse-tree preservation checks
 - [x] Unicode, tabs, CRLF, and multiline diagnostic ranges
 - [x] Property and fuzz testing
-- [ ] Performance and large-file tests
+- [x] Performance and large-file tests
