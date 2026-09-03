@@ -302,7 +302,8 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         !defKeyword &&
         (qualifier?.type === "action" ||
           qualifier?.type === "run" ||
-          qualifier?.type === "temporal");
+          qualifier?.type === "temporal" ||
+          qualifier?.type === "nondet");
       const keyword = isPureDefinition
         ? defKeyword
         : isStandaloneDefinition

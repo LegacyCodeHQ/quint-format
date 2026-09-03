@@ -461,3 +461,12 @@ exports[`command-line checker reports noncanonical temporal formatting 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical nondet formatting 1`] = `
+"test/fixtures/nondet-definition.qnt:2:19: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   nondet selection=true
+  |                   ^
+  |
+"
+`;

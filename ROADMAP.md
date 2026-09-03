@@ -65,6 +65,8 @@ that every subsequent formatter preserves them by construction.
   - [x] Parameterless expression-bodied temporal definitions
   - [ ] Parameters and compound temporal expressions
 - [ ] `nondet`
+  - [x] Parameterless expression-bodied nondeterministic definitions
+  - [ ] Parameters and nondeterministic bindings
 - [ ] Parameters and return types
 - [ ] Optional semicolons where Quint permits them
 - [ ] Type aliases and uninterpreted types

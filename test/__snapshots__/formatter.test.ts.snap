@@ -270,3 +270,10 @@ exports[`formatter formats a parameterless temporal definition 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a parameterless nondet definition 1`] = `
+"module Example {
+  nondet selection = true
+}
+"
+`;
