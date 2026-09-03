@@ -6,3 +6,15 @@ exports[`document renderer renders indented hard lines 1`] = `
 }
 "
 `;
+
+exports[`document renderer keeps groups on one line when they fit 1`] = `
+"module Example { val answer = 42 }
+"
+`;
+
+exports[`document renderer breaks groups when they exceed the line width 1`] = `
+"module Example {
+  val answer = 42
+}
+"
+`;
