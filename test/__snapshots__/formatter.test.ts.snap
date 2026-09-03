@@ -212,3 +212,10 @@ exports[`formatter preserves a trailing line comment 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a comment inside an otherwise empty module 1`] = `
+"module Example {
+  // Intentionally empty
+}
+"
+`;

@@ -302,9 +302,11 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
     });
   }
 
-  if (pendingComments.length > 0) {
+  if (pendingComments.length > 0 && declarations.length > 0) {
     throw new Error("Formatting trailing comments is not implemented yet");
   }
+
+  const danglingComments = pendingComments;
 
   const openBrace = moduleNode.children.find((child) => child.type === "{");
   const closeBrace = moduleNode.children.find((child) => child.type === "}");
@@ -322,6 +324,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
     openBrace,
     closeBrace,
     declarations,
+    danglingComments,
   };
 }
 
@@ -454,6 +457,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
     if (
       module.declarations.length === 0 &&
+      module.danglingComments.length === 0 &&
       module.openBrace.startPosition.row === module.closeBrace.startPosition.row
     ) {
       const row = module.openBrace.startPosition.row;
@@ -469,6 +473,21 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         message: "empty module braces must be on separate lines",
         sourceLine: lines[row] ?? "",
       });
+    }
+
+    for (const comment of module.danglingComments) {
+      if (comment.startPosition.column !== 2) {
+        const row = comment.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: 1,
+          length: Math.max(1, comment.startPosition.column),
+          rule: "format/comment-indentation",
+          message: "expected 2 spaces of indentation",
+          sourceLine: lines[row] ?? "",
+        });
+      }
     }
 
     for (const [index, declaration] of module.declarations.entries()) {
@@ -672,9 +691,14 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 }
 
 function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
-  const body = module.declarations.flatMap(({ document }, index) =>
+  const declarations = module.declarations.flatMap(({ document }, index) =>
     index === 0 ? [hardLine, document] : [hardLine, hardLine, document],
   );
+  const danglingComments = module.danglingComments.flatMap((comment) => [
+    hardLine,
+    commentDocument(comment),
+  ]);
+  const body = [...declarations, ...danglingComments];
   return renderDoc(
     concat([text(`module ${module.name} {`), indent(concat(body)), hardLine, text("}"), hardLine]),
   );

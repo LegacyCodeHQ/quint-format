@@ -36,7 +36,7 @@ implement the smallest fix, validate the output, verify, and commit atomically.
   - [x] Leading module and definition attachment
   - [x] Trailing definition attachment
   - [ ] Inline attachment inside syntax nodes
-- [ ] Comments inside otherwise empty constructs
+- [x] Comments inside otherwise empty constructs
 
 Comments are completed before broadening the remaining syntax formatters so
 that every subsequent formatter preserves them by construction.

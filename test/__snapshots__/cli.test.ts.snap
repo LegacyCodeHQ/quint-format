@@ -379,3 +379,12 @@ exports[`command-line checker reports noncanonical trailing line-comment formatt
   |
 "
 `;
+
+exports[`command-line checker reports a misindented comment-only module 1`] = `
+"test/fixtures/comment-only-module.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
+  |
+2 | // Intentionally empty
+  | ^
+  |
+"
+`;
