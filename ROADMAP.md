@@ -152,7 +152,7 @@ that every subsequent formatter preserves them by construction.
 - [x] Ordinary blocks
 - [x] `all`, `any`, `and`, and `or`
 - [x] `nondet` bindings
-- [ ] Nested definitions
+- [x] Nested definitions
 
 ## 9. Imports, exports, and instances
 

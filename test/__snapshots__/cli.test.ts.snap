@@ -1323,3 +1323,42 @@ exports[`command-line checker reports noncanonical nondet formatting 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical nested-definition formatting 1`] = `
+"test/fixtures/nested-definitions.qnt:3:9: error[format/qualifier-spacing]: expected one space after 'pure'
+  |
+3 |     pure   val doubled:int=value * 2;
+  |         ^^^
+  |
+test/fixtures/nested-definitions.qnt:3:23: error[format/type-colon-spacing]: expected ': ' before the definition type
+  |
+3 |     pure   val doubled:int=value * 2;
+  |                       ^
+  |
+test/fixtures/nested-definitions.qnt:3:27: error[format/equals-spacing]: expected one space around '='
+  |
+3 |     pure   val doubled:int=value * 2;
+  |                           ^
+  |
+test/fixtures/nested-definitions.qnt:3:37: error[format/unnecessary-semicolon]: optional semicolons are omitted
+  |
+3 |     pure   val doubled:int=value * 2;
+  |                                     ^
+  |
+test/fixtures/nested-definitions.qnt:4:9: error[format/qualifier-spacing]: expected one space after 'pure'
+  |
+4 |     pure   def increment(number: int): int=number + 1;
+  |         ^^^
+  |
+test/fixtures/nested-definitions.qnt:4:43: error[format/equals-spacing]: expected one space around '='
+  |
+4 |     pure   def increment(number: int): int=number + 1;
+  |                                           ^
+  |
+test/fixtures/nested-definitions.qnt:4:54: error[format/unnecessary-semicolon]: optional semicolons are omitted
+  |
+4 |     pure   def increment(number: int): int=number + 1;
+  |                                                      ^
+  |
+"
+`;

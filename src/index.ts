@@ -367,6 +367,72 @@ function collectNodes(node: Parser.SyntaxNode, type: string): Parser.SyntaxNode[
   ];
 }
 
+function analyzeLocalDefinition(node: Parser.SyntaxNode): ExpressionAnalysis {
+  if (node.type === "value_definition") {
+    const qualifier = node.childForFieldName("qualifier");
+    const name = node.childForFieldName("name");
+    const typeNode = node.childForFieldName("type");
+    const value = node.childForFieldName("value");
+    if (!name || (qualifier && qualifier.type !== "pure")) {
+      throw new Error("Unable to locate the local value definition");
+    }
+    const valueAnalysis = value ? analyzeExpression(value) : undefined;
+    return {
+      document: concat([
+        text(
+          `${qualifier ? "pure " : ""}val ${formatPattern(name)}${typeNode ? `: ${formatType(typeNode)}` : ""}${value ? " = " : ""}`,
+        ),
+        ...(valueAnalysis ? [valueAnalysis.document] : []),
+      ]),
+      binaryOperators: valueAnalysis?.binaryOperators ?? [],
+      unitLiterals: valueAnalysis?.unitLiterals ?? [],
+      sequenceLiterals: valueAnalysis?.sequenceLiterals ?? [],
+      recordLiterals: valueAnalysis?.recordLiterals ?? [],
+      callExpressions: valueAnalysis?.callExpressions ?? [],
+    };
+  }
+
+  if (node.type === "operator_definition") {
+    const qualifier = node.childForFieldName("qualifier");
+    const defKeyword = node.children.find((child) => child.type === "def");
+    const name = node.childForFieldName("name");
+    const parameters = node.childrenForFieldName("parameter");
+    const returnType = node.childForFieldName("return_type");
+    const body = node.childForFieldName("body");
+    if (!name || (!defKeyword && !qualifier)) {
+      throw new Error("Unable to locate the local operator definition");
+    }
+    const bodyAnalysis = body ? analyzeExpression(body) : undefined;
+    const head = defKeyword ? `${qualifier ? `${qualifier.text} ` : ""}def` : qualifier?.text;
+    const parameterList =
+      parameters.length > 0
+        ? `(${parameters
+            .map((parameter) => {
+              const parameterName = parameter.childForFieldName("name");
+              const parameterType = parameter.childForFieldName("type");
+              if (!parameterName) throw new Error("Unable to locate a local operator parameter");
+              return `${formatPattern(parameterName)}${parameterType ? `: ${formatType(parameterType)}` : ""}`;
+            })
+            .join(", ")})`
+        : "";
+    return {
+      document: concat([
+        text(
+          `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""}${body ? " = " : ""}`,
+        ),
+        ...(bodyAnalysis ? [bodyAnalysis.document] : []),
+      ]),
+      binaryOperators: bodyAnalysis?.binaryOperators ?? [],
+      unitLiterals: bodyAnalysis?.unitLiterals ?? [],
+      sequenceLiterals: bodyAnalysis?.sequenceLiterals ?? [],
+      recordLiterals: bodyAnalysis?.recordLiterals ?? [],
+      callExpressions: bodyAnalysis?.callExpressions ?? [],
+    };
+  }
+
+  throw new Error("Formatting this local definition syntax is not implemented yet");
+}
+
 function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   if (
     node.type === "integer_literal" ||
@@ -629,6 +695,25 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       sequenceLiterals: analysis.sequenceLiterals,
       recordLiterals: analysis.recordLiterals,
       callExpressions: analysis.callExpressions,
+    };
+  }
+
+  if (node.type === "nested_definition_expression") {
+    const definition = node.childForFieldName("definition");
+    const body = node.childForFieldName("body");
+    if (!definition || !body) {
+      throw new Error("Unable to locate the nested definition or body");
+    }
+    const definitionAnalysis = analyzeLocalDefinition(definition);
+    const bodyAnalysis = analyzeExpression(body);
+    const analyses = [definitionAnalysis, bodyAnalysis];
+    return {
+      document: concat([definitionAnalysis.document, hardLine, bodyAnalysis.document]),
+      binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
+      unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
+      sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
+      recordLiterals: analyses.flatMap((analysis) => analysis.recordLiterals),
+      callExpressions: analyses.flatMap((analysis) => analysis.callExpressions),
     };
   }
 
@@ -1792,6 +1877,196 @@ function checkPatternSpacing(
   }
   for (const element of elements)
     checkPatternSpacing(element, source, lines, filePath, diagnostics);
+}
+
+function checkLocalDefinition(
+  node: Parser.SyntaxNode,
+  source: string,
+  lines: string[],
+  filePath: string,
+  diagnostics: FormatDiagnostic[],
+) {
+  const qualifier = node.childForFieldName("qualifier");
+  const keyword =
+    node.children.find((child) => child.type === "val" || child.type === "def") ?? qualifier;
+  const name = node.childForFieldName("name");
+  if (!keyword || !name) throw new Error("Unable to locate the local definition header");
+
+  if (qualifier && qualifier.id !== keyword.id) {
+    const gap = source.slice(qualifier.endIndex, keyword.startIndex);
+    if (gap !== " ") {
+      const row = qualifier.endPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: qualifier.endPosition.column + 1,
+        length: Math.max(1, gap.length),
+        rule: "format/qualifier-spacing",
+        message: `expected one space after '${qualifier.text}'`,
+        sourceLine: lines[row] ?? "",
+      });
+    }
+  }
+
+  const keywordGap = source.slice(keyword.endIndex, name.startIndex);
+  if (keywordGap !== " ") {
+    const row = keyword.endPosition.row;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: keyword.endPosition.column + 1,
+      length: Math.max(1, keywordGap.length),
+      rule: "format/declaration-keyword-spacing",
+      message: `expected one space after '${keyword.text}'`,
+      sourceLine: lines[row] ?? "",
+    });
+  }
+
+  const parameters = node.childrenForFieldName("parameter");
+  const openParen = node.children.find((child) => child.type === "(");
+  const closeParen = node.children.find((child) => child.type === ")");
+  if (openParen && closeParen && parameters.length > 0) {
+    const first = parameters[0] as Parser.SyntaxNode;
+    const last = parameters.at(-1) as Parser.SyntaxNode;
+    if (source.slice(name.endIndex, openParen.startIndex) !== "") {
+      const row = openParen.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: name.endPosition.column + 1,
+        length: 1,
+        rule: "format/parameter-list-spacing",
+        message: "expected no space before '('",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+    if (
+      source.slice(openParen.endIndex, first.startIndex) !== "" ||
+      source.slice(last.endIndex, closeParen.startIndex) !== ""
+    ) {
+      const row = openParen.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: openParen.endPosition.column + 1,
+        length: 1,
+        rule: "format/parameter-list-spacing",
+        message: "expected no space inside parameter-list parentheses",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+    for (const [index, comma] of node.children.filter((child) => child.type === ",").entries()) {
+      const previous = parameters[index];
+      const next = parameters[index + 1];
+      if (
+        previous &&
+        next &&
+        (source.slice(previous.endIndex, comma.startIndex) !== "" ||
+          source.slice(comma.endIndex, next.startIndex) !== " ")
+      ) {
+        const row = comma.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: comma.startPosition.column + 1,
+          length: 1,
+          rule: "format/parameter-separator-spacing",
+          message: "expected ', ' between parameters",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
+  }
+
+  for (const parameter of parameters) {
+    const parameterName = parameter.childForFieldName("name");
+    const parameterType = parameter.childForFieldName("type");
+    const colon = parameter.children.find((child) => child.type === ":");
+    if (
+      parameterName &&
+      parameterType &&
+      colon &&
+      (source.slice(parameterName.endIndex, colon.startIndex) !== "" ||
+        source.slice(colon.endIndex, parameterType.startIndex) !== " ")
+    ) {
+      const row = colon.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: colon.startPosition.column + 1,
+        length: 1,
+        rule: "format/type-colon-spacing",
+        message: "expected ': ' in parameter annotations",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+  }
+
+  const typeNode = node.childForFieldName(
+    node.type === "operator_definition" ? "return_type" : "type",
+  );
+  const colon = node.children.find((child) => child.type === ":");
+  const typeAnchor = closeParen ?? name;
+  if (
+    typeNode &&
+    colon &&
+    (source.slice(typeAnchor.endIndex, colon.startIndex) !== "" ||
+      source.slice(colon.endIndex, typeNode.startIndex) !== " ")
+  ) {
+    const row = colon.startPosition.row;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: colon.startPosition.column + 1,
+      length: 1,
+      rule: "format/type-colon-spacing",
+      message: "expected ': ' before the definition type",
+      sourceLine: lines[row] ?? "",
+    });
+  }
+
+  const value = node.childForFieldName(node.type === "operator_definition" ? "body" : "value");
+  const equals = node.children.find((child) => child.type === "=");
+  if (value && equals) {
+    const anchor = typeNode ?? closeParen ?? name;
+    if (
+      source.slice(anchor.endIndex, equals.startIndex) !== " " ||
+      source.slice(equals.endIndex, value.startIndex) !== " "
+    ) {
+      const row = equals.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: equals.startPosition.column + 1,
+        length: 1,
+        rule: "format/equals-spacing",
+        message: "expected one space around '='",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+  }
+
+  const semicolon = node.children.find((child) => child.type === ";");
+  if (semicolon) {
+    const row = semicolon.startPosition.row;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: semicolon.startPosition.column + 1,
+      length: 1,
+      rule: "format/unnecessary-semicolon",
+      message: "optional semicolons are omitted",
+      sourceLine: lines[row] ?? "",
+    });
+  }
+
+  if (typeNode) checkTypeDelimiterSpacing(typeNode, source, lines, filePath, diagnostics);
+  for (const parameter of parameters) {
+    const parameterType = parameter.childForFieldName("type");
+    if (parameterType)
+      checkTypeDelimiterSpacing(parameterType, source, lines, filePath, diagnostics);
+  }
+  checkPatternSpacing(name, source, lines, filePath, diagnostics);
 }
 
 export function checkQuint(source: string, filePath: string): FormatDiagnostic[] {
@@ -3038,6 +3313,26 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               length: 1,
               rule: "format/nondet-binding-spacing",
               message: "expected one space around '='",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+
+        for (const nested of collectNodes(declaration.valueNode, "nested_definition_expression")) {
+          const definition = nested.childForFieldName("definition");
+          const body = nested.childForFieldName("body");
+          if (!definition || !body)
+            throw new Error("Unable to locate the nested definition layout");
+          checkLocalDefinition(definition, source, lines, filePath, diagnostics);
+          if (body.startPosition.row <= definition.endPosition.row) {
+            const row = body.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: body.startPosition.column + 1,
+              length: Math.max(1, body.text.length),
+              rule: "format/nested-definition-layout",
+              message: "expected the nested definition body on a new line",
               sourceLine: lines[row] ?? "",
             });
           }
