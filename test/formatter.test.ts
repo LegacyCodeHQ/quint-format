@@ -527,6 +527,16 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("places a match expression below a definition header", () => {
+    const input = readFileSync(new URL("fixtures/match-definition.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toContain("action step =\n    match status {");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves comments between match arms", () => {
     const input = readFileSync(new URL("fixtures/match-comment.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

@@ -1,5 +1,58 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`command-line checker reports noncanonical match-arm formatting 1`] = `
+"test/fixtures/match-check.qnt:4:42: error[format/equals-spacing]: expected a line break after '='
+  |
+4 |   pure def getOrZero(value: Option): int = match value {
+  |                                          ^
+  |
+test/fixtures/match-check.qnt:5:12: error[format/match-pattern-spacing]: expected no space after '('
+  |
+5 |     | Some( x )=>x
+  |            ^
+  |
+test/fixtures/match-check.qnt:5:14: error[format/match-pattern-spacing]: expected no space before ')'
+  |
+5 |     | Some( x )=>x
+  |              ^
+  |
+test/fixtures/match-check.qnt:5:16: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+5 |     | Some( x )=>x
+  |                ^^
+  |
+"
+`;
+
+exports[`command-line checker reports an inline match layout 1`] = `
+"test/fixtures/match-expression.qnt:4:42: error[format/equals-spacing]: expected a line break after '='
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                          ^
+  |
+test/fixtures/match-expression.qnt:4:56: error[format/match-layout]: expected match arms and the closing brace on separate lines
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                        ^
+  |
+test/fixtures/match-expression.qnt:4:64: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                ^^
+  |
+test/fixtures/match-expression.qnt:4:72: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                        ^^
+  |
+test/fixtures/match-expression.qnt:4:77: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                             ^^
+  |
+"
+`;
+
 exports[`command-line checker formats one file to standard output 1`] = `
 "module Example {
 }
@@ -1019,25 +1072,6 @@ test/fixtures/conditional-consequence-comment.qnt:2:25: error[format/conditional
 "
 `;
 
-exports[`command-line checker reports noncanonical match-arm formatting 1`] = `
-"test/fixtures/match-check.qnt:5:12: error[format/match-pattern-spacing]: expected no space after '('
-  |
-5 |     | Some( x )=>x
-  |            ^
-  |
-test/fixtures/match-check.qnt:5:14: error[format/match-pattern-spacing]: expected no space before ')'
-  |
-5 |     | Some( x )=>x
-  |              ^
-  |
-test/fixtures/match-check.qnt:5:16: error[format/match-arrow-spacing]: expected one space around '=>'
-  |
-5 |     | Some( x )=>x
-  |                ^^
-  |
-"
-`;
-
 exports[`command-line checker reports noncanonical match-comment formatting 1`] = `
 "test/fixtures/match-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
@@ -1064,7 +1098,7 @@ test/fixtures/match-comment.qnt:3:1: error[format/module-body-indentation]: expe
 3 | pure def value(step)=match step{
   | ^
   |
-test/fixtures/match-comment.qnt:3:21: error[format/equals-spacing]: expected one space around '='
+test/fixtures/match-comment.qnt:3:21: error[format/equals-spacing]: expected a line break after '='
   |
 3 | pure def value(step)=match step{
   |                     ^
@@ -1108,7 +1142,7 @@ test/fixtures/match-arm-body-comment.qnt:3:1: error[format/module-body-indentati
 3 | pure def value(step)=match step{
   | ^
   |
-test/fixtures/match-arm-body-comment.qnt:3:21: error[format/equals-spacing]: expected one space around '='
+test/fixtures/match-arm-body-comment.qnt:3:21: error[format/equals-spacing]: expected a line break after '='
   |
 3 | pure def value(step)=match step{
   |                     ^
@@ -1122,30 +1156,6 @@ test/fixtures/match-arm-body-comment.qnt:7:8: error[format/match-arrow-spacing]:
   |
 7 | |Second=>2
   |        ^^
-  |
-"
-`;
-
-exports[`command-line checker reports an inline match layout 1`] = `
-"test/fixtures/match-expression.qnt:4:56: error[format/match-layout]: expected match arms and the closing brace on separate lines
-  |
-4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
-  |                                                        ^
-  |
-test/fixtures/match-expression.qnt:4:64: error[format/match-arrow-spacing]: expected one space around '=>'
-  |
-4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
-  |                                                                ^^
-  |
-test/fixtures/match-expression.qnt:4:72: error[format/match-arrow-spacing]: expected one space around '=>'
-  |
-4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
-  |                                                                        ^^
-  |
-test/fixtures/match-expression.qnt:4:77: error[format/match-arrow-spacing]: expected one space around '=>'
-  |
-4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
-  |                                                                             ^^
   |
 "
 `;
@@ -2213,7 +2223,7 @@ test/fixtures/sum-type-comment.qnt:2:1: error[format/module-body-indentation]: e
 2 | type Step=
   | ^
   |
-test/fixtures/sum-type-comment.qnt:2:10: error[format/equals-spacing]: expected one space around '='
+test/fixtures/sum-type-comment.qnt:2:10: error[format/equals-spacing]: expected a line break after '='
   |
 2 | type Step=
   |          ^

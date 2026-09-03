@@ -383,6 +383,10 @@ function isBlockBodiedIfExpression(node: Parser.SyntaxNode): boolean {
   return consequence?.type === "block_expression" || alternative?.type === "block_expression";
 }
 
+function requiresDefinitionBodyLineBreak(node: Parser.SyntaxNode): boolean {
+  return isBlockBodiedIfExpression(node) || node.type === "match_expression";
+}
+
 function definitionBodyDocument(
   head: string,
   definition: Parser.SyntaxNode,
@@ -395,7 +399,7 @@ function definitionBodyDocument(
       child.endIndex <= body.startIndex,
   );
   if (comments.length === 0) {
-    return isBlockBodiedIfExpression(body)
+    return requiresDefinitionBodyLineBreak(body)
       ? concat([text(head), indent(concat([hardLine, bodyDocument]))])
       : concat([text(`${head} `), bodyDocument]);
   }
@@ -3383,7 +3387,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           declaration.valueNode.type === "sum_type" &&
           declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
         const requiresLineBreakAfterEquals =
-          isMultilineSum || isBlockBodiedIfExpression(declaration.valueNode);
+          isMultilineSum || requiresDefinitionBodyLineBreak(declaration.valueNode);
         const hasCanonicalAfterEquals = requiresLineBreakAfterEquals
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterEquals)
           : afterEquals === " ";
@@ -3395,7 +3399,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             column: declaration.equals.startPosition.column + 1,
             length: 1,
             rule: "format/equals-spacing",
-            message: "expected one space around '='",
+            message: requiresLineBreakAfterEquals
+              ? "expected a line break after '='"
+              : "expected one space around '='",
             sourceLine: lines[row] ?? "",
           });
         }

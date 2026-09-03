@@ -1,15 +1,18 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter places a block-bodied conditional below a definition header 1`] = `
+exports[`formatter places a match expression below a definition header 1`] = `
 "module Example {
-  var ready: bool
-  var n: int
+  type Status = Ready | Waiting
+  var status: Status
 
   action step =
-    if (ready) {
-      n' = n
-    } else {
-      n' = n + 1
+    match status {
+      | Ready => {
+        status' = Waiting
+      }
+      | Waiting => {
+        status' = Ready
+      }
     }
 }
 "
@@ -426,6 +429,21 @@ exports[`formatter formats a conditional expression 1`] = `
 "
 `;
 
+exports[`formatter places a block-bodied conditional below a definition header 1`] = `
+"module Example {
+  var ready: bool
+  var n: int
+
+  action step =
+    if (ready) {
+      n' = n
+    } else {
+      n' = n + 1
+    }
+}
+"
+`;
+
 exports[`formatter preserves a comment before a conditional alternative 1`] = `
 "module Example {
   pure val answer = if (true) 1 else
@@ -448,11 +466,12 @@ exports[`formatter formats a match expression 1`] = `
 "module Example {
   type Option = Some(int) | None
 
-  pure def getOrZero(value: Option): int = match value {
-    | Some(x) => x
-    | None => 0
-    | _ => 0
-  }
+  pure def getOrZero(value: Option): int =
+    match value {
+      | Some(x) => x
+      | None => 0
+      | _ => 0
+    }
 }
 "
 `;
@@ -460,11 +479,12 @@ exports[`formatter formats a match expression 1`] = `
 exports[`formatter preserves comments between match arms 1`] = `
 "module Example {
   type Step = First | Second
-  pure def value(step) = match step {
-    // Preserve this arm comment.
-    | First => 1
-    | Second => 2
-  }
+  pure def value(step) =
+    match step {
+      // Preserve this arm comment.
+      | First => 1
+      | Second => 2
+    }
 }
 "
 `;
@@ -472,12 +492,13 @@ exports[`formatter preserves comments between match arms 1`] = `
 exports[`formatter preserves a comment before a match-arm body 1`] = `
 "module Example {
   type Step = First | Second
-  pure def value(step) = match step {
-    | First =>
-      // Preserve this arm body comment.
-      1
-    | Second => 2
-  }
+  pure def value(step) =
+    match step {
+      | First =>
+        // Preserve this arm body comment.
+        1
+      | Second => 2
+    }
 }
 "
 `;
