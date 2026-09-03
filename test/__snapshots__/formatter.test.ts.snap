@@ -1212,3 +1212,11 @@ exports[`formatter preserves blank lines between leading comment groups 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves an explicit line break after definition equals 1`] = `
+"module Example {
+  temporal eventuallyTrue =
+    eventually(true)
+}
+"
+`;

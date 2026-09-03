@@ -1246,6 +1246,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves an explicit line break after definition equals", () => {
+    const input = readFileSync(
+      new URL("fixtures/explicit-definition-break.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("temporal eventuallyTrue =\n    eventually(true)");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a parameterless nondet definition", () => {
     const input = "module Example {\n  nondet selection=true\n}\n";
     const output = formatQuint(input);

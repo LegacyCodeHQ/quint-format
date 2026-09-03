@@ -3,13 +3,14 @@
 exports[`formatter properties converges for deterministic whitespace fuzz cases 1`] = `
 {
   "cases": 128,
-  "uniqueOutputs": 1,
+  "uniqueOutputs": 2,
 }
 `;
 
 exports[`formatter properties converges for deterministic whitespace fuzz cases 2`] = `
 "module Fuzz {
-  val result: bool = Set(1, 2).contains(1) and 1 + 2 == 3
+  val result: bool =
+    Set(1, 2).contains(1) and 1 + 2 == 3
 }
 "
 `;

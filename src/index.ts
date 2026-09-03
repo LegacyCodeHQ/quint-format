@@ -407,15 +407,6 @@ function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   return Boolean(arrow && body && body.startPosition.row > arrow.endPosition.row);
 }
 
-function isBlockCombinatorExpression(node: Parser.SyntaxNode): boolean {
-  return [
-    "all_expression",
-    "any_expression",
-    "and_block_expression",
-    "or_block_expression",
-  ].includes(node.type);
-}
-
 function containsFieldAccess(node: Parser.SyntaxNode): boolean {
   return node.type === "field_access_expression" || node.namedChildren.some(containsFieldAccess);
 }
@@ -439,13 +430,14 @@ function preservesDefinitionBodyLineBreak(
   body: Parser.SyntaxNode,
 ): boolean {
   const equals = definition.children.find((child) => child.type === "=");
-  return Boolean(
-    equals &&
-      (isBlockCombinatorExpression(body) ||
-        body.type === "nested_definition_expression" ||
-        hasMultilineUfcsContinuation(body)) &&
-      body.startPosition.row > equals.endPosition.row,
+  const hasBodyComments = definition.namedChildren.some(
+    (child) =>
+      (child.type === "comment" || child.type === "documentation_comment") &&
+      equals &&
+      child.startIndex >= equals.endIndex &&
+      child.endIndex <= body.startIndex,
   );
+  return Boolean(equals && !hasBodyComments && body.startPosition.row > equals.endPosition.row);
 }
 
 function definitionBodyDocument(
