@@ -460,6 +460,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a multiline call with a lambda argument", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-lambda-call.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("names.forall(name =>\n    names.contains(name)\n  )");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment before a lambda body", () => {
     const input = readFileSync(new URL("fixtures/lambda-comment.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

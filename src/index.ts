@@ -387,6 +387,13 @@ function requiresDefinitionBodyLineBreak(node: Parser.SyntaxNode): boolean {
   return isBlockBodiedIfExpression(node) || node.type === "match_expression";
 }
 
+function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
+  if (node.type !== "lambda_expression") return false;
+  const arrow = node.children.find((child) => child.type === "=>");
+  const body = node.childForFieldName("body");
+  return Boolean(arrow && body && body.startPosition.row > arrow.endPosition.row);
+}
+
 function definitionBodyDocument(
   head: string,
   definition: Parser.SyntaxNode,
@@ -761,7 +768,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const parameters = node.childrenForFieldName("parameter");
     const body = node.childForFieldName("body");
     const openParen = node.children.find((child) => child.type === "(");
-    if (parameters.length === 0 || !body) {
+    const arrow = node.children.find((child) => child.type === "=>");
+    if (parameters.length === 0 || !body || !arrow) {
       throw new Error("Unable to locate the lambda parameters or body");
     }
     const parameterDocument = openParen
@@ -785,10 +793,17 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         (child.type === "comment" || child.type === "documentation_comment") &&
         child.endIndex <= body.startIndex,
     );
+    const isMultilineBody = isMultilineLambdaExpression(node);
     return {
       document:
         comments.length === 0
-          ? concat([parameterDocument, text(" => "), analysis.document])
+          ? isMultilineBody
+            ? concat([
+                parameterDocument,
+                text(" =>"),
+                indent(concat([hardLine, analysis.document])),
+              ])
+            : concat([parameterDocument, text(" => "), analysis.document])
           : concat([
               parameterDocument,
               text(" =>"),
@@ -1123,6 +1138,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const hasComments = node.namedChildren.some(
       (child) => child.type === "comment" || child.type === "documentation_comment",
     );
+    const multilineLambdaArgument =
+      arguments_.length === 1 && isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
     const contentDocuments = hasComments
       ? node.namedChildren.flatMap((child) => {
           if (child.id === functionNode.id) return [];
@@ -1151,15 +1168,23 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
             hardLine,
             text(")"),
           ])
-        : concat([
-            functionAnalysis.document,
-            text("("),
-            ...analyses.flatMap((analysis, index) => [
-              ...(index === 0 ? [] : [text(", ")]),
-              analysis.document,
+        : multilineLambdaArgument
+          ? concat([
+              functionAnalysis.document,
+              text("("),
+              (analyses[0] as ExpressionAnalysis).document,
+              hardLine,
+              text(")"),
+            ])
+          : concat([
+              functionAnalysis.document,
+              text("("),
+              ...analyses.flatMap((analysis, index) => [
+                ...(index === 0 ? [] : [text(", ")]),
+                analysis.document,
+              ]),
+              text(")"),
             ]),
-            text(")"),
-          ]),
       binaryOperators: [
         ...functionAnalysis.binaryOperators,
         ...analyses.flatMap((analysis) => analysis.binaryOperators),
@@ -3607,6 +3632,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         const closeParen = callExpression.children.find((child) => child.type === ")");
         const arguments_ = callExpression.childrenForFieldName("argument");
         const commas = callExpression.children.filter((child) => child.type === ",");
+        const isMultilineLambdaCall =
+          arguments_.length === 1 &&
+          isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
         if (!openParen || !closeParen) throw new Error("Unable to locate the call delimiters");
         if (
           callExpression.namedChildren.some(
@@ -3666,7 +3694,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const trailingComma = commas.find((comma) => comma.startIndex >= last.endIndex);
           const anchor = trailingComma ?? last;
           const beforeClose = source.slice(anchor.endIndex, closeParen.startIndex);
-          if (beforeClose !== "") {
+          const hasCanonicalClose = isMultilineLambdaCall
+            ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
+            : beforeClose === "";
+          if (!hasCanonicalClose) {
             const row = closeParen.startPosition.row;
             diagnostics.push({
               filePath,
@@ -3840,9 +3871,13 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             }
           }
           const arrowAnchor = closeParen ?? last;
+          const afterArrow = source.slice(arrow.endIndex, body.startIndex);
+          const hasCanonicalBodySeparation = isMultilineLambdaExpression(lambda)
+            ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterArrow)
+            : afterArrow === " ";
           if (
             source.slice(arrowAnchor.endIndex, arrow.startIndex) !== " " ||
-            source.slice(arrow.endIndex, body.startIndex) !== " "
+            !hasCanonicalBodySeparation
           ) {
             const row = arrow.startPosition.row;
             diagnostics.push({

@@ -1,16 +1,12 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a multiline match-arm body with a trailing comment 1`] = `
+exports[`formatter preserves a multiline call with a lambda argument 1`] = `
 "module Example {
-  type Status = Ready | Waiting
-  var status: Status
+  const names: Set[str]
 
-  val number =
-    match status {
-      | Ready =>
-          1 // Ready has a value
-      | Waiting => 0
-    }
+  val all_present = names.forall(name =>
+    names.contains(name)
+  )
 }
 "
 `;
@@ -557,6 +553,21 @@ exports[`formatter preserves a comment before a match-arm body 1`] = `
         // Preserve this arm body comment.
         1
       | Second => 2
+    }
+}
+"
+`;
+
+exports[`formatter preserves a multiline match-arm body with a trailing comment 1`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+
+  val number =
+    match status {
+      | Ready =>
+          1 // Ready has a value
+      | Waiting => 0
     }
 }
 "
