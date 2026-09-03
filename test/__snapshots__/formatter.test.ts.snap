@@ -740,3 +740,14 @@ module Example {
 }
 "
 `;
+
+exports[`formatter formats anonymous instances 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(N = 1).*
+}
+"
+`;

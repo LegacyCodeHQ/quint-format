@@ -1268,6 +1268,64 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       continue;
     }
 
+    if (node.type === "anonymous_instance_declaration") {
+      const keyword = node.children.find((child) => child.type === "import");
+      const importedModule = node.childForFieldName("module");
+      const openParen = node.children.find((child) => child.type === "(");
+      const closeParen = node.children.find((child) => child.type === ")");
+      const dot = node.children.find((child) => child.type === ".");
+      const star = node.children.find((child) => child.type === "*");
+      const overrides = node.namedChildren.filter((child) => child.type === "instance_override");
+      const commas = node.children.filter((child) => child.type === ",");
+      const sourceNode = node.childForFieldName("source");
+      const fromKeyword = node.children.find((child) => child.type === "from");
+      if (
+        !keyword ||
+        !importedModule ||
+        !openParen ||
+        !closeParen ||
+        !dot ||
+        !star ||
+        Boolean(sourceNode) !== Boolean(fromKeyword)
+      ) {
+        throw new Error("Unable to locate the anonymous instance declaration");
+      }
+      const overrideAnalyses = overrides.map((override) => {
+        const overrideName = override.childForFieldName("name");
+        const value = override.childForFieldName("value");
+        if (!overrideName || !value) throw new Error("Unable to locate the instance override");
+        return { name: overrideName, value: analyzeExpression(value) };
+      });
+      addDeclaration({
+        node,
+        keyword,
+        nameNode: importedModule,
+        dot,
+        selectorNode: star,
+        fromKeyword,
+        sourceNode: sourceNode ?? undefined,
+        instanceOpenParen: openParen,
+        instanceCloseParen: closeParen,
+        instanceOverrides: overrides,
+        instanceCommas: commas,
+        binaryOperators: overrideAnalyses.flatMap(({ value }) => value.binaryOperators),
+        unitLiterals: overrideAnalyses.flatMap(({ value }) => value.unitLiterals),
+        sequenceLiterals: overrideAnalyses.flatMap(({ value }) => value.sequenceLiterals),
+        recordLiterals: overrideAnalyses.flatMap(({ value }) => value.recordLiterals),
+        callExpressions: overrideAnalyses.flatMap(({ value }) => value.callExpressions),
+        document: concat([
+          text(`import ${formatPattern(importedModule)}(`),
+          ...overrideAnalyses.flatMap(({ name, value }, index) => [
+            ...(index === 0 ? [] : [text(", ")]),
+            text(`${formatPattern(name)} = `),
+            value.document,
+          ]),
+          text(`).*${sourceNode ? ` from ${sourceNode.text}` : ""}`),
+        ]),
+      });
+      continue;
+    }
+
     if (
       node.type === "module_import_declaration" ||
       node.type === "module_export_declaration" ||
@@ -2428,7 +2486,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       }
 
       if (declaration.dot && declaration.selectorNode) {
-        const beforeDot = source.slice(declaration.nameNode.endIndex, declaration.dot.startIndex);
+        const selectorAnchor = declaration.instanceCloseParen ?? declaration.nameNode;
+        const beforeDot = source.slice(selectorAnchor.endIndex, declaration.dot.startIndex);
         const afterDot = source.slice(
           declaration.dot.endIndex,
           declaration.selectorNode.startIndex,
@@ -2471,8 +2530,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       if (declaration.sourceNode && declaration.fromKeyword) {
         const sourceAnchor =
           declaration.aliasNode ??
-          declaration.instanceCloseParen ??
           declaration.selectorNode ??
+          declaration.instanceCloseParen ??
           declaration.nameNode;
         const beforeFrom = source.slice(sourceAnchor.endIndex, declaration.fromKeyword.startIndex);
         const afterFrom = source.slice(

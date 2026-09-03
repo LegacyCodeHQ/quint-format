@@ -1589,3 +1589,37 @@ test/fixtures/module-instance.qnt:6:38: error[format/import-alias-spacing]: expe
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical anonymous instances 1`] = `
+"test/fixtures/anonymous-instance.qnt:4:1: error[format/module-separation]: expected one blank line between modules
+  |
+4 | module Example {
+  | ^^^^^^
+  |
+test/fixtures/anonymous-instance.qnt:5:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+5 |  import Library ( N=1, ) . *
+  | ^
+  |
+test/fixtures/anonymous-instance.qnt:5:17: error[format/instance-delimiter-spacing]: expected no space around instance parentheses
+  |
+5 |  import Library ( N=1, ) . *
+  |                 ^
+  |
+test/fixtures/anonymous-instance.qnt:5:20: error[format/instance-override-spacing]: expected one space around '='
+  |
+5 |  import Library ( N=1, ) . *
+  |                    ^
+  |
+test/fixtures/anonymous-instance.qnt:5:22: error[format/instance-trailing-comma]: trailing commas are omitted from inline instances
+  |
+5 |  import Library ( N=1, ) . *
+  |                      ^
+  |
+test/fixtures/anonymous-instance.qnt:5:26: error[format/import-selector-spacing]: expected no space around '.'
+  |
+5 |  import Library ( N=1, ) . *
+  |                          ^
+  |
+"
+`;
