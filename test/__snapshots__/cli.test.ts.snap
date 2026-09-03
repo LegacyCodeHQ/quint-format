@@ -1929,3 +1929,22 @@ test/fixtures/nested-definition-comment.qnt:3:11: error[format/equals-spacing]: 
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical ordinary-block comment formatting 1`] = `
+"test/fixtures/block-expression-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/block-expression-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | action step={
+  | ^
+  |
+test/fixtures/block-expression-comment.qnt:2:12: error[format/equals-spacing]: expected one space around '='
+  |
+2 | action step={
+  |            ^
+  |
+"
+`;

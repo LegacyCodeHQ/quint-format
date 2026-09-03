@@ -785,20 +785,24 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     });
     const analysis = analyzeExpression(expression);
     const analyses = [...bindingAnalyses.map(({ value }) => value), analysis];
+    const contentDocuments = node.namedChildren.map((child) => {
+      if (child.type === "comment" || child.type === "documentation_comment") {
+        return commentDocument(child);
+      }
+      if (child.id === expression.id) {
+        return analysis.document;
+      }
+      const bindingIndex = bindings.findIndex((binding) => binding.id === child.id);
+      const binding = bindingAnalyses[bindingIndex];
+      if (binding) {
+        return concat([text(`nondet ${binding.name.text} = `), binding.value.document]);
+      }
+      throw new Error("Formatting this block content is not implemented yet");
+    });
     return {
       document: concat([
         text("{"),
-        indent(
-          concat([
-            ...bindingAnalyses.flatMap(({ name, value }) => [
-              hardLine,
-              text(`nondet ${name.text} = `),
-              value.document,
-            ]),
-            hardLine,
-            analysis.document,
-          ]),
-        ),
+        indent(concat(contentDocuments.flatMap((document) => [hardLine, document]))),
         hardLine,
         text("}"),
       ]),

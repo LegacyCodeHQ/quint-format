@@ -454,6 +454,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a comment inside an ordinary block", () => {
+    const input = readFileSync(
+      new URL("fixtures/block-expression-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this block comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats all block combinators", () => {
     const input = readFileSync(new URL("fixtures/block-combinators.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

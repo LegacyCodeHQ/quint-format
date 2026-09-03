@@ -1,11 +1,10 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a comment after a nested definition 1`] = `
+exports[`formatter preserves a comment inside an ordinary block 1`] = `
 "module Example {
   action step = {
-    val answer = 42
-    // Preserve this comment.
-    answer
+    // Preserve this block comment.
+    true
   }
 }
 "
@@ -459,6 +458,17 @@ exports[`formatter formats nested definitions 1`] = `
     pure val doubled: int = value * 2
     pure def increment(number: int): int = number + 1
     increment(doubled)
+  }
+}
+"
+`;
+
+exports[`formatter preserves a comment after a nested definition 1`] = `
+"module Example {
+  action step = {
+    val answer = 42
+    // Preserve this comment.
+    answer
   }
 }
 "
