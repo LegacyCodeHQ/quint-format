@@ -263,3 +263,10 @@ exports[`formatter formats a parameterless run 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a parameterless temporal definition 1`] = `
+"module Example {
+  temporal invariant = true
+}
+"
+`;

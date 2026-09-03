@@ -452,3 +452,12 @@ exports[`command-line checker reports noncanonical run formatting 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical temporal formatting 1`] = `
+"test/fixtures/temporal-definition.qnt:2:21: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   temporal invariant=true
+  |                     ^
+  |
+"
+`;

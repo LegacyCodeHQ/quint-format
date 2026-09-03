@@ -62,6 +62,8 @@ that every subsequent formatter preserves them by construction.
   - [x] Parameterless expression-bodied runs
   - [ ] Parameters and chained run expressions
 - [ ] `temporal`
+  - [x] Parameterless expression-bodied temporal definitions
+  - [ ] Parameters and compound temporal expressions
 - [ ] `nondet`
 - [ ] Parameters and return types
 - [ ] Optional semicolons where Quint permits them

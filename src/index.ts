@@ -299,7 +299,10 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const qualifier = node.childForFieldName("qualifier");
       const isPureDefinition = defKeyword && (!qualifier || qualifier.type === "pure");
       const isStandaloneDefinition =
-        !defKeyword && (qualifier?.type === "action" || qualifier?.type === "run");
+        !defKeyword &&
+        (qualifier?.type === "action" ||
+          qualifier?.type === "run" ||
+          qualifier?.type === "temporal");
       const keyword = isPureDefinition
         ? defKeyword
         : isStandaloneDefinition
