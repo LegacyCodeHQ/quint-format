@@ -443,3 +443,12 @@ exports[`command-line checker reports noncanonical action formatting 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical run formatting 1`] = `
+"test/fixtures/run-definition.qnt:2:15: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   run scenario=true
+  |               ^
+  |
+"
+`;

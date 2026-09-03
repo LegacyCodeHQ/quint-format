@@ -59,6 +59,8 @@ that every subsequent formatter preserves them by construction.
   - [x] Parameterless expression-bodied actions
   - [ ] Parameters and block bodies
 - [ ] `run`
+  - [x] Parameterless expression-bodied runs
+  - [ ] Parameters and chained run expressions
 - [ ] `temporal`
 - [ ] `nondet`
 - [ ] Parameters and return types

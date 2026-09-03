@@ -298,8 +298,13 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const defKeyword = node.children.find((child) => child.type === "def");
       const qualifier = node.childForFieldName("qualifier");
       const isPureDefinition = defKeyword && (!qualifier || qualifier.type === "pure");
-      const isAction = !defKeyword && qualifier?.type === "action";
-      const keyword = isPureDefinition ? defKeyword : isAction ? qualifier : undefined;
+      const isStandaloneDefinition =
+        !defKeyword && (qualifier?.type === "action" || qualifier?.type === "run");
+      const keyword = isPureDefinition
+        ? defKeyword
+        : isStandaloneDefinition
+          ? qualifier
+          : undefined;
       const declarationName = node.childForFieldName("name");
       const body = node.childForFieldName("body");
       const equals = node.children.find((child) => child.type === "=");
@@ -312,13 +317,15 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         !equals ||
         !body ||
         hasUnsupportedHeader ||
-        (!isPureDefinition && !isAction)
+        (!isPureDefinition && !isStandaloneDefinition)
       ) {
         throw new Error("Formatting this operator definition syntax is not implemented yet");
       }
 
       const expression = analyzeExpression(body);
-      const definitionHead = isAction ? "action" : `${qualifier ? `${qualifier.text} ` : ""}def`;
+      const definitionHead = isStandaloneDefinition
+        ? qualifier.text
+        : `${qualifier ? `${qualifier.text} ` : ""}def`;
       addDeclaration({
         node,
         qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,

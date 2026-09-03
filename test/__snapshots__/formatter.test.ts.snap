@@ -256,3 +256,10 @@ exports[`formatter formats a parameterless action 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a parameterless run 1`] = `
+"module Example {
+  run scenario = true
+}
+"
+`;
