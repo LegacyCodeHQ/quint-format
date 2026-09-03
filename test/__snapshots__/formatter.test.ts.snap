@@ -328,6 +328,17 @@ exports[`formatter formats every binary operator 1`] = `
 "
 `;
 
+exports[`formatter formats lambda parameter forms 1`] = `
+"module Example {
+  pure val identity = x => x
+
+  pure val add = (x, y) => x + y
+
+  pure val sumPair = ((x, y)) => x + y
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

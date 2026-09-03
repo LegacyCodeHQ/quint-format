@@ -141,7 +141,7 @@ that every subsequent formatter preserves them by construction.
 - [x] All binary operators
 - [x] Addition and subtraction
 - [x] Parentheses and basic precedence preservation
-- [ ] Lambdas
+- [x] Lambdas
 - [ ] Conditionals
 - [ ] Match expressions
 - [ ] Namespace access

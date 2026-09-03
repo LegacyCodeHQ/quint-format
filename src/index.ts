@@ -497,6 +497,27 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     };
   }
 
+  if (node.type === "lambda_expression") {
+    const parameters = node.childrenForFieldName("parameter");
+    const body = node.childForFieldName("body");
+    const openParen = node.children.find((child) => child.type === "(");
+    if (parameters.length === 0 || !body) {
+      throw new Error("Unable to locate the lambda parameters or body");
+    }
+    const parameterDocument = openParen
+      ? `(${parameters.map(formatPattern).join(", ")})`
+      : formatPattern(parameters[0] as Parser.SyntaxNode);
+    const analysis = analyzeExpression(body);
+    return {
+      document: concat([text(`${parameterDocument} => `), analysis.document]),
+      binaryOperators: analysis.binaryOperators,
+      unitLiterals: analysis.unitLiterals,
+      sequenceLiterals: analysis.sequenceLiterals,
+      recordLiterals: analysis.recordLiterals,
+      callExpressions: analysis.callExpressions,
+    };
+  }
+
   if (node.type === "call_expression") {
     const functionNode = node.childForFieldName("function");
     const arguments_ = node.childrenForFieldName("argument");
@@ -2450,6 +2471,88 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               message: `expected no space after '${operator.text}'`,
               sourceLine: lines[row] ?? "",
             });
+          }
+        }
+
+        for (const lambda of collectNodes(declaration.valueNode, "lambda_expression")) {
+          const parameters = lambda.childrenForFieldName("parameter");
+          const body = lambda.childForFieldName("body");
+          const arrow = lambda.children.find((child) => child.type === "=>");
+          const openParen = lambda.children.find((child) => child.type === "(");
+          const closeParen = lambda.children.find((child) => child.type === ")");
+          const first = parameters[0];
+          const last = parameters.at(-1);
+          if (!body || !arrow || !first || !last) {
+            throw new Error("Unable to locate the lambda syntax");
+          }
+          if (openParen && closeParen) {
+            const afterOpen = source.slice(openParen.endIndex, first.startIndex);
+            if (afterOpen !== "") {
+              const row = openParen.endPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: openParen.endPosition.column + 1,
+                length: Math.max(1, afterOpen.length),
+                rule: "format/lambda-parameter-list-spacing",
+                message: "expected no space after '('",
+                sourceLine: lines[row] ?? "",
+              });
+            }
+            const commas = lambda.children.filter((child) => child.type === ",");
+            for (const [index, comma] of commas.entries()) {
+              const previous = parameters[index];
+              const next = parameters[index + 1];
+              if (
+                previous &&
+                next &&
+                (source.slice(previous.endIndex, comma.startIndex) !== "" ||
+                  source.slice(comma.endIndex, next.startIndex) !== " ")
+              ) {
+                const row = comma.startPosition.row;
+                diagnostics.push({
+                  filePath,
+                  line: row + 1,
+                  column: comma.startPosition.column + 1,
+                  length: 1,
+                  rule: "format/lambda-parameter-separator-spacing",
+                  message: "expected ', ' between parameters",
+                  sourceLine: lines[row] ?? "",
+                });
+              }
+            }
+            const beforeClose = source.slice(last.endIndex, closeParen.startIndex);
+            if (beforeClose !== "") {
+              const row = closeParen.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: last.endPosition.column + 1,
+                length: Math.max(1, beforeClose.length),
+                rule: "format/lambda-parameter-list-spacing",
+                message: "expected no space before ')'",
+                sourceLine: lines[row] ?? "",
+              });
+            }
+          }
+          const arrowAnchor = closeParen ?? last;
+          if (
+            source.slice(arrowAnchor.endIndex, arrow.startIndex) !== " " ||
+            source.slice(arrow.endIndex, body.startIndex) !== " "
+          ) {
+            const row = arrow.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: arrow.startPosition.column + 1,
+              length: 2,
+              rule: "format/lambda-arrow-spacing",
+              message: "expected one space around '=>'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          for (const parameter of parameters) {
+            checkPatternSpacing(parameter, source, lines, filePath, diagnostics);
           }
         }
       }

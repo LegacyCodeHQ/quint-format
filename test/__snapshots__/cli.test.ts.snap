@@ -642,6 +642,30 @@ exports[`command-line checker reports noncanonical multiplication formatting 1`]
 "
 `;
 
+exports[`command-line checker reports noncanonical lambda formatting 1`] = `
+"test/fixtures/lambda-check.qnt:2:19: error[format/lambda-parameter-list-spacing]: expected no space after '('
+  |
+2 |   pure val add = ( x ,y )=>x + y
+  |                   ^
+  |
+test/fixtures/lambda-check.qnt:2:22: error[format/lambda-parameter-separator-spacing]: expected ', ' between parameters
+  |
+2 |   pure val add = ( x ,y )=>x + y
+  |                      ^
+  |
+test/fixtures/lambda-check.qnt:2:24: error[format/lambda-parameter-list-spacing]: expected no space before ')'
+  |
+2 |   pure val add = ( x ,y )=>x + y
+  |                        ^
+  |
+test/fixtures/lambda-check.qnt:2:26: error[format/lambda-arrow-spacing]: expected one space around '=>'
+  |
+2 |   pure val add = ( x ,y )=>x + y
+  |                          ^^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
