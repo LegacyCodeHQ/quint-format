@@ -880,7 +880,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       const variant = arm.childForFieldName("variant");
       const parameter = arm.childForFieldName("parameter");
       const body = arm.childForFieldName("body");
-      if (!variant || !body) throw new Error("Unable to locate a match arm");
+      const arrow = arm.children.find((child) => child.type === "=>");
+      if (!variant || !body || !arrow) throw new Error("Unable to locate a match arm");
       const bodyAnalysis = analyzeExpression(body);
       const comments = arm.namedChildren.filter(
         (child) =>
@@ -888,12 +889,18 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
           child.endIndex <= body.startIndex,
       );
       const pattern = `${variant.text}${parameter ? `(${parameter.text})` : ""}`;
+      const isMultilineBody = body.startPosition.row > arrow.endPosition.row;
       return {
         node: arm,
         body: bodyAnalysis,
         document:
           comments.length === 0
-            ? concat([text(`| ${pattern} => `), indent(bodyAnalysis.document)])
+            ? isMultilineBody
+              ? concat([
+                  text(`| ${pattern} =>`),
+                  indent(concat([hardLine, indent(bodyAnalysis.document)])),
+                ])
+              : concat([text(`| ${pattern} => `), indent(bodyAnalysis.document)])
             : concat([
                 text(`| ${pattern} =>`),
                 indent(
@@ -907,16 +914,31 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       };
     });
     const analyses = [valueAnalysis, ...armAnalyses.map(({ body }) => body)];
-    const contentDocuments = node.namedChildren
-      .filter((child) => child.id !== value.id)
-      .map((child) => {
-        if (child.type === "comment" || child.type === "documentation_comment") {
-          return commentDocument(child);
+    const contentDocuments: Doc[] = [];
+    let previousArm: (typeof armAnalyses)[number] | undefined;
+    for (const child of node.namedChildren.filter((candidate) => candidate.id !== value.id)) {
+      if (child.type === "comment" || child.type === "documentation_comment") {
+        const isTrailingArmComment = previousArm?.node.endPosition.row === child.startPosition.row;
+        if (isTrailingArmComment) {
+          const armDocument = contentDocuments.pop();
+          if (!armDocument || !previousArm) {
+            throw new Error("Unable to attach the trailing match-arm comment");
+          }
+          const commentGap = node.text.slice(
+            previousArm.node.endIndex - node.startIndex,
+            child.startIndex - node.startIndex,
+          );
+          contentDocuments.push(concat([armDocument, text(commentGap), commentDocument(child)]));
+        } else {
+          contentDocuments.push(commentDocument(child));
         }
-        const arm = armAnalyses.find((analysis) => analysis.node.id === child.id);
-        if (!arm) throw new Error("Formatting this match content is not implemented yet");
-        return arm.document;
-      });
+        continue;
+      }
+      const arm = armAnalyses.find((analysis) => analysis.node.id === child.id);
+      if (!arm) throw new Error("Formatting this match content is not implemented yet");
+      contentDocuments.push(arm.document);
+      previousArm = arm;
+    }
     return {
       document: concat([
         text("match "),
@@ -3988,9 +4010,12 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               }
               patternEnd = closeParen;
             }
+            const afterArrow = source.slice(arrow.endIndex, body.startIndex);
+            const hasCanonicalBodySeparation =
+              afterArrow === " " || /^(?:\r\n|\r|\n)[\t ]*$/.test(afterArrow);
             if (
               source.slice(patternEnd.endIndex, arrow.startIndex) !== " " ||
-              source.slice(arrow.endIndex, body.startIndex) !== " "
+              !hasCanonicalBodySeparation
             ) {
               const row = arrow.startPosition.row;
               diagnostics.push({

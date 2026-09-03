@@ -575,6 +575,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a multiline match-arm body with a trailing comment", () => {
+    const input = readFileSync(
+      new URL("fixtures/match-arm-trailing-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("| Ready =>\n          1 // Ready has a value");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats namespace access", () => {
     const input = "module Example {\n  pure val apply = (Scope :: x)=>Scope :: x\n}\n";
     const output = formatQuint(input);
