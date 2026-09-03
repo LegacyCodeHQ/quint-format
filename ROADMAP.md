@@ -17,7 +17,7 @@ implement the smallest fix, validate the output, verify, and commit atomically.
 
 - [x] Hashbangs
 - [x] Module braces
-- [ ] Multiple modules
+- [x] Multiple modules
 - [x] Definition line breaks
 - [x] Exactly one trailing newline
 

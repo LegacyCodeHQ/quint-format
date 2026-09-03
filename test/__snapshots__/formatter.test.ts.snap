@@ -144,3 +144,12 @@ module Example {
 }
 "
 `;
+
+exports[`formatter formats multiple top-level modules 1`] = `
+"module First {
+}
+
+module Second {
+}
+"
+`;

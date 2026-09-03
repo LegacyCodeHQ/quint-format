@@ -149,19 +149,10 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   throw new Error("Formatting this expression syntax is not implemented yet");
 }
 
-function analyzeModule(source: string) {
-  const root = parseQuint(source);
+function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
+  const nameNode = moduleNode.childForFieldName("name");
 
-  const hashbang = root.namedChildren.find((node) => node.type === "hashbang");
-  const moduleNode = root.namedChildren.find((node) => node.type === "module_definition");
-  const nameNode = moduleNode?.childForFieldName("name");
-  const expectedNamedChildren = hashbang ? 2 : 1;
-  const isModule =
-    root.namedChildCount === expectedNamedChildren &&
-    moduleNode?.type === "module_definition" &&
-    nameNode?.type === "identifier";
-
-  if (!isModule) {
+  if (moduleNode.type !== "module_definition" || nameNode?.type !== "identifier") {
     throw new Error("Formatting this Quint syntax is not implemented yet");
   }
 
@@ -264,7 +255,7 @@ function analyzeModule(source: string) {
   }
 
   return {
-    hashbang,
+    node: moduleNode,
     name: nameNode.text,
     nameNode,
     moduleKeyword,
@@ -274,13 +265,26 @@ function analyzeModule(source: string) {
   };
 }
 
+function analyzeSource(source: string) {
+  const root = parseQuint(source);
+  const hashbang = root.namedChildren.find((node) => node.type === "hashbang");
+  const moduleNodes = root.namedChildren.filter((node) => node.type === "module_definition");
+  const expectedNamedChildren = moduleNodes.length + (hashbang ? 1 : 0);
+
+  if (moduleNodes.length === 0 || root.namedChildCount !== expectedNamedChildren) {
+    throw new Error("Formatting this Quint syntax is not implemented yet");
+  }
+
+  return { hashbang, modules: moduleNodes.map(analyzeModuleNode) };
+}
+
 export function formatQuint(source: string): string {
-  return renderModule(analyzeModule(source));
+  return renderSource(analyzeSource(source));
 }
 
 export function checkQuint(source: string, filePath: string): FormatDiagnostic[] {
-  const module = analyzeModule(source);
-  const formatted = renderModule(module);
+  const analyzedSource = analyzeSource(source);
+  const formatted = renderSource(analyzedSource);
   const diagnostics: FormatDiagnostic[] = [];
 
   if (source === formatted) {
@@ -288,185 +292,207 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
   }
 
   const lines = source.split(/\r?\n/);
-  const keywordGap = source.slice(module.moduleKeyword.endIndex, module.nameNode.startIndex);
-
-  if (keywordGap !== " ") {
-    const row = module.moduleKeyword.endPosition.row;
-    diagnostics.push({
-      filePath,
-      line: row + 1,
-      column: module.moduleKeyword.endPosition.column + 1,
-      length: Math.max(
-        1,
-        module.nameNode.startPosition.column - module.moduleKeyword.endPosition.column,
-      ),
-      rule: "format/module-keyword-spacing",
-      message: "expected one space after 'module'",
-      sourceLine: lines[row] ?? "",
-    });
-  }
-
-  const braceGap = source.slice(module.nameNode.endIndex, module.openBrace.startIndex);
-
-  if (braceGap !== " ") {
-    const row = module.nameNode.endPosition.row;
-    const hasGap = module.openBrace.startPosition.column > module.nameNode.endPosition.column;
-    diagnostics.push({
-      filePath,
-      line: row + 1,
-      column:
-        (hasGap ? module.nameNode.endPosition.column : module.openBrace.startPosition.column) + 1,
-      length: Math.max(
-        1,
-        module.openBrace.startPosition.column - module.nameNode.endPosition.column,
-      ),
-      rule: "format/module-brace-spacing",
-      message: "expected one space before '{'",
-      sourceLine: lines[row] ?? "",
-    });
-  }
-
-  if (
-    module.declarations.length === 0 &&
-    module.openBrace.startPosition.row === module.closeBrace.startPosition.row
-  ) {
-    const row = module.openBrace.startPosition.row;
-    diagnostics.push({
-      filePath,
-      line: row + 1,
-      column: module.openBrace.startPosition.column + 1,
-      length: Math.max(
-        1,
-        module.closeBrace.endPosition.column - module.openBrace.startPosition.column,
-      ),
-      rule: "format/empty-module",
-      message: "empty module braces must be on separate lines",
-      sourceLine: lines[row] ?? "",
-    });
-  }
-
-  for (const [index, declaration] of module.declarations.entries()) {
-    const previousDeclaration = index > 0 ? module.declarations[index - 1] : undefined;
-    const sharesLineWithPrevious =
-      previousDeclaration?.node.endPosition.row === declaration.node.startPosition.row;
-
-    if (sharesLineWithPrevious) {
-      const row = declaration.node.startPosition.row;
-      diagnostics.push({
-        filePath,
-        line: row + 1,
-        column: declaration.node.startPosition.column + 1,
-        length: declaration.keyword.text.length,
-        rule: "format/declaration-line-break",
-        message: "expected each declaration on a separate line",
-        sourceLine: lines[row] ?? "",
-      });
-    } else if (declaration.node.startPosition.column !== 2) {
-      const row = declaration.node.startPosition.row;
-      diagnostics.push({
-        filePath,
-        line: row + 1,
-        column: 1,
-        length: Math.max(1, declaration.node.startPosition.column),
-        rule: "format/module-body-indentation",
-        message: "expected 2 spaces of indentation",
-        sourceLine: lines[row] ?? "",
-      });
+  for (const [moduleIndex, module] of analyzedSource.modules.entries()) {
+    const previousModule = moduleIndex > 0 ? analyzedSource.modules[moduleIndex - 1] : undefined;
+    if (previousModule) {
+      const moduleGap = source.slice(previousModule.node.endIndex, module.node.startIndex);
+      if (moduleGap !== "\n\n") {
+        const row = module.moduleKeyword.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: module.moduleKeyword.startPosition.column + 1,
+          length: module.moduleKeyword.text.length,
+          rule: "format/module-separation",
+          message: "expected one blank line between modules",
+          sourceLine: lines[row] ?? "",
+        });
+      }
     }
 
-    const keywordGap = source.slice(declaration.keyword.endIndex, declaration.nameNode.startIndex);
+    const keywordGap = source.slice(module.moduleKeyword.endIndex, module.nameNode.startIndex);
+
     if (keywordGap !== " ") {
-      const row = declaration.keyword.endPosition.row;
+      const row = module.moduleKeyword.endPosition.row;
       diagnostics.push({
         filePath,
         line: row + 1,
-        column: declaration.keyword.endPosition.column + 1,
+        column: module.moduleKeyword.endPosition.column + 1,
         length: Math.max(
           1,
-          declaration.nameNode.startPosition.column - declaration.keyword.endPosition.column,
+          module.nameNode.startPosition.column - module.moduleKeyword.endPosition.column,
         ),
-        rule: "format/declaration-keyword-spacing",
-        message: `expected one space after '${declaration.keyword.text}'`,
+        rule: "format/module-keyword-spacing",
+        message: "expected one space after 'module'",
         sourceLine: lines[row] ?? "",
       });
     }
 
-    if (declaration.colon && declaration.typeNode) {
-      const colonGap = source.slice(declaration.nameNode.endIndex, declaration.colon.startIndex);
-      if (colonGap.length > 0) {
-        const row = declaration.nameNode.endPosition.row;
-        diagnostics.push({
-          filePath,
-          line: row + 1,
-          column: declaration.nameNode.endPosition.column + 1,
-          length: Math.max(
-            1,
-            declaration.colon.startPosition.column - declaration.nameNode.endPosition.column,
-          ),
-          rule: "format/type-colon-spacing",
-          message: "expected no space before ':'",
-          sourceLine: lines[row] ?? "",
-        });
-      }
+    const braceGap = source.slice(module.nameNode.endIndex, module.openBrace.startIndex);
 
-      const typeGap = source.slice(declaration.colon.endIndex, declaration.typeNode.startIndex);
-      if (typeGap !== " ") {
-        const row = declaration.colon.endPosition.row;
-        const hasGap =
-          declaration.typeNode.startPosition.column > declaration.colon.endPosition.column;
-        diagnostics.push({
-          filePath,
-          line: row + 1,
-          column:
-            (hasGap
-              ? declaration.colon.endPosition.column
-              : declaration.typeNode.startPosition.column) + 1,
-          length: Math.max(
-            1,
-            declaration.typeNode.startPosition.column - declaration.colon.endPosition.column,
-          ),
-          rule: "format/type-colon-spacing",
-          message: "expected one space after ':'",
-          sourceLine: lines[row] ?? "",
-        });
-      }
+    if (braceGap !== " ") {
+      const row = module.nameNode.endPosition.row;
+      const hasGap = module.openBrace.startPosition.column > module.nameNode.endPosition.column;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column:
+          (hasGap ? module.nameNode.endPosition.column : module.openBrace.startPosition.column) + 1,
+        length: Math.max(
+          1,
+          module.openBrace.startPosition.column - module.nameNode.endPosition.column,
+        ),
+        rule: "format/module-brace-spacing",
+        message: "expected one space before '{'",
+        sourceLine: lines[row] ?? "",
+      });
     }
 
-    if (declaration.equals && declaration.valueNode) {
-      const equalsAnchor = declaration.typeNode ?? declaration.nameNode;
-      const beforeEquals = source.slice(equalsAnchor.endIndex, declaration.equals.startIndex);
-      const afterEquals = source.slice(
-        declaration.equals.endIndex,
-        declaration.valueNode.startIndex,
+    if (
+      module.declarations.length === 0 &&
+      module.openBrace.startPosition.row === module.closeBrace.startPosition.row
+    ) {
+      const row = module.openBrace.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: module.openBrace.startPosition.column + 1,
+        length: Math.max(
+          1,
+          module.closeBrace.endPosition.column - module.openBrace.startPosition.column,
+        ),
+        rule: "format/empty-module",
+        message: "empty module braces must be on separate lines",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+
+    for (const [index, declaration] of module.declarations.entries()) {
+      const previousDeclaration = index > 0 ? module.declarations[index - 1] : undefined;
+      const sharesLineWithPrevious =
+        previousDeclaration?.node.endPosition.row === declaration.node.startPosition.row;
+
+      if (sharesLineWithPrevious) {
+        const row = declaration.node.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: declaration.node.startPosition.column + 1,
+          length: declaration.keyword.text.length,
+          rule: "format/declaration-line-break",
+          message: "expected each declaration on a separate line",
+          sourceLine: lines[row] ?? "",
+        });
+      } else if (declaration.node.startPosition.column !== 2) {
+        const row = declaration.node.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: 1,
+          length: Math.max(1, declaration.node.startPosition.column),
+          rule: "format/module-body-indentation",
+          message: "expected 2 spaces of indentation",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+
+      const keywordGap = source.slice(
+        declaration.keyword.endIndex,
+        declaration.nameNode.startIndex,
       );
-      if (beforeEquals !== " " || afterEquals !== " ") {
-        const row = declaration.equals.startPosition.row;
+      if (keywordGap !== " ") {
+        const row = declaration.keyword.endPosition.row;
         diagnostics.push({
           filePath,
           line: row + 1,
-          column: declaration.equals.startPosition.column + 1,
-          length: 1,
-          rule: "format/equals-spacing",
-          message: "expected one space around '='",
+          column: declaration.keyword.endPosition.column + 1,
+          length: Math.max(
+            1,
+            declaration.nameNode.startPosition.column - declaration.keyword.endPosition.column,
+          ),
+          rule: "format/declaration-keyword-spacing",
+          message: `expected one space after '${declaration.keyword.text}'`,
           sourceLine: lines[row] ?? "",
         });
       }
-    }
 
-    for (const operator of declaration.binaryOperators ?? []) {
-      const beforeOperator = source.slice(operator.left.endIndex, operator.node.startIndex);
-      const afterOperator = source.slice(operator.node.endIndex, operator.right.startIndex);
-      if (beforeOperator !== " " || afterOperator !== " ") {
-        const row = operator.node.startPosition.row;
-        diagnostics.push({
-          filePath,
-          line: row + 1,
-          column: operator.node.startPosition.column + 1,
-          length: operator.node.text.length,
-          rule: "format/binary-operator-spacing",
-          message: `expected one space around '${operator.node.text}'`,
-          sourceLine: lines[row] ?? "",
-        });
+      if (declaration.colon && declaration.typeNode) {
+        const colonGap = source.slice(declaration.nameNode.endIndex, declaration.colon.startIndex);
+        if (colonGap.length > 0) {
+          const row = declaration.nameNode.endPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.nameNode.endPosition.column + 1,
+            length: Math.max(
+              1,
+              declaration.colon.startPosition.column - declaration.nameNode.endPosition.column,
+            ),
+            rule: "format/type-colon-spacing",
+            message: "expected no space before ':'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+
+        const typeGap = source.slice(declaration.colon.endIndex, declaration.typeNode.startIndex);
+        if (typeGap !== " ") {
+          const row = declaration.colon.endPosition.row;
+          const hasGap =
+            declaration.typeNode.startPosition.column > declaration.colon.endPosition.column;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column:
+              (hasGap
+                ? declaration.colon.endPosition.column
+                : declaration.typeNode.startPosition.column) + 1,
+            length: Math.max(
+              1,
+              declaration.typeNode.startPosition.column - declaration.colon.endPosition.column,
+            ),
+            rule: "format/type-colon-spacing",
+            message: "expected one space after ':'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
+
+      if (declaration.equals && declaration.valueNode) {
+        const equalsAnchor = declaration.typeNode ?? declaration.nameNode;
+        const beforeEquals = source.slice(equalsAnchor.endIndex, declaration.equals.startIndex);
+        const afterEquals = source.slice(
+          declaration.equals.endIndex,
+          declaration.valueNode.startIndex,
+        );
+        if (beforeEquals !== " " || afterEquals !== " ") {
+          const row = declaration.equals.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.equals.startPosition.column + 1,
+            length: 1,
+            rule: "format/equals-spacing",
+            message: "expected one space around '='",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
+
+      for (const operator of declaration.binaryOperators ?? []) {
+        const beforeOperator = source.slice(operator.left.endIndex, operator.node.startIndex);
+        const afterOperator = source.slice(operator.node.endIndex, operator.right.startIndex);
+        if (beforeOperator !== " " || afterOperator !== " ") {
+          const row = operator.node.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: operator.node.startPosition.column + 1,
+            length: operator.node.text.length,
+            rule: "format/binary-operator-spacing",
+            message: `expected one space around '${operator.node.text}'`,
+            sourceLine: lines[row] ?? "",
+          });
+        }
       }
     }
   }
@@ -491,19 +517,16 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
   return diagnostics;
 }
 
-function renderModule(module: ReturnType<typeof analyzeModule>): string {
-  const prefix = module.hashbang ? [text(module.hashbang.text), hardLine] : [];
+function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
   const body = module.declarations.flatMap(({ document }) => [hardLine, document]);
   return renderDoc(
-    concat([
-      ...prefix,
-      text(`module ${module.name} {`),
-      indent(concat(body)),
-      hardLine,
-      text("}"),
-      hardLine,
-    ]),
+    concat([text(`module ${module.name} {`), indent(concat(body)), hardLine, text("}"), hardLine]),
   );
+}
+
+function renderSource(source: ReturnType<typeof analyzeSource>): string {
+  const hashbang = source.hashbang ? `${source.hashbang.text}\n` : "";
+  return `${hashbang}${source.modules.map(renderModule).join("\n")}`;
 }
 
 export function renderDiagnostic(diagnostic: FormatDiagnostic): string {
