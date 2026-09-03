@@ -538,6 +538,25 @@ exports[`command-line checker reports noncanonical named-type-alias formatting 1
 "
 `;
 
+exports[`command-line checker reports noncanonical polymorphic-type-alias formatting 1`] = `
+"test/fixtures/polymorphic-type-alias.qnt:2:12: error[format/type-parameter-list-spacing]: expected no space after '['
+  |
+2 |   type Box[ a ]=List[a]
+  |            ^
+  |
+test/fixtures/polymorphic-type-alias.qnt:2:14: error[format/type-parameter-list-spacing]: expected no space before ']'
+  |
+2 |   type Box[ a ]=List[a]
+  |              ^
+  |
+test/fixtures/polymorphic-type-alias.qnt:2:16: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   type Box[ a ]=List[a]
+  |                ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |

@@ -94,6 +94,10 @@ interface ModuleDeclaration {
   closeParen?: Parser.SyntaxNode;
   parameters?: Parser.SyntaxNode[];
   parameterCommas?: Parser.SyntaxNode[];
+  typeOpenBracket?: Parser.SyntaxNode;
+  typeCloseBracket?: Parser.SyntaxNode;
+  typeParameters?: Parser.SyntaxNode[];
+  typeParameterCommas?: Parser.SyntaxNode[];
   semicolon?: Parser.SyntaxNode;
   equals?: Parser.SyntaxNode;
   valueNode?: Parser.SyntaxNode;
@@ -111,6 +115,26 @@ interface BinaryOperator {
 interface ExpressionAnalysis {
   document: Doc;
   binaryOperators: BinaryOperator[];
+}
+
+function formatType(node: Parser.SyntaxNode): string {
+  if (
+    node.type === "primitive_type" ||
+    node.type === "named_type" ||
+    node.type === "type_variable"
+  ) {
+    return node.text;
+  }
+
+  if (node.type === "list_type") {
+    const element = node.childForFieldName("element");
+    if (!element) {
+      throw new Error("Unable to locate the list element type");
+    }
+    return `List[${formatType(element)}]`;
+  }
+
+  throw new Error("Formatting this type syntax is not implemented yet");
 }
 
 function commentDocument(node: Parser.SyntaxNode): Doc {
@@ -412,22 +436,40 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const declarationName = node.childForFieldName("name");
       const value = node.childForFieldName("value");
       const equals = node.children.find((child) => child.type === "=");
-      if (
-        !keyword ||
-        !declarationName ||
-        (value?.type !== "primitive_type" && value?.type !== "named_type") ||
-        !equals
-      ) {
+      const typeParameters = node.childrenForFieldName("parameter");
+      const typeOpenBracket = node.children.find((child) => child.type === "[");
+      const typeCloseBracket = node.children.find((child) => child.type === "]");
+      const typeParameterCommas = node.children.filter((child) => child.type === ",");
+      const typeParameterNames = typeParameters.map((parameter) =>
+        parameter.childForFieldName("name"),
+      );
+      const hasSupportedTypeParameters =
+        typeParameters.length === 0
+          ? !typeOpenBracket && !typeCloseBracket
+          : Boolean(typeOpenBracket) &&
+            Boolean(typeCloseBracket) &&
+            typeParameterCommas.length === typeParameters.length - 1 &&
+            typeParameterNames.every((name) => name?.type === "type_variable");
+      if (!keyword || !declarationName || !value || !hasSupportedTypeParameters || !equals) {
         throw new Error("Formatting this type alias syntax is not implemented yet");
       }
+
+      const typeParameterList =
+        typeParameterNames.length > 0
+          ? `[${typeParameterNames.map((name) => name?.text).join(", ")}]`
+          : "";
 
       addDeclaration({
         node,
         keyword,
         nameNode: declarationName,
+        typeOpenBracket,
+        typeCloseBracket,
+        typeParameters,
+        typeParameterCommas,
         equals,
         valueNode: value,
-        document: text(`type ${declarationName.text} = ${value.text}`),
+        document: text(`type ${declarationName.text}${typeParameterList} = ${formatType(value)}`),
       });
       continue;
     }
@@ -785,6 +827,91 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         });
       }
 
+      if (
+        declaration.typeOpenBracket &&
+        declaration.typeCloseBracket &&
+        declaration.typeParameters?.length
+      ) {
+        const firstParameter = declaration.typeParameters[0];
+        const lastParameter = declaration.typeParameters.at(-1);
+        if (!firstParameter || !lastParameter) {
+          throw new Error("Unable to locate the type parameters");
+        }
+
+        const beforeOpenBracket = source.slice(
+          declaration.nameNode.endIndex,
+          declaration.typeOpenBracket.startIndex,
+        );
+        if (beforeOpenBracket !== "") {
+          const row = declaration.typeOpenBracket.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.nameNode.endPosition.column + 1,
+            length: Math.max(1, beforeOpenBracket.length),
+            rule: "format/type-parameter-list-spacing",
+            message: "expected no space before '['",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+
+        const afterOpenBracket = source.slice(
+          declaration.typeOpenBracket.endIndex,
+          firstParameter.startIndex,
+        );
+        if (afterOpenBracket !== "") {
+          const row = declaration.typeOpenBracket.endPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.typeOpenBracket.endPosition.column + 1,
+            length: Math.max(1, afterOpenBracket.length),
+            rule: "format/type-parameter-list-spacing",
+            message: "expected no space after '['",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+
+        for (const [index, comma] of (declaration.typeParameterCommas ?? []).entries()) {
+          const previousParameter = declaration.typeParameters[index];
+          const nextParameter = declaration.typeParameters[index + 1];
+          if (!previousParameter || !nextParameter) {
+            throw new Error("Unable to locate type parameters around ','");
+          }
+          const beforeComma = source.slice(previousParameter.endIndex, comma.startIndex);
+          const afterComma = source.slice(comma.endIndex, nextParameter.startIndex);
+          if (beforeComma !== "" || afterComma !== " ") {
+            const row = comma.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: comma.startPosition.column + 1,
+              length: 1,
+              rule: "format/type-parameter-separator-spacing",
+              message: "expected ', ' between type parameters",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+
+        const beforeCloseBracket = source.slice(
+          lastParameter.endIndex,
+          declaration.typeCloseBracket.startIndex,
+        );
+        if (beforeCloseBracket !== "") {
+          const row = declaration.typeCloseBracket.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: lastParameter.endPosition.column + 1,
+            length: Math.max(1, beforeCloseBracket.length),
+            rule: "format/type-parameter-list-spacing",
+            message: "expected no space before ']'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
+
       for (const parameter of declaration.parameters ?? []) {
         const parameterName = parameter.childForFieldName("name");
         const parameterType = parameter.childForFieldName("type");
@@ -953,7 +1080,11 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       }
 
       if (declaration.equals && declaration.valueNode) {
-        const equalsAnchor = declaration.typeNode ?? declaration.closeParen ?? declaration.nameNode;
+        const equalsAnchor =
+          declaration.typeNode ??
+          declaration.closeParen ??
+          declaration.typeCloseBracket ??
+          declaration.nameNode;
         const beforeEquals = source.slice(equalsAnchor.endIndex, declaration.equals.startIndex);
         const afterEquals = source.slice(
           declaration.equals.endIndex,

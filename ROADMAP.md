@@ -82,7 +82,8 @@ that every subsequent formatter preserves them by construction.
   - [x] Value definitions
 - [ ] Type aliases and uninterpreted types
   - [x] Primitive type aliases
-  - [ ] Rich and polymorphic aliases
+  - [x] Single-parameter polymorphic aliases
+  - [ ] Rich aliases and multiple type parameters
   - [x] Uninterpreted types
 
 ## 5. Types
@@ -90,7 +91,7 @@ that every subsequent formatter preserves them by construction.
 - [x] Primitive type preservation and annotation spacing
 - [ ] Named and variable types
   - [x] Named types
-  - [ ] Type variables
+  - [x] Type variables
 - [ ] `Set`, `List`, and polymorphic applications
 - [ ] Tuples and records
 - [ ] Open record rows
