@@ -359,6 +359,13 @@ exports[`formatter formats a match expression 1`] = `
 "
 `;
 
+exports[`formatter formats namespace access 1`] = `
+"module Example {
+  pure val apply = (Scope::x) => Scope::x
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

@@ -144,7 +144,7 @@ that every subsequent formatter preserves them by construction.
 - [x] Lambdas
 - [x] Conditionals
 - [x] Match expressions
-- [ ] Namespace access
+- [x] Namespace access
 
 ## 8. Stateful and block expressions
 

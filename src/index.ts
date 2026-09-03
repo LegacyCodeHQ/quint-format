@@ -349,6 +349,14 @@ function formatPattern(node: Parser.SyntaxNode): string {
   if (node.type === "record_pattern") {
     return `{ ${node.childrenForFieldName("field").map(formatPattern).join(", ")} }`;
   }
+  if (node.type === "qualified_identifier") {
+    const namespace = node.childForFieldName("namespace");
+    const names = node.childrenForFieldName("name");
+    if (!namespace || names.length === 0) {
+      throw new Error("Unable to locate the qualified pattern name");
+    }
+    return [namespace.text, ...names.map((name) => name.text)].join("::");
+  }
   throw new Error("Formatting this binding pattern is not implemented yet");
 }
 
@@ -459,6 +467,22 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       sequenceLiterals: analysis.sequenceLiterals,
       recordLiterals: analysis.recordLiterals,
       callExpressions: analysis.callExpressions,
+    };
+  }
+
+  if (node.type === "namespace_access_expression") {
+    const namespace = node.childForFieldName("namespace");
+    const members = node.childrenForFieldName("member");
+    if (!namespace || members.length === 0) {
+      throw new Error("Unable to locate the namespace access members");
+    }
+    return {
+      document: text([namespace.text, ...members.map((member) => member.text)].join("::")),
+      binaryOperators: [],
+      unitLiterals: [],
+      sequenceLiterals: [],
+      recordLiterals: [],
+      callExpressions: [],
     };
   }
 
@@ -2790,6 +2814,35 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 length: 2,
                 rule: "format/match-arrow-spacing",
                 message: "expected one space around '=>'",
+                sourceLine: lines[row] ?? "",
+              });
+            }
+          }
+        }
+
+        const namespaceNodes = [
+          ...collectNodes(declaration.valueNode, "qualified_identifier"),
+          ...collectNodes(declaration.valueNode, "namespace_access_expression"),
+        ];
+        for (const namespaceNode of namespaceNodes) {
+          const names = namespaceNode.namedChildren;
+          const separators = namespaceNode.children.filter((child) => child.type === "::");
+          for (const [index, separator] of separators.entries()) {
+            const previous = names[index];
+            const next = names[index + 1];
+            if (!previous || !next) throw new Error("Unable to locate names around '::'");
+            if (
+              source.slice(previous.endIndex, separator.startIndex) !== "" ||
+              source.slice(separator.endIndex, next.startIndex) !== ""
+            ) {
+              const row = separator.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: separator.startPosition.column + 1,
+                length: 2,
+                rule: "format/namespace-access-spacing",
+                message: "expected no space around '::'",
                 sourceLine: lines[row] ?? "",
               });
             }

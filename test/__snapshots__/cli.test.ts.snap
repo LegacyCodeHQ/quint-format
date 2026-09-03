@@ -738,6 +738,25 @@ test/fixtures/match-expression.qnt:4:77: error[format/match-arrow-spacing]: expe
 "
 `;
 
+exports[`command-line checker reports noncanonical namespace-access formatting 1`] = `
+"test/fixtures/namespace-access.qnt:2:27: error[format/namespace-access-spacing]: expected no space around '::'
+  |
+2 |   pure val apply = (Scope :: x)=>Scope :: x
+  |                           ^^
+  |
+test/fixtures/namespace-access.qnt:2:32: error[format/lambda-arrow-spacing]: expected one space around '=>'
+  |
+2 |   pure val apply = (Scope :: x)=>Scope :: x
+  |                                ^^
+  |
+test/fixtures/namespace-access.qnt:2:40: error[format/namespace-access-spacing]: expected no space around '::'
+  |
+2 |   pure val apply = (Scope :: x)=>Scope :: x
+  |                                        ^^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
