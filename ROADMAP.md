@@ -48,7 +48,7 @@ that every subsequent formatter preserves them by construction.
 - [x] `var`
 - [x] Boolean `assume`
 - [x] Literal and identifier `val`
-- [ ] General `assume` expressions
+- [x] General `assume` expressions
 - [ ] `def`
 - [ ] `pure`
 - [ ] `action`

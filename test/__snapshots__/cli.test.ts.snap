@@ -402,3 +402,12 @@ test/fixtures/inline-comment.qnt:2:26: error[format/binary-operator-spacing]: ex
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical general assumption formatting 1`] = `
+"test/fixtures/assumption-expression.qnt:4:15: error[format/equals-spacing]: expected one space around '='
+  |
+4 |   assume Holds=Flag
+  |               ^
+  |
+"
+`;

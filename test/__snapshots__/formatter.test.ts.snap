@@ -226,3 +226,12 @@ exports[`formatter preserves an inline block comment 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a general assumption expression 1`] = `
+"module Example {
+  const Flag: bool
+
+  assume Holds = Flag
+}
+"
+`;

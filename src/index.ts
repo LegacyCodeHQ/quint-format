@@ -240,17 +240,19 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const declarationName = node.childForFieldName("name");
       const condition = node.childForFieldName("condition");
       const equals = node.children.find((child) => child.type === "=");
-      if (!keyword || !declarationName || !equals || condition?.type !== "boolean_literal") {
+      if (!keyword || !declarationName || !equals || !condition) {
         throw new Error("Formatting this assumption syntax is not implemented yet");
       }
 
+      const expression = analyzeExpression(condition);
       addDeclaration({
         node,
         keyword,
         nameNode: declarationName,
         equals,
         valueNode: condition,
-        document: text(`assume ${declarationName.text} = ${condition.text}`),
+        binaryOperators: expression.binaryOperators,
+        document: concat([text(`assume ${declarationName.text} = `), expression.document]),
       });
       continue;
     }
