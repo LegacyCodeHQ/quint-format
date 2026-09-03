@@ -4,6 +4,9 @@
   "description": "An opinionated formatter for the Quint specification language",
   "license": "Apache-2.0",
   "type": "module",
+  "bin": {
+    "quint-format": "src/cli.ts"
+  },
   "scripts": {
     "check": "biome check . && tsc --noEmit",
     "format": "biome format --write .",
