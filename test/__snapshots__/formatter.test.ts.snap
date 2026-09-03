@@ -1,18 +1,16 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves aligned trailing comments in a block combinator 1`] = `
+exports[`formatter places a block-bodied conditional below a definition header 1`] = `
 "module Example {
-  var first: int
-  var second: int
-  var third: int
-  var fourth: int
+  var ready: bool
+  var n: int
 
-  action init = all {
-    first' = 1,  // First value
-    second' = 2, // Second value
-    third' = 3,  // Third value
-    fourth' = 4,  // Fourth value
-  }
+  action step =
+    if (ready) {
+      n' = n
+    } else {
+      n' = n + 1
+    }
 }
 "
 `;
@@ -553,6 +551,23 @@ exports[`formatter preserves a comment inside a block combinator 1`] = `
   action step = all {
     // Preserve this conjunct comment.
     true,
+  }
+}
+"
+`;
+
+exports[`formatter preserves aligned trailing comments in a block combinator 1`] = `
+"module Example {
+  var first: int
+  var second: int
+  var third: int
+  var fourth: int
+
+  action init = all {
+    first' = 1,  // First value
+    second' = 2, // Second value
+    third' = 3,  // Third value
+    fourth' = 4,  // Fourth value
   }
 }
 "

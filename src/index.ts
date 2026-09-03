@@ -376,6 +376,13 @@ function commentDocument(node: Parser.SyntaxNode): Doc {
   );
 }
 
+function isBlockBodiedIfExpression(node: Parser.SyntaxNode): boolean {
+  if (node.type !== "if_expression") return false;
+  const consequence = node.childForFieldName("consequence");
+  const alternative = node.childForFieldName("alternative");
+  return consequence?.type === "block_expression" || alternative?.type === "block_expression";
+}
+
 function definitionBodyDocument(
   head: string,
   definition: Parser.SyntaxNode,
@@ -387,7 +394,11 @@ function definitionBodyDocument(
       (child.type === "comment" || child.type === "documentation_comment") &&
       child.endIndex <= body.startIndex,
   );
-  if (comments.length === 0) return concat([text(`${head} `), bodyDocument]);
+  if (comments.length === 0) {
+    return isBlockBodiedIfExpression(body)
+      ? concat([text(head), indent(concat([hardLine, bodyDocument]))])
+      : concat([text(`${head} `), bodyDocument]);
+  }
   return concat([
     text(head),
     indent(
@@ -3371,7 +3382,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         const isMultilineSum =
           declaration.valueNode.type === "sum_type" &&
           declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
-        const hasCanonicalAfterEquals = isMultilineSum
+        const requiresLineBreakAfterEquals =
+          isMultilineSum || isBlockBodiedIfExpression(declaration.valueNode);
+        const hasCanonicalAfterEquals = requiresLineBreakAfterEquals
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterEquals)
           : afterEquals === " ";
         if (beforeEquals !== " " || !hasCanonicalAfterEquals) {
