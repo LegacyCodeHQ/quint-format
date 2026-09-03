@@ -651,6 +651,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a block combinator below a definition header", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-block-combinator-definition.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("action step =\n    all {");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment inside a block combinator", () => {
     const input = readFileSync(new URL("fixtures/combinator-comment.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

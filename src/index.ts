@@ -394,6 +394,25 @@ function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   return Boolean(arrow && body && body.startPosition.row > arrow.endPosition.row);
 }
 
+function isBlockCombinatorExpression(node: Parser.SyntaxNode): boolean {
+  return [
+    "all_expression",
+    "any_expression",
+    "and_block_expression",
+    "or_block_expression",
+  ].includes(node.type);
+}
+
+function preservesDefinitionBodyLineBreak(
+  definition: Parser.SyntaxNode,
+  body: Parser.SyntaxNode,
+): boolean {
+  const equals = definition.children.find((child) => child.type === "=");
+  return Boolean(
+    equals && isBlockCombinatorExpression(body) && body.startPosition.row > equals.endPosition.row,
+  );
+}
+
 function definitionBodyDocument(
   head: string,
   definition: Parser.SyntaxNode,
@@ -406,7 +425,8 @@ function definitionBodyDocument(
       child.endIndex <= body.startIndex,
   );
   if (comments.length === 0) {
-    return requiresDefinitionBodyLineBreak(body)
+    return requiresDefinitionBodyLineBreak(body) ||
+      preservesDefinitionBodyLineBreak(definition, body)
       ? concat([text(head), indent(concat([hardLine, bodyDocument]))])
       : concat([text(`${head} `), bodyDocument]);
   }
@@ -3434,7 +3454,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           declaration.valueNode.type === "sum_type" &&
           declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
         const requiresLineBreakAfterEquals =
-          isMultilineSum || requiresDefinitionBodyLineBreak(declaration.valueNode);
+          isMultilineSum ||
+          requiresDefinitionBodyLineBreak(declaration.valueNode) ||
+          preservesDefinitionBodyLineBreak(declaration.node, declaration.valueNode);
         const hasCanonicalAfterEquals = requiresLineBreakAfterEquals
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterEquals)
           : afterEquals === " ";
