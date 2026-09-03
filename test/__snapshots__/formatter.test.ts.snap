@@ -101,6 +101,13 @@ exports[`formatter formats an operator type 1`] = `
 "
 `;
 
+exports[`formatter formats a zero-parameter operator type 1`] = `
+"module Example {
+  const thunk: () => bool
+}
+"
+`;
+
 exports[`formatter places declarations on separate lines 1`] = `
 "module Example {
   var a: int

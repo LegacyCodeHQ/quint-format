@@ -798,6 +798,20 @@ function checkTypeDelimiterSpacing(
           sourceLine: lines[row] ?? "",
         });
       }
+    } else if (openParen && closeParen) {
+      const insideParentheses = source.slice(openParen.endIndex, closeParen.startIndex);
+      if (insideParentheses !== "") {
+        const row = openParen.endPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: openParen.endPosition.column + 1,
+          length: Math.max(1, insideParentheses.length),
+          rule: "format/type-delimiter-spacing",
+          message: "expected no space inside '()'",
+          sourceLine: lines[row] ?? "",
+        });
+      }
     }
 
     const arrowAnchor = closeParen ?? parameters.at(-1);

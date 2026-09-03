@@ -105,7 +105,8 @@ that every subsequent formatter preserves them by construction.
 - [ ] Function and operator types
   - [x] Function types
   - [x] Parenthesized operator types with parameters
-  - [ ] Zero-parameter and direct operator types
+  - [x] Zero-parameter operator types
+  - [ ] Direct operator types
 - [ ] Parenthesized types
 - [ ] Sum types and variants
 
