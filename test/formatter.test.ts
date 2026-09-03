@@ -911,6 +911,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves blank lines between leading comment groups", () => {
+    const input = readFileSync(
+      new URL("fixtures/leading-comment-gaps.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "  // val first = source\n\n  // Second disabled example\n  // val second = source\n\n  def update",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a leading single-line block comment", () => {
     const input = "module Example {\n/* The answer */\nval answer=42\n}\n";
     const output = formatQuint(input);

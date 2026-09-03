@@ -376,6 +376,19 @@ function commentDocument(node: Parser.SyntaxNode): Doc {
   );
 }
 
+function leadingCommentsDocument(
+  comments: Parser.SyntaxNode[],
+  declaration: Parser.SyntaxNode,
+): Doc {
+  return concat(
+    comments.flatMap((comment, index) => {
+      const next = comments[index + 1] ?? declaration;
+      const lineBreaks = Math.max(1, next.startPosition.row - comment.endPosition.row);
+      return [commentDocument(comment), ...Array.from({ length: lineBreaks }, () => hardLine)];
+    }),
+  );
+}
+
 function isBlockBodiedIfExpression(node: Parser.SyntaxNode): boolean {
   if (node.type !== "if_expression") return false;
   const consequence = node.childForFieldName("consequence");
@@ -1371,7 +1384,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       ...declaration,
       leadingComments,
       document: concat([
-        ...leadingComments.flatMap((comment) => [commentDocument(comment), hardLine]),
+        leadingCommentsDocument(leadingComments, declaration.node),
         declaration.document,
       ]),
     });
