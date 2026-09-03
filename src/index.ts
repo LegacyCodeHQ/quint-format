@@ -107,7 +107,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   if (
     node.type === "integer_literal" ||
     node.type === "boolean_literal" ||
-    node.type === "string_literal"
+    node.type === "string_literal" ||
+    node.type === "name_reference"
   ) {
     return { document: text(node.text), binaryOperators: [] };
   }

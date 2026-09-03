@@ -115,3 +115,11 @@ exports[`formatter formats an integer addition expression 1`] = `
 }
 "
 `;
+
+exports[`formatter formats an identifier value expression 1`] = `
+"module Example {
+  const source: int
+  val copy = source
+}
+"
+`;

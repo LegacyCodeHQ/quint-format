@@ -181,3 +181,22 @@ test/fixtures/addition-expression.qnt:2:12: error[format/binary-operator-spacing
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical identifier value formatting 1`] = `
+"test/fixtures/identifier-value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | const source: int
+  | ^
+  |
+test/fixtures/identifier-value-definition.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+3 | val copy=source
+  | ^
+  |
+test/fixtures/identifier-value-definition.qnt:3:9: error[format/equals-spacing]: expected one space around '='
+  |
+3 | val copy=source
+  |         ^
+  |
+"
+`;
