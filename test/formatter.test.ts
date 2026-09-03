@@ -335,6 +335,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats a UFCS call expression", () => {
+    const input = "module Example {\n  val count = Set(1).size( )\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a parenthesized expression", () => {
     const input = "module Example {\nval total=(1+2)\n}\n";
     const output = formatQuint(input);

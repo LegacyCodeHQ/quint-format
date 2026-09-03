@@ -592,6 +592,15 @@ test/fixtures/call-expression.qnt:2:26: error[format/call-delimiter-spacing]: ex
 "
 `;
 
+exports[`command-line checker reports noncanonical UFCS-call formatting 1`] = `
+"test/fixtures/ufcs-call.qnt:2:27: error[format/call-delimiter-spacing]: expected no space inside '()'
+  |
+2 |   val count = Set(1).size( )
+  |                           ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

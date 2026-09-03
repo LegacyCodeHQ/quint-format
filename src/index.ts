@@ -357,7 +357,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     node.type === "integer_literal" ||
     node.type === "boolean_literal" ||
     node.type === "string_literal" ||
-    node.type === "name_reference"
+    node.type === "name_reference" ||
+    node.type === "reserved_operator"
   ) {
     return {
       document: text(node.text),
@@ -437,30 +438,60 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     };
   }
 
+  if (node.type === "field_access_expression") {
+    const object = node.childForFieldName("object");
+    const field = node.childForFieldName("field");
+    if (!object || !field) {
+      throw new Error("Unable to locate the field access operands");
+    }
+    const analysis = analyzeExpression(object);
+    return {
+      document: concat([analysis.document, text(`.${field.text}`)]),
+      binaryOperators: analysis.binaryOperators,
+      unitLiterals: analysis.unitLiterals,
+      sequenceLiterals: analysis.sequenceLiterals,
+      recordLiterals: analysis.recordLiterals,
+      callExpressions: analysis.callExpressions,
+    };
+  }
+
   if (node.type === "call_expression") {
     const functionNode = node.childForFieldName("function");
     const arguments_ = node.childrenForFieldName("argument");
-    if (
-      !functionNode ||
-      (functionNode.type !== "name_reference" && functionNode.type !== "reserved_operator")
-    ) {
-      throw new Error("Formatting this call target is not implemented yet");
-    }
+    if (!functionNode) throw new Error("Unable to locate the call target");
+    const functionAnalysis = analyzeExpression(functionNode);
     const analyses = arguments_.map(analyzeExpression);
     return {
       document: concat([
-        text(`${functionNode.text}(`),
+        functionAnalysis.document,
+        text("("),
         ...analyses.flatMap((analysis, index) => [
           ...(index === 0 ? [] : [text(", ")]),
           analysis.document,
         ]),
         text(")"),
       ]),
-      binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
-      unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
-      sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
-      recordLiterals: analyses.flatMap((analysis) => analysis.recordLiterals),
-      callExpressions: [node, ...analyses.flatMap((analysis) => analysis.callExpressions)],
+      binaryOperators: [
+        ...functionAnalysis.binaryOperators,
+        ...analyses.flatMap((analysis) => analysis.binaryOperators),
+      ],
+      unitLiterals: [
+        ...functionAnalysis.unitLiterals,
+        ...analyses.flatMap((analysis) => analysis.unitLiterals),
+      ],
+      sequenceLiterals: [
+        ...functionAnalysis.sequenceLiterals,
+        ...analyses.flatMap((analysis) => analysis.sequenceLiterals),
+      ],
+      recordLiterals: [
+        ...functionAnalysis.recordLiterals,
+        ...analyses.flatMap((analysis) => analysis.recordLiterals),
+      ],
+      callExpressions: [
+        node,
+        ...functionAnalysis.callExpressions,
+        ...analyses.flatMap((analysis) => analysis.callExpressions),
+      ],
     };
   }
 
