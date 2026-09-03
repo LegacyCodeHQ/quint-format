@@ -138,7 +138,7 @@ that every subsequent formatter preserves them by construction.
   - [x] Indexing
   - [x] Field access
 - [x] Unary operators
-- [ ] All binary operators
+- [x] All binary operators
 - [x] Addition and subtraction
 - [x] Parentheses and basic precedence preservation
 - [ ] Lambdas

@@ -1,0 +1,37 @@
+module Example {
+  pure val pair = 1->2
+
+  pure val implication = true  implies  false
+
+  temporal response = true  leadsTo  false
+
+  pure val equivalence = true  iff  false
+
+  pure val disjunction = true  or  false
+
+  pure val conjunction = true  and  false
+
+  pure val equal = 1==1
+
+  pure val unequal = 1!=2
+
+  pure val less = 1<2
+
+  pure val lessOrEqual = 1<=2
+
+  pure val greater = 2>1
+
+  pure val greaterOrEqual = 2>=1
+
+  pure val sum = 1+2
+
+  pure val delta = 2-1
+
+  pure val product = 2*3
+
+  pure val quotient = 6/2
+
+  pure val remainder = 7%3
+
+  pure val power = 2^3
+}

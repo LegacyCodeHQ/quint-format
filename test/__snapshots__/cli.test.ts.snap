@@ -633,6 +633,15 @@ exports[`command-line checker reports noncanonical unary-expression formatting 1
 "
 `;
 
+exports[`command-line checker reports noncanonical multiplication formatting 1`] = `
+"test/fixtures/multiplication-expression.qnt:2:23: error[format/binary-operator-spacing]: expected one space around '*'
+  |
+2 |   pure val product = 2*3
+  |                       ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

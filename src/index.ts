@@ -540,7 +540,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   if (node.type === "binary_expression") {
     const left = node.childForFieldName("left");
     const right = node.childForFieldName("right");
-    const operator = node.children.find((child) => child.type === "+" || child.type === "-");
+    const operator = node.childForFieldName("operator");
     if (!left || !right || !operator) {
       throw new Error("Formatting this binary expression syntax is not implemented yet");
     }
