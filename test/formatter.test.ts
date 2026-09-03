@@ -453,6 +453,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a comment before a conditional consequence", () => {
+    const input = readFileSync(
+      new URL("fixtures/conditional-consequence-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this consequence comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a match expression", () => {
     const input = readFileSync(new URL("fixtures/match-expression.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

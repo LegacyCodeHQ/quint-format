@@ -1,10 +1,10 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a comment before a conditional alternative 1`] = `
+exports[`formatter preserves a comment before a conditional consequence 1`] = `
 "module Example {
-  pure val answer = if (true) 1 else
-    // Preserve this alternative comment.
-    2
+  pure val answer = if (true)
+    // Preserve this consequence comment.
+    1 else 2
 }
 "
 `;
@@ -387,6 +387,15 @@ exports[`formatter preserves a comment before a lambda body 1`] = `
 exports[`formatter formats a conditional expression 1`] = `
 "module Example {
   pure val answer = if (true) 1 else 2
+}
+"
+`;
+
+exports[`formatter preserves a comment before a conditional alternative 1`] = `
+"module Example {
+  pure val answer = if (true) 1 else
+    // Preserve this alternative comment.
+    2
 }
 "
 `;
