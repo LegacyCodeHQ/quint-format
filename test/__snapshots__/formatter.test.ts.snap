@@ -1266,3 +1266,16 @@ exports[`formatter preserves a single multiline UFCS continuation 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves blank lines between top-level comment groups 1`] = `
+"/**
+ * First notice.
+ */
+
+/**
+ * Second notice.
+ */
+module Example {
+}
+"
+`;

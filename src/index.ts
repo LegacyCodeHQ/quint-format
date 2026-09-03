@@ -4734,9 +4734,7 @@ function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
 function renderSource(source: ReturnType<typeof analyzeSource>): string {
   const hashbang = source.hashbang ? `${source.hashbang.text}\n` : "";
   const modules = source.modules.map((module) => {
-    const leadingComments = renderDoc(
-      concat(module.leadingComments.flatMap((comment) => [commentDocument(comment), hardLine])),
-    );
+    const leadingComments = renderDoc(leadingCommentsDocument(module.leadingComments, module.node));
     return `${leadingComments}${renderModule(module)}`;
   });
   const renderedModules = modules.join("\n");

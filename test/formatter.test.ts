@@ -1009,6 +1009,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves blank lines between top-level comment groups", () => {
+    const input = readFileSync(
+      new URL("fixtures/top-level-comment-gaps.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(" * First notice.\n */\n\n/**\n * Second notice.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a trailing line comment", () => {
     const input = "module Example {\n  val answer = 42// The answer\n}\n";
     const output = formatQuint(input);
