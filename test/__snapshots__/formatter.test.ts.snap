@@ -94,3 +94,10 @@ exports[`formatter formats a Boolean value definition 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a string value definition 1`] = `
+"module Example {
+  val greeting = "hello"
+}
+"
+`;

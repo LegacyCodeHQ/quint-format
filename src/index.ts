@@ -137,7 +137,9 @@ function analyzeModule(source: string) {
       const value = node.childForFieldName("value");
       const equals = node.children.find((child) => child.type === "=");
       const isSupportedLiteral =
-        value?.type === "integer_literal" || value?.type === "boolean_literal";
+        value?.type === "integer_literal" ||
+        value?.type === "boolean_literal" ||
+        value?.type === "string_literal";
       if (!keyword || !declarationName || !equals || !isSupportedLiteral) {
         throw new Error("Formatting this value definition syntax is not implemented yet");
       }
