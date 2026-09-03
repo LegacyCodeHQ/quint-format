@@ -394,6 +394,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a comment before a field selector", () => {
+    const input = readFileSync(
+      new URL("fixtures/field-access-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this chain comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a unary expression", () => {
     const input = "module Example {\n  val negative = - 42\n}\n";
     const output = formatQuint(input);

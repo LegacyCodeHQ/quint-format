@@ -637,8 +637,22 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       throw new Error("Unable to locate the field access operands");
     }
     const analysis = analyzeExpression(object);
+    const comments = node.namedChildren.filter(
+      (child) =>
+        (child.type === "comment" || child.type === "documentation_comment") &&
+        child.startIndex >= object.endIndex &&
+        child.endIndex <= field.startIndex,
+    );
     return {
-      document: concat([analysis.document, text(`.${field.text}`)]),
+      document:
+        comments.length === 0
+          ? concat([analysis.document, text(`.${field.text}`)])
+          : concat([
+              analysis.document,
+              ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
+              hardLine,
+              text(`.${field.text}`),
+            ]),
       binaryOperators: analysis.binaryOperators,
       unitLiterals: analysis.unitLiterals,
       sequenceLiterals: analysis.sequenceLiterals,
@@ -3501,7 +3515,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           }
           const beforeDot = source.slice(object.endIndex, dot.startIndex);
           const afterDot = source.slice(dot.endIndex, field.startIndex);
-          if (beforeDot !== "" || afterDot !== "") {
+          const hasComments = fieldAccess.namedChildren.some(
+            (child) => child.type === "comment" || child.type === "documentation_comment",
+          );
+          if ((!hasComments && beforeDot !== "") || afterDot !== "") {
             const row = dot.startPosition.row;
             diagnostics.push({
               filePath,

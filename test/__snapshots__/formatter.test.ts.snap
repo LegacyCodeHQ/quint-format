@@ -1,10 +1,12 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a comment before a binary right operand 1`] = `
+exports[`formatter preserves a comment before a field selector 1`] = `
 "module Example {
-  pure val answer = true and
-    // Preserve this right operand comment.
-    false
+  pure val source = { field: 1 }
+
+  pure val answer = source
+  // Preserve this chain comment.
+  .field
 }
 "
 `;
@@ -742,6 +744,15 @@ exports[`formatter preserves a comment inside an otherwise empty module 1`] = `
 exports[`formatter preserves an inline block comment 1`] = `
 "module Example {
   val total = 1 /* left */ + 2
+}
+"
+`;
+
+exports[`formatter preserves a comment before a binary right operand 1`] = `
+"module Example {
+  pure val answer = true and
+    // Preserve this right operand comment.
+    false
 }
 "
 `;
