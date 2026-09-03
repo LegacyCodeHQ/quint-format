@@ -1,13 +1,14 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a block combinator below a definition header 1`] = `
+exports[`formatter preserves a nested definition below an action header 1`] = `
 "module Example {
   var n: int
 
   action step =
+    nondet value = Set(1, 2, 3).oneOf()
     all {
-      n' = n,
-      n >= 0,
+      n' = value,
+      value > 0,
     }
 }
 "
@@ -646,6 +647,19 @@ exports[`formatter formats all block combinators 1`] = `
     false,
     true,
   }
+}
+"
+`;
+
+exports[`formatter preserves a block combinator below a definition header 1`] = `
+"module Example {
+  var n: int
+
+  action step =
+    all {
+      n' = n,
+      n >= 0,
+    }
 }
 "
 `;

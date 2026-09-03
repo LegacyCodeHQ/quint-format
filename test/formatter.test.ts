@@ -708,6 +708,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a nested definition below an action header", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-nested-definition.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("action step =\n    nondet value = Set(1, 2, 3).oneOf()\n    all {");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment after a nested definition", () => {
     const input = readFileSync(
       new URL("fixtures/nested-definition-comment.qnt", import.meta.url),

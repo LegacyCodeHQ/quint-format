@@ -409,7 +409,9 @@ function preservesDefinitionBodyLineBreak(
 ): boolean {
   const equals = definition.children.find((child) => child.type === "=");
   return Boolean(
-    equals && isBlockCombinatorExpression(body) && body.startPosition.row > equals.endPosition.row,
+    equals &&
+      (isBlockCombinatorExpression(body) || body.type === "nested_definition_expression") &&
+      body.startPosition.row > equals.endPosition.row,
   );
 }
 
