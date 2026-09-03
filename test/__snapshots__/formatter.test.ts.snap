@@ -80,3 +80,10 @@ exports[`formatter formats spacing around assumption equals 1`] = `
 }
 "
 `;
+
+exports[`formatter formats an integer value definition 1`] = `
+"module Example {
+  val answer = 42
+}
+"
+`;

@@ -131,6 +131,26 @@ function analyzeModule(source: string) {
       continue;
     }
 
+    if (node.type === "value_definition") {
+      const keyword = node.children.find((child) => child.type === "val");
+      const declarationName = node.childForFieldName("name");
+      const value = node.childForFieldName("value");
+      const equals = node.children.find((child) => child.type === "=");
+      if (!keyword || !declarationName || !equals || value?.type !== "integer_literal") {
+        throw new Error("Formatting this value definition syntax is not implemented yet");
+      }
+
+      declarations.push({
+        node,
+        keyword,
+        nameNode: declarationName,
+        equals,
+        valueNode: value,
+        document: text(`val ${declarationName.text} = ${value.text}`),
+      });
+      continue;
+    }
+
     const keywordType =
       node.type === "variable_declaration"
         ? "var"
