@@ -1,0 +1,8 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`document renderer renders indented hard lines 1`] = `
+"module Example {
+  val answer = 42
+}
+"
+`;
