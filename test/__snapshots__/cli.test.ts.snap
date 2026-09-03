@@ -388,3 +388,17 @@ exports[`command-line checker reports a misindented comment-only module 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical inline-comment formatting 1`] = `
+"test/fixtures/inline-comment.qnt:2:16: error[format/comment-spacing]: expected one space before an inline comment
+  |
+2 |   val total = 1/* left */+2
+  |                ^^
+  |
+test/fixtures/inline-comment.qnt:2:26: error[format/binary-operator-spacing]: expected one space around '+'
+  |
+2 |   val total = 1/* left */+2
+  |                          ^
+  |
+"
+`;

@@ -35,7 +35,8 @@ implement the smallest fix, validate the output, verify, and commit atomically.
 - [ ] Leading, trailing, and inline attachment
   - [x] Leading module and definition attachment
   - [x] Trailing definition attachment
-  - [ ] Inline attachment inside syntax nodes
+  - [x] Inline attachment in binary expressions
+  - [ ] Inline attachment in remaining syntax nodes
 - [x] Comments inside otherwise empty constructs
 
 Comments are completed before broadening the remaining syntax formatters so

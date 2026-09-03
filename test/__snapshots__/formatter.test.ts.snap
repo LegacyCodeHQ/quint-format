@@ -219,3 +219,10 @@ exports[`formatter preserves a comment inside an otherwise empty module 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves an inline block comment 1`] = `
+"module Example {
+  val total = 1 /* left */ + 2
+}
+"
+`;

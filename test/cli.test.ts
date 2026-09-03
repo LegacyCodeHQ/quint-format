@@ -356,4 +356,15 @@ describe("command-line checker", () => {
     expect(result.stdout.toString()).toBe("");
     expect(result.stderr.toString()).toMatchSnapshot();
   });
+
+  test("reports noncanonical inline-comment formatting", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "--check", "test/fixtures/inline-comment.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout.toString()).toBe("");
+    expect(result.stderr.toString()).toMatchSnapshot();
+  });
 });

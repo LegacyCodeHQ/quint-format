@@ -98,6 +98,7 @@ interface BinaryOperator {
   node: Parser.SyntaxNode;
   left: Parser.SyntaxNode;
   right: Parser.SyntaxNode;
+  inlineComments: Parser.SyntaxNode[];
 }
 
 interface ExpressionAnalysis {
@@ -138,13 +139,29 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       throw new Error("Formatting this binary expression syntax is not implemented yet");
     }
 
+    const inlineComments = node.children.filter(
+      (child) =>
+        child.type === "comment" &&
+        child.startIndex >= left.endIndex &&
+        child.endIndex <= operator.startIndex,
+    );
+    if (inlineComments.some((comment) => /[\r\n]/.test(comment.text))) {
+      throw new Error("Formatting this inline comment syntax is not implemented yet");
+    }
+
     const leftAnalysis = analyzeExpression(left);
     const rightAnalysis = analyzeExpression(right);
+    const comments = inlineComments.flatMap((comment) => [text(" "), commentDocument(comment)]);
     return {
-      document: concat([leftAnalysis.document, text(` ${operator.text} `), rightAnalysis.document]),
+      document: concat([
+        leftAnalysis.document,
+        ...comments,
+        text(` ${operator.text} `),
+        rightAnalysis.document,
+      ]),
       binaryOperators: [
         ...leftAnalysis.binaryOperators,
-        { node: operator, left, right },
+        { node: operator, left, right, inlineComments },
         ...rightAnalysis.binaryOperators,
       ],
     };
@@ -652,7 +669,25 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       }
 
       for (const operator of declaration.binaryOperators ?? []) {
-        const beforeOperator = source.slice(operator.left.endIndex, operator.node.startIndex);
+        let commentAnchor = operator.left;
+        for (const comment of operator.inlineComments) {
+          const commentGap = source.slice(commentAnchor.endIndex, comment.startIndex);
+          if (commentGap !== " ") {
+            const row = comment.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: comment.startPosition.column + 1,
+              length: 2,
+              rule: "format/comment-spacing",
+              message: "expected one space before an inline comment",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          commentAnchor = comment;
+        }
+
+        const beforeOperator = source.slice(commentAnchor.endIndex, operator.node.startIndex);
         const afterOperator = source.slice(operator.node.endIndex, operator.right.startIndex);
         if (beforeOperator !== " " || afterOperator !== " ") {
           const row = operator.node.startPosition.row;
