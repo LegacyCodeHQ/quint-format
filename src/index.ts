@@ -809,25 +809,28 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       const body = arm.childForFieldName("body");
       if (!variant || !body) throw new Error("Unable to locate a match arm");
       return {
+        node: arm,
         pattern: `${variant.text}${parameter ? `(${parameter.text})` : ""}`,
         body: analyzeExpression(body),
       };
     });
     const analyses = [valueAnalysis, ...armAnalyses.map(({ body }) => body)];
+    const contentDocuments = node.namedChildren
+      .filter((child) => child.id !== value.id)
+      .map((child) => {
+        if (child.type === "comment" || child.type === "documentation_comment") {
+          return commentDocument(child);
+        }
+        const arm = armAnalyses.find((analysis) => analysis.node.id === child.id);
+        if (!arm) throw new Error("Formatting this match content is not implemented yet");
+        return concat([text(`| ${arm.pattern} => `), arm.body.document]);
+      });
     return {
       document: concat([
         text("match "),
         valueAnalysis.document,
         text(" {"),
-        indent(
-          concat(
-            armAnalyses.flatMap(({ pattern, body }) => [
-              hardLine,
-              text(`| ${pattern} => `),
-              body.document,
-            ]),
-          ),
-        ),
+        indent(concat(contentDocuments.flatMap((document) => [hardLine, document]))),
         hardLine,
         text("}"),
       ]),

@@ -2131,3 +2131,52 @@ test/fixtures/definition-body-comment.qnt:2:12: error[format/equals-spacing]: ex
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical match-comment formatting 1`] = `
+"test/fixtures/match-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/match-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | type Step=First|Second
+  | ^
+  |
+test/fixtures/match-comment.qnt:2:10: error[format/equals-spacing]: expected one space around '='
+  |
+2 | type Step=First|Second
+  |          ^
+  |
+test/fixtures/match-comment.qnt:2:16: error[format/type-separator-spacing]: expected one space around '|'
+  |
+2 | type Step=First|Second
+  |                ^
+  |
+test/fixtures/match-comment.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+3 | pure def value(step)=match step{
+  | ^
+  |
+test/fixtures/match-comment.qnt:3:6: error[format/definition-spacing]: expected one blank line between definitions
+  |
+3 | pure def value(step)=match step{
+  |      ^^^
+  |
+test/fixtures/match-comment.qnt:3:21: error[format/equals-spacing]: expected one space around '='
+  |
+3 | pure def value(step)=match step{
+  |                     ^
+  |
+test/fixtures/match-comment.qnt:5:7: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+5 | |First=>1
+  |       ^^
+  |
+test/fixtures/match-comment.qnt:6:8: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+6 | |Second=>2
+  |        ^^
+  |
+"
+`;

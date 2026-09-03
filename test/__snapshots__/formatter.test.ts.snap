@@ -1,10 +1,14 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a comment before a definition body 1`] = `
+exports[`formatter preserves comments between match arms 1`] = `
 "module Example {
-  action init =
-    // Preserve this body comment.
-    true
+  type Step = First | Second
+
+  pure def value(step) = match step {
+    // Preserve this arm comment.
+    | First => 1
+    | Second => 2
+  }
 }
 "
 `;
@@ -856,6 +860,15 @@ exports[`formatter formats a pure value definition 1`] = `
 exports[`formatter formats a parameterless action 1`] = `
 "module Example {
   action initialize = true
+}
+"
+`;
+
+exports[`formatter preserves a comment before a definition body 1`] = `
+"module Example {
+  action init =
+    // Preserve this body comment.
+    true
 }
 "
 `;
