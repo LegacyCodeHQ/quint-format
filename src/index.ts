@@ -122,7 +122,8 @@ function canFormatType(node: Parser.SyntaxNode): boolean {
   if (
     node.type === "primitive_type" ||
     node.type === "named_type" ||
-    node.type === "type_variable"
+    node.type === "type_variable" ||
+    node.type === "unit_type"
   ) {
     return true;
   }
@@ -212,6 +213,10 @@ function formatType(node: Parser.SyntaxNode): string {
     node.type === "type_variable"
   ) {
     return node.text;
+  }
+
+  if (node.type === "unit_type") {
+    return "()";
   }
 
   if (node.type === "list_type") {
@@ -789,6 +794,28 @@ function checkTypeDelimiterSpacing(
   filePath: string,
   diagnostics: FormatDiagnostic[],
 ) {
+  if (node.type === "unit_type") {
+    const openParen = node.children.find((child) => child.type === "(");
+    const closeParen = node.children.find((child) => child.type === ")");
+    if (!openParen || !closeParen) {
+      throw new Error("Unable to locate the unit type delimiters");
+    }
+    const insideParentheses = source.slice(openParen.endIndex, closeParen.startIndex);
+    if (insideParentheses !== "") {
+      const row = openParen.endPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: openParen.endPosition.column + 1,
+        length: Math.max(1, insideParentheses.length),
+        rule: "format/type-delimiter-spacing",
+        message: "expected no space inside '()'",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+    return;
+  }
+
   if (node.type === "sum_type") {
     const variants = node.namedChildren.filter((child) => child.type === "sum_type_variant");
     const pipes = node.children.filter((child) => child.type === "|");

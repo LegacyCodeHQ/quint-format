@@ -256,6 +256,15 @@ test/fixtures/parenthesized-type.qnt:2:29: error[format/type-delimiter-spacing]:
 "
 `;
 
+exports[`command-line checker reports noncanonical unit-type formatting 1`] = `
+"test/fixtures/unit-type.qnt:2:17: error[format/type-delimiter-spacing]: expected no space inside '()'
+  |
+2 |   const empty: ( )
+  |                 ^
+  |
+"
+`;
+
 exports[`command-line checker reports adjacent declarations on the same line 1`] = `
 "test/fixtures/declaration-line-break.qnt:2:15: error[format/declaration-line-break]: expected each declaration on a separate line
   |
