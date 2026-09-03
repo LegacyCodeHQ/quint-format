@@ -51,7 +51,8 @@ that every subsequent formatter preserves them by construction.
 - [x] General `assume` expressions
 - [ ] `def`
   - [x] Parameterless definitions
-  - [ ] Parameters, return types, qualifiers, and semicolons
+  - [x] Single untyped parameters
+  - [ ] Typed and multiple parameters, return types, qualifiers, and semicolons
 - [ ] `pure`
   - [x] `pure def`
   - [x] `pure val`
@@ -68,6 +69,9 @@ that every subsequent formatter preserves them by construction.
   - [x] Parameterless expression-bodied nondeterministic definitions
   - [ ] Parameters and nondeterministic bindings
 - [ ] Parameters and return types
+  - [x] Single untyped `def` parameters
+  - [ ] Typed and multiple parameters across definition modes
+  - [ ] Return type annotations
 - [ ] Optional semicolons where Quint permits them
 - [ ] Type aliases and uninterpreted types
 

@@ -421,6 +421,25 @@ exports[`command-line checker reports noncanonical parameterless def formatting 
 "
 `;
 
+exports[`command-line checker reports noncanonical def-parameter formatting 1`] = `
+"test/fixtures/def-parameter.qnt:2:16: error[format/parameter-list-spacing]: expected no space after '('
+  |
+2 |   def identity( value )=value
+  |                ^
+  |
+test/fixtures/def-parameter.qnt:2:22: error[format/parameter-list-spacing]: expected no space before ')'
+  |
+2 |   def identity( value )=value
+  |                      ^
+  |
+test/fixtures/def-parameter.qnt:2:24: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   def identity( value )=value
+  |                        ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |

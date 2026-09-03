@@ -89,6 +89,9 @@ interface ModuleDeclaration {
   nameNode: Parser.SyntaxNode;
   colon?: Parser.SyntaxNode;
   typeNode?: Parser.SyntaxNode;
+  openParen?: Parser.SyntaxNode;
+  closeParen?: Parser.SyntaxNode;
+  parameters?: Parser.SyntaxNode[];
   equals?: Parser.SyntaxNode;
   valueNode?: Parser.SyntaxNode;
   binaryOperators?: BinaryOperator[];
@@ -313,17 +316,30 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           ? qualifier
           : undefined;
       const declarationName = node.childForFieldName("name");
+      const parameters = node.childrenForFieldName("parameter");
+      const openParen = node.children.find((child) => child.type === "(");
+      const closeParen = node.children.find((child) => child.type === ")");
       const body = node.childForFieldName("body");
       const equals = node.children.find((child) => child.type === "=");
       const hasUnsupportedHeader = node.children.some(
-        (child) => child.type === "(" || child.type === ":" || child.type === ";",
+        (child) => child.type === ":" || child.type === ";",
       );
+      const parameterName = parameters[0]?.childForFieldName("name");
+      const hasSupportedParameters =
+        parameters.length === 0
+          ? !openParen && !closeParen
+          : parameters.length === 1 &&
+            Boolean(openParen) &&
+            Boolean(closeParen) &&
+            parameterName?.type === "identifier" &&
+            !parameters[0]?.childForFieldName("type");
       if (
         !keyword ||
         !declarationName ||
         !equals ||
         !body ||
         hasUnsupportedHeader ||
+        !hasSupportedParameters ||
         (!isPureDefinition && !isStandaloneDefinition)
       ) {
         throw new Error("Formatting this operator definition syntax is not implemented yet");
@@ -333,16 +349,20 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const definitionHead = isStandaloneDefinition
         ? qualifier.text
         : `${qualifier ? `${qualifier.text} ` : ""}def`;
+      const parameterList = parameterName ? `(${parameterName.text})` : "";
       addDeclaration({
         node,
         qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
         keyword,
         nameNode: declarationName,
+        openParen,
+        closeParen,
+        parameters,
         equals,
         valueNode: body,
         binaryOperators: expression.binaryOperators,
         document: concat([
-          text(`${definitionHead} ${declarationName.text} = `),
+          text(`${definitionHead} ${declarationName.text}${parameterList} = `),
           expression.document,
         ]),
       });
@@ -727,8 +747,59 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         }
       }
 
+      if (declaration.openParen && declaration.closeParen && declaration.parameters?.length === 1) {
+        const parameter = declaration.parameters[0];
+        const beforeOpenParen = source.slice(
+          declaration.nameNode.endIndex,
+          declaration.openParen.startIndex,
+        );
+        if (beforeOpenParen !== "") {
+          const row = declaration.openParen.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.nameNode.endPosition.column + 1,
+            length: Math.max(1, beforeOpenParen.length),
+            rule: "format/parameter-list-spacing",
+            message: "expected no space before '('",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+
+        const afterOpenParen = source.slice(declaration.openParen.endIndex, parameter.startIndex);
+        if (afterOpenParen !== "") {
+          const row = declaration.openParen.endPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.openParen.endPosition.column + 1,
+            length: Math.max(1, afterOpenParen.length),
+            rule: "format/parameter-list-spacing",
+            message: "expected no space after '('",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+
+        const beforeCloseParen = source.slice(
+          parameter.endIndex,
+          declaration.closeParen.startIndex,
+        );
+        if (beforeCloseParen !== "") {
+          const row = declaration.closeParen.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: parameter.endPosition.column + 1,
+            length: Math.max(1, beforeCloseParen.length),
+            rule: "format/parameter-list-spacing",
+            message: "expected no space before ')'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
+
       if (declaration.equals && declaration.valueNode) {
-        const equalsAnchor = declaration.typeNode ?? declaration.nameNode;
+        const equalsAnchor = declaration.typeNode ?? declaration.closeParen ?? declaration.nameNode;
         const beforeEquals = source.slice(equalsAnchor.endIndex, declaration.equals.startIndex);
         const afterEquals = source.slice(
           declaration.equals.endIndex,
