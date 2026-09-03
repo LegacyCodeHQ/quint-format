@@ -172,3 +172,11 @@ exports[`formatter preserves a leading line comment 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a definition documentation comment 1`] = `
+"module Example {
+  /// The answer
+  val answer = 42
+}
+"
+`;

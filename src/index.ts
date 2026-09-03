@@ -158,10 +158,10 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
   }
 
   const declarations: ModuleDeclaration[] = [];
-  let pendingLineComments: Parser.SyntaxNode[] = [];
+  let pendingComments: Parser.SyntaxNode[] = [];
   const addDeclaration = (declaration: ModuleDeclaration) => {
-    const leadingComments = pendingLineComments;
-    pendingLineComments = [];
+    const leadingComments = pendingComments;
+    pendingComments = [];
     declarations.push({
       ...declaration,
       leadingComments,
@@ -177,8 +177,11 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       continue;
     }
 
-    if (node.type === "comment" && node.text.startsWith("//")) {
-      pendingLineComments.push(node);
+    if (
+      node.type === "documentation_comment" ||
+      (node.type === "comment" && node.text.startsWith("//"))
+    ) {
+      pendingComments.push(node);
       continue;
     }
 
@@ -266,8 +269,8 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
     });
   }
 
-  if (pendingLineComments.length > 0) {
-    throw new Error("Formatting trailing line comments is not implemented yet");
+  if (pendingComments.length > 0) {
+    throw new Error("Formatting trailing comments is not implemented yet");
   }
 
   const openBrace = moduleNode.children.find((child) => child.type === "{");
