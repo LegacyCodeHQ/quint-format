@@ -1,5 +1,14 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`formatter preserves trailing comments on sum-type variants 1`] = `
+"module Example {
+  type LastDraw =
+    | Self(str) // The name of someone who drew themself
+    | Ok // The draw was Ok
+}
+"
+`;
+
 exports[`formatter formats an empty module 1`] = `
 "module Example {
 }

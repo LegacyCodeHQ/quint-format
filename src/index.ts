@@ -1469,17 +1469,32 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           : "";
       const isMultilineSumType =
         value.type === "sum_type" && value.startPosition.row < value.endPosition.row;
-      const sumEntries = isMultilineSumType
-        ? value.namedChildren.map((child) => {
-            if (child.type === "comment" || child.type === "documentation_comment") {
-              return commentDocument(child);
+      const sumEntries: Doc[] = [];
+      if (isMultilineSumType) {
+        let previousVariant: Parser.SyntaxNode | undefined;
+        for (const child of value.namedChildren) {
+          if (child.type === "sum_type_variant") {
+            sumEntries.push(text(`| ${formatSumVariant(child)}`));
+            previousVariant = child;
+            continue;
+          }
+          if (child.type === "comment" || child.type === "documentation_comment") {
+            const isTrailingVariantComment =
+              previousVariant?.endPosition.row === child.startPosition.row;
+            if (isTrailingVariantComment) {
+              const variantDocument = sumEntries.pop();
+              if (!variantDocument) {
+                throw new Error("Unable to attach the trailing sum variant comment");
+              }
+              sumEntries.push(concat([variantDocument, text(" "), commentDocument(child)]));
+            } else {
+              sumEntries.push(commentDocument(child));
             }
-            if (child.type === "sum_type_variant") {
-              return text(`| ${formatSumVariant(child)}`);
-            }
-            throw new Error("Formatting this multiline sum type syntax is not implemented yet");
-          })
-        : [];
+            continue;
+          }
+          throw new Error("Formatting this multiline sum type syntax is not implemented yet");
+        }
+      }
       const hasRecordComments =
         value.type === "record_type" &&
         value.namedChildren.some(

@@ -1038,6 +1038,20 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves trailing comments on sum-type variants", () => {
+    const input = readFileSync(
+      new URL("fixtures/sum-type-trailing-comments.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("| Self(str) // The name of someone who drew themself");
+    expect(output).toContain("| Ok // The draw was Ok");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a pure definition", () => {
     const input = "module Example {\n  pure   def answer=42\n}\n";
     const output = formatQuint(input);
