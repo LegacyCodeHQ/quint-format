@@ -454,6 +454,35 @@ test/fixtures/multiple-def-parameters.qnt:2:26: error[format/equals-spacing]: ex
 "
 `;
 
+exports[`command-line checker reports noncanonical typed-def-header formatting 1`] = `
+"test/fixtures/typed-def-header.qnt:2:21: error[format/type-colon-spacing]: expected no space before ':'
+  |
+2 |   def identity(value :int) :int=value
+  |                     ^
+  |
+test/fixtures/typed-def-header.qnt:2:23: error[format/type-colon-spacing]: expected one space after ':'
+  |
+2 |   def identity(value :int) :int=value
+  |                       ^
+  |
+test/fixtures/typed-def-header.qnt:2:27: error[format/type-colon-spacing]: expected no space before ':'
+  |
+2 |   def identity(value :int) :int=value
+  |                           ^
+  |
+test/fixtures/typed-def-header.qnt:2:29: error[format/type-colon-spacing]: expected one space after ':'
+  |
+2 |   def identity(value :int) :int=value
+  |                             ^
+  |
+test/fixtures/typed-def-header.qnt:2:32: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   def identity(value :int) :int=value
+  |                                ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |

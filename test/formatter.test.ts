@@ -317,6 +317,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats a typed def header", () => {
+    const input = "module Example {\n  def identity(value :int) :int=value\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a pure definition", () => {
     const input = "module Example {\n  pure   def answer=42\n}\n";
     const output = formatQuint(input);

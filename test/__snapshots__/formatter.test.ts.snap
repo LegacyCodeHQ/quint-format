@@ -257,6 +257,13 @@ exports[`formatter formats multiple def parameters 1`] = `
 "
 `;
 
+exports[`formatter formats a typed def header 1`] = `
+"module Example {
+  def identity(value: int): int = value
+}
+"
+`;
+
 exports[`formatter formats a pure definition 1`] = `
 "module Example {
   pure def answer = 42

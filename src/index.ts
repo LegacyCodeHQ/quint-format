@@ -89,6 +89,7 @@ interface ModuleDeclaration {
   nameNode: Parser.SyntaxNode;
   colon?: Parser.SyntaxNode;
   typeNode?: Parser.SyntaxNode;
+  typeAnchor?: Parser.SyntaxNode;
   openParen?: Parser.SyntaxNode;
   closeParen?: Parser.SyntaxNode;
   parameters?: Parser.SyntaxNode[];
@@ -321,12 +322,23 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const openParen = node.children.find((child) => child.type === "(");
       const closeParen = node.children.find((child) => child.type === ")");
       const parameterCommas = node.children.filter((child) => child.type === ",");
+      const returnType = node.childForFieldName("return_type");
+      const returnColon = node.children.find((child) => child.type === ":");
       const body = node.childForFieldName("body");
       const equals = node.children.find((child) => child.type === "=");
-      const hasUnsupportedHeader = node.children.some(
-        (child) => child.type === ":" || child.type === ";",
-      );
+      const hasUnsupportedHeader = node.children.some((child) => child.type === ";");
       const parameterNames = parameters.map((parameter) => parameter.childForFieldName("name"));
+      const parameterTypes = parameters.map((parameter) => parameter.childForFieldName("type"));
+      const parameterColons = parameters.map((parameter) =>
+        parameter.children.find((child) => child.type === ":"),
+      );
+      const parametersAreUntyped = parameterTypes.every(
+        (parameterType, index) => !parameterType && !parameterColons[index],
+      );
+      const parametersArePrimitiveTyped = parameterTypes.every(
+        (parameterType, index) =>
+          parameterType?.type === "primitive_type" && Boolean(parameterColons[index]),
+      );
       const hasSupportedParameters =
         parameters.length === 0
           ? !openParen && !closeParen
@@ -334,7 +346,12 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
             Boolean(closeParen) &&
             parameterCommas.length === parameters.length - 1 &&
             parameterNames.every((parameterName) => parameterName?.type === "identifier") &&
-            parameters.every((parameter) => !parameter.childForFieldName("type"));
+            (parametersAreUntyped || parametersArePrimitiveTyped);
+      const hasSupportedReturnType = returnType
+        ? returnType.type === "primitive_type" &&
+          Boolean(returnColon) &&
+          parametersArePrimitiveTyped
+        : !returnColon && parametersAreUntyped;
       if (
         !keyword ||
         !declarationName ||
@@ -342,6 +359,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         !body ||
         hasUnsupportedHeader ||
         !hasSupportedParameters ||
+        !hasSupportedReturnType ||
         (!isPureDefinition && !isStandaloneDefinition)
       ) {
         throw new Error("Formatting this operator definition syntax is not implemented yet");
@@ -353,13 +371,22 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         : `${qualifier ? `${qualifier.text} ` : ""}def`;
       const parameterList =
         parameterNames.length > 0
-          ? `(${parameterNames.map((parameterName) => parameterName?.text).join(", ")})`
+          ? `(${parameterNames
+              .map((parameterName, index) => {
+                const parameterType = parameterTypes[index];
+                return `${parameterName?.text}${parameterType ? `: ${parameterType.text}` : ""}`;
+              })
+              .join(", ")})`
           : "";
+      const returnTypeAnnotation = returnType ? `: ${returnType.text}` : "";
       addDeclaration({
         node,
         qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
         keyword,
         nameNode: declarationName,
+        colon: returnColon,
+        typeNode: returnType ?? undefined,
+        typeAnchor: closeParen ?? declarationName,
         openParen,
         closeParen,
         parameters,
@@ -368,7 +395,9 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         valueNode: body,
         binaryOperators: expression.binaryOperators,
         document: concat([
-          text(`${definitionHead} ${declarationName.text}${parameterList} = `),
+          text(
+            `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} = `,
+          ),
           expression.document,
         ]),
       });
@@ -712,17 +741,63 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         });
       }
 
-      if (declaration.colon && declaration.typeNode) {
-        const colonGap = source.slice(declaration.nameNode.endIndex, declaration.colon.startIndex);
+      for (const parameter of declaration.parameters ?? []) {
+        const parameterName = parameter.childForFieldName("name");
+        const parameterType = parameter.childForFieldName("type");
+        const parameterColon = parameter.children.find((child) => child.type === ":");
+        if (!parameterName || !parameterType || !parameterColon) {
+          continue;
+        }
+
+        const colonGap = source.slice(parameterName.endIndex, parameterColon.startIndex);
         if (colonGap.length > 0) {
-          const row = declaration.nameNode.endPosition.row;
+          const row = parameterName.endPosition.row;
           diagnostics.push({
             filePath,
             line: row + 1,
-            column: declaration.nameNode.endPosition.column + 1,
+            column: parameterName.endPosition.column + 1,
             length: Math.max(
               1,
-              declaration.colon.startPosition.column - declaration.nameNode.endPosition.column,
+              parameterColon.startPosition.column - parameterName.endPosition.column,
+            ),
+            rule: "format/type-colon-spacing",
+            message: "expected no space before ':'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+
+        const typeGap = source.slice(parameterColon.endIndex, parameterType.startIndex);
+        if (typeGap !== " ") {
+          const row = parameterColon.endPosition.row;
+          const hasGap = parameterType.startPosition.column > parameterColon.endPosition.column;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column:
+              (hasGap ? parameterColon.endPosition.column : parameterType.startPosition.column) + 1,
+            length: Math.max(
+              1,
+              parameterType.startPosition.column - parameterColon.endPosition.column,
+            ),
+            rule: "format/type-colon-spacing",
+            message: "expected one space after ':'",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
+
+      if (declaration.colon && declaration.typeNode) {
+        const typeAnchor = declaration.typeAnchor ?? declaration.nameNode;
+        const colonGap = source.slice(typeAnchor.endIndex, declaration.colon.startIndex);
+        if (colonGap.length > 0) {
+          const row = typeAnchor.endPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: typeAnchor.endPosition.column + 1,
+            length: Math.max(
+              1,
+              declaration.colon.startPosition.column - typeAnchor.endPosition.column,
             ),
             rule: "format/type-colon-spacing",
             message: "expected no space before ':'",
