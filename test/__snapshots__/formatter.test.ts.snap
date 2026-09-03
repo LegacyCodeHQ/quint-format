@@ -198,3 +198,10 @@ exports[`formatter indents a leading multiline block comment 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a module documentation comment 1`] = `
+"/// Module documentation
+module Example {
+}
+"
+`;

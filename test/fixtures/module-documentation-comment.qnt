@@ -1,0 +1,2 @@
+ /// Module documentation
+module Example {}

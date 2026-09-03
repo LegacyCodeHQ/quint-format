@@ -244,4 +244,13 @@ describe("formatter", () => {
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
+
+  test("preserves a module documentation comment", () => {
+    const input = " /// Module documentation\nmodule Example {}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
 });

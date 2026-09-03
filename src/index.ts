@@ -306,15 +306,42 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
 
 function analyzeSource(source: string) {
   const root = parseQuint(source);
-  const hashbang = root.namedChildren.find((node) => node.type === "hashbang");
-  const moduleNodes = root.namedChildren.filter((node) => node.type === "module_definition");
-  const expectedNamedChildren = moduleNodes.length + (hashbang ? 1 : 0);
+  let hashbang: Parser.SyntaxNode | undefined;
+  let pendingComments: Parser.SyntaxNode[] = [];
+  const modules: Array<
+    ReturnType<typeof analyzeModuleNode> & { leadingComments: Parser.SyntaxNode[] }
+  > = [];
 
-  if (moduleNodes.length === 0 || root.namedChildCount !== expectedNamedChildren) {
+  for (const node of root.namedChildren) {
+    if (
+      node.type === "hashbang" &&
+      !hashbang &&
+      modules.length === 0 &&
+      pendingComments.length === 0
+    ) {
+      hashbang = node;
+      continue;
+    }
+
+    if (node.type === "documentation_comment" || node.type === "comment") {
+      pendingComments.push(node);
+      continue;
+    }
+
+    if (node.type === "module_definition") {
+      modules.push({ ...analyzeModuleNode(node), leadingComments: pendingComments });
+      pendingComments = [];
+      continue;
+    }
+
     throw new Error("Formatting this Quint syntax is not implemented yet");
   }
 
-  return { hashbang, modules: moduleNodes.map(analyzeModuleNode) };
+  if (modules.length === 0 || pendingComments.length > 0) {
+    throw new Error("Formatting this Quint syntax is not implemented yet");
+  }
+
+  return { hashbang, modules };
 }
 
 export function formatQuint(source: string): string {
@@ -332,9 +359,26 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
   const lines = source.split(/\r?\n/);
   for (const [moduleIndex, module] of analyzedSource.modules.entries()) {
+    const moduleStart = module.leadingComments[0] ?? module.node;
+
+    for (const comment of module.leadingComments) {
+      if (comment.startPosition.column !== 0) {
+        const row = comment.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: 1,
+          length: Math.max(1, comment.startPosition.column),
+          rule: "format/comment-indentation",
+          message: "expected no indentation at the source level",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
+
     const previousModule = moduleIndex > 0 ? analyzedSource.modules[moduleIndex - 1] : undefined;
     if (previousModule) {
-      const moduleGap = source.slice(previousModule.node.endIndex, module.node.startIndex);
+      const moduleGap = source.slice(previousModule.node.endIndex, moduleStart.startIndex);
       if (moduleGap !== "\n\n") {
         const row = module.moduleKeyword.startPosition.row;
         diagnostics.push({
@@ -601,7 +645,13 @@ function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
 
 function renderSource(source: ReturnType<typeof analyzeSource>): string {
   const hashbang = source.hashbang ? `${source.hashbang.text}\n` : "";
-  return `${hashbang}${source.modules.map(renderModule).join("\n")}`;
+  const modules = source.modules.map((module) => {
+    const leadingComments = renderDoc(
+      concat(module.leadingComments.flatMap((comment) => [commentDocument(comment), hardLine])),
+    );
+    return `${leadingComments}${renderModule(module)}`;
+  });
+  return `${hashbang}${modules.join("\n")}`;
 }
 
 export function renderDiagnostic(diagnostic: FormatDiagnostic): string {

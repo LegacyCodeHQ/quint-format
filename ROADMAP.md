@@ -26,9 +26,9 @@ implement the smallest fix, validate the output, verify, and commit atomically.
 - [ ] Line comments
   - [x] Leading comments on definitions
   - [ ] Trailing and inline comments
-- [ ] Documentation comments
+- [x] Documentation comments
   - [x] Documentation on definitions
-  - [ ] Documentation on modules
+  - [x] Documentation on modules
 - [x] Block comments
   - [x] Single-line leading block comments
   - [x] Multiline block comments

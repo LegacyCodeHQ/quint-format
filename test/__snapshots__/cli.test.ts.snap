@@ -356,3 +356,17 @@ test/fixtures/multiline-block-comment.qnt:5:11: error[format/equals-spacing]: ex
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical module documentation-comment formatting 1`] = `
+"test/fixtures/module-documentation-comment.qnt:1:1: error[format/comment-indentation]: expected no indentation at the source level
+  |
+1 |  /// Module documentation
+  | ^
+  |
+test/fixtures/module-documentation-comment.qnt:2:16: error[format/empty-module]: empty module braces must be on separate lines
+  |
+2 | module Example {}
+  |                ^^
+  |
+"
+`;
