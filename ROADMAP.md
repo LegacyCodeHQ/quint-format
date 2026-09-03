@@ -53,6 +53,8 @@ that every subsequent formatter preserves them by construction.
   - [x] Parameterless definitions
   - [ ] Parameters, return types, qualifiers, and semicolons
 - [ ] `pure`
+  - [x] `pure def`
+  - [ ] `pure val`
 - [ ] `action`
 - [ ] `run`
 - [ ] `temporal`

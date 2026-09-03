@@ -242,3 +242,10 @@ exports[`formatter formats a parameterless def definition 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a pure definition 1`] = `
+"module Example {
+  pure def answer = 42
+}
+"
+`;

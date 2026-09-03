@@ -84,6 +84,7 @@ interface ModuleDeclaration {
   node: Parser.SyntaxNode;
   leadingComments?: Parser.SyntaxNode[];
   trailingComments?: Parser.SyntaxNode[];
+  qualifier?: Parser.SyntaxNode;
   keyword: Parser.SyntaxNode;
   nameNode: Parser.SyntaxNode;
   colon?: Parser.SyntaxNode;
@@ -295,27 +296,38 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
 
     if (node.type === "operator_definition") {
       const keyword = node.children.find((child) => child.type === "def");
+      const qualifier = node.childForFieldName("qualifier");
       const declarationName = node.childForFieldName("name");
       const body = node.childForFieldName("body");
       const equals = node.children.find((child) => child.type === "=");
-      const hasUnsupportedHeader =
-        node.childForFieldName("qualifier") !== null ||
-        node.children.some(
-          (child) => child.type === "(" || child.type === ":" || child.type === ";",
-        );
-      if (!keyword || !declarationName || !equals || !body || hasUnsupportedHeader) {
+      const hasUnsupportedHeader = node.children.some(
+        (child) => child.type === "(" || child.type === ":" || child.type === ";",
+      );
+      if (
+        !keyword ||
+        !declarationName ||
+        !equals ||
+        !body ||
+        hasUnsupportedHeader ||
+        (qualifier && qualifier.type !== "pure")
+      ) {
         throw new Error("Formatting this operator definition syntax is not implemented yet");
       }
 
       const expression = analyzeExpression(body);
+      const qualifierText = qualifier ? `${qualifier.text} ` : "";
       addDeclaration({
         node,
+        qualifier: qualifier ?? undefined,
         keyword,
         nameNode: declarationName,
         equals,
         valueNode: body,
         binaryOperators: expression.binaryOperators,
-        document: concat([text(`def ${declarationName.text} = `), expression.document]),
+        document: concat([
+          text(`${qualifierText}def ${declarationName.text} = `),
+          expression.document,
+        ]),
       });
       continue;
     }
@@ -610,6 +622,28 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             length: Math.max(1, declaration.node.startPosition.column),
             rule: "format/module-body-indentation",
             message: "expected 2 spaces of indentation",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
+
+      if (declaration.qualifier) {
+        const qualifierGap = source.slice(
+          declaration.qualifier.endIndex,
+          declaration.keyword.startIndex,
+        );
+        if (qualifierGap !== " ") {
+          const row = declaration.qualifier.endPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.qualifier.endPosition.column + 1,
+            length: Math.max(
+              1,
+              declaration.keyword.startPosition.column - declaration.qualifier.endPosition.column,
+            ),
+            rule: "format/qualifier-spacing",
+            message: `expected one space after '${declaration.qualifier.text}'`,
             sourceLine: lines[row] ?? "",
           });
         }

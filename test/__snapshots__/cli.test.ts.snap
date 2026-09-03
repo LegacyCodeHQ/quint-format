@@ -420,3 +420,17 @@ exports[`command-line checker reports noncanonical parameterless def formatting 
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
+"test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
+  |
+2 |   pure   def answer=42
+  |       ^^^
+  |
+test/fixtures/pure-definition.qnt:2:20: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   pure   def answer=42
+  |                    ^
+  |
+"
+`;
