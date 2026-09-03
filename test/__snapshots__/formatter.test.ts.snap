@@ -1,12 +1,15 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves comments in a tuple destructuring pattern 1`] = `
-"module Example {
-  pure val first = ((
-    // Preserve this tuple field comment.
-    x,
-    y
-  )) => x
+exports[`formatter preserves comments among module instance overrides 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(
+    // Preserve this override comment.
+    N = 1
+  ) as Lib
 }
 "
 `;
@@ -279,6 +282,17 @@ exports[`formatter preserves comments in record literals 1`] = `
 exports[`formatter formats a tuple destructuring pattern 1`] = `
 "module Example {
   pure val (first, _) = (1, 2)
+}
+"
+`;
+
+exports[`formatter preserves comments in a tuple destructuring pattern 1`] = `
+"module Example {
+  pure val first = ((
+    // Preserve this tuple field comment.
+    x,
+    y
+  )) => x
 }
 "
 `;

@@ -655,6 +655,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves comments among module instance overrides", () => {
+    const input = readFileSync(
+      new URL("fixtures/instance-override-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this override comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats anonymous instances", () => {
     const input = readFileSync(new URL("fixtures/anonymous-instance.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);
