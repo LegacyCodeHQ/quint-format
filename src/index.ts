@@ -91,12 +91,13 @@ function analyzeEmptyModule(source: string) {
 
   const openBrace = moduleNode.children.find((child) => child.type === "{");
   const closeBrace = moduleNode.children.find((child) => child.type === "}");
+  const moduleKeyword = moduleNode.children.find((child) => child.type === "module");
 
-  if (!openBrace || !closeBrace) {
-    throw new Error("Unable to locate the empty module braces");
+  if (!openBrace || !closeBrace || !moduleKeyword) {
+    throw new Error("Unable to locate the empty module tokens");
   }
 
-  return { name: nameNode.text, openBrace, closeBrace };
+  return { name: nameNode.text, nameNode, moduleKeyword, openBrace, closeBrace };
 }
 
 export function formatQuint(source: string): string {
@@ -107,18 +108,34 @@ export function formatQuint(source: string): string {
 export function checkQuint(source: string, filePath: string): FormatDiagnostic[] {
   const module = analyzeEmptyModule(source);
   const formatted = renderEmptyModule(module.name);
+  const diagnostics: FormatDiagnostic[] = [];
 
-  if (
-    source === formatted ||
-    module.openBrace.startPosition.row !== module.closeBrace.startPosition.row
-  ) {
+  if (source === formatted) {
     return [];
   }
 
-  const row = module.openBrace.startPosition.row;
+  const lines = source.split(/\r?\n/);
+  const keywordGap = source.slice(module.moduleKeyword.endIndex, module.nameNode.startIndex);
 
-  return [
-    {
+  if (keywordGap !== " ") {
+    const row = module.moduleKeyword.endPosition.row;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: module.moduleKeyword.endPosition.column + 1,
+      length: Math.max(
+        1,
+        module.nameNode.startPosition.column - module.moduleKeyword.endPosition.column,
+      ),
+      rule: "format/module-keyword-spacing",
+      message: "expected one space after 'module'",
+      sourceLine: lines[row] ?? "",
+    });
+  }
+
+  if (module.openBrace.startPosition.row === module.closeBrace.startPosition.row) {
+    const row = module.openBrace.startPosition.row;
+    diagnostics.push({
       filePath,
       line: row + 1,
       column: module.openBrace.startPosition.column + 1,
@@ -128,9 +145,11 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       ),
       rule: "format/empty-module",
       message: "empty module braces must be on separate lines",
-      sourceLine: source.split(/\r?\n/)[row] ?? "",
-    },
-  ];
+      sourceLine: lines[row] ?? "",
+    });
+  }
+
+  return diagnostics;
 }
 
 function renderEmptyModule(name: string): string {

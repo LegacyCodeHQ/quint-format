@@ -17,3 +17,12 @@ exports[`command-line checker reports a missing module brace at end of file 1`] 
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical spacing after the module keyword 1`] = `
+"test/fixtures/module-keyword-spacing.qnt:1:7: error[format/module-keyword-spacing]: expected one space after 'module'
+  |
+1 | module   Example {
+  |       ^^^
+  |
+"
+`;

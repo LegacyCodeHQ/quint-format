@@ -5,3 +5,9 @@ exports[`formatter formats an empty module 1`] = `
 }
 "
 `;
+
+exports[`formatter formats spacing after the module keyword 1`] = `
+"module Example {
+}
+"
+`;
