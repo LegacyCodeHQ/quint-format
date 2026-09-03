@@ -73,3 +73,10 @@ exports[`formatter formats a Boolean assumption 1`] = `
 }
 "
 `;
+
+exports[`formatter formats spacing around assumption equals 1`] = `
+"module Example {
+  assume Safe = true
+}
+"
+`;

@@ -86,6 +86,8 @@ interface ModuleDeclaration {
   nameNode: Parser.SyntaxNode;
   colon?: Parser.SyntaxNode;
   typeNode?: Parser.SyntaxNode;
+  equals?: Parser.SyntaxNode;
+  valueNode?: Parser.SyntaxNode;
   document: Doc;
 }
 
@@ -113,7 +115,8 @@ function analyzeModule(source: string) {
       const keyword = node.children.find((child) => child.type === "assume");
       const declarationName = node.childForFieldName("name");
       const condition = node.childForFieldName("condition");
-      if (!keyword || !declarationName || condition?.type !== "boolean_literal") {
+      const equals = node.children.find((child) => child.type === "=");
+      if (!keyword || !declarationName || !equals || condition?.type !== "boolean_literal") {
         throw new Error("Formatting this assumption syntax is not implemented yet");
       }
 
@@ -121,6 +124,8 @@ function analyzeModule(source: string) {
         node,
         keyword,
         nameNode: declarationName,
+        equals,
+        valueNode: condition,
         document: text(`assume ${declarationName.text} = ${condition.text}`),
       });
       continue;
@@ -280,6 +285,29 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         message: `expected one space after '${declaration.keyword.text}'`,
         sourceLine: lines[row] ?? "",
       });
+    }
+
+    if (declaration.equals && declaration.valueNode) {
+      const beforeEquals = source.slice(
+        declaration.nameNode.endIndex,
+        declaration.equals.startIndex,
+      );
+      const afterEquals = source.slice(
+        declaration.equals.endIndex,
+        declaration.valueNode.startIndex,
+      );
+      if (beforeEquals !== " " || afterEquals !== " ") {
+        const row = declaration.equals.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: declaration.equals.startPosition.column + 1,
+          length: 1,
+          rule: "format/equals-spacing",
+          message: "expected one space around '='",
+          sourceLine: lines[row] ?? "",
+        });
+      }
     }
 
     if (declaration.colon && declaration.typeNode) {

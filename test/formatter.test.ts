@@ -100,4 +100,13 @@ describe("formatter", () => {
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
+
+  test("formats spacing around assumption equals", () => {
+    const input = "module Example {\n  assume Safe=true\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
 });
