@@ -135,7 +135,7 @@ that every subsequent formatter preserves them by construction.
 - [ ] Calls, UFCS calls, indexing, and field access
   - [x] Calls
   - [x] UFCS calls
-  - [ ] Indexing
+  - [x] Indexing
   - [ ] Field access
 - [ ] Unary operators
 - [ ] All binary operators

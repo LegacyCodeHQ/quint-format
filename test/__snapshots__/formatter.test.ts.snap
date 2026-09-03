@@ -266,6 +266,13 @@ exports[`formatter formats a UFCS call expression 1`] = `
 "
 `;
 
+exports[`formatter formats an index expression 1`] = `
+"module Example {
+  val first = List(1, 2)[0]
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

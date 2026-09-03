@@ -601,6 +601,20 @@ exports[`command-line checker reports noncanonical UFCS-call formatting 1`] = `
 "
 `;
 
+exports[`command-line checker reports noncanonical index-expression formatting 1`] = `
+"test/fixtures/index-expression.qnt:2:26: error[format/index-delimiter-spacing]: expected no space after '['
+  |
+2 |   val first = List(1, 2)[ 0 ]
+  |                          ^
+  |
+test/fixtures/index-expression.qnt:2:28: error[format/index-delimiter-spacing]: expected no space before ']'
+  |
+2 |   val first = List(1, 2)[ 0 ]
+  |                            ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

@@ -352,6 +352,13 @@ function formatPattern(node: Parser.SyntaxNode): string {
   throw new Error("Formatting this binding pattern is not implemented yet");
 }
 
+function collectNodes(node: Parser.SyntaxNode, type: string): Parser.SyntaxNode[] {
+  return [
+    ...(node.type === type ? [node] : []),
+    ...node.namedChildren.flatMap((child) => collectNodes(child, type)),
+  ];
+}
+
 function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   if (
     node.type === "integer_literal" ||
@@ -452,6 +459,24 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       sequenceLiterals: analysis.sequenceLiterals,
       recordLiterals: analysis.recordLiterals,
       callExpressions: analysis.callExpressions,
+    };
+  }
+
+  if (node.type === "index_expression") {
+    const collection = node.childForFieldName("collection");
+    const index = node.childForFieldName("index");
+    if (!collection || !index) {
+      throw new Error("Unable to locate the index expression operands");
+    }
+    const collectionAnalysis = analyzeExpression(collection);
+    const indexAnalysis = analyzeExpression(index);
+    return {
+      document: concat([collectionAnalysis.document, text("["), indexAnalysis.document, text("]")]),
+      binaryOperators: [...collectionAnalysis.binaryOperators, ...indexAnalysis.binaryOperators],
+      unitLiterals: [...collectionAnalysis.unitLiterals, ...indexAnalysis.unitLiterals],
+      sequenceLiterals: [...collectionAnalysis.sequenceLiterals, ...indexAnalysis.sequenceLiterals],
+      recordLiterals: [...collectionAnalysis.recordLiterals, ...indexAnalysis.recordLiterals],
+      callExpressions: [...collectionAnalysis.callExpressions, ...indexAnalysis.callExpressions],
     };
   }
 
@@ -2325,6 +2350,43 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               length: Math.max(1, inside.length),
               rule: "format/call-delimiter-spacing",
               message: "expected no space inside '()'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+      }
+
+      if (declaration.valueNode) {
+        for (const indexExpression of collectNodes(declaration.valueNode, "index_expression")) {
+          const openBracket = indexExpression.children.find((child) => child.type === "[");
+          const closeBracket = indexExpression.children.find((child) => child.type === "]");
+          const index = indexExpression.childForFieldName("index");
+          if (!openBracket || !closeBracket || !index) {
+            throw new Error("Unable to locate the index expression delimiters");
+          }
+          const afterOpen = source.slice(openBracket.endIndex, index.startIndex);
+          if (afterOpen !== "") {
+            const row = openBracket.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: openBracket.endPosition.column + 1,
+              length: Math.max(1, afterOpen.length),
+              rule: "format/index-delimiter-spacing",
+              message: "expected no space after '['",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          const beforeClose = source.slice(index.endIndex, closeBracket.startIndex);
+          if (beforeClose !== "") {
+            const row = closeBracket.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: index.endPosition.column + 1,
+              length: Math.max(1, beforeClose.length),
+              rule: "format/index-delimiter-spacing",
+              message: "expected no space before ']'",
               sourceLine: lines[row] ?? "",
             });
           }
