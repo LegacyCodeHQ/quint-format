@@ -23,9 +23,9 @@ implement the smallest fix, validate the output, verify, and commit atomically.
 
 ## 3. Comments
 
-- [ ] Line comments
+- [x] Line comments
   - [x] Leading comments on definitions
-  - [ ] Trailing and inline comments
+  - [x] Trailing comments
 - [x] Documentation comments
   - [x] Documentation on definitions
   - [x] Documentation on modules
@@ -33,6 +33,9 @@ implement the smallest fix, validate the output, verify, and commit atomically.
   - [x] Single-line leading block comments
   - [x] Multiline block comments
 - [ ] Leading, trailing, and inline attachment
+  - [x] Leading module and definition attachment
+  - [x] Trailing definition attachment
+  - [ ] Inline attachment inside syntax nodes
 - [ ] Comments inside otherwise empty constructs
 
 Comments are completed before broadening the remaining syntax formatters so

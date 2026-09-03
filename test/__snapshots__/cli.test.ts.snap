@@ -370,3 +370,12 @@ test/fixtures/module-documentation-comment.qnt:2:16: error[format/empty-module]:
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical trailing line-comment formatting 1`] = `
+"test/fixtures/trailing-line-comment.qnt:2:18: error[format/comment-spacing]: expected one space before a trailing comment
+  |
+2 |   val answer = 42// The answer
+  |                  ^^
+  |
+"
+`;

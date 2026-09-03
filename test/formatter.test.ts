@@ -253,4 +253,13 @@ describe("formatter", () => {
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
+
+  test("preserves a trailing line comment", () => {
+    const input = "module Example {\n  val answer = 42// The answer\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
 });

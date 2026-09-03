@@ -83,6 +83,7 @@ function positionAtIndex(source: string, index: number) {
 interface ModuleDeclaration {
   node: Parser.SyntaxNode;
   leadingComments?: Parser.SyntaxNode[];
+  trailingComments?: Parser.SyntaxNode[];
   keyword: Parser.SyntaxNode;
   nameNode: Parser.SyntaxNode;
   colon?: Parser.SyntaxNode;
@@ -190,6 +191,26 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
   for (const node of moduleNode.namedChildren) {
     if (node.id === nameNode.id) {
       continue;
+    }
+
+    if (node.type === "comment" && node.text.startsWith("//")) {
+      const previousDeclaration = declarations.at(-1);
+      if (
+        previousDeclaration &&
+        pendingComments.length === 0 &&
+        node.startPosition.row === previousDeclaration.node.endPosition.row
+      ) {
+        previousDeclaration.trailingComments = [
+          ...(previousDeclaration.trailingComments ?? []),
+          node,
+        ];
+        previousDeclaration.document = concat([
+          previousDeclaration.document,
+          text(" "),
+          commentDocument(node),
+        ]);
+        continue;
+      }
     }
 
     if (node.type === "documentation_comment" || node.type === "comment") {
@@ -466,6 +487,22 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             length: Math.max(1, comment.startPosition.column),
             rule: "format/comment-indentation",
             message: "expected 2 spaces of indentation",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+      }
+
+      for (const comment of declaration.trailingComments ?? []) {
+        const commentGap = source.slice(declaration.node.endIndex, comment.startIndex);
+        if (commentGap !== " ") {
+          const row = comment.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: comment.startPosition.column + 1,
+            length: 2,
+            rule: "format/comment-spacing",
+            message: "expected one space before a trailing comment",
             sourceLine: lines[row] ?? "",
           });
         }

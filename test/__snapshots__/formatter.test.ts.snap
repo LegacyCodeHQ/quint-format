@@ -205,3 +205,10 @@ module Example {
 }
 "
 `;
+
+exports[`formatter preserves a trailing line comment 1`] = `
+"module Example {
+  val answer = 42 // The answer
+}
+"
+`;
