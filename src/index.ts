@@ -127,6 +127,7 @@ interface BinaryOperator {
   left: Parser.SyntaxNode;
   right: Parser.SyntaxNode;
   inlineComments: Parser.SyntaxNode[];
+  rightComments: Parser.SyntaxNode[];
 }
 
 interface ExpressionAnalysis {
@@ -1047,6 +1048,12 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startIndex >= left.endIndex &&
         child.endIndex <= operator.startIndex,
     );
+    const rightComments = node.children.filter(
+      (child) =>
+        (child.type === "comment" || child.type === "documentation_comment") &&
+        child.startIndex >= operator.endIndex &&
+        child.endIndex <= right.startIndex,
+    );
     if (inlineComments.some((comment) => /[\r\n]/.test(comment.text))) {
       throw new Error("Formatting this inline comment syntax is not implemented yet");
     }
@@ -1055,15 +1062,29 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const rightAnalysis = analyzeExpression(right);
     const comments = inlineComments.flatMap((comment) => [text(" "), commentDocument(comment)]);
     return {
-      document: concat([
-        leftAnalysis.document,
-        ...comments,
-        text(` ${operator.text} `),
-        rightAnalysis.document,
-      ]),
+      document:
+        rightComments.length === 0
+          ? concat([
+              leftAnalysis.document,
+              ...comments,
+              text(` ${operator.text} `),
+              rightAnalysis.document,
+            ])
+          : concat([
+              leftAnalysis.document,
+              ...comments,
+              text(` ${operator.text}`),
+              indent(
+                concat([
+                  ...rightComments.flatMap((comment) => [hardLine, commentDocument(comment)]),
+                  hardLine,
+                  rightAnalysis.document,
+                ]),
+              ),
+            ]),
       binaryOperators: [
         ...leftAnalysis.binaryOperators,
-        { node: operator, left, right, inlineComments },
+        { node: operator, left, right, inlineComments, rightComments },
         ...rightAnalysis.binaryOperators,
       ],
       unitLiterals: [...leftAnalysis.unitLiterals, ...rightAnalysis.unitLiterals],
@@ -3210,7 +3231,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
         const beforeOperator = source.slice(commentAnchor.endIndex, operator.node.startIndex);
         const afterOperator = source.slice(operator.node.endIndex, operator.right.startIndex);
-        if (beforeOperator !== " " || afterOperator !== " ") {
+        if (
+          beforeOperator !== " " ||
+          (operator.rightComments.length === 0 && afterOperator !== " ")
+        ) {
           const row = operator.node.startPosition.row;
           diagnostics.push({
             filePath,

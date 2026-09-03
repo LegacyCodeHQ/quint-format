@@ -1,11 +1,10 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves comments between sum-type variants 1`] = `
+exports[`formatter preserves a comment before a binary right operand 1`] = `
 "module Example {
-  type Step =
-    | First
-    // Preserve this variant comment.
-    | Second
+  pure val answer = true and
+    // Preserve this right operand comment.
+    false
 }
 "
 `;
@@ -863,6 +862,16 @@ exports[`formatter formats a multiline sum type 1`] = `
   type Option[a] =
     | Some(a)
     | None
+}
+"
+`;
+
+exports[`formatter preserves comments between sum-type variants 1`] = `
+"module Example {
+  type Step =
+    | First
+    // Preserve this variant comment.
+    | Second
 }
 "
 `;
