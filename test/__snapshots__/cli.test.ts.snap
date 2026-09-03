@@ -1,0 +1,10 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`command-line checker reports a compact empty module 1`] = `
+"test/fixtures/compact-empty-module.qnt:1:16: error[format/empty-module]: empty module braces must be on separate lines
+  |
+1 | module Example {}
+  |                ^^
+  |
+"
+`;
