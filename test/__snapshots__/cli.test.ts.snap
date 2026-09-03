@@ -218,6 +218,20 @@ exports[`command-line checker reports noncanonical zero-parameter-operator-type 
 "
 `;
 
+exports[`command-line checker reports noncanonical direct-operator-type formatting 1`] = `
+"test/fixtures/direct-operator-type.qnt:2:19: error[format/type-colon-spacing]: expected one space after ':'
+  |
+2 |   const predicate:int=>bool
+  |                   ^
+  |
+test/fixtures/direct-operator-type.qnt:2:22: error[format/type-operator-spacing]: expected one space around '=>'
+  |
+2 |   const predicate:int=>bool
+  |                      ^^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized-type formatting 1`] = `
 "test/fixtures/parenthesized-type.qnt:2:18: error[format/type-delimiter-spacing]: expected no space after '('
   |

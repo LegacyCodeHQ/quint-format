@@ -102,11 +102,11 @@ that every subsequent formatter preserves them by construction.
   - [x] Tuple types
   - [x] Record types
 - [x] Open record rows
-- [ ] Function and operator types
+- [x] Function and operator types
   - [x] Function types
   - [x] Parenthesized operator types with parameters
   - [x] Zero-parameter operator types
-  - [ ] Direct operator types
+  - [x] Direct operator types
 - [x] Parenthesized types
 - [x] Sum types and variants
   - [x] Inline sum types and payload variants

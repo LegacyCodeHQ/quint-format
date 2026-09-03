@@ -108,6 +108,13 @@ exports[`formatter formats a zero-parameter operator type 1`] = `
 "
 `;
 
+exports[`formatter formats a direct operator type 1`] = `
+"module Example {
+  const predicate: int => bool
+}
+"
+`;
+
 exports[`formatter formats a parenthesized type 1`] = `
 "module Example {
   const values: (Set[int])
