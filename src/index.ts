@@ -496,38 +496,72 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   }
 
   if (node.type === "record_literal") {
-    const elementAnalyses = node.namedChildren.map((element) => {
+    const entries = node.namedChildren.map((element) => {
+      if (element.type === "comment" || element.type === "documentation_comment") {
+        return { node: element, document: commentDocument(element) };
+      }
       const value = element.childForFieldName("value");
       if (!value) {
         throw new Error("Unable to locate a record literal element value");
       }
       const analysis = analyzeExpression(value);
       if (element.type === "record_spread") {
-        return { document: concat([text("..."), analysis.document]), analysis };
+        return { node: element, document: concat([text("..."), analysis.document]), analysis };
       }
       const name = element.childForFieldName("name");
       if (element.type !== "record_literal_field" || !name) {
         throw new Error("Formatting this record literal element is not implemented yet");
       }
       return {
+        node: element,
         document: concat([text(`${name.text}: `), analysis.document]),
         analysis,
       };
     });
+    const analyses = entries.flatMap((entry) => (entry.analysis ? [entry.analysis] : []));
+    const hasComments = entries.some(
+      ({ node: entry }) => entry.type === "comment" || entry.type === "documentation_comment",
+    );
+    const lineDocuments: Doc[] = [];
+    if (hasComments) {
+      for (const [index, entry] of entries.entries()) {
+        const isComment =
+          entry.node.type === "comment" || entry.node.type === "documentation_comment";
+        const previous = entries[index - 1];
+        const isTrailingComment =
+          isComment &&
+          previous?.analysis &&
+          previous.node.endPosition.row === entry.node.startPosition.row;
+        if (isTrailingComment) {
+          const previousDocument = lineDocuments.pop();
+          if (!previousDocument) throw new Error("Unable to attach the record comment");
+          lineDocuments.push(concat([previousDocument, text(" "), entry.document]));
+        } else {
+          lineDocuments.push(isComment ? entry.document : concat([entry.document, text(",")]));
+        }
+      }
+    }
     return {
-      document: concat([
-        text("{ "),
-        ...elementAnalyses.flatMap(({ document }, index) => [
-          ...(index === 0 ? [] : [text(", ")]),
-          document,
-        ]),
-        text(" }"),
-      ]),
-      binaryOperators: elementAnalyses.flatMap(({ analysis }) => analysis.binaryOperators),
-      unitLiterals: elementAnalyses.flatMap(({ analysis }) => analysis.unitLiterals),
-      sequenceLiterals: elementAnalyses.flatMap(({ analysis }) => analysis.sequenceLiterals),
-      recordLiterals: [node, ...elementAnalyses.flatMap(({ analysis }) => analysis.recordLiterals)],
-      callExpressions: elementAnalyses.flatMap(({ analysis }) => analysis.callExpressions),
+      document: hasComments
+        ? concat([
+            text("{"),
+            indent(concat(lineDocuments.flatMap((document) => [hardLine, document]))),
+            hardLine,
+            text("}"),
+          ])
+        : concat([
+            text("{ "),
+            ...entries.flatMap(({ document }, index) => [
+              ...(index === 0 ? [] : [text(", ")]),
+              document,
+            ]),
+            text(" }"),
+          ]),
+      binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
+      unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
+      sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
+      recordLiterals: [node, ...analyses.flatMap((analysis) => analysis.recordLiterals)],
+      callExpressions: analyses.flatMap((analysis) => analysis.callExpressions),
     };
   }
 
@@ -3749,24 +3783,38 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         const spreads = recordLiteral.namedChildren.filter(
           (child) => child.type === "record_spread",
         );
-        const elements = recordLiteral.namedChildren;
+        const comments = recordLiteral.namedChildren.filter(
+          (child) => child.type === "comment" || child.type === "documentation_comment",
+        );
+        const elements = [...fields, ...spreads].sort(
+          (left, right) => left.startIndex - right.startIndex,
+        );
+        const children = recordLiteral.namedChildren;
         const commas = recordLiteral.children.filter((child) => child.type === ",");
-        const firstElement = elements[0];
-        const lastElement = elements.at(-1);
+        const firstElement = children[0];
+        const lastElement = children.at(-1);
         if (!openBrace || !closeBrace || !firstElement || !lastElement) {
           throw new Error("Unable to locate the record literal delimiters");
         }
 
         const afterOpenBrace = source.slice(openBrace.endIndex, firstElement.startIndex);
-        if (afterOpenBrace !== " ") {
+        const isCommentedRecord = comments.length > 0;
+        const hasCanonicalOpening = isCommentedRecord
+          ? firstElement.startPosition.row > openBrace.startPosition.row
+          : afterOpenBrace === " ";
+        if (!hasCanonicalOpening) {
           const row = openBrace.endPosition.row;
           diagnostics.push({
             filePath,
             line: row + 1,
             column: openBrace.endPosition.column + 1,
             length: Math.max(1, afterOpenBrace.length),
-            rule: "format/expression-delimiter-spacing",
-            message: "expected one space after '{'",
+            rule: isCommentedRecord
+              ? "format/commented-record-layout"
+              : "format/expression-delimiter-spacing",
+            message: isCommentedRecord
+              ? "expected commented record contents on separate lines"
+              : "expected one space after '{'",
             sourceLine: lines[row] ?? "",
           });
         }
@@ -3827,50 +3875,104 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           }
         }
 
-        for (const [index, comma] of commas.entries()) {
-          const previousElement = elements[index];
-          const nextElement = elements[index + 1];
-          if (!previousElement || !nextElement) {
-            const row = comma.startPosition.row;
-            diagnostics.push({
-              filePath,
-              line: row + 1,
-              column: comma.startPosition.column + 1,
-              length: 1,
-              rule: "format/unnecessary-trailing-comma",
-              message: "trailing commas are omitted from inline records",
-              sourceLine: lines[row] ?? "",
-            });
-            continue;
+        if (isCommentedRecord) {
+          for (const [index, element] of elements.entries()) {
+            const nextElement = elements[index + 1];
+            const comma = commas.find(
+              (candidate) =>
+                candidate.startIndex >= element.endIndex &&
+                candidate.startIndex < (nextElement?.startIndex ?? closeBrace.startIndex),
+            );
+            if (!comma || source.slice(element.endIndex, comma.startIndex) !== "") {
+              const row = element.endPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: element.endPosition.column + 1,
+                length: 1,
+                rule: "format/commented-record-separator",
+                message: "expected a trailing comma after each record element",
+                sourceLine: lines[row] ?? "",
+              });
+            }
           }
-          const beforeComma = source.slice(previousElement.endIndex, comma.startIndex);
-          const afterComma = source.slice(comma.endIndex, nextElement.startIndex);
-          if (beforeComma !== "" || afterComma !== " ") {
-            const row = comma.startPosition.row;
-            diagnostics.push({
-              filePath,
-              line: row + 1,
-              column: comma.startPosition.column + 1,
-              length: 1,
-              rule: "format/expression-separator-spacing",
-              message: `expected ', ' between record ${spreads.length > 0 ? "elements" : "fields"}`,
-              sourceLine: lines[row] ?? "",
-            });
+          for (const comment of comments) {
+            const previousElement = [...elements]
+              .reverse()
+              .find((element) => element.endIndex <= comment.startIndex);
+            if (previousElement?.endPosition.row === comment.startPosition.row) {
+              const comma = commas.find(
+                (candidate) =>
+                  candidate.startIndex >= previousElement.endIndex &&
+                  candidate.endIndex <= comment.startIndex,
+              );
+              if (!comma || source.slice(comma.endIndex, comment.startIndex) !== " ") {
+                const row = comment.startPosition.row;
+                diagnostics.push({
+                  filePath,
+                  line: row + 1,
+                  column: comment.startPosition.column + 1,
+                  length: 2,
+                  rule: "format/comment-spacing",
+                  message: "expected one space before a trailing comment",
+                  sourceLine: lines[row] ?? "",
+                });
+              }
+            }
+          }
+        } else {
+          for (const [index, comma] of commas.entries()) {
+            const previousElement = elements[index];
+            const nextElement = elements[index + 1];
+            if (!previousElement || !nextElement) {
+              const row = comma.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: comma.startPosition.column + 1,
+                length: 1,
+                rule: "format/unnecessary-trailing-comma",
+                message: "trailing commas are omitted from inline records",
+                sourceLine: lines[row] ?? "",
+              });
+              continue;
+            }
+            const beforeComma = source.slice(previousElement.endIndex, comma.startIndex);
+            const afterComma = source.slice(comma.endIndex, nextElement.startIndex);
+            if (beforeComma !== "" || afterComma !== " ") {
+              const row = comma.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: comma.startPosition.column + 1,
+                length: 1,
+                rule: "format/expression-separator-spacing",
+                message: `expected ', ' between record ${spreads.length > 0 ? "elements" : "fields"}`,
+                sourceLine: lines[row] ?? "",
+              });
+            }
           }
         }
 
         const trailingComma = commas.find((comma) => comma.startIndex >= lastElement.endIndex);
         const closeAnchor = trailingComma ?? lastElement;
         const beforeCloseBrace = source.slice(closeAnchor.endIndex, closeBrace.startIndex);
-        if (beforeCloseBrace !== " ") {
+        const hasCanonicalClosing = isCommentedRecord
+          ? closeBrace.startPosition.row > closeAnchor.endPosition.row
+          : beforeCloseBrace === " ";
+        if (!hasCanonicalClosing) {
           const row = closeBrace.startPosition.row;
           diagnostics.push({
             filePath,
             line: row + 1,
             column: closeAnchor.endPosition.column + 1,
             length: Math.max(1, beforeCloseBrace.length),
-            rule: "format/expression-delimiter-spacing",
-            message: "expected one space before '}'",
+            rule: isCommentedRecord
+              ? "format/commented-record-layout"
+              : "format/expression-delimiter-spacing",
+            message: isCommentedRecord
+              ? "expected the closing brace on its own line"
+              : "expected one space before '}'",
             sourceLine: lines[row] ?? "",
           });
         }

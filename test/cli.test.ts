@@ -503,6 +503,17 @@ describe("command-line checker", () => {
     expect(result.stderr.toString()).toMatchSnapshot();
   });
 
+  test("reports noncanonical commented-record formatting", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "--check", "test/fixtures/commented-record.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout.toString()).toBe("");
+    expect(result.stderr.toString()).toMatchSnapshot();
+  });
+
   test("reports noncanonical tuple-pattern formatting", () => {
     const result = Bun.spawnSync(
       ["bun", "run", "src/cli.ts", "--check", "test/fixtures/tuple-pattern.qnt"],

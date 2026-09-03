@@ -1828,3 +1828,42 @@ test/fixtures/untyped-parameter-return.qnt:2:29: error[format/equals-spacing]: e
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical commented-record formatting 1`] = `
+"test/fixtures/commented-record.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 |  val state={ first:1, // first value
+  | ^
+  |
+test/fixtures/commented-record.qnt:2:11: error[format/equals-spacing]: expected one space around '='
+  |
+2 |  val state={ first:1, // first value
+  |           ^
+  |
+test/fixtures/commented-record.qnt:2:13: error[format/commented-record-layout]: expected commented record contents on separate lines
+  |
+2 |  val state={ first:1, // first value
+  |             ^
+  |
+test/fixtures/commented-record.qnt:2:20: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 |  val state={ first:1, // first value
+  |                    ^
+  |
+test/fixtures/commented-record.qnt:3:8: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+3 | second:2 }
+  |        ^
+  |
+test/fixtures/commented-record.qnt:3:9: error[format/commented-record-separator]: expected a trailing comma after each record element
+  |
+3 | second:2 }
+  |         ^
+  |
+test/fixtures/commented-record.qnt:3:9: error[format/commented-record-layout]: expected the closing brace on its own line
+  |
+3 | second:2 }
+  |         ^
+  |
+"
+`;

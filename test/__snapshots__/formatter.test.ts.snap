@@ -779,3 +779,13 @@ exports[`formatter formats an untyped parameter with a return type 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves comments in record literals 1`] = `
+"module Example {
+  val state = {
+    first: 1, // first value
+    second: 2,
+  }
+}
+"
+`;

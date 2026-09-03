@@ -309,6 +309,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves comments in record literals", () => {
+    const input = readFileSync(new URL("fixtures/commented-record.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a tuple destructuring pattern", () => {
     const input = "module Example {\n  pure val ( first ,_ ) = (1, 2)\n}\n";
     const output = formatQuint(input);
