@@ -107,7 +107,7 @@ that every subsequent formatter preserves them by construction.
   - [x] Parenthesized operator types with parameters
   - [x] Zero-parameter operator types
   - [ ] Direct operator types
-- [ ] Parenthesized types
+- [x] Parenthesized types
 - [ ] Sum types and variants
 
 ## 6. Literals and patterns

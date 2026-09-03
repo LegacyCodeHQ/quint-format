@@ -146,6 +146,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats a parenthesized type", () => {
+    const input = "module Example {\n  const values: ( Set[ int ] )\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("places declarations on separate lines", () => {
     const input = "module Example {\n  var a: int  var b: int\n}\n";
     const output = formatQuint(input);

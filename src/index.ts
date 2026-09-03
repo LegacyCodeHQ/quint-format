@@ -176,6 +176,11 @@ function canFormatType(node: Parser.SyntaxNode): boolean {
     );
   }
 
+  if (node.type === "parenthesized_type") {
+    const innerType = node.childForFieldName("type");
+    return Boolean(innerType && canFormatType(innerType));
+  }
+
   return false;
 }
 
@@ -264,6 +269,14 @@ function formatType(node: Parser.SyntaxNode): string {
       throw new Error("Unable to locate the operator parameter types");
     }
     return `${parameterList} => ${formatType(result)}`;
+  }
+
+  if (node.type === "parenthesized_type") {
+    const innerType = node.childForFieldName("type");
+    if (!innerType) {
+      throw new Error("Unable to locate the parenthesized type");
+    }
+    return `(${formatType(innerType)})`;
   }
 
   throw new Error("Formatting this type syntax is not implemented yet");
@@ -732,6 +745,43 @@ function checkTypeDelimiterSpacing(
   filePath: string,
   diagnostics: FormatDiagnostic[],
 ) {
+  if (node.type === "parenthesized_type") {
+    const openParen = node.children.find((child) => child.type === "(");
+    const closeParen = node.children.find((child) => child.type === ")");
+    const innerType = node.childForFieldName("type");
+    if (!openParen || !closeParen || !innerType) {
+      throw new Error("Unable to locate the parenthesized type delimiters");
+    }
+    const afterOpenParen = source.slice(openParen.endIndex, innerType.startIndex);
+    if (afterOpenParen !== "") {
+      const row = openParen.endPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: openParen.endPosition.column + 1,
+        length: Math.max(1, afterOpenParen.length),
+        rule: "format/type-delimiter-spacing",
+        message: "expected no space after '('",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+    checkTypeDelimiterSpacing(innerType, source, lines, filePath, diagnostics);
+    const beforeCloseParen = source.slice(innerType.endIndex, closeParen.startIndex);
+    if (beforeCloseParen !== "") {
+      const row = closeParen.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: innerType.endPosition.column + 1,
+        length: Math.max(1, beforeCloseParen.length),
+        rule: "format/type-delimiter-spacing",
+        message: "expected no space before ')'",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+    return;
+  }
+
   if (node.type === "operator_type") {
     const parameters = node.childrenForFieldName("parameter");
     const result = node.childForFieldName("result");
