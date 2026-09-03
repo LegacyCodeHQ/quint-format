@@ -73,6 +73,13 @@ exports[`formatter formats a tuple type 1`] = `
 "
 `;
 
+exports[`formatter formats a record type 1`] = `
+"module Example {
+  const User: { name: str, active: bool }
+}
+"
+`;
+
 exports[`formatter places declarations on separate lines 1`] = `
 "module Example {
   var a: int

@@ -147,6 +147,18 @@ function canFormatType(node: Parser.SyntaxNode): boolean {
     return elements.length >= 2 && elements.every((element) => canFormatType(element));
   }
 
+  if (node.type === "record_type") {
+    const fields = node.namedChildren.filter((child) => child.type === "record_type_field");
+    return (
+      fields.length > 0 &&
+      fields.every((field) => {
+        const name = field.childForFieldName("name");
+        const fieldType = field.childForFieldName("type");
+        return Boolean(name && fieldType && canFormatType(fieldType));
+      })
+    );
+  }
+
   return false;
 }
 
@@ -190,6 +202,22 @@ function formatType(node: Parser.SyntaxNode): string {
       throw new Error("Unable to locate the tuple element types");
     }
     return `(${elements.map(formatType).join(", ")})`;
+  }
+
+  if (node.type === "record_type") {
+    const fields = node.namedChildren.filter((child) => child.type === "record_type_field");
+    if (fields.length === 0) {
+      throw new Error("Unable to locate the record fields");
+    }
+    const formattedFields = fields.map((field) => {
+      const name = field.childForFieldName("name");
+      const fieldType = field.childForFieldName("type");
+      if (!name || !fieldType) {
+        throw new Error("Unable to locate a record field type");
+      }
+      return `${name.text}: ${formatType(fieldType)}`;
+    });
+    return `{ ${formattedFields.join(", ")} }`;
   }
 
   throw new Error("Formatting this type syntax is not implemented yet");
@@ -658,6 +686,105 @@ function checkTypeDelimiterSpacing(
   filePath: string,
   diagnostics: FormatDiagnostic[],
 ) {
+  if (node.type === "record_type") {
+    const openBrace = node.children.find((child) => child.type === "{");
+    const closeBrace = node.children.find((child) => child.type === "}");
+    const fields = node.namedChildren.filter((child) => child.type === "record_type_field");
+    const firstField = fields[0];
+    const lastField = fields.at(-1);
+    if (!openBrace || !closeBrace || !firstField || !lastField) {
+      throw new Error("Unable to locate the record type delimiters");
+    }
+
+    const afterOpenBrace = source.slice(openBrace.endIndex, firstField.startIndex);
+    if (afterOpenBrace !== " ") {
+      const row = openBrace.endPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: openBrace.endPosition.column + 1,
+        length: Math.max(1, afterOpenBrace.length),
+        rule: "format/type-delimiter-spacing",
+        message: "expected one space after '{'",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+
+    const commas = node.children.filter((child) => child.type === ",");
+    for (const [index, comma] of commas.entries()) {
+      const previousField = fields[index];
+      const nextField = fields[index + 1];
+      if (!previousField || !nextField) {
+        throw new Error("Unable to locate record fields around ','");
+      }
+      const beforeComma = source.slice(previousField.endIndex, comma.startIndex);
+      const afterComma = source.slice(comma.endIndex, nextField.startIndex);
+      if (beforeComma !== "" || afterComma !== " ") {
+        const row = comma.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: comma.startPosition.column + 1,
+          length: 1,
+          rule: "format/type-separator-spacing",
+          message: "expected ', ' between record fields",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
+
+    for (const field of fields) {
+      const name = field.childForFieldName("name");
+      const fieldType = field.childForFieldName("type");
+      const colon = field.children.find((child) => child.type === ":");
+      if (!name || !fieldType || !colon) {
+        throw new Error("Unable to locate a record field annotation");
+      }
+      const beforeColon = source.slice(name.endIndex, colon.startIndex);
+      if (beforeColon !== "") {
+        const row = name.endPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: name.endPosition.column + 1,
+          length: Math.max(1, beforeColon.length),
+          rule: "format/type-colon-spacing",
+          message: "expected no space before ':'",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+      const afterColon = source.slice(colon.endIndex, fieldType.startIndex);
+      if (afterColon !== " ") {
+        const row = colon.endPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: colon.endPosition.column + 1,
+          length: Math.max(1, afterColon.length),
+          rule: "format/type-colon-spacing",
+          message: "expected one space after ':'",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+      checkTypeDelimiterSpacing(fieldType, source, lines, filePath, diagnostics);
+    }
+
+    const beforeCloseBrace = source.slice(lastField.endIndex, closeBrace.startIndex);
+    if (beforeCloseBrace !== " ") {
+      const row = closeBrace.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: lastField.endPosition.column + 1,
+        length: Math.max(1, beforeCloseBrace.length),
+        rule: "format/type-delimiter-spacing",
+        message: "expected one space before '}'",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+    return;
+  }
+
   if (
     node.type !== "set_type" &&
     node.type !== "list_type" &&

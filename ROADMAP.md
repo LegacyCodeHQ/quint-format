@@ -100,7 +100,7 @@ that every subsequent formatter preserves them by construction.
   - [x] Polymorphic type applications
 - [ ] Tuples and records
   - [x] Tuple types
-  - [ ] Record types
+  - [x] Record types
 - [ ] Open record rows
 - [ ] Function and operator types
 - [ ] Parenthesized types
