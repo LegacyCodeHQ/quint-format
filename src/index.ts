@@ -383,17 +383,35 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           message: "expected each declaration on a separate line",
           sourceLine: lines[row] ?? "",
         });
-      } else if (declaration.node.startPosition.column !== 2) {
-        const row = declaration.node.startPosition.row;
-        diagnostics.push({
-          filePath,
-          line: row + 1,
-          column: 1,
-          length: Math.max(1, declaration.node.startPosition.column),
-          rule: "format/module-body-indentation",
-          message: "expected 2 spaces of indentation",
-          sourceLine: lines[row] ?? "",
-        });
+      } else {
+        if (
+          previousDeclaration &&
+          declaration.node.startPosition.row - previousDeclaration.node.endPosition.row !== 2
+        ) {
+          const row = declaration.node.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: declaration.keyword.startPosition.column + 1,
+            length: declaration.keyword.text.length,
+            rule: "format/definition-spacing",
+            message: "expected one blank line between definitions",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+
+        if (declaration.node.startPosition.column !== 2) {
+          const row = declaration.node.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: 1,
+            length: Math.max(1, declaration.node.startPosition.column),
+            rule: "format/module-body-indentation",
+            message: "expected 2 spaces of indentation",
+            sourceLine: lines[row] ?? "",
+          });
+        }
       }
 
       const keywordGap = source.slice(
@@ -518,7 +536,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 }
 
 function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
-  const body = module.declarations.flatMap(({ document }) => [hardLine, document]);
+  const body = module.declarations.flatMap(({ document }, index) =>
+    index === 0 ? [hardLine, document] : [hardLine, hardLine, document],
+  );
   return renderDoc(
     concat([text(`module ${module.name} {`), indent(concat(body)), hardLine, text("}"), hardLine]),
   );

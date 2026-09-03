@@ -188,6 +188,11 @@ exports[`command-line checker reports noncanonical identifier value formatting 1
 2 | const source: int
   | ^
   |
+test/fixtures/identifier-value-definition.qnt:3:1: error[format/definition-spacing]: expected one blank line between definitions
+  |
+3 | val copy=source
+  | ^^^
+  |
 test/fixtures/identifier-value-definition.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 3 | val copy=source
@@ -263,6 +268,15 @@ test/fixtures/multiple-modules.qnt:1:31: error[format/empty-module]: empty modul
   |
 1 | module First {} module Second {}
   |                               ^^
+  |
+"
+`;
+
+exports[`command-line checker reports adjacent definitions without a blank line 1`] = `
+"test/fixtures/definition-spacing.qnt:3:3: error[format/definition-spacing]: expected one blank line between definitions
+  |
+3 |   var second: int
+  |   ^^^
   |
 "
 `;

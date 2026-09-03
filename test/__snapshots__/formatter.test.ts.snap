@@ -62,6 +62,7 @@ exports[`formatter formats a constant declaration 1`] = `
 exports[`formatter places declarations on separate lines 1`] = `
 "module Example {
   var a: int
+
   var b: int
 }
 "
@@ -119,6 +120,7 @@ exports[`formatter formats an integer addition expression 1`] = `
 exports[`formatter formats an identifier value expression 1`] = `
 "module Example {
   const source: int
+
   val copy = source
 }
 "
@@ -150,6 +152,15 @@ exports[`formatter formats multiple top-level modules 1`] = `
 }
 
 module Second {
+}
+"
+`;
+
+exports[`formatter places a blank line between definitions 1`] = `
+"module Example {
+  var first: int
+
+  var second: int
 }
 "
 `;
