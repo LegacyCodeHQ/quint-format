@@ -103,6 +103,8 @@ that every subsequent formatter preserves them by construction.
   - [x] Record types
 - [x] Open record rows
 - [ ] Function and operator types
+  - [x] Function types
+  - [ ] Operator types
 - [ ] Parenthesized types
 - [ ] Sum types and variants
 

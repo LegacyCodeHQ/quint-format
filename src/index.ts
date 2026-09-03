@@ -162,6 +162,12 @@ function canFormatType(node: Parser.SyntaxNode): boolean {
     );
   }
 
+  if (node.type === "function_type") {
+    const parameter = node.childForFieldName("parameter");
+    const result = node.childForFieldName("result");
+    return Boolean(parameter && result && canFormatType(parameter) && canFormatType(result));
+  }
+
   return false;
 }
 
@@ -223,6 +229,15 @@ function formatType(node: Parser.SyntaxNode): string {
     const row = node.childForFieldName("row");
     const rowSuffix = row ? ` | ${row.text}` : "";
     return `{ ${formattedFields.join(", ")}${rowSuffix} }`;
+  }
+
+  if (node.type === "function_type") {
+    const parameter = node.childForFieldName("parameter");
+    const result = node.childForFieldName("result");
+    if (!parameter || !result) {
+      throw new Error("Unable to locate the function type operands");
+    }
+    return `${formatType(parameter)} -> ${formatType(result)}`;
   }
 
   throw new Error("Formatting this type syntax is not implemented yet");
@@ -691,6 +706,32 @@ function checkTypeDelimiterSpacing(
   filePath: string,
   diagnostics: FormatDiagnostic[],
 ) {
+  if (node.type === "function_type") {
+    const parameter = node.childForFieldName("parameter");
+    const result = node.childForFieldName("result");
+    const arrow = node.children.find((child) => child.type === "->");
+    if (!parameter || !result || !arrow) {
+      throw new Error("Unable to locate the function type operator");
+    }
+    const beforeArrow = source.slice(parameter.endIndex, arrow.startIndex);
+    const afterArrow = source.slice(arrow.endIndex, result.startIndex);
+    if (beforeArrow !== " " || afterArrow !== " ") {
+      const row = arrow.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: arrow.startPosition.column + 1,
+        length: 2,
+        rule: "format/type-operator-spacing",
+        message: "expected one space around '->'",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+    checkTypeDelimiterSpacing(parameter, source, lines, filePath, diagnostics);
+    checkTypeDelimiterSpacing(result, source, lines, filePath, diagnostics);
+    return;
+  }
+
   if (node.type === "record_type") {
     const openBrace = node.children.find((child) => child.type === "{");
     const closeBrace = node.children.find((child) => child.type === "}");

@@ -166,6 +166,20 @@ test/fixtures/open-record-type.qnt:2:25: error[format/record-row-spacing]: expec
 "
 `;
 
+exports[`command-line checker reports noncanonical function-type formatting 1`] = `
+"test/fixtures/function-type.qnt:2:16: error[format/type-colon-spacing]: expected one space after ':'
+  |
+2 |   const mapper:int->str
+  |                ^
+  |
+test/fixtures/function-type.qnt:2:19: error[format/type-operator-spacing]: expected one space around '->'
+  |
+2 |   const mapper:int->str
+  |                   ^^
+  |
+"
+`;
+
 exports[`command-line checker reports adjacent declarations on the same line 1`] = `
 "test/fixtures/declaration-line-break.qnt:2:15: error[format/declaration-line-break]: expected each declaration on a separate line
   |

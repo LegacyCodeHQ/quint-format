@@ -87,6 +87,13 @@ exports[`formatter formats an open record type 1`] = `
 "
 `;
 
+exports[`formatter formats a function type 1`] = `
+"module Example {
+  const mapper: int -> str
+}
+"
+`;
+
 exports[`formatter places declarations on separate lines 1`] = `
 "module Example {
   var a: int
