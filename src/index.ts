@@ -480,6 +480,23 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     };
   }
 
+  if (node.type === "unary_expression") {
+    const operator = node.childForFieldName("operator");
+    const operand = node.childForFieldName("operand");
+    if (!operator || !operand) {
+      throw new Error("Unable to locate the unary expression operands");
+    }
+    const analysis = analyzeExpression(operand);
+    return {
+      document: concat([text(operator.text), analysis.document]),
+      binaryOperators: analysis.binaryOperators,
+      unitLiterals: analysis.unitLiterals,
+      sequenceLiterals: analysis.sequenceLiterals,
+      recordLiterals: analysis.recordLiterals,
+      callExpressions: analysis.callExpressions,
+    };
+  }
+
   if (node.type === "call_expression") {
     const functionNode = node.childForFieldName("function");
     const arguments_ = node.childrenForFieldName("argument");
@@ -2410,6 +2427,27 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               length: 1,
               rule: "format/field-access-spacing",
               message: "expected no space around '.'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+
+        for (const unaryExpression of collectNodes(declaration.valueNode, "unary_expression")) {
+          const operator = unaryExpression.childForFieldName("operator");
+          const operand = unaryExpression.childForFieldName("operand");
+          if (!operator || !operand) {
+            throw new Error("Unable to locate the unary expression operands");
+          }
+          const gap = source.slice(operator.endIndex, operand.startIndex);
+          if (gap !== "") {
+            const row = operator.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: operator.endPosition.column + 1,
+              length: Math.max(1, gap.length),
+              rule: "format/unary-operator-spacing",
+              message: `expected no space after '${operator.text}'`,
               sourceLine: lines[row] ?? "",
             });
           }

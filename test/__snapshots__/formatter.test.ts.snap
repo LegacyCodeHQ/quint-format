@@ -280,6 +280,13 @@ exports[`formatter formats a field-access expression 1`] = `
 "
 `;
 
+exports[`formatter formats a unary expression 1`] = `
+"module Example {
+  val negative = -42
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)
