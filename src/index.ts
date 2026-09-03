@@ -893,7 +893,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         body: bodyAnalysis,
         document:
           comments.length === 0
-            ? concat([text(`| ${pattern} => `), bodyAnalysis.document])
+            ? concat([text(`| ${pattern} => `), indent(bodyAnalysis.document)])
             : concat([
                 text(`| ${pattern} =>`),
                 indent(
@@ -4002,6 +4002,36 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 message: "expected one space around '=>'",
                 sourceLine: lines[row] ?? "",
               });
+            }
+
+            const combinatorField =
+              body.type === "any_expression"
+                ? "choice"
+                : body.type === "or_block_expression"
+                  ? "disjunct"
+                  : body.type === "all_expression" || body.type === "and_block_expression"
+                    ? "conjunct"
+                    : undefined;
+            if (combinatorField) {
+              const entries = body.childrenForFieldName(combinatorField);
+              const closeBrace = body.children.find((child) => child.type === "}");
+              const expectedEntryColumn = arm.startPosition.column + 4;
+              const expectedCloseColumn = arm.startPosition.column + 2;
+              const misindentedNode =
+                entries.find((entry) => entry.startPosition.column !== expectedEntryColumn) ??
+                (closeBrace?.startPosition.column !== expectedCloseColumn ? closeBrace : undefined);
+              if (misindentedNode) {
+                const row = misindentedNode.startPosition.row;
+                diagnostics.push({
+                  filePath,
+                  line: row + 1,
+                  column: 1,
+                  length: Math.max(1, misindentedNode.startPosition.column),
+                  rule: "format/match-arm-body-indentation",
+                  message: "expected the nested match-arm body to be indented one level",
+                  sourceLine: lines[row] ?? "",
+                });
+              }
             }
           }
         }

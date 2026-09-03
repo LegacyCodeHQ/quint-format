@@ -1,18 +1,44 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter places a match expression below a definition header 1`] = `
+exports[`formatter indents multiline match-arm bodies below their arms 1`] = `
+[
+  {
+    "column": 1,
+    "filePath": "match-arm-block-indentation.qnt",
+    "length": 8,
+    "line": 9,
+    "message": "expected the nested match-arm body to be indented one level",
+    "rule": "format/match-arm-body-indentation",
+    "sourceLine": "        n' = n,",
+  },
+  {
+    "column": 1,
+    "filePath": "match-arm-block-indentation.qnt",
+    "length": 8,
+    "line": 13,
+    "message": "expected the nested match-arm body to be indented one level",
+    "rule": "format/match-arm-body-indentation",
+    "sourceLine": "        n' = n + 1,",
+  },
+]
+`;
+
+exports[`formatter indents multiline match-arm bodies below their arms 2`] = `
 "module Example {
   type Status = Ready | Waiting
   var status: Status
+  var n: int
 
   action step =
     match status {
-      | Ready => {
-        status' = Waiting
-      }
-      | Waiting => {
-        status' = Ready
-      }
+      | Ready => all {
+          n' = n,
+          status' = Waiting,
+        }
+      | Waiting => all {
+          n' = n + 1,
+          status' = Ready,
+        }
     }
 }
 "
@@ -471,6 +497,24 @@ exports[`formatter formats a match expression 1`] = `
       | Some(x) => x
       | None => 0
       | _ => 0
+    }
+}
+"
+`;
+
+exports[`formatter places a match expression below a definition header 1`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+
+  action step =
+    match status {
+      | Ready => {
+          status' = Waiting
+        }
+      | Waiting => {
+          status' = Ready
+        }
     }
 }
 "

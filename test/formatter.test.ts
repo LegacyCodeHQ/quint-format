@@ -537,6 +537,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("indents multiline match-arm bodies below their arms", () => {
+    const input = readFileSync(
+      new URL("fixtures/match-arm-block-indentation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(checkQuint(input, "match-arm-block-indentation.qnt")).toMatchSnapshot();
+    expect(output).toContain("| Ready => all {\n          n' = n,");
+    expect(output).toContain("\n        }\n      | Waiting");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves comments between match arms", () => {
     const input = readFileSync(new URL("fixtures/match-comment.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);
