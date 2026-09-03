@@ -1239,9 +1239,16 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           ...(previousDeclaration.trailingComments ?? []),
           node,
         ];
+        const preservesSumVariantAlignment = previousDeclaration.valueNode?.type === "sum_type";
+        const commentGap = preservesSumVariantAlignment
+          ? moduleNode.text.slice(
+              previousDeclaration.node.endIndex - moduleNode.startIndex,
+              node.startIndex - moduleNode.startIndex,
+            )
+          : " ";
         previousDeclaration.document = concat([
           previousDeclaration.document,
-          text(" "),
+          text(commentGap),
           commentDocument(node),
         ]);
         continue;
@@ -1486,7 +1493,11 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
               if (!variantDocument) {
                 throw new Error("Unable to attach the trailing sum variant comment");
               }
-              sumEntries.push(concat([variantDocument, text(" "), commentDocument(child)]));
+              const commentGap = value.text.slice(
+                (previousVariant?.endIndex ?? child.startIndex) - value.startIndex,
+                child.startIndex - value.startIndex,
+              );
+              sumEntries.push(concat([variantDocument, text(commentGap), commentDocument(child)]));
             } else {
               sumEntries.push(commentDocument(child));
             }
@@ -2805,7 +2816,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
       for (const comment of declaration.trailingComments ?? []) {
         const commentGap = source.slice(declaration.node.endIndex, comment.startIndex);
-        if (commentGap !== " ") {
+        const preservesSumVariantAlignment = declaration.valueNode?.type === "sum_type";
+        if (!preservesSumVariantAlignment && commentGap !== " ") {
           const row = comment.startPosition.row;
           diagnostics.push({
             filePath,

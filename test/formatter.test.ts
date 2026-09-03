@@ -1046,7 +1046,7 @@ describe("formatter", () => {
     const output = formatQuint(input);
 
     expect(output).toContain("| Self(str) // The name of someone who drew themself");
-    expect(output).toContain("| Ok // The draw was Ok");
+    expect(output).toContain("| Ok        // The draw was Ok");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
