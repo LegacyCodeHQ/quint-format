@@ -794,6 +794,20 @@ test/fixtures/and-block.qnt:2:29: error[format/block-combinator-separator-spacin
 "
 `;
 
+exports[`command-line checker reports noncanonical nondet-binding formatting 1`] = `
+"test/fixtures/nondet-binding.qnt:5:11: error[format/nondet-binding-spacing]: expected one space after 'nondet'
+  |
+5 |     nondet  choice=Set(1, 2).oneOf()
+  |           ^^
+  |
+test/fixtures/nondet-binding.qnt:5:19: error[format/nondet-binding-spacing]: expected one space around '='
+  |
+5 |     nondet  choice=Set(1, 2).oneOf()
+  |                   ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

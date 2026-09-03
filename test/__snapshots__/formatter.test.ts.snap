@@ -413,6 +413,18 @@ exports[`formatter formats all block combinators 1`] = `
 "
 `;
 
+exports[`formatter formats a nondeterministic binding 1`] = `
+"module Example {
+  var count: int
+
+  action step = {
+    nondet choice = Set(1, 2).oneOf()
+    count' = choice
+  }
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

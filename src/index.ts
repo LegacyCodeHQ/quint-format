@@ -635,22 +635,37 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   if (node.type === "block_expression") {
     const bindings = node.childrenForFieldName("binding");
     const expression = node.childForFieldName("expression");
-    if (bindings.length > 0 || !expression) {
-      throw new Error("Formatting block bindings is not implemented yet");
-    }
+    if (!expression) throw new Error("Unable to locate the block expression");
+    const bindingAnalyses = bindings.map((binding) => {
+      const name = binding.childForFieldName("name");
+      const value = binding.childForFieldName("value");
+      if (!name || !value) throw new Error("Unable to locate a nondet binding");
+      return { name, value: analyzeExpression(value) };
+    });
     const analysis = analyzeExpression(expression);
+    const analyses = [...bindingAnalyses.map(({ value }) => value), analysis];
     return {
       document: concat([
         text("{"),
-        indent(concat([hardLine, analysis.document])),
+        indent(
+          concat([
+            ...bindingAnalyses.flatMap(({ name, value }) => [
+              hardLine,
+              text(`nondet ${name.text} = `),
+              value.document,
+            ]),
+            hardLine,
+            analysis.document,
+          ]),
+        ),
         hardLine,
         text("}"),
       ]),
-      binaryOperators: analysis.binaryOperators,
-      unitLiterals: analysis.unitLiterals,
-      sequenceLiterals: analysis.sequenceLiterals,
-      recordLiterals: analysis.recordLiterals,
-      callExpressions: analysis.callExpressions,
+      binaryOperators: analyses.flatMap((item) => item.binaryOperators),
+      unitLiterals: analyses.flatMap((item) => item.unitLiterals),
+      sequenceLiterals: analyses.flatMap((item) => item.sequenceLiterals),
+      recordLiterals: analyses.flatMap((item) => item.recordLiterals),
+      callExpressions: analyses.flatMap((item) => item.callExpressions),
     };
   }
 
@@ -2985,6 +3000,44 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               length: 1,
               rule: "format/block-layout",
               message: "expected block contents and the closing brace on separate lines",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+
+        for (const binding of collectNodes(declaration.valueNode, "nondet_binding")) {
+          const keyword = binding.children.find((child) => child.type === "nondet");
+          const name = binding.childForFieldName("name");
+          const equals = binding.children.find((child) => child.type === "=");
+          const value = binding.childForFieldName("value");
+          if (!keyword || !name || !equals || !value) {
+            throw new Error("Unable to locate the nondet binding syntax");
+          }
+          const afterKeyword = source.slice(keyword.endIndex, name.startIndex);
+          if (afterKeyword !== " ") {
+            const row = keyword.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: keyword.endPosition.column + 1,
+              length: Math.max(1, afterKeyword.length),
+              rule: "format/nondet-binding-spacing",
+              message: "expected one space after 'nondet'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          if (
+            source.slice(name.endIndex, equals.startIndex) !== " " ||
+            source.slice(equals.endIndex, value.startIndex) !== " "
+          ) {
+            const row = equals.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: equals.startPosition.column + 1,
+              length: 1,
+              rule: "format/nondet-binding-spacing",
+              message: "expected one space around '='",
               sourceLine: lines[row] ?? "",
             });
           }

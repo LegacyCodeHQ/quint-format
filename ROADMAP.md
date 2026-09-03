@@ -151,7 +151,7 @@ that every subsequent formatter preserves them by construction.
 - [x] Primed assignments
 - [x] Ordinary blocks
 - [x] `all`, `any`, `and`, and `or`
-- [ ] `nondet` bindings
+- [x] `nondet` bindings
 - [ ] Nested definitions
 
 ## 9. Imports, exports, and instances
