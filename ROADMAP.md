@@ -49,56 +49,56 @@ that every subsequent formatter preserves them by construction.
 - [x] Boolean `assume`
 - [x] Literal and identifier `val`
 - [x] General `assume` expressions
-- [ ] `def`
+- [x] `def`
   - [x] Parameterless definitions
   - [x] Untyped parameters
   - [x] Primitive typed parameters and return types
   - [x] Optional semicolons
-  - [ ] Rich parameter types and additional qualifiers
-- [ ] `pure`
+  - [x] Rich parameter types and additional qualifiers
+- [x] `pure`
   - [x] `pure def`
   - [x] `pure val`
-- [ ] `action`
+- [x] `action`
   - [x] Parameterless expression-bodied actions
-  - [ ] Parameters and block bodies
-- [ ] `run`
+  - [x] Parameters and block bodies
+- [x] `run`
   - [x] Parameterless expression-bodied runs
-  - [ ] Parameters and chained run expressions
-- [ ] `temporal`
+  - [x] Parameters and chained run expressions
+- [x] `temporal`
   - [x] Parameterless expression-bodied temporal definitions
-  - [ ] Parameters and compound temporal expressions
-- [ ] `nondet`
+  - [x] Parameters and compound temporal expressions
+- [x] `nondet`
   - [x] Parameterless expression-bodied nondeterministic definitions
-  - [ ] Parameters and nondeterministic bindings
-- [ ] Parameters and return types
+  - [x] Parameters and nondeterministic bindings
+- [x] Parameters and return types
   - [x] Untyped `def` parameters
-  - [ ] Parameters across other definition modes
+  - [x] Parameters across other definition modes
   - [x] Primitive typed `def` parameters
   - [x] Collection-typed `def` parameters
-  - [ ] Remaining rich typed parameters
+  - [x] Remaining rich typed parameters
   - [x] Primitive return type annotations
   - [x] Collection return type annotations
-  - [ ] Remaining rich return type annotations
+  - [x] Remaining rich return type annotations
 - [x] Optional semicolons where Quint permits them
   - [x] Operator definitions
   - [x] Value definitions
-- [ ] Type aliases and uninterpreted types
+- [x] Type aliases and uninterpreted types
   - [x] Primitive type aliases
   - [x] Single-parameter polymorphic aliases
-  - [ ] Rich aliases and multiple type parameters
+  - [x] Rich aliases and multiple type parameters
   - [x] Uninterpreted types
 
 ## 5. Types
 
 - [x] Primitive type preservation and annotation spacing
-- [ ] Named and variable types
+- [x] Named and variable types
   - [x] Named types
   - [x] Type variables
-- [ ] `Set`, `List`, and polymorphic applications
+- [x] `Set`, `List`, and polymorphic applications
   - [x] `Set` types
   - [x] `List` types
   - [x] Polymorphic type applications
-- [ ] Tuples and records
+- [x] Tuples and records
   - [x] Tuple types
   - [x] Record types
 - [x] Open record rows
