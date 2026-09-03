@@ -808,10 +808,29 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       const parameter = arm.childForFieldName("parameter");
       const body = arm.childForFieldName("body");
       if (!variant || !body) throw new Error("Unable to locate a match arm");
+      const bodyAnalysis = analyzeExpression(body);
+      const comments = arm.namedChildren.filter(
+        (child) =>
+          (child.type === "comment" || child.type === "documentation_comment") &&
+          child.endIndex <= body.startIndex,
+      );
+      const pattern = `${variant.text}${parameter ? `(${parameter.text})` : ""}`;
       return {
         node: arm,
-        pattern: `${variant.text}${parameter ? `(${parameter.text})` : ""}`,
-        body: analyzeExpression(body),
+        body: bodyAnalysis,
+        document:
+          comments.length === 0
+            ? concat([text(`| ${pattern} => `), bodyAnalysis.document])
+            : concat([
+                text(`| ${pattern} =>`),
+                indent(
+                  concat([
+                    ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
+                    hardLine,
+                    bodyAnalysis.document,
+                  ]),
+                ),
+              ]),
       };
     });
     const analyses = [valueAnalysis, ...armAnalyses.map(({ body }) => body)];
@@ -823,7 +842,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         }
         const arm = armAnalyses.find((analysis) => analysis.node.id === child.id);
         if (!arm) throw new Error("Formatting this match content is not implemented yet");
-        return concat([text(`| ${arm.pattern} => `), arm.body.document]);
+        return arm.document;
       });
     return {
       document: concat([

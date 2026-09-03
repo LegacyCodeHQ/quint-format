@@ -485,6 +485,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a comment before a match-arm body", () => {
+    const input = readFileSync(
+      new URL("fixtures/match-arm-body-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this arm body comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats namespace access", () => {
     const input = "module Example {\n  pure val apply = (Scope :: x)=>Scope :: x\n}\n";
     const output = formatQuint(input);

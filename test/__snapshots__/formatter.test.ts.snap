@@ -1,12 +1,13 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves comments between match arms 1`] = `
+exports[`formatter preserves a comment before a match-arm body 1`] = `
 "module Example {
   type Step = First | Second
 
   pure def value(step) = match step {
-    // Preserve this arm comment.
-    | First => 1
+    | First =>
+      // Preserve this arm body comment.
+      1
     | Second => 2
   }
 }
@@ -421,6 +422,19 @@ exports[`formatter formats a match expression 1`] = `
     | Some(x) => x
     | None => 0
     | _ => 0
+  }
+}
+"
+`;
+
+exports[`formatter preserves comments between match arms 1`] = `
+"module Example {
+  type Step = First | Second
+
+  pure def value(step) = match step {
+    // Preserve this arm comment.
+    | First => 1
+    | Second => 2
   }
 }
 "
