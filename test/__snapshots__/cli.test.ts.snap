@@ -71,3 +71,12 @@ exports[`command-line checker reports whitespace before a type colon 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical spacing after var 1`] = `
+"test/fixtures/variable-keyword-spacing.qnt:2:6: error[format/declaration-keyword-spacing]: expected one space after 'var'
+  |
+2 |   var   n: int
+  |      ^^^
+  |
+"
+`;

@@ -44,3 +44,10 @@ exports[`formatter removes spacing before a type colon 1`] = `
 }
 "
 `;
+
+exports[`formatter formats spacing after var 1`] = `
+"module Example {
+  var n: int
+}
+"
+`;

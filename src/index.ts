@@ -82,6 +82,7 @@ function positionAtIndex(source: string, index: number) {
 
 interface ModuleDeclaration {
   node: Parser.SyntaxNode;
+  keyword: Parser.SyntaxNode;
   nameNode: Parser.SyntaxNode;
   colon: Parser.SyntaxNode;
   typeNode: Parser.SyntaxNode;
@@ -114,13 +115,15 @@ function analyzeModule(source: string) {
 
     const declarationName = node.childForFieldName("name");
     const declarationType = node.childForFieldName("type");
+    const keyword = node.children.find((child) => child.type === "var");
     const colon = node.children.find((child) => child.type === ":");
-    if (!declarationName || !declarationType || !colon) {
+    if (!declarationName || !declarationType || !keyword || !colon) {
       throw new Error("Unable to locate the variable declaration fields");
     }
 
     declarations.push({
       node,
+      keyword,
       nameNode: declarationName,
       colon,
       typeNode: declarationType,
@@ -220,6 +223,23 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         length: Math.max(1, declaration.node.startPosition.column),
         rule: "format/module-body-indentation",
         message: "expected 2 spaces of indentation",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+
+    const keywordGap = source.slice(declaration.keyword.endIndex, declaration.nameNode.startIndex);
+    if (keywordGap !== " ") {
+      const row = declaration.keyword.endPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: declaration.keyword.endPosition.column + 1,
+        length: Math.max(
+          1,
+          declaration.nameNode.startPosition.column - declaration.keyword.endPosition.column,
+        ),
+        rule: "format/declaration-keyword-spacing",
+        message: "expected one space after 'var'",
         sourceLine: lines[row] ?? "",
       });
     }
