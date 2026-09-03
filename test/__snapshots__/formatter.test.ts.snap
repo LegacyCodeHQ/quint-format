@@ -1,10 +1,10 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a trailing comment on a local definition 1`] = `
+exports[`formatter preserves comments in a record type 1`] = `
 "module Example {
-  action step = {
-    val answer = 42 // Preserve this local comment.
-    answer
+  type Item = {
+    // Preserve this field comment.
+    id: int,
   }
 }
 "
@@ -497,6 +497,16 @@ exports[`formatter preserves a comment after a nested definition 1`] = `
   action step = {
     val answer = 42
     // Preserve this comment.
+    answer
+  }
+}
+"
+`;
+
+exports[`formatter preserves a trailing comment on a local definition 1`] = `
+"module Example {
+  action step = {
+    val answer = 42 // Preserve this local comment.
     answer
   }
 }

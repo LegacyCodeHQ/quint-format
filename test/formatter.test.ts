@@ -111,6 +111,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves comments in a record type", () => {
+    const input = readFileSync(
+      new URL("fixtures/record-type-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this field comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats an empty record type", () => {
     const input = readFileSync(new URL("fixtures/empty-record-type.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

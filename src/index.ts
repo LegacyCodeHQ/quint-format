@@ -335,6 +335,31 @@ function formatType(node: Parser.SyntaxNode): string {
   throw new Error("Formatting this type syntax is not implemented yet");
 }
 
+function formatCommentedRecordType(node: Parser.SyntaxNode): Doc {
+  const row = node.childForFieldName("row");
+  const entries = node.namedChildren.map((child) => {
+    if (child.type === "comment" || child.type === "documentation_comment") {
+      return commentDocument(child);
+    }
+    if (child.type === "record_type_field") {
+      const name = child.childForFieldName("name");
+      const fieldType = child.childForFieldName("type");
+      if (!name || !fieldType) throw new Error("Unable to locate a commented record field type");
+      return text(`${name.text}: ${formatType(fieldType)},`);
+    }
+    if (row && child.id === row.id) {
+      return text(`| ${row.text}`);
+    }
+    throw new Error("Formatting this commented record type syntax is not implemented yet");
+  });
+  return concat([
+    text("{"),
+    indent(concat(entries.flatMap((entry) => [hardLine, entry]))),
+    hardLine,
+    text("}"),
+  ]);
+}
+
 function commentDocument(node: Parser.SyntaxNode): Doc {
   const continuationPrefix = " ".repeat(node.startPosition.column);
   const lines = node.text.split(/\r\n|\r|\n/).map((line, index) => {
@@ -1261,6 +1286,11 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const variants = isMultilineSumType
         ? value.namedChildren.filter((child) => child.type === "sum_type_variant")
         : [];
+      const hasRecordComments =
+        value.type === "record_type" &&
+        value.namedChildren.some(
+          (child) => child.type === "comment" || child.type === "documentation_comment",
+        );
       const aliasDocument = isMultilineSumType
         ? concat([
             text(`type ${declarationName.text}${typeParameterList} =`),
@@ -1270,7 +1300,12 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
               ),
             ),
           ])
-        : text(`type ${declarationName.text}${typeParameterList} = ${formatType(value)}`);
+        : hasRecordComments
+          ? concat([
+              text(`type ${declarationName.text}${typeParameterList} = `),
+              formatCommentedRecordType(value),
+            ])
+          : text(`type ${declarationName.text}${typeParameterList} = ${formatType(value)}`);
 
       addDeclaration({
         node,
@@ -1877,6 +1912,9 @@ function checkTypeDelimiterSpacing(
     const closeBrace = node.children.find((child) => child.type === "}");
     const fields = node.namedChildren.filter((child) => child.type === "record_type_field");
     const row = node.childForFieldName("row");
+    const hasComments = node.namedChildren.some(
+      (child) => child.type === "comment" || child.type === "documentation_comment",
+    );
     const firstField = fields[0];
     const lastField = fields.at(-1);
     if (!openBrace || !closeBrace) {
@@ -1900,7 +1938,7 @@ function checkTypeDelimiterSpacing(
     }
 
     const afterOpenBrace = source.slice(openBrace.endIndex, firstField.startIndex);
-    if (afterOpenBrace !== " ") {
+    if (!hasComments && afterOpenBrace !== " ") {
       const row = openBrace.endPosition.row;
       diagnostics.push({
         filePath,
@@ -1915,6 +1953,7 @@ function checkTypeDelimiterSpacing(
 
     const commas = node.children.filter((child) => child.type === ",");
     for (const [index, comma] of commas.entries()) {
+      if (hasComments && index === fields.length - 1) continue;
       const previousField = fields[index];
       const nextField = fields[index + 1];
       if (!previousField || !nextField) {
@@ -1972,7 +2011,7 @@ function checkTypeDelimiterSpacing(
       checkTypeDelimiterSpacing(fieldType, source, lines, filePath, diagnostics);
     }
 
-    if (row) {
+    if (row && !hasComments) {
       const pipe = node.children.find((child) => child.type === "|");
       if (!pipe) {
         throw new Error("Unable to locate the record row separator");
@@ -1995,7 +2034,7 @@ function checkTypeDelimiterSpacing(
 
     const recordEnd = row ?? lastField;
     const beforeCloseBrace = source.slice(recordEnd.endIndex, closeBrace.startIndex);
-    if (beforeCloseBrace !== " ") {
+    if (!hasComments && beforeCloseBrace !== " ") {
       const row = closeBrace.startPosition.row;
       diagnostics.push({
         filePath,
