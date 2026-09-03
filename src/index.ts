@@ -412,7 +412,12 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const declarationName = node.childForFieldName("name");
       const value = node.childForFieldName("value");
       const equals = node.children.find((child) => child.type === "=");
-      if (!keyword || !declarationName || value?.type !== "primitive_type" || !equals) {
+      if (
+        !keyword ||
+        !declarationName ||
+        (value?.type !== "primitive_type" && value?.type !== "named_type") ||
+        !equals
+      ) {
         throw new Error("Formatting this type alias syntax is not implemented yet");
       }
 

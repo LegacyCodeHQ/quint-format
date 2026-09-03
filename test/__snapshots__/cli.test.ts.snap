@@ -529,6 +529,15 @@ exports[`command-line checker reports noncanonical uninterpreted-type formatting
 "
 `;
 
+exports[`command-line checker reports noncanonical named-type-alias formatting 1`] = `
+"test/fixtures/named-type-alias.qnt:4:12: error[format/equals-spacing]: expected one space around '='
+  |
+4 |   type Copy=DOMAIN
+  |            ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |

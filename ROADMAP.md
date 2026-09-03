@@ -89,6 +89,8 @@ that every subsequent formatter preserves them by construction.
 
 - [x] Primitive type preservation and annotation spacing
 - [ ] Named and variable types
+  - [x] Named types
+  - [ ] Type variables
 - [ ] `Set`, `List`, and polymorphic applications
 - [ ] Tuples and records
 - [ ] Open record rows
