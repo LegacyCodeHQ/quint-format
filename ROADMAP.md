@@ -150,7 +150,7 @@ that every subsequent formatter preserves them by construction.
 
 - [x] Primed assignments
 - [x] Ordinary blocks
-- [ ] `all`, `any`, `and`, and `or`
+- [x] `all`, `any`, `and`, and `or`
 - [ ] `nondet` bindings
 - [ ] Nested definitions
 

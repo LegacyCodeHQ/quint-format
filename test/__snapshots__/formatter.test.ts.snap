@@ -386,6 +386,33 @@ exports[`formatter formats an ordinary block expression 1`] = `
 "
 `;
 
+exports[`formatter formats all block combinators 1`] = `
+"module Example {
+  var count: int
+
+  action choose = any {
+    count' = 1,
+    count' = 2,
+  }
+
+  action advance = all {
+    count >= 0,
+    count' = count + 1,
+  }
+
+  pure val both = and {
+    true,
+    false,
+  }
+
+  pure val either = or {
+    false,
+    true,
+  }
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

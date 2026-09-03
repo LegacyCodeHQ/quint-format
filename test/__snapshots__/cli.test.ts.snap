@@ -780,6 +780,20 @@ exports[`command-line checker reports an inline ordinary block 1`] = `
 "
 `;
 
+exports[`command-line checker reports noncanonical block-combinator formatting 1`] = `
+"test/fixtures/and-block.qnt:2:23: error[format/block-combinator-layout]: expected choices and the closing brace on separate lines
+  |
+2 |   pure val both = and {true ,false}
+  |                       ^
+  |
+test/fixtures/and-block.qnt:2:29: error[format/block-combinator-separator-spacing]: expected no space before ','
+  |
+2 |   pure val both = and {true ,false}
+  |                             ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

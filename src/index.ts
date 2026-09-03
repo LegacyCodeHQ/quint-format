@@ -654,6 +654,39 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     };
   }
 
+  if (
+    node.type === "any_expression" ||
+    node.type === "all_expression" ||
+    node.type === "and_block_expression" ||
+    node.type === "or_block_expression"
+  ) {
+    const fieldName =
+      node.type === "any_expression"
+        ? "choice"
+        : node.type === "or_block_expression"
+          ? "disjunct"
+          : "conjunct";
+    const entries = node.childrenForFieldName(fieldName);
+    const keyword = node.children.find((child) => ["any", "all", "and", "or"].includes(child.type));
+    if (!keyword || entries.length === 0) {
+      throw new Error("Unable to locate the block combinator entries");
+    }
+    const analyses = entries.map(analyzeExpression);
+    return {
+      document: concat([
+        text(`${keyword.text} {`),
+        indent(concat(analyses.flatMap((analysis) => [hardLine, analysis.document, text(",")]))),
+        hardLine,
+        text("}"),
+      ]),
+      binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
+      unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
+      sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
+      recordLiterals: analyses.flatMap((analysis) => analysis.recordLiterals),
+      callExpressions: analyses.flatMap((analysis) => analysis.callExpressions),
+    };
+  }
+
   if (node.type === "call_expression") {
     const functionNode = node.childForFieldName("function");
     const arguments_ = node.childrenForFieldName("argument");
@@ -2954,6 +2987,56 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               message: "expected block contents and the closing brace on separate lines",
               sourceLine: lines[row] ?? "",
             });
+          }
+        }
+
+        const combinatorTypes = [
+          ["any_expression", "choice"],
+          ["all_expression", "conjunct"],
+          ["and_block_expression", "conjunct"],
+          ["or_block_expression", "disjunct"],
+        ] as const;
+        for (const [type, fieldName] of combinatorTypes) {
+          for (const combinator of collectNodes(declaration.valueNode, type)) {
+            const openBrace = combinator.children.find((child) => child.type === "{");
+            const closeBrace = combinator.children.find((child) => child.type === "}");
+            const entries = combinator.childrenForFieldName(fieldName);
+            const commas = combinator.children.filter((child) => child.type === ",");
+            if (!openBrace || !closeBrace || entries.length === 0) {
+              throw new Error("Unable to locate the block combinator layout");
+            }
+            const rows = entries.map((entry) => entry.startPosition.row);
+            const hasCanonicalLines =
+              rows[0] !== openBrace.startPosition.row &&
+              rows.every((row, index) => index === 0 || row > (rows[index - 1] as number)) &&
+              closeBrace.startPosition.row > (rows.at(-1) as number);
+            if (!hasCanonicalLines) {
+              const row = openBrace.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: openBrace.startPosition.column + 1,
+                length: 1,
+                rule: "format/block-combinator-layout",
+                message: "expected choices and the closing brace on separate lines",
+                sourceLine: lines[row] ?? "",
+              });
+            }
+            for (const [index, comma] of commas.entries()) {
+              const previous = entries[index];
+              if (previous && source.slice(previous.endIndex, comma.startIndex) !== "") {
+                const row = comma.startPosition.row;
+                diagnostics.push({
+                  filePath,
+                  line: row + 1,
+                  column: comma.startPosition.column + 1,
+                  length: 1,
+                  rule: "format/block-combinator-separator-spacing",
+                  message: "expected no space before ','",
+                  sourceLine: lines[row] ?? "",
+                });
+              }
+            }
           }
         }
       }

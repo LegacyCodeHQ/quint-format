@@ -436,6 +436,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats all block combinators", () => {
+    const input = readFileSync(new URL("fixtures/block-combinators.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a parenthesized expression", () => {
     const input = "module Example {\nval total=(1+2)\n}\n";
     const output = formatQuint(input);
