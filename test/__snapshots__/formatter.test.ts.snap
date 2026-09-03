@@ -123,3 +123,10 @@ exports[`formatter formats an identifier value expression 1`] = `
 }
 "
 `;
+
+exports[`formatter formats a parenthesized expression 1`] = `
+"module Example {
+  val total = (1 + 2)
+}
+"
+`;

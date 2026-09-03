@@ -200,3 +200,22 @@ test/fixtures/identifier-value-definition.qnt:3:9: error[format/equals-spacing]:
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
+"test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | val total=(1+2)
+  | ^
+  |
+test/fixtures/parenthesized-expression.qnt:2:10: error[format/equals-spacing]: expected one space around '='
+  |
+2 | val total=(1+2)
+  |          ^
+  |
+test/fixtures/parenthesized-expression.qnt:2:13: error[format/binary-operator-spacing]: expected one space around '+'
+  |
+2 | val total=(1+2)
+  |             ^
+  |
+"
+`;

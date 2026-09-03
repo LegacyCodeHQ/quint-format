@@ -133,6 +133,19 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     };
   }
 
+  if (node.type === "parenthesized_expression") {
+    const expression = node.childForFieldName("expression");
+    if (!expression) {
+      throw new Error("Unable to locate the parenthesized expression field");
+    }
+
+    const analysis = analyzeExpression(expression);
+    return {
+      document: concat([text("("), analysis.document, text(")")]),
+      binaryOperators: analysis.binaryOperators,
+    };
+  }
+
   throw new Error("Formatting this expression syntax is not implemented yet");
 }
 
