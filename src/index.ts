@@ -1407,10 +1407,6 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
     });
   }
 
-  if (pendingComments.length > 0 && declarations.length > 0) {
-    throw new Error("Formatting trailing comments is not implemented yet");
-  }
-
   const danglingComments = pendingComments;
 
   const openBrace = moduleNode.children.find((child) => child.type === "{");

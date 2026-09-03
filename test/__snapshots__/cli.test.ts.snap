@@ -1681,3 +1681,12 @@ test/fixtures/multiple-syntax-errors.qnt:3:16: error[parse/unexpected-token]: un
   |
 "
 `;
+
+exports[`command-line checker reports a misindented trailing module-body comment 1`] = `
+"test/fixtures/trailing-module-comment.qnt:4:1: error[format/comment-indentation]: expected 2 spaces of indentation
+  |
+4 | // Kept for future work
+  | ^
+  |
+"
+`;

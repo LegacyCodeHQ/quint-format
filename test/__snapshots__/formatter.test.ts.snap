@@ -751,3 +751,11 @@ module Example {
 }
 "
 `;
+
+exports[`formatter preserves a trailing module-body comment 1`] = `
+"module Example {
+  pure val answer = 42
+  // Kept for future work
+}
+"
+`;
