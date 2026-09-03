@@ -1,11 +1,10 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a comment inside a block combinator 1`] = `
+exports[`formatter preserves a comment before a lambda body 1`] = `
 "module Example {
-  action step = all {
-    // Preserve this conjunct comment.
-    true,
-  }
+  pure val increment = (value =>
+    // Preserve this lambda comment.
+    value + 1)
 }
 "
 `;
@@ -444,6 +443,16 @@ exports[`formatter formats all block combinators 1`] = `
 
   pure val either = or {
     false,
+    true,
+  }
+}
+"
+`;
+
+exports[`formatter preserves a comment inside a block combinator 1`] = `
+"module Example {
+  action step = all {
+    // Preserve this conjunct comment.
     true,
   }
 }

@@ -643,8 +643,25 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       ? `(${parameters.map(formatPattern).join(", ")})`
       : formatPattern(parameters[0] as Parser.SyntaxNode);
     const analysis = analyzeExpression(body);
+    const comments = node.namedChildren.filter(
+      (child) =>
+        (child.type === "comment" || child.type === "documentation_comment") &&
+        child.endIndex <= body.startIndex,
+    );
     return {
-      document: concat([text(`${parameterDocument} => `), analysis.document]),
+      document:
+        comments.length === 0
+          ? concat([text(`${parameterDocument} => `), analysis.document])
+          : concat([
+              text(`${parameterDocument} =>`),
+              indent(
+                concat([
+                  ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
+                  hardLine,
+                  analysis.document,
+                ]),
+              ),
+            ]),
       binaryOperators: analysis.binaryOperators,
       unitLiterals: analysis.unitLiterals,
       sequenceLiterals: analysis.sequenceLiterals,
