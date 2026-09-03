@@ -15,6 +15,17 @@ export interface NamedParseTreeSignature {
   children: NamedParseTreeChild[];
 }
 
+function normalizedCommentText(node: Parser.SyntaxNode): string {
+  const continuationPrefix = " ".repeat(node.startPosition.column);
+  return node.text
+    .split(/\r\n|\r|\n/)
+    .map((line, index) => {
+      if (index === 0 || continuationPrefix.length === 0) return line;
+      return line.startsWith(continuationPrefix) ? line.slice(continuationPrefix.length) : line;
+    })
+    .join("\n");
+}
+
 export function namedParseTreeSignature(node: Parser.SyntaxNode): NamedParseTreeSignature {
   const children: NamedParseTreeChild[] = [];
 
@@ -30,11 +41,14 @@ export function namedParseTreeSignature(node: Parser.SyntaxNode): NamedParseTree
     }
   }
 
-  const preservesLeafValue =
-    children.length === 0 && node.type !== "comment" && node.type !== "documentation_comment";
+  const preservesLeafValue = children.length === 0;
+  const value =
+    node.type === "comment" || node.type === "documentation_comment"
+      ? normalizedCommentText(node)
+      : node.text;
   return {
     type: node.type,
-    ...(preservesLeafValue ? { value: node.text } : {}),
+    ...(preservesLeafValue ? { value } : {}),
     children,
   };
 }

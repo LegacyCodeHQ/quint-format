@@ -17,4 +17,17 @@ describe("parse-tree preservation", () => {
       namedParseTreeSignature(parser.parse(input).rootNode),
     );
   });
+
+  test("distinguishes normalized comment content", () => {
+    const alpha = parser.parse(
+      "module Example {\n  val values = Set(\n    // alpha\n    1\n  )\n}\n",
+    );
+    const beta = parser.parse(
+      "module Example {\n  val values = Set(\n    // beta\n    1\n  )\n}\n",
+    );
+
+    expect(namedParseTreeSignature(alpha.rootNode)).not.toEqual(
+      namedParseTreeSignature(beta.rootNode),
+    );
+  });
 });

@@ -32,11 +32,11 @@ implement the smallest fix, validate the output, verify, and commit atomically.
 - [x] Block comments
   - [x] Single-line leading block comments
   - [x] Multiline block comments
-- [ ] Leading, trailing, and inline attachment
+- [x] Leading, trailing, and inline attachment
   - [x] Leading module and definition attachment
   - [x] Trailing definition attachment
   - [x] Inline attachment in binary expressions
-  - [ ] Inline attachment in remaining syntax nodes
+  - [x] Inline attachment in remaining syntax nodes
 - [x] Comments inside otherwise empty constructs
 
 Comments are completed before broadening the remaining syntax formatters so
