@@ -317,6 +317,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats a record destructuring pattern", () => {
+    const input = "module Example {\n  pure val {first ,second} = { first: 1, second: 2 }\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a parenthesized expression", () => {
     const input = "module Example {\nval total=(1+2)\n}\n";
     const output = formatQuint(input);

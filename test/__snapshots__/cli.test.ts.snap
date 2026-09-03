@@ -549,6 +549,25 @@ test/fixtures/tuple-pattern.qnt:2:22: error[format/pattern-delimiter-spacing]: e
 "
 `;
 
+exports[`command-line checker reports noncanonical record-pattern formatting 1`] = `
+"test/fixtures/record-pattern.qnt:2:13: error[format/pattern-delimiter-spacing]: expected one space after '{'
+  |
+2 |   pure val {first ,second} = { first: 1, second: 2 }
+  |             ^
+  |
+test/fixtures/record-pattern.qnt:2:19: error[format/pattern-separator-spacing]: expected ', ' between pattern fields
+  |
+2 |   pure val {first ,second} = { first: 1, second: 2 }
+  |                   ^
+  |
+test/fixtures/record-pattern.qnt:2:26: error[format/pattern-delimiter-spacing]: expected one space before '}'
+  |
+2 |   pure val {first ,second} = { first: 1, second: 2 }
+  |                          ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

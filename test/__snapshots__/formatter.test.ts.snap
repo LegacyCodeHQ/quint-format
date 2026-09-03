@@ -245,6 +245,13 @@ exports[`formatter formats a tuple destructuring pattern 1`] = `
 "
 `;
 
+exports[`formatter formats a record destructuring pattern 1`] = `
+"module Example {
+  pure val { first, second } = { first: 1, second: 2 }
+}
+"
+`;
+
 exports[`formatter formats a parenthesized expression 1`] = `
 "module Example {
   val total = (1 + 2)

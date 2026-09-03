@@ -344,6 +344,9 @@ function formatPattern(node: Parser.SyntaxNode): string {
   if (node.type === "tuple_pattern") {
     return `(${node.childrenForFieldName("element").map(formatPattern).join(", ")})`;
   }
+  if (node.type === "record_pattern") {
+    return `{ ${node.childrenForFieldName("field").map(formatPattern).join(", ")} }`;
+  }
   throw new Error("Formatting this binding pattern is not implemented yet");
 }
 
@@ -1410,26 +1413,30 @@ function checkPatternSpacing(
   filePath: string,
   diagnostics: FormatDiagnostic[],
 ) {
-  if (node.type !== "tuple_pattern") return;
-  const openParen = node.children.find((child) => child.type === "(");
-  const closeParen = node.children.find((child) => child.type === ")");
-  const elements = node.childrenForFieldName("element");
+  if (node.type !== "tuple_pattern" && node.type !== "record_pattern") return;
+  const isTuple = node.type === "tuple_pattern";
+  const openType = isTuple ? "(" : "{";
+  const closeType = isTuple ? ")" : "}";
+  const openDelimiter = node.children.find((child) => child.type === openType);
+  const closeDelimiter = node.children.find((child) => child.type === closeType);
+  const elements = node.childrenForFieldName(isTuple ? "element" : "field");
   const commas = node.children.filter((child) => child.type === ",");
   const first = elements[0];
   const last = elements.at(-1);
-  if (!openParen || !closeParen || !first || !last) {
-    throw new Error("Unable to locate the tuple pattern delimiters");
+  if (!openDelimiter || !closeDelimiter || !first || !last) {
+    throw new Error(`Unable to locate the ${isTuple ? "tuple" : "record"} pattern delimiters`);
   }
-  const afterOpen = source.slice(openParen.endIndex, first.startIndex);
-  if (afterOpen !== "") {
-    const row = openParen.endPosition.row;
+  const expectedDelimiterSpace = isTuple ? "" : " ";
+  const afterOpen = source.slice(openDelimiter.endIndex, first.startIndex);
+  if (afterOpen !== expectedDelimiterSpace) {
+    const row = openDelimiter.endPosition.row;
     diagnostics.push({
       filePath,
       line: row + 1,
-      column: openParen.endPosition.column + 1,
+      column: openDelimiter.endPosition.column + 1,
       length: Math.max(1, afterOpen.length),
       rule: "format/pattern-delimiter-spacing",
-      message: "expected no space after '('",
+      message: `expected ${isTuple ? "no" : "one"} space after '${openType}'`,
       sourceLine: lines[row] ?? "",
     });
   }
@@ -1449,21 +1456,21 @@ function checkPatternSpacing(
         column: comma.startPosition.column + 1,
         length: 1,
         rule: "format/pattern-separator-spacing",
-        message: "expected ', ' between pattern elements",
+        message: `expected ', ' between pattern ${isTuple ? "elements" : "fields"}`,
         sourceLine: lines[row] ?? "",
       });
     }
   }
-  const beforeClose = source.slice(last.endIndex, closeParen.startIndex);
-  if (beforeClose !== "") {
-    const row = closeParen.startPosition.row;
+  const beforeClose = source.slice(last.endIndex, closeDelimiter.startIndex);
+  if (beforeClose !== expectedDelimiterSpace) {
+    const row = closeDelimiter.startPosition.row;
     diagnostics.push({
       filePath,
       line: row + 1,
       column: last.endPosition.column + 1,
       length: Math.max(1, beforeClose.length),
       rule: "format/pattern-delimiter-spacing",
-      message: "expected no space before ')'",
+      message: `expected ${isTuple ? "no" : "one"} space before '${closeType}'`,
       sourceLine: lines[row] ?? "",
     });
   }
