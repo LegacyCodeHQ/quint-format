@@ -104,7 +104,8 @@ that every subsequent formatter preserves them by construction.
 - [x] Open record rows
 - [ ] Function and operator types
   - [x] Function types
-  - [ ] Operator types
+  - [x] Parenthesized operator types with parameters
+  - [ ] Zero-parameter and direct operator types
 - [ ] Parenthesized types
 - [ ] Sum types and variants
 

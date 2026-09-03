@@ -94,6 +94,13 @@ exports[`formatter formats a function type 1`] = `
 "
 `;
 
+exports[`formatter formats an operator type 1`] = `
+"module Example {
+  const predicate: (int, str) => bool
+}
+"
+`;
+
 exports[`formatter places declarations on separate lines 1`] = `
 "module Example {
   var a: int

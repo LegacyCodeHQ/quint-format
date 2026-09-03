@@ -128,6 +128,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats an operator type", () => {
+    const input = "module Example {\n  const predicate:( int ,str )=>bool\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("places declarations on separate lines", () => {
     const input = "module Example {\n  var a: int  var b: int\n}\n";
     const output = formatQuint(input);
