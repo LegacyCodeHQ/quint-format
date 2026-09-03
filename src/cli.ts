@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 
-import { readdir, readFile, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { randomUUID } from "node:crypto";
+import { readdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
+import { basename, dirname, join } from "node:path";
 import { checkQuint, formatQuint, QuintSyntaxError, renderDiagnostic } from "./index";
 
 const [command, ...filePaths] = process.argv.slice(2);
@@ -23,6 +24,18 @@ async function discoverQuintFiles(path: string): Promise<string[]> {
   return discovered;
 }
 
+async function writeAtomically(filePath: string, contents: string) {
+  const metadata = await stat(filePath);
+  const temporaryPath = join(dirname(filePath), `.${basename(filePath)}.${randomUUID()}.tmp`);
+  try {
+    await writeFile(temporaryPath, contents, { mode: metadata.mode });
+    await rename(temporaryPath, filePath);
+  } catch (error) {
+    await unlink(temporaryPath).catch(() => undefined);
+    throw error;
+  }
+}
+
 if (command && command !== "--check" && filePaths.length === 0) {
   try {
     const source = await readFile(command, "utf8");
@@ -36,8 +49,10 @@ if (command && command !== "--check" && filePaths.length === 0) {
     }
     process.exitCode = 2;
   }
-} else if (command !== "--check" || filePaths.length === 0) {
-  process.stderr.write("Usage: quint-format <file> | quint-format --check <file>...\n");
+} else if ((command !== "--check" && command !== "--write") || filePaths.length === 0) {
+  process.stderr.write(
+    "Usage: quint-format <file> | quint-format --check <path>... | quint-format --write <path>...\n",
+  );
   process.exitCode = 2;
 } else {
   let hasFormattingViolations = false;
@@ -57,13 +72,15 @@ if (command && command !== "--check" && filePaths.length === 0) {
   for (const filePath of discoveredFilePaths) {
     try {
       const source = await readFile(filePath, "utf8");
-      const diagnostics = checkQuint(source, filePath);
-
-      for (const diagnostic of diagnostics) {
-        process.stderr.write(renderDiagnostic(diagnostic));
+      if (command === "--write") {
+        await writeAtomically(filePath, formatQuint(source));
+      } else {
+        const diagnostics = checkQuint(source, filePath);
+        for (const diagnostic of diagnostics) {
+          process.stderr.write(renderDiagnostic(diagnostic));
+        }
+        hasFormattingViolations ||= diagnostics.length > 0;
       }
-
-      hasFormattingViolations ||= diagnostics.length > 0;
     } catch (error) {
       hasOperationalFailure = true;
       if (error instanceof QuintSyntaxError) {

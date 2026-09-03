@@ -1652,3 +1652,18 @@ exports[`command-line checker formats one file to standard output 1`] = `
 }
 "
 `;
+
+exports[`command-line checker writes one file atomically 1`] = `
+"module Example {
+}
+"
+`;
+
+exports[`command-line checker does not replace a file that has invalid syntax 1`] = `
+"invalid.qnt:2:1: error[parse/missing-token]: expected '}'
+  |
+2 |
+  | ^
+  |
+"
+`;

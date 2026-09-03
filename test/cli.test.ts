@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,6 +16,45 @@ describe("command-line checker", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout.toString()).toMatchSnapshot();
     expect(result.stderr.toString()).toBe("");
+  });
+
+  test("writes one file atomically", () => {
+    const scratch = mkdtempSync(join(tmpdir(), "quint-format-write-"));
+    const filePath = join(scratch, "example.qnt");
+    writeFileSync(filePath, "module Example {}\n");
+
+    try {
+      const result = Bun.spawnSync(["bun", "run", "src/cli.ts", "--write", filePath], {
+        cwd: projectRoot,
+      });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout.toString()).toBe("");
+      expect(result.stderr.toString()).toBe("");
+      expect(readFileSync(filePath, "utf8")).toMatchSnapshot();
+    } finally {
+      rmSync(scratch, { recursive: true, force: true });
+    }
+  });
+
+  test("does not replace a file that has invalid syntax", () => {
+    const scratch = mkdtempSync(join(tmpdir(), "quint-format-write-error-"));
+    const filePath = join(scratch, "invalid.qnt");
+    const source = "module Invalid {\n";
+    writeFileSync(filePath, source);
+
+    try {
+      const result = Bun.spawnSync(["bun", "run", "src/cli.ts", "--write", filePath], {
+        cwd: projectRoot,
+      });
+
+      expect(result.exitCode).toBe(2);
+      expect(result.stdout.toString()).toBe("");
+      expect(result.stderr.toString().replace(filePath, "invalid.qnt")).toMatchSnapshot();
+      expect(readFileSync(filePath, "utf8")).toBe(source);
+    } finally {
+      rmSync(scratch, { recursive: true, force: true });
+    }
   });
 
   test("checks multiple files", () => {

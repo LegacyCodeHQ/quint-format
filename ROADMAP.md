@@ -168,7 +168,7 @@ that every subsequent formatter preserves them by construction.
 - [x] Multiple files
 - [x] Recursive directory discovery
 - [x] Standard output mode
-- [ ] `--write` with safe atomic replacement
+- [x] `--write` with safe atomic replacement
 - [x] Exit codes: 0 clean, 1 formatting violations, 2 operational or syntax failure
 
 ## 11. Hardening
