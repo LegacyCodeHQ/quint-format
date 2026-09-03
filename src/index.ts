@@ -152,10 +152,12 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
 function analyzeModule(source: string) {
   const root = parseQuint(source);
 
-  const moduleNode = root.namedChild(0);
+  const hashbang = root.namedChildren.find((node) => node.type === "hashbang");
+  const moduleNode = root.namedChildren.find((node) => node.type === "module_definition");
   const nameNode = moduleNode?.childForFieldName("name");
+  const expectedNamedChildren = hashbang ? 2 : 1;
   const isModule =
-    root.namedChildCount === 1 &&
+    root.namedChildCount === expectedNamedChildren &&
     moduleNode?.type === "module_definition" &&
     nameNode?.type === "identifier";
 
@@ -261,7 +263,15 @@ function analyzeModule(source: string) {
     throw new Error("Unable to locate the empty module tokens");
   }
 
-  return { name: nameNode.text, nameNode, moduleKeyword, openBrace, closeBrace, declarations };
+  return {
+    hashbang,
+    name: nameNode.text,
+    nameNode,
+    moduleKeyword,
+    openBrace,
+    closeBrace,
+    declarations,
+  };
 }
 
 export function formatQuint(source: string): string {
@@ -482,9 +492,17 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 }
 
 function renderModule(module: ReturnType<typeof analyzeModule>): string {
+  const prefix = module.hashbang ? [text(module.hashbang.text), hardLine] : [];
   const body = module.declarations.flatMap(({ document }) => [hardLine, document]);
   return renderDoc(
-    concat([text(`module ${module.name} {`), indent(concat(body)), hardLine, text("}"), hardLine]),
+    concat([
+      ...prefix,
+      text(`module ${module.name} {`),
+      indent(concat(body)),
+      hardLine,
+      text("}"),
+      hardLine,
+    ]),
   );
 }
 

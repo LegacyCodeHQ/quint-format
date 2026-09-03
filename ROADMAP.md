@@ -15,7 +15,7 @@ implement the smallest fix, validate the output, verify, and commit atomically.
 
 ## 2. Source and module layout
 
-- [ ] Hashbangs
+- [x] Hashbangs
 - [x] Module braces
 - [ ] Multiple modules
 - [x] Definition line breaks

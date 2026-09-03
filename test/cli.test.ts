@@ -246,4 +246,15 @@ describe("command-line checker", () => {
     expect(result.stdout.toString()).toBe("");
     expect(result.stderr.toString()).toMatchSnapshot();
   });
+
+  test("reports a compact module after a hashbang", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "--check", "test/fixtures/hashbang.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout.toString()).toBe("");
+    expect(result.stderr.toString()).toMatchSnapshot();
+  });
 });

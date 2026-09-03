@@ -137,3 +137,10 @@ exports[`formatter formats an integer subtraction expression 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a source hashbang 1`] = `
+"#!/usr/bin/env -S quint typecheck
+module Example {
+}
+"
+`;
