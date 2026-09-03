@@ -1,10 +1,11 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves a comment before a lambda body 1`] = `
+exports[`formatter preserves a trailing comment on a local definition 1`] = `
 "module Example {
-  pure val increment = (value =>
-    // Preserve this lambda comment.
-    value + 1)
+  action step = {
+    val answer = 42 // Preserve this local comment.
+    answer
+  }
 }
 "
 `;
@@ -361,6 +362,15 @@ exports[`formatter formats lambda parameter forms 1`] = `
   pure val add = (x, y) => x + y
 
   pure val sumPair = ((x, y)) => x + y
+}
+"
+`;
+
+exports[`formatter preserves a comment before a lambda body 1`] = `
+"module Example {
+  pure val increment = (value =>
+    // Preserve this lambda comment.
+    value + 1)
 }
 "
 `;

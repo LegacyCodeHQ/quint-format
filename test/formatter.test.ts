@@ -527,6 +527,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a trailing comment on a local definition", () => {
+    const input = readFileSync(
+      new URL("fixtures/local-definition-trailing-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("// Preserve this local comment.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats named and wildcard imports and exports", () => {
     const input = readFileSync(new URL("fixtures/imports-exports.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

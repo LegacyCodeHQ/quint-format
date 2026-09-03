@@ -388,12 +388,20 @@ function analyzeLocalDefinition(node: Parser.SyntaxNode): ExpressionAnalysis {
       throw new Error("Unable to locate the local value definition");
     }
     const valueAnalysis = value ? analyzeExpression(value) : undefined;
+    const trailingComments = value
+      ? node.namedChildren.filter(
+          (child) =>
+            (child.type === "comment" || child.type === "documentation_comment") &&
+            child.startIndex >= value.endIndex,
+        )
+      : [];
     return {
       document: concat([
         text(
           `${qualifier ? "pure " : ""}val ${formatPattern(name)}${typeNode ? `: ${formatType(typeNode)}` : ""}${value ? " = " : ""}`,
         ),
         ...(valueAnalysis ? [valueAnalysis.document] : []),
+        ...trailingComments.flatMap((comment) => [text(" "), commentDocument(comment)]),
       ]),
       binaryOperators: valueAnalysis?.binaryOperators ?? [],
       unitLiterals: valueAnalysis?.unitLiterals ?? [],
@@ -414,6 +422,13 @@ function analyzeLocalDefinition(node: Parser.SyntaxNode): ExpressionAnalysis {
       throw new Error("Unable to locate the local operator definition");
     }
     const bodyAnalysis = body ? analyzeExpression(body) : undefined;
+    const trailingComments = body
+      ? node.namedChildren.filter(
+          (child) =>
+            (child.type === "comment" || child.type === "documentation_comment") &&
+            child.startIndex >= body.endIndex,
+        )
+      : [];
     const head = defKeyword ? `${qualifier ? `${qualifier.text} ` : ""}def` : qualifier?.text;
     const parameterList =
       parameters.length > 0
@@ -432,6 +447,7 @@ function analyzeLocalDefinition(node: Parser.SyntaxNode): ExpressionAnalysis {
           `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""}${body ? " = " : ""}`,
         ),
         ...(bodyAnalysis ? [bodyAnalysis.document] : []),
+        ...trailingComments.flatMap((comment) => [text(" "), commentDocument(comment)]),
       ]),
       binaryOperators: bodyAnalysis?.binaryOperators ?? [],
       unitLiterals: bodyAnalysis?.unitLiterals ?? [],

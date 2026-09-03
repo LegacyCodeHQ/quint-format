@@ -1996,3 +1996,32 @@ test/fixtures/lambda-comment.qnt:4:6: error[format/binary-operator-spacing]: exp
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical local trailing-comment formatting 1`] = `
+"test/fixtures/local-definition-trailing-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/local-definition-trailing-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | action step={
+  | ^
+  |
+test/fixtures/local-definition-trailing-comment.qnt:2:12: error[format/equals-spacing]: expected one space around '='
+  |
+2 | action step={
+  |            ^
+  |
+test/fixtures/local-definition-trailing-comment.qnt:3:11: error[format/equals-spacing]: expected one space around '='
+  |
+3 | val answer=42 // Preserve this local comment.
+  |           ^
+  |
+test/fixtures/local-definition-trailing-comment.qnt:4:1: error[format/nested-definition-layout]: expected the nested definition body on a new line
+  |
+4 | answer
+  | ^^^^^^
+  |
+"
+`;
