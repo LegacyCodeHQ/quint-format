@@ -511,6 +511,15 @@ test/fixtures/definition-semicolon.qnt:2:16: error[format/unnecessary-semicolon]
 "
 `;
 
+exports[`command-line checker reports noncanonical type-alias formatting 1`] = `
+"test/fixtures/type-alias.qnt:2:13: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   type Count=int
+  |             ^
+  |
+"
+`;
+
 exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |

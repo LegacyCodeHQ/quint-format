@@ -407,6 +407,26 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       continue;
     }
 
+    if (node.type === "type_alias_declaration") {
+      const keyword = node.children.find((child) => child.type === "type");
+      const declarationName = node.childForFieldName("name");
+      const value = node.childForFieldName("value");
+      const equals = node.children.find((child) => child.type === "=");
+      if (!keyword || !declarationName || value?.type !== "primitive_type" || !equals) {
+        throw new Error("Formatting this type alias syntax is not implemented yet");
+      }
+
+      addDeclaration({
+        node,
+        keyword,
+        nameNode: declarationName,
+        equals,
+        valueNode: value,
+        document: text(`type ${declarationName.text} = ${value.text}`),
+      });
+      continue;
+    }
+
     const keywordType =
       node.type === "variable_declaration"
         ? "var"

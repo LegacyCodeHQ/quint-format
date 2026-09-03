@@ -81,6 +81,9 @@ that every subsequent formatter preserves them by construction.
   - [x] Operator definitions
   - [x] Value definitions
 - [ ] Type aliases and uninterpreted types
+  - [x] Primitive type aliases
+  - [ ] Rich and polymorphic aliases
+  - [ ] Uninterpreted types
 
 ## 5. Types
 

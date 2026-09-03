@@ -344,6 +344,15 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats a primitive type alias", () => {
+    const input = "module Example {\n  type Count=int\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a pure definition", () => {
     const input = "module Example {\n  pure   def answer=42\n}\n";
     const output = formatQuint(input);

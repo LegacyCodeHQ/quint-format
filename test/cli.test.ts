@@ -445,6 +445,17 @@ describe("command-line checker", () => {
     expect(result.stderr.toString()).toMatchSnapshot();
   });
 
+  test("reports noncanonical type-alias formatting", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "--check", "test/fixtures/type-alias.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout.toString()).toBe("");
+    expect(result.stderr.toString()).toMatchSnapshot();
+  });
+
   test("reports noncanonical pure-definition formatting", () => {
     const result = Bun.spawnSync(
       ["bun", "run", "src/cli.ts", "--check", "test/fixtures/pure-definition.qnt"],

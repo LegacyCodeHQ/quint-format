@@ -278,6 +278,13 @@ exports[`formatter removes an optional definition semicolon 1`] = `
 "
 `;
 
+exports[`formatter formats a primitive type alias 1`] = `
+"module Example {
+  type Count = int
+}
+"
+`;
+
 exports[`formatter formats a pure definition 1`] = `
 "module Example {
   pure def answer = 42
