@@ -173,7 +173,7 @@ that every subsequent formatter preserves them by construction.
 
 ## 11. Hardening
 
-- [ ] Entire official Quint example corpus
+- [x] Entire official Quint example corpus
 - [x] Parse-tree preservation checks
 - [ ] Unicode, tabs, CRLF, and multiline diagnostic ranges
 - [ ] Property and fuzz testing

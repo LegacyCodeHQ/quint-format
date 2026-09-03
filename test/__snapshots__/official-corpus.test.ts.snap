@@ -1,0 +1,11 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`official example corpus audit audits every Quint file recursively 1`] = `
+{
+  "diagnosticFree": 1,
+  "files": 1,
+  "idempotent": 1,
+  "quintValidated": 0,
+  "treePreserved": 1,
+}
+`;

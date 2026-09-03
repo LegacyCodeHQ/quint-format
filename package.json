@@ -13,6 +13,7 @@
     "format:check": "biome format .",
     "lint": "biome lint .",
     "test": "bun test",
+    "test:official": "bun scripts/check-official-examples.ts",
     "typecheck": "tsc --noEmit"
   },
   "packageManager": "bun@1.4.0",
