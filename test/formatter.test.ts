@@ -37,4 +37,13 @@ describe("formatter", () => {
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
+
+  test("indents a variable declaration in a module", () => {
+    const input = "module Example {\nvar n: int\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
 });

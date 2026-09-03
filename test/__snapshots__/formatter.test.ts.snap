@@ -23,3 +23,10 @@ exports[`formatter formats excess final newlines 1`] = `
 }
 "
 `;
+
+exports[`formatter indents a variable declaration in a module 1`] = `
+"module Example {
+  var n: int
+}
+"
+`;

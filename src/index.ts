@@ -1,6 +1,6 @@
 import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
-import { concat, hardLine, renderDoc, text } from "./document";
+import { concat, type Doc, hardLine, indent, renderDoc, text } from "./document";
 
 const parser = new Parser();
 parser.setLanguage(Quint);
@@ -80,19 +80,45 @@ function positionAtIndex(source: string, index: number) {
   return { row: lines.length - 1, column: Array.from(lastLine).length };
 }
 
-function analyzeEmptyModule(source: string) {
+interface ModuleDeclaration {
+  node: Parser.SyntaxNode;
+  document: Doc;
+}
+
+function analyzeModule(source: string) {
   const root = parseQuint(source);
 
   const moduleNode = root.namedChild(0);
   const nameNode = moduleNode?.childForFieldName("name");
-  const isEmptyModule =
+  const isModule =
     root.namedChildCount === 1 &&
     moduleNode?.type === "module_definition" &&
-    moduleNode.namedChildCount === 1 &&
     nameNode?.type === "identifier";
 
-  if (!isEmptyModule) {
+  if (!isModule) {
     throw new Error("Formatting this Quint syntax is not implemented yet");
+  }
+
+  const declarations: ModuleDeclaration[] = [];
+  for (const node of moduleNode.namedChildren) {
+    if (node.id === nameNode.id) {
+      continue;
+    }
+
+    if (node.type !== "variable_declaration") {
+      throw new Error("Formatting this Quint syntax is not implemented yet");
+    }
+
+    const declarationName = node.childForFieldName("name");
+    const declarationType = node.childForFieldName("type");
+    if (!declarationName || !declarationType) {
+      throw new Error("Unable to locate the variable declaration fields");
+    }
+
+    declarations.push({
+      node,
+      document: text(`var ${declarationName.text}: ${declarationType.text}`),
+    });
   }
 
   const openBrace = moduleNode.children.find((child) => child.type === "{");
@@ -103,17 +129,16 @@ function analyzeEmptyModule(source: string) {
     throw new Error("Unable to locate the empty module tokens");
   }
 
-  return { name: nameNode.text, nameNode, moduleKeyword, openBrace, closeBrace };
+  return { name: nameNode.text, nameNode, moduleKeyword, openBrace, closeBrace, declarations };
 }
 
 export function formatQuint(source: string): string {
-  const module = analyzeEmptyModule(source);
-  return renderEmptyModule(module.name);
+  return renderModule(analyzeModule(source));
 }
 
 export function checkQuint(source: string, filePath: string): FormatDiagnostic[] {
-  const module = analyzeEmptyModule(source);
-  const formatted = renderEmptyModule(module.name);
+  const module = analyzeModule(source);
+  const formatted = renderModule(module);
   const diagnostics: FormatDiagnostic[] = [];
 
   if (source === formatted) {
@@ -159,7 +184,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
     });
   }
 
-  if (module.openBrace.startPosition.row === module.closeBrace.startPosition.row) {
+  if (
+    module.declarations.length === 0 &&
+    module.openBrace.startPosition.row === module.closeBrace.startPosition.row
+  ) {
     const row = module.openBrace.startPosition.row;
     diagnostics.push({
       filePath,
@@ -173,6 +201,21 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       message: "empty module braces must be on separate lines",
       sourceLine: lines[row] ?? "",
     });
+  }
+
+  for (const declaration of module.declarations) {
+    if (declaration.node.startPosition.column !== 2) {
+      const row = declaration.node.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: 1,
+        length: Math.max(1, declaration.node.startPosition.column),
+        rule: "format/module-body-indentation",
+        message: "expected 2 spaces of indentation",
+        sourceLine: lines[row] ?? "",
+      });
+    }
   }
 
   const trailingNewlines = source.match(/(?:\r\n|\r|\n)+$/)?.[0] ?? "";
@@ -195,8 +238,11 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
   return diagnostics;
 }
 
-function renderEmptyModule(name: string): string {
-  return renderDoc(concat([text(`module ${name} {`), hardLine, text("}"), hardLine]));
+function renderModule(module: ReturnType<typeof analyzeModule>): string {
+  const body = module.declarations.flatMap(({ document }) => [hardLine, document]);
+  return renderDoc(
+    concat([text(`module ${module.name} {`), indent(concat(body)), hardLine, text("}"), hardLine]),
+  );
 }
 
 export function renderDiagnostic(diagnostic: FormatDiagnostic): string {

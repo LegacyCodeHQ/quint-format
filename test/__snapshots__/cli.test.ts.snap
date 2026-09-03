@@ -44,3 +44,12 @@ exports[`command-line checker reports an excess final newline 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports an unindented module declaration 1`] = `
+"test/fixtures/variable-indentation.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | var n: int
+  | ^
+  |
+"
+`;
