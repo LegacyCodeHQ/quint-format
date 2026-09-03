@@ -30,3 +30,10 @@ exports[`formatter indents a variable declaration in a module 1`] = `
 }
 "
 `;
+
+exports[`formatter formats spacing after a type colon 1`] = `
+"module Example {
+  var n: int
+}
+"
+`;

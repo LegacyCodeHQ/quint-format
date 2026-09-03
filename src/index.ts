@@ -82,6 +82,9 @@ function positionAtIndex(source: string, index: number) {
 
 interface ModuleDeclaration {
   node: Parser.SyntaxNode;
+  nameNode: Parser.SyntaxNode;
+  colon: Parser.SyntaxNode;
+  typeNode: Parser.SyntaxNode;
   document: Doc;
 }
 
@@ -111,12 +114,16 @@ function analyzeModule(source: string) {
 
     const declarationName = node.childForFieldName("name");
     const declarationType = node.childForFieldName("type");
-    if (!declarationName || !declarationType) {
+    const colon = node.children.find((child) => child.type === ":");
+    if (!declarationName || !declarationType || !colon) {
       throw new Error("Unable to locate the variable declaration fields");
     }
 
     declarations.push({
       node,
+      nameNode: declarationName,
+      colon,
+      typeNode: declarationType,
       document: text(`var ${declarationName.text}: ${declarationType.text}`),
     });
   }
@@ -213,6 +220,28 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         length: Math.max(1, declaration.node.startPosition.column),
         rule: "format/module-body-indentation",
         message: "expected 2 spaces of indentation",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+
+    const typeGap = source.slice(declaration.colon.endIndex, declaration.typeNode.startIndex);
+    if (typeGap !== " ") {
+      const row = declaration.colon.endPosition.row;
+      const hasGap =
+        declaration.typeNode.startPosition.column > declaration.colon.endPosition.column;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column:
+          (hasGap
+            ? declaration.colon.endPosition.column
+            : declaration.typeNode.startPosition.column) + 1,
+        length: Math.max(
+          1,
+          declaration.typeNode.startPosition.column - declaration.colon.endPosition.column,
+        ),
+        rule: "format/type-colon-spacing",
+        message: "expected one space after ':'",
         sourceLine: lines[row] ?? "",
       });
     }

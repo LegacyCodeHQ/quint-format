@@ -81,4 +81,15 @@ describe("command-line checker", () => {
     expect(result.stdout.toString()).toBe("");
     expect(result.stderr.toString()).toMatchSnapshot();
   });
+
+  test("reports missing spacing after a type colon", () => {
+    const result = Bun.spawnSync(
+      ["bun", "run", "src/cli.ts", "--check", "test/fixtures/type-colon-spacing.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout.toString()).toBe("");
+    expect(result.stderr.toString()).toMatchSnapshot();
+  });
 });

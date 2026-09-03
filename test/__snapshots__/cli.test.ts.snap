@@ -53,3 +53,12 @@ exports[`command-line checker reports an unindented module declaration 1`] = `
   |
 "
 `;
+
+exports[`command-line checker reports missing spacing after a type colon 1`] = `
+"test/fixtures/type-colon-spacing.qnt:2:9: error[format/type-colon-spacing]: expected one space after ':'
+  |
+2 |   var n:int
+  |         ^
+  |
+"
+`;
