@@ -162,3 +162,22 @@ test/fixtures/typed-value-definition.qnt:2:15: error[format/equals-spacing]: exp
   |
 "
 `;
+
+exports[`command-line checker reports noncanonical addition formatting 1`] = `
+"test/fixtures/addition-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | val total=1+2
+  | ^
+  |
+test/fixtures/addition-expression.qnt:2:10: error[format/equals-spacing]: expected one space around '='
+  |
+2 | val total=1+2
+  |          ^
+  |
+test/fixtures/addition-expression.qnt:2:12: error[format/binary-operator-spacing]: expected one space around '+'
+  |
+2 | val total=1+2
+  |            ^
+  |
+"
+`;

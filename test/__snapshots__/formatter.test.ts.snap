@@ -108,3 +108,10 @@ exports[`formatter formats a typed value definition 1`] = `
 }
 "
 `;
+
+exports[`formatter formats an integer addition expression 1`] = `
+"module Example {
+  val total = 1 + 2
+}
+"
+`;

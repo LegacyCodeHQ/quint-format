@@ -88,7 +88,51 @@ interface ModuleDeclaration {
   typeNode?: Parser.SyntaxNode;
   equals?: Parser.SyntaxNode;
   valueNode?: Parser.SyntaxNode;
+  binaryOperators?: BinaryOperator[];
   document: Doc;
+}
+
+interface BinaryOperator {
+  node: Parser.SyntaxNode;
+  left: Parser.SyntaxNode;
+  right: Parser.SyntaxNode;
+}
+
+interface ExpressionAnalysis {
+  document: Doc;
+  binaryOperators: BinaryOperator[];
+}
+
+function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
+  if (
+    node.type === "integer_literal" ||
+    node.type === "boolean_literal" ||
+    node.type === "string_literal"
+  ) {
+    return { document: text(node.text), binaryOperators: [] };
+  }
+
+  if (node.type === "binary_expression") {
+    const left = node.childForFieldName("left");
+    const right = node.childForFieldName("right");
+    const operator = node.children.find((child) => child.type === "+");
+    if (!left || !right || !operator) {
+      throw new Error("Formatting this binary expression syntax is not implemented yet");
+    }
+
+    const leftAnalysis = analyzeExpression(left);
+    const rightAnalysis = analyzeExpression(right);
+    return {
+      document: concat([leftAnalysis.document, text(" + "), rightAnalysis.document]),
+      binaryOperators: [
+        ...leftAnalysis.binaryOperators,
+        { node: operator, left, right },
+        ...rightAnalysis.binaryOperators,
+      ],
+    };
+  }
+
+  throw new Error("Formatting this expression syntax is not implemented yet");
 }
 
 function analyzeModule(source: string) {
@@ -138,20 +182,17 @@ function analyzeModule(source: string) {
       const value = node.childForFieldName("value");
       const colon = node.children.find((child) => child.type === ":");
       const equals = node.children.find((child) => child.type === "=");
-      const isSupportedLiteral =
-        value?.type === "integer_literal" ||
-        value?.type === "boolean_literal" ||
-        value?.type === "string_literal";
       if (
         !keyword ||
         !declarationName ||
         !equals ||
-        !isSupportedLiteral ||
+        !value ||
         Boolean(declarationType) !== Boolean(colon)
       ) {
         throw new Error("Formatting this value definition syntax is not implemented yet");
       }
 
+      const expression = analyzeExpression(value);
       const typeAnnotation = declarationType ? `: ${declarationType.text}` : "";
       declarations.push({
         node,
@@ -161,7 +202,11 @@ function analyzeModule(source: string) {
         typeNode: declarationType ?? undefined,
         equals,
         valueNode: value,
-        document: text(`val ${declarationName.text}${typeAnnotation} = ${value.text}`),
+        binaryOperators: expression.binaryOperators,
+        document: concat([
+          text(`val ${declarationName.text}${typeAnnotation} = `),
+          expression.document,
+        ]),
       });
       continue;
     }
@@ -379,6 +424,23 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           length: 1,
           rule: "format/equals-spacing",
           message: "expected one space around '='",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
+
+    for (const operator of declaration.binaryOperators ?? []) {
+      const beforeOperator = source.slice(operator.left.endIndex, operator.node.startIndex);
+      const afterOperator = source.slice(operator.node.endIndex, operator.right.startIndex);
+      if (beforeOperator !== " " || afterOperator !== " ") {
+        const row = operator.node.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: operator.node.startPosition.column + 1,
+          length: operator.node.text.length,
+          rule: "format/binary-operator-spacing",
+          message: `expected one space around '${operator.node.text}'`,
           sourceLine: lines[row] ?? "",
         });
       }
