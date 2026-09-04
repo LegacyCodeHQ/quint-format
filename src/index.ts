@@ -526,6 +526,26 @@ function compactNestedBlockExpression(
   return body.childForFieldName("expression");
 }
 
+function compactLambdaBlockExpression(
+  lambda: Parser.SyntaxNode,
+  body: Parser.SyntaxNode,
+): Parser.SyntaxNode | null {
+  if (
+    body.type !== "block_expression" ||
+    lambda.startPosition.row !== body.startPosition.row ||
+    body.startPosition.row !== body.endPosition.row ||
+    lambda.endPosition.column > 120 ||
+    body.childrenForFieldName("binding").length > 0 ||
+    body.namedChildren.some(
+      (child) => child.type === "comment" || child.type === "documentation_comment",
+    )
+  ) {
+    return null;
+  }
+
+  return body.childForFieldName("expression");
+}
+
 function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode): boolean {
   if (node.type !== "parenthesized_expression") return false;
   const expression = node.childForFieldName("expression");
@@ -1134,7 +1154,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
           text(")"),
         ])
       : text(formatPattern(parameters[0] as Parser.SyntaxNode));
-    const analysis = analyzeExpression(body);
+    const compactBlockExpression = compactLambdaBlockExpression(node, body);
+    const analysis = analyzeExpression(compactBlockExpression ?? body);
     const comments = node.namedChildren.filter(
       (child) =>
         (child.type === "comment" || child.type === "documentation_comment") &&
@@ -1160,8 +1181,9 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         ? 2
         : 1;
     return {
-      document:
-        comments.length === 0
+      document: compactBlockExpression
+        ? concat([parameterDocument, text(" => { "), analysis.document, text(" }")])
+        : comments.length === 0
           ? isMultilineBody
             ? concat([
                 parameterDocument,
@@ -5476,8 +5498,13 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const isCompactNestedBlock = Boolean(
             nestedDefinition && compactNestedBlockExpression(nestedDefinition, block),
           );
+          const parentLambda = block.parent?.type === "lambda_expression" ? block.parent : null;
+          const isCompactLambdaBlock = Boolean(
+            parentLambda && compactLambdaBlockExpression(parentLambda, block),
+          );
           const hasCanonicalLines =
             isCompactNestedBlock ||
+            isCompactLambdaBlock ||
             (rows[0] !== openBrace.startPosition.row &&
               rows.every((row, index) => index === 0 || row > (rows[index - 1] as number)) &&
               closeBrace.startPosition.row > (rows.at(-1) as number));

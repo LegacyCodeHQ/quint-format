@@ -2153,3 +2153,12 @@ exports[`formatter preserves a hanging partially expanded call 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a compact single-expression lambda block 1`] = `
+"module Example {
+  pure def listForall(list: List[a], pred: a => bool): bool = {
+    list.foldl(true, (result, element) => { if (pred(element)) result else false })
+  }
+}
+"
+`;

@@ -852,6 +852,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a compact single-expression lambda block", () => {
+    const input = readFileSync(
+      new URL("fixtures/compact-lambda-block.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("keeps a record-returning lambda's braces attached", () => {
     const input = readFileSync(
       new URL("fixtures/record-lambda-braces.qnt", import.meta.url),
