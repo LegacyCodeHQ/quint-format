@@ -1268,6 +1268,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     }
     const analyses = entries.map(analyzeExpression);
     const contentDocuments: Doc[] = [];
+    const contentAnchors: Parser.SyntaxNode[] = [];
     let previousEntry: Parser.SyntaxNode | undefined;
     for (const child of node.namedChildren) {
       if (child.type === "comment" || child.type === "documentation_comment") {
@@ -1291,8 +1292,10 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
             child.startIndex - node.startIndex,
           );
           contentDocuments.push(concat([entryDocument, text(commentGap), commentDocument(child)]));
+          contentAnchors[contentAnchors.length - 1] = child;
         } else {
           contentDocuments.push(commentDocument(child));
+          contentAnchors.push(child);
         }
         continue;
       }
@@ -1301,12 +1304,22 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       if (!entry)
         throw new Error("Formatting this block combinator content is not implemented yet");
       contentDocuments.push(concat([entry.document, text(",")]));
+      contentAnchors.push(child);
       previousEntry = child;
     }
+    const spacedContentDocuments = contentDocuments.flatMap((document, index) => {
+      const current = contentAnchors[index] as Parser.SyntaxNode;
+      const previous = index === 0 ? keyword : contentAnchors[index - 1];
+      const lineBreaks = Math.min(
+        2,
+        Math.max(1, current.startPosition.row - (previous?.endPosition.row ?? 0)),
+      );
+      return [...Array.from({ length: lineBreaks }, () => hardLine), document];
+    });
     return {
       document: concat([
         text(`${keyword.text} {`),
-        indent(concat(contentDocuments.flatMap((document) => [hardLine, document]))),
+        indent(concat(spacedContentDocuments)),
         hardLine,
         text("}"),
       ]),

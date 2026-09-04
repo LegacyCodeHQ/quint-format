@@ -1474,3 +1474,16 @@ exports[`formatter preserves a binary continuation in a lambda body 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a blank line between block combinator entries 1`] = `
+"module Example {
+  var n: int
+
+  action step = all {
+    n >= 0,
+
+    n' = n + 1,
+  }
+}
+"
+`;

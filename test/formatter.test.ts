@@ -865,6 +865,16 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a blank line between block combinator entries", () => {
+    const input = readFileSync(new URL("fixtures/block-entry-gap.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a nondeterministic binding", () => {
     const input = readFileSync(new URL("fixtures/nondet-binding.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);
