@@ -705,6 +705,25 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("indents a multiline lambda within a UFCS call", () => {
+    const input = readFileSync(
+      new URL("fixtures/ufcs-multiline-lambda.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const dedented = input
+      .replace("\n            { id: value }", "\n        { id: value }")
+      .replace("\n          )", "\n      )");
+
+    expect(output).toBe(input);
+    expect(checkQuint(dedented, "input.qnt").map(({ rule }) => rule)).toEqual(
+      expect.arrayContaining(["format/lambda-body-indentation", "format/call-delimiter-spacing"]),
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("uses a four-space leading operator continuation in a lambda", () => {
     const input = readFileSync(
       new URL("fixtures/preserved-lambda-implies.qnt", import.meta.url),

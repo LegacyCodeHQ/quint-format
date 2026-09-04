@@ -2062,3 +2062,14 @@ exports[`formatter preserves aligned trailing comments on module definitions 1`]
 }
 "
 `;
+
+exports[`formatter indents a multiline lambda within a UFCS call 1`] = `
+"module Example {
+  pure def proposals(values) =
+      values
+          .map(value =>
+            { id: value }
+          )
+}
+"
+`;

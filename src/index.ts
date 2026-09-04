@@ -1617,6 +1617,37 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const multilineLambdaArgument =
       arguments_.length === 1 && isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
     const multilineUfcsCall = isMultilineUfcsContinuation(functionNode);
+    let multilineUfcsLambdaDocument: Doc | undefined;
+    if (multilineLambdaArgument && multilineUfcsCall) {
+      const object = functionNode.childForFieldName("object");
+      const field = functionNode.childForFieldName("field");
+      if (!object || !field) throw new Error("Unable to locate the UFCS call target");
+      const objectAnalysis = analyzeExpression(object);
+      multilineUfcsLambdaDocument = concat([
+        objectAnalysis.document,
+        indentBy(
+          concat([
+            hardLine,
+            text(`.${field.text}(`),
+            (analyses[0] as ExpressionAnalysis).document,
+            hardLine,
+            text(")"),
+          ]),
+          ufcsContinuationIndentation(),
+        ),
+      ]);
+    }
+    const multilineLambdaCallDocument =
+      multilineUfcsLambdaDocument ??
+      (multilineLambdaArgument
+        ? concat([
+            functionAnalysis.document,
+            text("("),
+            (analyses[0] as ExpressionAnalysis).document,
+            hardLine,
+            text(")"),
+          ])
+        : undefined);
     const inlineCallDocument = concat([
       functionAnalysis.document,
       text("("),
@@ -1722,14 +1753,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
             hardLine,
             text(")"),
           ])
-        : multilineLambdaArgument
-          ? concat([
-              functionAnalysis.document,
-              text("("),
-              (analyses[0] as ExpressionAnalysis).document,
-              hardLine,
-              text(")"),
-            ])
+        : multilineLambdaCallDocument
+          ? multilineLambdaCallDocument
           : hangingMultilineLambdaCall
             ? concat([
                 functionAnalysis.document,
@@ -4635,6 +4660,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               : undefined;
           const callIndentation =
             functionDot?.startPosition.column ?? callExpression.startPosition.column;
+          const isMultilineUfcsCall = Boolean(
+            functionDot && isMultilineUfcsContinuation(functionNode),
+          );
           const hangingArgumentGap = `\n${" ".repeat(callIndentation + 2)}`;
           const hangingCloseGap = `\n${" ".repeat(callIndentation)}`;
           const expressionLineIndentation = (lines[callExpression.startPosition.row] ?? "").search(
@@ -4709,7 +4737,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             : isHangingMultilineLambdaCall
               ? beforeClose === hangingCloseGap
               : isMultilineLambdaCall
-                ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
+                ? isMultilineUfcsCall
+                  ? beforeClose === hangingCloseGap
+                  : /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
                 : beforeClose === "";
           if (!hasCanonicalClose) {
             const row = closeParen.startPosition.row;
@@ -4943,6 +4973,33 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               length: 2,
               rule: "format/lambda-arrow-spacing",
               message: "expected one space around '=>'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          const parentCall = lambda.parent?.type === "call_expression" ? lambda.parent : undefined;
+          const parentFunction = parentCall?.childForFieldName("function");
+          const functionObject = parentFunction?.childForFieldName("object");
+          const functionDot = parentFunction?.children.find((child) => child.type === ".");
+          const isMultilineUfcsLambda = Boolean(
+            parentFunction?.type === "field_access_expression" &&
+              functionObject &&
+              functionDot &&
+              functionDot.startPosition.row > functionObject.endPosition.row &&
+              body.startPosition.row > arrow.endPosition.row,
+          );
+          if (
+            isMultilineUfcsLambda &&
+            functionDot &&
+            body.startPosition.column !== functionDot.startPosition.column + 2
+          ) {
+            const row = body.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: 1,
+              length: Math.max(1, body.startPosition.column),
+              rule: "format/lambda-body-indentation",
+              message: "expected the lambda body two spaces inside the UFCS call",
               sourceLine: lines[row] ?? "",
             });
           }
