@@ -255,7 +255,7 @@ exports[`formatter formats a unit literal 1`] = `
 
 exports[`formatter formats a list literal 1`] = `
 "module Example {
-  val values = [1, 2]
+  val values = [ 1, 2 ]
 }
 "
 `;
@@ -1754,8 +1754,8 @@ exports[`formatter preserves a fully expanded two-argument call 1`] = `
 
   pure val result =
     compare(
-        { prefix: [1], suffix: [4, 5, 6] },
-        { prefix: [2, 7, 8, 9], suffix: [] }
+        { prefix: [ 1 ], suffix: [ 4, 5, 6 ] },
+        { prefix: [ 2, 7, 8, 9 ], suffix: [] }
     )
 }
 "
@@ -2165,7 +2165,7 @@ exports[`formatter preserves a compact single-expression lambda block 1`] = `
 
 exports[`formatter preserves a leading call argument beside the opening parenthesis 1`] = `
 "module Example {
-  pure val decreased: List[int] = [1, 2, 3].foldl([],
+  pure val decreased: List[int] = [ 1, 2, 3 ].foldl([],
       (list, value) => list.append(if (value >= 0) value else (value - 1))
   )
 }

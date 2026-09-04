@@ -933,12 +933,12 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
             text(closeDelimiter),
           ])
         : concat([
-            text(openDelimiter),
+            text(node.type === "list_literal" && elements.length > 0 ? "[ " : openDelimiter),
             ...analyses.flatMap((analysis, index) => [
               ...(index === 0 ? [] : [text(", ")]),
               analysis.document,
             ]),
-            text(closeDelimiter),
+            text(node.type === "list_literal" && elements.length > 0 ? " ]" : closeDelimiter),
           ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
@@ -4698,7 +4698,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         const lastElement = elements.at(-1);
         if (firstElement && lastElement) {
           const afterOpenDelimiter = source.slice(openDelimiter.endIndex, firstElement.startIndex);
-          if (afterOpenDelimiter !== "") {
+          const expectedOpenGap = isList ? " " : "";
+          if (afterOpenDelimiter !== expectedOpenGap) {
             const row = openDelimiter.endPosition.row;
             diagnostics.push({
               filePath,
@@ -4706,7 +4707,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               column: openDelimiter.endPosition.column + 1,
               length: Math.max(1, afterOpenDelimiter.length),
               rule: "format/expression-delimiter-spacing",
-              message: `expected no space after '${openType}'`,
+              message: isList
+                ? "expected one space after '['"
+                : `expected no space after '${openType}'`,
               sourceLine: lines[row] ?? "",
             });
           }
@@ -4750,9 +4753,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const trailingComma = commas.find((comma) => comma.startIndex >= lastElement.endIndex);
           const closeAnchor = trailingComma ?? lastElement;
           const closeGap = source.slice(closeAnchor.endIndex, closeDelimiter.startIndex);
+          const expectedCloseGap = isList ? " " : "";
           if (
-            (!trailingComma && beforeCloseDelimiter !== "") ||
-            (trailingComma && closeGap !== "")
+            (!trailingComma && beforeCloseDelimiter !== expectedCloseGap) ||
+            (trailingComma && closeGap !== expectedCloseGap)
           ) {
             const row = closeDelimiter.startPosition.row;
             diagnostics.push({
@@ -4761,7 +4765,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               column: closeAnchor.endPosition.column + 1,
               length: Math.max(1, closeGap.length),
               rule: "format/expression-delimiter-spacing",
-              message: `expected no space before '${closeType}'`,
+              message: isList
+                ? "expected one space before ']'"
+                : `expected no space before '${closeType}'`,
               sourceLine: lines[row] ?? "",
             });
           }

@@ -1,3 +1,3 @@
 module Example {
-  val values = [ 1 ,2, ]
+  val values = [1 ,2,]
 }

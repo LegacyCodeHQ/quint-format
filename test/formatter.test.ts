@@ -351,7 +351,13 @@ describe("formatter", () => {
   test("formats a list literal", () => {
     const input = "module Example {\n  val values = [ 1 ,2, ]\n}\n";
     const output = formatQuint(input);
+    const compact = "module Example {\n  val values = [1, 2]\n}\n";
 
+    expect(output).toContain("val values = [ 1, 2 ]");
+    expect(checkQuint(compact, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/expression-delimiter-spacing",
+      "format/expression-delimiter-spacing",
+    ]);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

@@ -554,25 +554,25 @@ exports[`command-line checker reports noncanonical unit-literal formatting 1`] =
 `;
 
 exports[`command-line checker reports noncanonical list-literal formatting 1`] = `
-"test/fixtures/list-literal.qnt:2:17: error[format/expression-delimiter-spacing]: expected no space after '['
+"test/fixtures/list-literal.qnt:2:17: error[format/expression-delimiter-spacing]: expected one space after '['
   |
-2 |   val values = [ 1 ,2, ]
+2 |   val values = [1 ,2,]
   |                 ^
   |
-test/fixtures/list-literal.qnt:2:20: error[format/expression-separator-spacing]: expected ', ' between list elements
+test/fixtures/list-literal.qnt:2:19: error[format/expression-separator-spacing]: expected ', ' between list elements
   |
-2 |   val values = [ 1 ,2, ]
-  |                    ^
+2 |   val values = [1 ,2,]
+  |                   ^
   |
-test/fixtures/list-literal.qnt:2:22: error[format/unnecessary-trailing-comma]: trailing commas are omitted from inline lists
+test/fixtures/list-literal.qnt:2:21: error[format/unnecessary-trailing-comma]: trailing commas are omitted from inline lists
   |
-2 |   val values = [ 1 ,2, ]
+2 |   val values = [1 ,2,]
+  |                     ^
+  |
+test/fixtures/list-literal.qnt:2:22: error[format/expression-delimiter-spacing]: expected one space before ']'
+  |
+2 |   val values = [1 ,2,]
   |                      ^
-  |
-test/fixtures/list-literal.qnt:2:23: error[format/expression-delimiter-spacing]: expected no space before ']'
-  |
-2 |   val values = [ 1 ,2, ]
-  |                       ^
   |
 "
 `;
