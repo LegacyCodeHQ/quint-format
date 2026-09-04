@@ -4,9 +4,6 @@ An independent, opinionated formatter for the
 [Quint specification language](https://quint-lang.org/), powered by
 [tree-sitter-quint](https://github.com/LegacyCodeHQ/tree-sitter-quint).
 
-`quintfmt` is not an official Quint project. Semantic checks such as types and
-modes remain the responsibility of the Quint compiler.
-
 > This release is an early public preview targeting Quint 0.32.x.
 
 ## Install
@@ -41,4 +38,7 @@ For local setup and project maintenance, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
 
-Apache-2.0
+Licensed under the [Apache License, Version 2.0](LICENSE).
+
+Copyright (c) 2026-present, Legacy Code Headquarters (OPC) Private Limited. All
+rights reserved.
