@@ -108,6 +108,16 @@ exports[`formatter preserves comments in a record type 1`] = `
 "
 `;
 
+exports[`formatter preserves aligned trailing comments in a record type 1`] = `
+"module Example {
+  type State = {
+    outPackets: Set[int],              // outgoing packets
+    acknowledgements: Set[int],        // incoming acknowledgements
+  }
+}
+"
+`;
+
 exports[`formatter formats an empty record type 1`] = `
 "module Example {
   type Empty = {}
