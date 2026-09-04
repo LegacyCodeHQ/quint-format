@@ -2327,3 +2327,18 @@ exports[`formatter preserves a compact one-arm default match 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves an aligned comment after a match-arm arrow 1`] = `
+"module Example {
+  type Mode = Ready | Waiting
+
+  const mode: Mode
+
+  val result = match mode {
+    | Ready => 1
+    | Waiting =>        // Explain this arm.
+        2
+  }
+}
+"
+`;

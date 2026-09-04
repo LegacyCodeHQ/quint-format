@@ -1238,6 +1238,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves an aligned comment after a match-arm arrow", () => {
+    const input = readFileSync(
+      new URL("fixtures/match-arrow-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a multiline match-arm body with a trailing comment", () => {
     const input = readFileSync(
       new URL("fixtures/match-arm-trailing-comment.qnt", import.meta.url),

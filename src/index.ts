@@ -1351,13 +1351,39 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
           (child.type === "comment" || child.type === "documentation_comment") &&
           child.endIndex <= body.startIndex,
       );
+      const inlineArrowComment = comments.find(
+        (comment) => comment.startPosition.row === arrow.endPosition.row,
+      );
+      const leadingBodyComments = comments.filter(
+        (comment) => comment.id !== inlineArrowComment?.id,
+      );
       const pattern = `${variant.text}${parameter ? `(${parameter.text})` : ""}`;
       const isMultilineBody = body.startPosition.row > arrow.endPosition.row;
       return {
         node: arm,
         body: bodyAnalysis,
-        document:
-          comments.length === 0
+        document: inlineArrowComment
+          ? concat([
+              text(`| ${pattern} =>`),
+              text(
+                arm.text.slice(
+                  arrow.endIndex - arm.startIndex,
+                  inlineArrowComment.startIndex - arm.startIndex,
+                ),
+              ),
+              commentDocument(inlineArrowComment),
+              indent(
+                concat([
+                  ...leadingBodyComments.flatMap((comment) => [
+                    hardLine,
+                    indent(commentDocument(comment)),
+                  ]),
+                  hardLine,
+                  indent(bodyAnalysis.document),
+                ]),
+              ),
+            ])
+          : comments.length === 0
             ? isMultilineBody
               ? concat([
                   text(`| ${pattern} =>`),
@@ -5491,9 +5517,25 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               }
               patternEnd = closeParen;
             }
-            const afterArrow = source.slice(arrow.endIndex, body.startIndex);
-            const hasCanonicalBodySeparation =
-              afterArrow === " " || /^(?:\r\n|\r|\n)[\t ]*$/.test(afterArrow);
+            const preBodyComments = arm.namedChildren.filter(
+              (child) =>
+                (child.type === "comment" || child.type === "documentation_comment") &&
+                child.endIndex <= body.startIndex,
+            );
+            const inlineArrowComment = preBodyComments.find(
+              (comment) => comment.startPosition.row === arrow.endPosition.row,
+            );
+            const afterArrow = source.slice(
+              arrow.endIndex,
+              inlineArrowComment?.startIndex ?? body.startIndex,
+            );
+            const afterInlineArrowComment = inlineArrowComment
+              ? source.slice(inlineArrowComment.endIndex, body.startIndex)
+              : "";
+            const hasCanonicalBodySeparation = inlineArrowComment
+              ? /^[\t ]+$/.test(afterArrow) &&
+                /^(?:\r\n|\r|\n)[\t ]*$/.test(afterInlineArrowComment)
+              : afterArrow === " " || /^(?:\r\n|\r|\n)[\t ]*$/.test(afterArrow);
             if (
               source.slice(patternEnd.endIndex, arrow.startIndex) !== " " ||
               !hasCanonicalBodySeparation
