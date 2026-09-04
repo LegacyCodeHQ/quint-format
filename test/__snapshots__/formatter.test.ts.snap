@@ -2033,3 +2033,13 @@ exports[`formatter uses a four-space right-operand continuation 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a trailing comment on a block combinator opening 1`] = `
+"module Example {
+  pure val valid = or { // describes the whole choice
+    true,
+    false,
+  }
+}
+"
+`;

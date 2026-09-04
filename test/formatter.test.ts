@@ -1192,6 +1192,23 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a trailing comment on a block combinator opening", () => {
+    const input = readFileSync(
+      new URL("fixtures/block-combinator-opening-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const missingSpace = input.replace("or { //", "or {//");
+
+    expect(output).toBe(input);
+    expect(checkQuint(missingSpace, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/block-combinator-opening-comment-spacing",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves aligned trailing comments in a block combinator", () => {
     const input = readFileSync(
       new URL("fixtures/block-trailing-comments.qnt", import.meta.url),

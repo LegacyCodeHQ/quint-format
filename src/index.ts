@@ -1462,15 +1462,22 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
           : "conjunct";
     const entries = node.childrenForFieldName(fieldName);
     const keyword = node.children.find((child) => ["any", "all", "and", "or"].includes(child.type));
-    if (!keyword || entries.length === 0) {
+    const openBrace = node.children.find((child) => child.type === "{");
+    if (!keyword || !openBrace || entries.length === 0) {
       throw new Error("Unable to locate the block combinator entries");
     }
+    const openingComment = node.namedChildren.find(
+      (child) =>
+        (child.type === "comment" || child.type === "documentation_comment") &&
+        child.startPosition.row === openBrace.endPosition.row,
+    );
     const analyses = entries.map(analyzeExpression);
     const contentDocuments: Doc[] = [];
     const contentAnchors: Parser.SyntaxNode[] = [];
     let previousEntry: Parser.SyntaxNode | undefined;
     for (const child of node.namedChildren) {
       if (child.type === "comment" || child.type === "documentation_comment") {
+        if (child.id === openingComment?.id) continue;
         const isTrailingEntryComment = previousEntry?.endPosition.row === child.startPosition.row;
         if (isTrailingEntryComment) {
           const entryDocument = contentDocuments.pop();
@@ -1547,6 +1554,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     return {
       document: concat([
         text(`${keyword.text} {`),
+        ...(openingComment ? [text(" "), commentDocument(openingComment)] : []),
         indent(concat(spacedContentDocuments)),
         hardLine,
         text("}"),
@@ -5340,6 +5348,26 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 length: 1,
                 rule: "format/block-combinator-layout",
                 message: "expected choices and the closing brace on separate lines",
+                sourceLine: lines[row] ?? "",
+              });
+            }
+            const openingComment = combinator.namedChildren.find(
+              (child) =>
+                (child.type === "comment" || child.type === "documentation_comment") &&
+                child.startPosition.row === openBrace.endPosition.row,
+            );
+            if (
+              openingComment &&
+              source.slice(openBrace.endIndex, openingComment.startIndex) !== " "
+            ) {
+              const row = openingComment.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: openBrace.endPosition.column + 1,
+                length: Math.max(1, openingComment.startIndex - openBrace.endIndex),
+                rule: "format/block-combinator-opening-comment-spacing",
+                message: "expected one space before the block-opening comment",
                 sourceLine: lines[row] ?? "",
               });
             }
