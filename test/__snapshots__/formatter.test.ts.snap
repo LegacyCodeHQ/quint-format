@@ -1457,7 +1457,7 @@ exports[`formatter preserves a line break after a binary operator 1`] = `
 "module Example {
   pure val answer =
     true and
-    false
+      false
 }
 "
 `;

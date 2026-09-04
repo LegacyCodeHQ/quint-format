@@ -1490,18 +1490,25 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const comments = inlineComments.flatMap((comment) => [text(" "), commentDocument(comment)]);
     const hasSourceRightBreak =
       right.startPosition.row > operator.endPosition.row &&
-      right.startPosition.column === left.startPosition.column &&
+      (right.startPosition.column === left.startPosition.column ||
+        right.startPosition.column === left.startPosition.column + 2) &&
       isIndentedDefinitionBody(node);
     return {
       document:
         rightComments.length === 0
-          ? concat([
-              leftAnalysis.document,
-              ...comments,
-              text(` ${operator.text}`),
-              hasSourceRightBreak ? hardLine : text(" "),
-              rightAnalysis.document,
-            ])
+          ? hasSourceRightBreak
+            ? concat([
+                leftAnalysis.document,
+                ...comments,
+                text(` ${operator.text}`),
+                indent(concat([hardLine, rightAnalysis.document])),
+              ])
+            : concat([
+                leftAnalysis.document,
+                ...comments,
+                text(` ${operator.text} `),
+                rightAnalysis.document,
+              ])
           : concat([
               leftAnalysis.document,
               ...comments,

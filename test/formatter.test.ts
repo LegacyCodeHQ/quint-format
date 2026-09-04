@@ -1266,7 +1266,7 @@ describe("formatter", () => {
     );
     const output = formatQuint(input);
 
-    expect(output).toBe(input);
+    expect(output).toContain("    true and\n      false");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
