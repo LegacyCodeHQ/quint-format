@@ -940,6 +940,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     );
     const isExpanded = hasComments || node.startPosition.row < node.endPosition.row;
     const lineDocuments: Doc[] = [];
+    const lineAnchors: Parser.SyntaxNode[] = [];
     if (isExpanded) {
       for (const [index, entry] of entries.entries()) {
         const isComment =
@@ -953,16 +954,37 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
           const previousDocument = lineDocuments.pop();
           if (!previousDocument) throw new Error("Unable to attach the record comment");
           lineDocuments.push(concat([previousDocument, text(" "), entry.document]));
+          lineAnchors[lineAnchors.length - 1] = entry.node;
         } else {
           lineDocuments.push(isComment ? entry.document : concat([entry.document, text(",")]));
+          lineAnchors.push(entry.node);
         }
       }
     }
+    const sourceLineGroups: Array<{
+      documents: Doc[];
+      lastAnchor: Parser.SyntaxNode;
+    }> = [];
+    for (const [index, document] of lineDocuments.entries()) {
+      const anchor = lineAnchors[index] as Parser.SyntaxNode;
+      const previousGroup = sourceLineGroups.at(-1);
+      if (previousGroup && anchor.startPosition.row === previousGroup.lastAnchor.endPosition.row) {
+        previousGroup.documents.push(document);
+        previousGroup.lastAnchor = anchor;
+      } else {
+        sourceLineGroups.push({ documents: [document], lastAnchor: anchor });
+      }
+    }
+    const groupedLineDocuments = sourceLineGroups.map(({ documents }) =>
+      group(
+        concat(documents.flatMap((document, index) => [...(index === 0 ? [] : [line]), document])),
+      ),
+    );
     return {
       document: isExpanded
         ? concat([
             text("{"),
-            indent(concat(lineDocuments.flatMap((document) => [hardLine, document]))),
+            indent(concat(groupedLineDocuments.flatMap((document) => [hardLine, document]))),
             hardLine,
             text("}"),
           ])
@@ -5710,6 +5732,22 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                   ? "format/commented-record-separator"
                   : "format/multiline-record-separator",
                 message: "expected a trailing comma after each record element",
+                sourceLine: lines[row] ?? "",
+              });
+            }
+            if (
+              comma &&
+              nextElement?.startPosition.row === comma.endPosition.row &&
+              source.slice(comma.endIndex, nextElement.startIndex) !== " "
+            ) {
+              const row = comma.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: comma.endPosition.column + 1,
+                length: Math.max(1, nextElement.startIndex - comma.endIndex),
+                rule: "format/multiline-record-separator",
+                message: "expected one space between grouped record elements",
                 sourceLine: lines[row] ?? "",
               });
             }

@@ -2073,3 +2073,13 @@ exports[`formatter indents a multiline lambda within a UFCS call 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves source-line groups in a multiline record literal 1`] = `
+"module Example {
+  pure val message = {
+    source: "alice", round: 1,
+    value: "ready", validRound: 0,
+  }
+}
+"
+`;

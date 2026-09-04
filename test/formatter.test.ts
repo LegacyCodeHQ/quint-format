@@ -398,6 +398,24 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves source-line groups in a multiline record literal", () => {
+    const input = readFileSync(
+      new URL("fixtures/grouped-record-literal.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+
+    const missingGroupSpace = input.replace('source: "alice", round', 'source: "alice",round');
+    expect(checkQuint(missingGroupSpace, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/multiline-record-separator",
+    );
+  });
+
   test("formats a record spread", () => {
     const input = "module Example {\n  val extended = {b:2 ,... {a:1}}\n}\n";
     const output = formatQuint(input);
