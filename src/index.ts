@@ -1801,7 +1801,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       inlineComments.length === 0 &&
       rightComments.length === 0 &&
       operator.startPosition.row > left.endPosition.row &&
-      isWithinConditionalCondition(node);
+      (isWithinConditionalCondition(node) || isIndentedExpressionBody(node));
     return {
       document:
         rightComments.length === 0
@@ -4250,7 +4250,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           operator.inlineComments.length === 0 &&
           operator.rightComments.length === 0 &&
           operator.node.startPosition.row > operator.left.endPosition.row &&
-          isWithinConditionalCondition(operator.node.parent ?? operator.node);
+          (isWithinConditionalCondition(operator.node.parent ?? operator.node) ||
+            isIndentedExpressionBody(operator.node.parent ?? operator.node));
         const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
           : beforeOperator === " ";

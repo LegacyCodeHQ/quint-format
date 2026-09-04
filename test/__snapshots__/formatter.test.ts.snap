@@ -1920,3 +1920,13 @@ exports[`formatter preserves a leading or continuation in a conditional 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a leading implies continuation in a lambda 1`] = `
+"module Example {
+  pure val valid = Set(1, 2).forall(value =>
+    (value > 0)
+      implies (value >= 1)
+  )
+}
+"
+`;
