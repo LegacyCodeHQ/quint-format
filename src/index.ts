@@ -2439,27 +2439,54 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           firstOverride.startPosition.row > openParen.endPosition.row &&
           closeParen.startPosition.row > lastOverride.endPosition.row,
       );
-      const overrideDocuments = hasComments
-        ? node.namedChildren
-            .filter((child) => child.id !== importedModule.id && child.id !== sourceNode?.id)
-            .map((child) => {
-              if (child.type === "comment" || child.type === "documentation_comment") {
-                return commentDocument(child);
+      const overrideDocuments: Doc[] = [];
+      if (hasComments) {
+        let previousOverride: (typeof overrideAnalyses)[number] | undefined;
+        for (const child of node.namedChildren.filter(
+          (candidate) => candidate.id !== importedModule.id && candidate.id !== sourceNode?.id,
+        )) {
+          if (child.type === "comment" || child.type === "documentation_comment") {
+            const isTrailingOverrideComment =
+              previousOverride?.node.endPosition.row === child.startPosition.row;
+            if (isTrailingOverrideComment && previousOverride) {
+              const previousDocument = overrideDocuments.pop();
+              if (!previousDocument) {
+                throw new Error("Unable to attach the trailing anonymous override comment");
               }
-              const index = overrideAnalyses.findIndex((override) => override.node.id === child.id);
-              const override = overrideAnalyses[index];
-              if (!override) {
-                throw new Error(
-                  "Formatting this anonymous override content is not implemented yet",
-                );
-              }
-              return concat([
-                text(`${formatPattern(override.name)} = `),
-                override.value.document,
-                ...(index < overrideAnalyses.length - 1 ? [text(",")] : []),
-              ]);
-            })
-        : [];
+              const previousIndex = overrideAnalyses.findIndex(
+                (override) => override.node.id === previousOverride?.node.id,
+              );
+              const comma = commas[previousIndex];
+              const commentAnchor =
+                comma && comma.endIndex <= child.startIndex ? comma : previousOverride.node;
+              const commentGap = node.text.slice(
+                commentAnchor.endIndex - node.startIndex,
+                child.startIndex - node.startIndex,
+              );
+              overrideDocuments.push(
+                concat([previousDocument, text(commentGap), commentDocument(child)]),
+              );
+            } else {
+              overrideDocuments.push(commentDocument(child));
+            }
+            previousOverride = undefined;
+            continue;
+          }
+          const index = overrideAnalyses.findIndex((override) => override.node.id === child.id);
+          const override = overrideAnalyses[index];
+          if (!override) {
+            throw new Error("Formatting this anonymous override content is not implemented yet");
+          }
+          overrideDocuments.push(
+            concat([
+              text(`${formatPattern(override.name)} = `),
+              override.value.document,
+              ...(index < overrideAnalyses.length - 1 ? [text(",")] : []),
+            ]),
+          );
+          previousOverride = override;
+        }
+      }
       addDeclaration({
         node,
         keyword,
