@@ -1322,34 +1322,53 @@ function analyzeExpressionWithClosingComment(
         child.startIndex >= consequence.endIndex &&
         child.endIndex <= alternative.startIndex,
     );
+    const trailingConsequenceComments = alternativeComments.filter(
+      (comment) => comment.startPosition.row === consequence.endPosition.row,
+    );
+    const leadingAlternativeComments = alternativeComments.filter(
+      (comment) => !trailingConsequenceComments.some((trailing) => trailing.id === comment.id),
+    );
     const inlineElseComment =
-      alternativeComments.length === 1 &&
-      alternativeComments[0]?.startPosition.row === elseKeyword.endPosition.row
-        ? alternativeComments[0]
+      leadingAlternativeComments.length === 1 &&
+      leadingAlternativeComments[0]?.startPosition.row === elseKeyword.endPosition.row
+        ? leadingAlternativeComments[0]
         : undefined;
+    let consequenceCommentAnchor = consequence;
+    const trailingConsequenceDocuments = trailingConsequenceComments.flatMap((comment) => {
+      const gap = node.text.slice(
+        consequenceCommentAnchor.endIndex - node.startIndex,
+        comment.startIndex - node.startIndex,
+      );
+      consequenceCommentAnchor = comment;
+      return [text(gap), commentDocument(comment)];
+    });
+    const consequenceDocument = concat([
+      consequenceAnalysis.document,
+      ...trailingConsequenceDocuments,
+    ]);
     const expandsSourceMultilineCondition = condition.startPosition.row < condition.endPosition.row;
     const expandsConditionalChain = alternative.type === "if_expression";
     const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(node);
     const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
-    const separatesCommentedElse = alternativeComments.length > 0;
+    const separatesCommentedElse = leadingAlternativeComments.length > 0;
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
       (formatsConditionalChain ||
         expandsSourceMultilineCondition ||
         hasSourceElseBreak ||
-        alternativeComments.length > 0 ||
+        leadingAlternativeComments.length > 0 ||
         consequence.startPosition.row > closeParen.endPosition.row);
     const preservesElseLineBreak =
       consequence.type !== "block_expression" &&
-      alternativeComments.length === 0 &&
+      leadingAlternativeComments.length === 0 &&
       (formatsConditionalChain ||
         expandsSourceMultilineCondition ||
         elseKeyword.startPosition.row > consequence.endPosition.row);
     const preservesAlternativeLineBreak =
       alternative.type !== "block_expression" &&
       alternative.type !== "if_expression" &&
-      alternativeComments.length === 0 &&
+      leadingAlternativeComments.length === 0 &&
       (formatsConditionalChain ||
         expandsSourceMultilineCondition ||
         hasSourceElseBreak ||
@@ -1360,15 +1379,15 @@ function analyzeExpressionWithClosingComment(
         conditionAnalysis.document,
         ...(consequenceComments.length === 0
           ? preservesConsequenceLineBreak
-            ? [text(")"), indent(concat([hardLine, consequenceAnalysis.document]))]
-            : [text(") "), consequenceAnalysis.document]
+            ? [text(")"), indent(concat([hardLine, consequenceDocument]))]
+            : [text(") "), consequenceDocument]
           : [
               text(")"),
               indent(
                 concat([
                   ...consequenceComments.flatMap((comment) => [hardLine, commentDocument(comment)]),
                   hardLine,
-                  consequenceAnalysis.document,
+                  consequenceDocument,
                 ]),
               ),
             ]),
@@ -1385,7 +1404,7 @@ function analyzeExpressionWithClosingComment(
               commentDocument(inlineElseComment),
               indent(concat([hardLine, alternativeAnalysis.document])),
             ]
-          : alternativeComments.length === 0
+          : leadingAlternativeComments.length === 0
             ? [
                 ...(preservesElseLineBreak ? [hardLine, text("else")] : [text(" else")]),
                 ...(preservesAlternativeLineBreak
@@ -1396,7 +1415,7 @@ function analyzeExpressionWithClosingComment(
                 ...(separatesCommentedElse ? [hardLine, text("else")] : [text(" else")]),
                 indent(
                   concat([
-                    ...alternativeComments.flatMap((comment) => [
+                    ...leadingAlternativeComments.flatMap((comment) => [
                       hardLine,
                       commentDocument(comment),
                     ]),
@@ -5448,24 +5467,31 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               child.startIndex >= consequence.endIndex &&
               child.endIndex <= alternative.startIndex,
           );
+          const trailingConsequenceComments = alternativeComments.filter(
+            (comment) => comment.startPosition.row === consequence.endPosition.row,
+          );
+          const leadingAlternativeComments = alternativeComments.filter(
+            (comment) =>
+              !trailingConsequenceComments.some((trailing) => trailing.id === comment.id),
+          );
           const inlineElseComment =
-            alternativeComments.length === 1 &&
-            alternativeComments[0]?.startPosition.row === elseKeyword.endPosition.row
-              ? alternativeComments[0]
+            leadingAlternativeComments.length === 1 &&
+            leadingAlternativeComments[0]?.startPosition.row === elseKeyword.endPosition.row
+              ? leadingAlternativeComments[0]
               : undefined;
           const expandsSourceMultilineCondition =
             condition.startPosition.row < condition.endPosition.row;
           const expandsConditionalChain = alternative.type === "if_expression";
           const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(conditional);
           const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
-          const separatesCommentedElse = alternativeComments.length > 0;
+          const separatesCommentedElse = leadingAlternativeComments.length > 0;
           const preservesConsequenceLineBreak =
             consequence.type !== "block_expression" &&
             consequenceComments.length === 0 &&
             (formatsConditionalChain ||
               expandsSourceMultilineCondition ||
               hasSourceElseBreak ||
-              alternativeComments.length > 0 ||
+              leadingAlternativeComments.length > 0 ||
               consequence.startPosition.row > closeParen.endPosition.row);
           const expectedConsequenceGap = preservesConsequenceLineBreak
             ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
@@ -5488,14 +5514,14 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           }
           const preservesElseLineBreak =
             consequence.type !== "block_expression" &&
-            alternativeComments.length === 0 &&
+            leadingAlternativeComments.length === 0 &&
             (formatsConditionalChain ||
               expandsSourceMultilineCondition ||
               elseKeyword.startPosition.row > consequence.endPosition.row);
           const preservesAlternativeLineBreak =
             alternative.type !== "block_expression" &&
             alternative.type !== "if_expression" &&
-            alternativeComments.length === 0 &&
+            leadingAlternativeComments.length === 0 &&
             (formatsConditionalChain ||
               expandsSourceMultilineCondition ||
               hasSourceElseBreak ||
@@ -5513,8 +5539,26 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               source.slice(inlineElseComment.endIndex, alternative.startIndex) ===
                 `\n${" ".repeat(conditional.startPosition.column + 2)}`
             : source.slice(elseKeyword.endIndex, alternative.startIndex) === expectedAlternativeGap;
+          let trailingConsequenceAnchor = consequence;
+          for (const comment of trailingConsequenceComments) {
+            const gap = source.slice(trailingConsequenceAnchor.endIndex, comment.startIndex);
+            if (!/^[\t ]+$/.test(gap)) {
+              const row = comment.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: comment.startPosition.column + 1,
+                length: 2,
+                rule: "format/comment-spacing",
+                message: "expected spacing before a trailing consequence comment",
+                sourceLine: lines[row] ?? "",
+              });
+            }
+            trailingConsequenceAnchor = comment;
+          }
           if (
-            source.slice(consequence.endIndex, elseKeyword.startIndex) !== expectedElseGap ||
+            source.slice(trailingConsequenceAnchor.endIndex, elseKeyword.startIndex) !==
+              expectedElseGap ||
             !hasCanonicalAlternativeGap
           ) {
             const row = elseKeyword.startPosition.row;

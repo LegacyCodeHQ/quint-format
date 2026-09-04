@@ -1122,6 +1122,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a trailing comment on a conditional consequence", () => {
+    const input = readFileSync(
+      new URL("fixtures/consequence-trailing-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves an inline comment after else", () => {
     const input = readFileSync(
       new URL("fixtures/else-inline-comment.qnt", import.meta.url),

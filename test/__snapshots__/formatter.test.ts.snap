@@ -2371,3 +2371,16 @@ exports[`formatter keeps a closing-delimiter comment with the final nested recor
 }
 "
 `;
+
+exports[`formatter preserves a trailing comment on a conditional consequence 1`] = `
+"module Example {
+  const ready: bool
+
+  val result =
+    if (ready)
+      { status: 1 } // Keep this with the first branch.
+    else
+      { status: 2 }
+}
+"
+`;
