@@ -497,6 +497,10 @@ function isBlockCombinatorEntry(node: Parser.SyntaxNode): boolean {
   );
 }
 
+function isOrdinaryBlockResult(node: Parser.SyntaxNode): boolean {
+  return node.parent?.type === "block_expression";
+}
+
 function isWithinConditionalCondition(node: Parser.SyntaxNode): boolean {
   let ancestor = node.parent;
   while (ancestor) {
@@ -2227,29 +2231,38 @@ function analyzeExpressionWithClosingComment(
     const comments = inlineComments.flatMap((comment) => [text(" "), commentDocument(comment)]);
     const hasSourceRightBreak =
       right.startPosition.row > operator.endPosition.row &&
-      (right.startPosition.column === left.startPosition.column ||
-        right.startPosition.column === left.startPosition.column + 2 ||
-        right.startPosition.column === left.startPosition.column + 4) &&
-      (isIndentedExpressionBody(node) || isBlockCombinatorEntry(node));
+      (isIndentedExpressionBody(node) ||
+        isBlockCombinatorEntry(node) ||
+        isOrdinaryBlockResult(node));
     const hasSourceOperatorBreak =
       inlineComments.length === 0 &&
       rightComments.length === 0 &&
       operator.startPosition.row > left.endPosition.row &&
       (isWithinConditionalCondition(node) ||
         isIndentedExpressionBody(node) ||
-        isBlockCombinatorEntry(node));
+        isBlockCombinatorEntry(node) ||
+        isOrdinaryBlockResult(node));
     const operatorContinuationIndentation = 2;
     return {
       document:
         rightComments.length === 0
           ? hasSourceOperatorBreak
-            ? concat([
-                leftAnalysis.document,
-                indentBy(
-                  concat([hardLine, text(`${operator.text} `), rightAnalysis.document]),
-                  operatorContinuationIndentation,
-                ),
-              ])
+            ? hasSourceRightBreak
+              ? concat([
+                  leftAnalysis.document,
+                  indentBy(
+                    concat([hardLine, text(operator.text)]),
+                    operatorContinuationIndentation,
+                  ),
+                  indentBy(concat([hardLine, rightAnalysis.document]), 4),
+                ])
+              : concat([
+                  leftAnalysis.document,
+                  indentBy(
+                    concat([hardLine, text(`${operator.text} `), rightAnalysis.document]),
+                    operatorContinuationIndentation,
+                  ),
+                ])
             : hasSourceRightBreak
               ? concat([
                   leftAnalysis.document,
@@ -4814,13 +4827,15 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           operator.node.startPosition.row > operator.left.endPosition.row &&
           (isWithinConditionalCondition(operator.node.parent ?? operator.node) ||
             isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
-            isBlockCombinatorEntry(operator.node.parent ?? operator.node));
+            isBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
+            isOrdinaryBlockResult(operator.node.parent ?? operator.node));
         const preservesRightOperandBreak =
           operator.inlineComments.length === 0 &&
           operator.rightComments.length === 0 &&
           operator.right.startPosition.row > operator.node.endPosition.row &&
           (isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
-            isBlockCombinatorEntry(operator.node.parent ?? operator.node));
+            isBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
+            isOrdinaryBlockResult(operator.node.parent ?? operator.node));
         const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
           : beforeOperator === " ";
@@ -4864,7 +4879,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         }
         if (preservesRightOperandBreak) {
           const expressionLine = lines[operator.left.startPosition.row] ?? "";
-          const expectedColumn = expressionLine.search(/\S|$/) + 4;
+          const expectedColumn =
+            expressionLine.search(/\S|$/) + (preservesLeadingOperatorBreak ? 8 : 4);
           if (operator.right.startPosition.column !== expectedColumn) {
             const row = operator.right.startPosition.row;
             diagnostics.push({
@@ -4873,7 +4889,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               column: 1,
               length: Math.max(1, operator.right.startPosition.column),
               rule: "format/binary-operator-indentation",
-              message: "expected a four-space continuation indent",
+              message: preservesLeadingOperatorBreak
+                ? "expected the right operand four spaces beyond the continued operator"
+                : "expected a four-space continuation indent",
               sourceLine: lines[row] ?? "",
             });
           }

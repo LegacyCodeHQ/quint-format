@@ -2414,3 +2414,16 @@ exports[`formatter preserves a binary right-operand continuation in a block comb
 }
 "
 `;
+
+exports[`formatter preserves a three-line binary expression in an ordinary block 1`] = `
+"module Example {
+  pure val holds = Set(1, 2).forall(first => {
+    Set(1, 2).forall(second => {
+      first == second
+          implies
+              first != 0
+    })
+  })
+}
+"
+`;

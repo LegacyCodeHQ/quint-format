@@ -2199,6 +2199,27 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a three-line binary expression in an ordinary block", () => {
+    const input = readFileSync(
+      new URL("fixtures/three-line-binary-expression.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const shallowOperator = input.replace("\n          implies", "\n        implies");
+    const shallowOperand = input.replace("\n              first != 0", "\n            first != 0");
+
+    expect(output).toBe(input);
+    expect(checkQuint(shallowOperator, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/binary-operator-indentation",
+    );
+    expect(checkQuint(shallowOperand, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/binary-operator-indentation",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a binary continuation in a lambda body", () => {
     const input = readFileSync(
       new URL("fixtures/lambda-binary-continuation.qnt", import.meta.url),
