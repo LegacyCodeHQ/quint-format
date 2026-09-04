@@ -1690,6 +1690,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const closeParenthesis = [...node.children].reverse().find((child) => child.type === ")");
     const functionAnalysis = analyzeExpression(functionNode);
     const analyses = arguments_.map(analyzeExpression);
+    const allowsTrailingComma = functionNode.type !== "field_access_expression";
     const hasComments = node.namedChildren.some(
       (child) => child.type === "comment" || child.type === "documentation_comment",
     );
@@ -1723,6 +1724,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
             functionAnalysis.document,
             text("("),
             (analyses[0] as ExpressionAnalysis).document,
+            ...(allowsTrailingComma ? [text(",")] : []),
             hardLine,
             text(")"),
           ])
@@ -1857,7 +1859,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
           return [
             concat([
               analysis.document,
-              ...(argumentIndex < arguments_.length - 1 ? [text(",")] : []),
+              ...(argumentIndex < arguments_.length - 1 || allowsTrailingComma ? [text(",")] : []),
             ]),
           ];
         })
@@ -1885,7 +1887,11 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                   ]),
                 text(","),
                 indentBy(
-                  concat([hardLine, (analyses.at(-1) as ExpressionAnalysis).document]),
+                  concat([
+                    hardLine,
+                    (analyses.at(-1) as ExpressionAnalysis).document,
+                    ...(allowsTrailingComma ? [text(",")] : []),
+                  ]),
                   multilineUfcsCall ? ufcsContinuationIndentation() + 1 : 1,
                 ),
                 hardLine,
@@ -1899,6 +1905,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                     ...(index === 0 ? [] : [text(", ")]),
                     analysis.document,
                   ]),
+                  ...(allowsTrailingComma ? [text(",")] : []),
                   hardLine,
                   text(")"),
                 ])
@@ -1910,6 +1917,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                       concat([hardLine, (analyses[0] as ExpressionAnalysis).document]),
                       multilineUfcsCall ? ufcsContinuationIndentation() + 1 : 1,
                     ),
+                    ...(allowsTrailingComma ? [text(",")] : []),
                     hardLine,
                     indentBy(text(")"), multilineUfcsCall ? ufcsContinuationIndentation() : 0),
                   ])
@@ -1921,6 +1929,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                         concat(sourceArgumentDocuments),
                         multilineUfcsCall ? ufcsContinuationIndentation() + 2 : 2,
                       ),
+                      ...(allowsTrailingComma ? [text(",")] : []),
                       hardLine,
                       indentBy(text(")"), multilineUfcsCall ? ufcsContinuationIndentation() : 0),
                     ])
@@ -1953,7 +1962,14 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                         ? concat([
                             functionAnalysis.document,
                             text("("),
-                            indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
+                            indentBy(
+                              concat([
+                                hardLine,
+                                ...sourceArgumentDocuments,
+                                ...(allowsTrailingComma ? [text(",")] : []),
+                              ]),
+                              2,
+                            ),
                             hardLine,
                             text(")"),
                           ])
@@ -4848,6 +4864,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             closeParen.startPosition.row > last.endPosition.row;
           const expandedArgumentGap = `\n${" ".repeat(expandedArgumentColumn)}`;
           const expandedCloseGap = `\n${" ".repeat(expressionLineIndentation)}`;
+          const requiresTrailingComma =
+            functionNode.type !== "field_access_expression" &&
+            closeParen.startPosition.row > last.endPosition.row;
           const afterOpen = source.slice(openParen.endIndex, first.startIndex);
           if (afterOpen !== (isVerticallyExpandedCall ? expandedArgumentGap : "")) {
             const row = openParen.endPosition.row;
@@ -4865,6 +4884,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             const previous = arguments_[index];
             const next = arguments_[index + 1];
             if (!previous || !next) {
+              if (requiresTrailingComma) continue;
               const row = comma.startPosition.row;
               diagnostics.push({
                 filePath,
@@ -4905,6 +4925,18 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             }
           }
           const trailingComma = commas.find((comma) => comma.startIndex >= last.endIndex);
+          if (requiresTrailingComma && !trailingComma) {
+            const row = last.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: last.endPosition.column + 1,
+              length: 1,
+              rule: "format/missing-trailing-comma",
+              message: "expected a trailing comma in a multiline call",
+              sourceLine: lines[row] ?? "",
+            });
+          }
           const anchor = trailingComma ?? last;
           const beforeClose = source.slice(anchor.endIndex, closeParen.startIndex);
           const hasCanonicalClose = isVerticallyExpandedCall

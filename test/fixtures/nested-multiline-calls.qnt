@@ -2,15 +2,15 @@ module Example {
   pure val channelTopology = Map(
       "A" -> Map(
           "B" -> "channelToB",
-          "C" -> "channelToC"
+          "C" -> "channelToC",
       ),
       "B" -> Map(
           "A" -> "channelToA",
-          "C" -> "channelToC"
+          "C" -> "channelToC",
       ),
       "C" -> Map(
           "A" -> "channelToA",
-          "B" -> "channelToB"
-      )
+          "B" -> "channelToB",
+      ),
   )
 }

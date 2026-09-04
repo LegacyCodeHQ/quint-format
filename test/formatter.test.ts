@@ -545,7 +545,7 @@ describe("formatter", () => {
         '      "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",',
         '      "sender", "receiver",',
         '      "transfer", "channel-topology-with-a-long-name",',
-        '      "zero", "zero"',
+        '      "zero", "zero",',
         "  )",
       ].join("\n"),
     );
@@ -559,6 +559,21 @@ describe("formatter", () => {
     const output = formatQuint(input);
 
     expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("preserves a trailing comma in a fully expanded call", () => {
+    const input = readFileSync(
+      new URL("fixtures/expanded-call-trailing-comma.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const withoutTrailingComma = input.replace('      "bob" -> 2,\n', '      "bob" -> 2\n');
+
+    expect(output).toBe(input);
+    expect(checkQuint(withoutTrailingComma, "input.qnt")).toMatchSnapshot();
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
