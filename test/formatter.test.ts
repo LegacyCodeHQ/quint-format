@@ -563,6 +563,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves multiline unbraced conditional branches", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-conditional.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("    if (condition)\n      1\n    else\n      2");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves an explicit line break after else", () => {
     const input = readFileSync(
       new URL("fixtures/explicit-else-break.qnt", import.meta.url),

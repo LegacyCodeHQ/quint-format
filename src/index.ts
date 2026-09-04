@@ -924,7 +924,9 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const condition = node.childForFieldName("condition");
     const consequence = node.childForFieldName("consequence");
     const alternative = node.childForFieldName("alternative");
-    if (!condition || !consequence || !alternative) {
+    const closeParen = node.children.find((child) => child.type === ")");
+    const elseKeyword = node.children.find((child) => child.type === "else");
+    if (!condition || !consequence || !alternative || !closeParen || !elseKeyword) {
       throw new Error("Unable to locate the conditional branches");
     }
     const analyses = [condition, consequence, alternative].map(analyzeExpression);
@@ -944,17 +946,26 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startIndex >= consequence.endIndex &&
         child.endIndex <= alternative.startIndex,
     );
+    const preservesConsequenceLineBreak =
+      consequence.type !== "block_expression" &&
+      consequenceComments.length === 0 &&
+      consequence.startPosition.row > closeParen.endPosition.row;
+    const preservesElseLineBreak =
+      consequence.type !== "block_expression" &&
+      alternativeComments.length === 0 &&
+      elseKeyword.startPosition.row > consequence.endPosition.row;
     const preservesAlternativeLineBreak =
-      alternative.type === "nested_definition_expression" &&
-      alternative.startPosition.row >
-        (node.children.find((child) => child.type === "else")?.endPosition.row ??
-          alternative.startPosition.row);
+      alternative.type !== "block_expression" &&
+      alternativeComments.length === 0 &&
+      alternative.startPosition.row > elseKeyword.endPosition.row;
     return {
       document: concat([
         text("if ("),
         conditionAnalysis.document,
         ...(consequenceComments.length === 0
-          ? [text(") "), consequenceAnalysis.document]
+          ? preservesConsequenceLineBreak
+            ? [text(")"), indent(concat([hardLine, consequenceAnalysis.document]))]
+            : [text(") "), consequenceAnalysis.document]
           : [
               text(")"),
               indent(
@@ -966,9 +977,12 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
               ),
             ]),
         ...(alternativeComments.length === 0
-          ? preservesAlternativeLineBreak
-            ? [text(" else"), indent(concat([hardLine, alternativeAnalysis.document]))]
-            : [text(" else "), alternativeAnalysis.document]
+          ? [
+              ...(preservesElseLineBreak ? [hardLine, text("else")] : [text(" else")]),
+              ...(preservesAlternativeLineBreak
+                ? [indent(concat([hardLine, alternativeAnalysis.document]))]
+                : [text(" "), alternativeAnalysis.document]),
+            ]
           : [
               text(" else"),
               indent(
@@ -4108,7 +4122,28 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               sourceLine: lines[row] ?? "",
             });
           }
-          if (source.slice(closeParen.endIndex, consequence.startIndex) !== " ") {
+          const consequenceComments = conditional.namedChildren.filter(
+            (child) =>
+              (child.type === "comment" || child.type === "documentation_comment") &&
+              child.startIndex >= condition.endIndex &&
+              child.endIndex <= consequence.startIndex,
+          );
+          const alternativeComments = conditional.namedChildren.filter(
+            (child) =>
+              (child.type === "comment" || child.type === "documentation_comment") &&
+              child.startIndex >= consequence.endIndex &&
+              child.endIndex <= alternative.startIndex,
+          );
+          const preservesConsequenceLineBreak =
+            consequence.type !== "block_expression" &&
+            consequenceComments.length === 0 &&
+            consequence.startPosition.row > closeParen.endPosition.row;
+          const expectedConsequenceGap = preservesConsequenceLineBreak
+            ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
+            : " ";
+          if (
+            source.slice(closeParen.endIndex, consequence.startIndex) !== expectedConsequenceGap
+          ) {
             const row = closeParen.endPosition.row;
             diagnostics.push({
               filePath,
@@ -4116,18 +4151,28 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               column: closeParen.endPosition.column + 1,
               length: 1,
               rule: "format/conditional-branch-spacing",
-              message: "expected one space after ')'",
+              message: preservesConsequenceLineBreak
+                ? "expected a line break and two-space indentation after ')'"
+                : "expected one space after ')'",
               sourceLine: lines[row] ?? "",
             });
           }
+          const preservesElseLineBreak =
+            consequence.type !== "block_expression" &&
+            alternativeComments.length === 0 &&
+            elseKeyword.startPosition.row > consequence.endPosition.row;
           const preservesAlternativeLineBreak =
-            alternative.type === "nested_definition_expression" &&
+            alternative.type !== "block_expression" &&
+            alternativeComments.length === 0 &&
             alternative.startPosition.row > elseKeyword.endPosition.row;
+          const expectedElseGap = preservesElseLineBreak
+            ? `\n${" ".repeat(conditional.startPosition.column)}`
+            : " ";
           const expectedAlternativeGap = preservesAlternativeLineBreak
             ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
             : " ";
           if (
-            source.slice(consequence.endIndex, elseKeyword.startIndex) !== " " ||
+            source.slice(consequence.endIndex, elseKeyword.startIndex) !== expectedElseGap ||
             source.slice(elseKeyword.endIndex, alternative.startIndex) !== expectedAlternativeGap
           ) {
             const row = elseKeyword.startPosition.row;
@@ -4137,9 +4182,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               column: elseKeyword.startPosition.column + 1,
               length: 4,
               rule: "format/conditional-else-spacing",
-              message: preservesAlternativeLineBreak
-                ? "expected a line break and two-space indentation after 'else'"
-                : "expected one space around 'else'",
+              message:
+                preservesElseLineBreak || preservesAlternativeLineBreak
+                  ? "expected preserved line breaks and indentation around 'else'"
+                  : "expected one space around 'else'",
               sourceLine: lines[row] ?? "",
             });
           }

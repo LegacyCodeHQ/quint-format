@@ -1320,3 +1320,14 @@ exports[`formatter preserves a blank line before a nested definition body 1`] = 
 }
 "
 `;
+
+exports[`formatter preserves multiline unbraced conditional branches 1`] = `
+"module Example {
+  pure def choose(condition: bool): int =
+    if (condition)
+      1
+    else
+      2
+}
+"
+`;
