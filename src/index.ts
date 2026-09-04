@@ -1152,12 +1152,14 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     );
     const expandsSourceMultilineCondition = condition.startPosition.row < condition.endPosition.row;
     const expandsConditionalChain = alternative.type === "if_expression";
+    const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
     const separatesCommentedElse = alternativeComments.length > 0;
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
       (expandsConditionalChain ||
         expandsSourceMultilineCondition ||
+        hasSourceElseBreak ||
         alternativeComments.length > 0 ||
         consequence.startPosition.row > closeParen.endPosition.row);
     const preservesElseLineBreak =
@@ -1170,6 +1172,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       alternative.type !== "if_expression" &&
       alternativeComments.length === 0 &&
       (expandsSourceMultilineCondition ||
+        hasSourceElseBreak ||
         alternative.startPosition.row > elseKeyword.endPosition.row);
     return {
       document: concat([
@@ -4924,12 +4927,14 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const expandsSourceMultilineCondition =
             condition.startPosition.row < condition.endPosition.row;
           const expandsConditionalChain = alternative.type === "if_expression";
+          const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
           const separatesCommentedElse = alternativeComments.length > 0;
           const preservesConsequenceLineBreak =
             consequence.type !== "block_expression" &&
             consequenceComments.length === 0 &&
             (expandsConditionalChain ||
               expandsSourceMultilineCondition ||
+              hasSourceElseBreak ||
               alternativeComments.length > 0 ||
               consequence.startPosition.row > closeParen.endPosition.row);
           const expectedConsequenceGap = preservesConsequenceLineBreak
@@ -4961,6 +4966,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             alternative.type !== "if_expression" &&
             alternativeComments.length === 0 &&
             (expandsSourceMultilineCondition ||
+              hasSourceElseBreak ||
               alternative.startPosition.row > elseKeyword.endPosition.row);
           const expectedElseGap = preservesElseLineBreak
             ? `\n${" ".repeat(conditional.startPosition.column)}`

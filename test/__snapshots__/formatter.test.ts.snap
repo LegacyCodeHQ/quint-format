@@ -2013,3 +2013,14 @@ exports[`formatter expands the consequence when the alternative has a comment 1`
 }
 "
 `;
+
+exports[`formatter expands inline results when else starts on a new line 1`] = `
+"module Example {
+  pure def choose(flag: bool): int =
+      if (flag)
+        1
+      else
+        2
+}
+"
+`;
