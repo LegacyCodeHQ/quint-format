@@ -259,6 +259,23 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a multiline assumption with a four-space continuation", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-assumption.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const twoSpaceContinuation = input.replace("\n      Values", "\n    Values");
+
+    expect(output).toBe(input);
+    expect(checkQuint(twoSpaceContinuation, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/definition-body-indentation",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats an integer value definition", () => {
     const input = "module Example {\nval answer = 42\n}\n";
     const output = formatQuint(input);

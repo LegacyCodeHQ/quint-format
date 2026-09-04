@@ -589,6 +589,7 @@ function definitionBodyDocument(
   definition: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
   bodyDocument: Doc,
+  minimumContinuationIndentation = 1,
 ): Doc {
   const headDocument = typeof head === "string" ? text(head) : head;
   const comments = definition.namedChildren.filter(
@@ -598,12 +599,14 @@ function definitionBodyDocument(
   );
   const equals = definition.children.find((child) => child.type === "=");
   const firstContinuationNode = comments[0] ?? body;
-  const continuationIndentation =
+  const continuationIndentation = Math.max(
+    minimumContinuationIndentation,
     equals &&
-    firstContinuationNode.startPosition.row > equals.endPosition.row &&
-    firstContinuationNode.startPosition.column - definition.startPosition.column >= 4
+      firstContinuationNode.startPosition.row > equals.endPosition.row &&
+      firstContinuationNode.startPosition.column - definition.startPosition.column >= 4
       ? 2
-      : 1;
+      : 1,
+  );
   if (comments.length === 0) {
     return requiresDefinitionBodyLineBreak(body) ||
       preservesDefinitionBodyLineBreak(definition, body)
@@ -2006,7 +2009,13 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         sequenceLiterals: expression.sequenceLiterals,
         recordLiterals: expression.recordLiterals,
         callExpressions: expression.callExpressions,
-        document: concat([text(`assume ${declarationName.text} = `), expression.document]),
+        document: definitionBodyDocument(
+          `assume ${declarationName.text} =`,
+          node,
+          condition,
+          expression.document,
+          2,
+        ),
       });
       continue;
     }
@@ -4334,6 +4343,22 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             message: requiresLineBreakAfterEquals
               ? "expected a line break after '='"
               : "expected one space around '='",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+        if (
+          declaration.node.type === "assumption_declaration" &&
+          declaration.valueNode.startPosition.row > declaration.equals.endPosition.row &&
+          declaration.valueNode.startPosition.column !== declaration.node.startPosition.column + 4
+        ) {
+          const row = declaration.valueNode.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: 1,
+            length: Math.max(1, declaration.valueNode.startPosition.column),
+            rule: "format/definition-body-indentation",
+            message: "expected a four-space continuation indent",
             sourceLine: lines[row] ?? "",
           });
         }

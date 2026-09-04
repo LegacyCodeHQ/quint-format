@@ -2044,3 +2044,13 @@ exports[`formatter preserves a compact block combinator 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a multiline assumption with a four-space continuation 1`] = `
+"module Example {
+  const Values: Set[int]
+
+  assume NonEmpty =
+      Values != Set()
+}
+"
+`;
