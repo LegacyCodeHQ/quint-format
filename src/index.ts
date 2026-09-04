@@ -2230,7 +2230,7 @@ function analyzeExpressionWithClosingComment(
       (right.startPosition.column === left.startPosition.column ||
         right.startPosition.column === left.startPosition.column + 2 ||
         right.startPosition.column === left.startPosition.column + 4) &&
-      isIndentedExpressionBody(node);
+      (isIndentedExpressionBody(node) || isBlockCombinatorEntry(node));
     const hasSourceOperatorBreak =
       inlineComments.length === 0 &&
       rightComments.length === 0 &&
@@ -4819,7 +4819,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           operator.inlineComments.length === 0 &&
           operator.rightComments.length === 0 &&
           operator.right.startPosition.row > operator.node.endPosition.row &&
-          isIndentedExpressionBody(operator.node.parent ?? operator.node);
+          (isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
+            isBlockCombinatorEntry(operator.node.parent ?? operator.node));
         const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
           : beforeOperator === " ";
