@@ -426,8 +426,17 @@ function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   if (node.type !== "lambda_expression") return false;
   const arrow = node.children.find((child) => child.type === "=>");
   const body = node.childForFieldName("body");
-  const hasBraceDelimitedBody =
-    body?.type === "block_expression" || body?.type === "record_literal";
+  const hasBraceDelimitedBody = Boolean(
+    body &&
+      [
+        "block_expression",
+        "record_literal",
+        "all_expression",
+        "any_expression",
+        "and_block_expression",
+        "or_block_expression",
+      ].includes(body.type),
+  );
   return Boolean(
     arrow &&
       body &&

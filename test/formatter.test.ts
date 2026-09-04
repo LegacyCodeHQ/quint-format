@@ -719,6 +719,22 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("keeps block-combinator lambda bodies attached", () => {
+    const input = readFileSync(
+      new URL("fixtures/combinator-lambda-braces.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    for (const combinator of ["all", "any", "and", "or"]) {
+      expect(output).toContain(`exists(value => ${combinator} {`);
+    }
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment before a lambda body", () => {
     const input = readFileSync(new URL("fixtures/lambda-comment.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);
