@@ -3893,8 +3893,11 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         previousDeclaration?.node.endPosition.row === declarationStart.startPosition.row;
       const previousDeclarationEnd =
         previousDeclaration?.trailingComments?.at(-1) ?? previousDeclaration?.node;
+      const groupsCommentedImports = Boolean(
+        previousDeclaration?.keyword.text === "import" && declaration.keyword.text === "import",
+      );
       const requiresCommentedDeclarationSeparation = Boolean(
-        previousDeclaration && declaration.leadingComments?.length,
+        previousDeclaration && declaration.leadingComments?.length && !groupsCommentedImports,
       );
 
       if (
@@ -6125,7 +6128,11 @@ function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
     if (!previous) return [hardLine, declaration.document];
     const previousEnd = previous.trailingComments?.at(-1) ?? previous.node;
     const declarationStart = declaration.leadingComments?.[0] ?? declaration.node;
-    const separatesCommentedDeclaration = Boolean(declaration.leadingComments?.length);
+    const groupsCommentedImports =
+      previous.keyword.text === "import" && declaration.keyword.text === "import";
+    const separatesCommentedDeclaration = Boolean(
+      declaration.leadingComments?.length && !groupsCommentedImports,
+    );
     const lineBreaks = separatesCommentedDeclaration
       ? 2
       : Math.max(1, declarationStart.startPosition.row - previousEnd.endPosition.row);

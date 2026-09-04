@@ -1592,6 +1592,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("keeps individually commented imports in one group", () => {
+    const input = readFileSync(
+      new URL("fixtures/commented-import-group.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats module instances and overrides", () => {
     const input = readFileSync(new URL("fixtures/module-instance.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

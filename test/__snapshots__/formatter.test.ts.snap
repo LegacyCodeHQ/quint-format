@@ -2288,3 +2288,21 @@ exports[`formatter formats a nested conditional as an else-if chain 2`] = `
 }
 "
 `;
+
+exports[`formatter keeps individually commented imports in one group 1`] = `
+"module basics {
+  pure val one = 1
+}
+
+module extras {
+  pure val two = 2
+}
+
+module Example {
+  // Import the basic definitions.
+  import basics.*
+  // Import the extra definitions.
+  import extras.*
+}
+"
+`;
