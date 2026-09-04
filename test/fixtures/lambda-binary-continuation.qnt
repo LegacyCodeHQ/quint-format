@@ -4,6 +4,6 @@ module Example {
   pure val valid =
     chains.forall(chain =>
       chain != "b" implies
-        chain == "a"
+          chain == "a"
     )
 }

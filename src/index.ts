@@ -1799,7 +1799,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const hasSourceRightBreak =
       right.startPosition.row > operator.endPosition.row &&
       (right.startPosition.column === left.startPosition.column ||
-        right.startPosition.column === left.startPosition.column + 2) &&
+        right.startPosition.column === left.startPosition.column + 2 ||
+        right.startPosition.column === left.startPosition.column + 4) &&
       isIndentedExpressionBody(node);
     const hasSourceOperatorBreak =
       inlineComments.length === 0 &&
@@ -1823,7 +1824,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                   leftAnalysis.document,
                   ...comments,
                   text(` ${operator.text}`),
-                  indent(concat([hardLine, rightAnalysis.document])),
+                  indentBy(concat([hardLine, rightAnalysis.document]), 2),
                 ])
               : concat([
                   leftAnalysis.document,
@@ -4341,12 +4342,20 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           operator.node.startPosition.row > operator.left.endPosition.row &&
           (isWithinConditionalCondition(operator.node.parent ?? operator.node) ||
             isIndentedExpressionBody(operator.node.parent ?? operator.node));
+        const preservesRightOperandBreak =
+          operator.inlineComments.length === 0 &&
+          operator.rightComments.length === 0 &&
+          operator.right.startPosition.row > operator.node.endPosition.row &&
+          isIndentedExpressionBody(operator.node.parent ?? operator.node);
         const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
           : beforeOperator === " ";
+        const hasCanonicalAfterOperator = preservesRightOperandBreak
+          ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterOperator)
+          : afterOperator === " ";
         if (
           !hasCanonicalBeforeOperator ||
-          (operator.rightComments.length === 0 && afterOperator !== " ")
+          (operator.rightComments.length === 0 && !hasCanonicalAfterOperator)
         ) {
           const row = operator.node.startPosition.row;
           diagnostics.push({
@@ -4357,7 +4366,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             rule: "format/binary-operator-spacing",
             message: preservesLeadingOperatorBreak
               ? `expected a line break before '${operator.node.text}' and one space after it`
-              : `expected one space around '${operator.node.text}'`,
+              : preservesRightOperandBreak
+                ? `expected one space before '${operator.node.text}' and a line break after it`
+                : `expected one space around '${operator.node.text}'`,
             sourceLine: lines[row] ?? "",
           });
         }
@@ -4371,6 +4382,22 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               line: row + 1,
               column: 1,
               length: Math.max(1, operator.node.startPosition.column),
+              rule: "format/binary-operator-indentation",
+              message: "expected a four-space continuation indent",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+        if (preservesRightOperandBreak) {
+          const expressionLine = lines[operator.left.startPosition.row] ?? "";
+          const expectedColumn = expressionLine.search(/\S|$/) + 4;
+          if (operator.right.startPosition.column !== expectedColumn) {
+            const row = operator.right.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: 1,
+              length: Math.max(1, operator.right.startPosition.column),
               rule: "format/binary-operator-indentation",
               message: "expected a four-space continuation indent",
               sourceLine: lines[row] ?? "",

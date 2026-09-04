@@ -1465,7 +1465,7 @@ exports[`formatter preserves a line break after a binary operator 1`] = `
 "module Example {
   pure val answer =
     true and
-      false
+        false
 }
 "
 `;
@@ -1477,7 +1477,7 @@ exports[`formatter preserves a binary continuation in a lambda body 1`] = `
   pure val valid =
     chains.forall(chain =>
       chain != "b" implies
-        chain == "a"
+          chain == "a"
     )
 }
 "
@@ -2021,6 +2021,15 @@ exports[`formatter expands inline results when else starts on a new line 1`] = `
         1
       else
         2
+}
+"
+`;
+
+exports[`formatter uses a four-space right-operand continuation 1`] = `
+"module Example {
+  pure def valid(flag: bool): bool =
+      flag implies
+          true
 }
 "
 `;

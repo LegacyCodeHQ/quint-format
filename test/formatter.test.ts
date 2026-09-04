@@ -1778,7 +1778,24 @@ describe("formatter", () => {
     );
     const output = formatQuint(input);
 
-    expect(output).toContain("    true and\n      false");
+    expect(output).toContain("    true and\n        false");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("uses a four-space right-operand continuation", () => {
+    const input = readFileSync(
+      new URL("fixtures/binary-right-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const twoSpaceContinuation = input.replace("\n          true", "\n        true");
+
+    expect(output).toBe(input);
+    expect(
+      checkQuint(twoSpaceContinuation, "input.qnt").map((diagnostic) => diagnostic.rule),
+    ).toContain("format/binary-operator-indentation");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
