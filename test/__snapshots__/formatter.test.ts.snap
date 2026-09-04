@@ -1510,3 +1510,15 @@ exports[`formatter preserves a fully expanded call 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a compact block after a nested definition 1`] = `
+"module Example {
+  pure val channelTopology = Map("A" -> "channelToA")
+
+  run simulationTest = all {
+    def show(a) = true { show(channelTopology) },
+    true,
+  }
+}
+"
+`;

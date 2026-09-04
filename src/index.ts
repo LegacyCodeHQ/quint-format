@@ -454,6 +454,26 @@ function isIndentedExpressionBody(node: Parser.SyntaxNode): boolean {
   return false;
 }
 
+function compactNestedBlockExpression(
+  definition: Parser.SyntaxNode,
+  body: Parser.SyntaxNode,
+): Parser.SyntaxNode | null {
+  if (
+    body.type !== "block_expression" ||
+    definition.endPosition.row !== body.startPosition.row ||
+    body.startPosition.row !== body.endPosition.row ||
+    body.endPosition.column > 120 ||
+    body.childrenForFieldName("binding").length > 0 ||
+    body.namedChildren.some(
+      (child) => child.type === "comment" || child.type === "documentation_comment",
+    )
+  ) {
+    return null;
+  }
+
+  return body.childForFieldName("expression");
+}
+
 function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode): boolean {
   if (node.type !== "parenthesized_expression") return false;
   const expression = node.childForFieldName("expression");
@@ -1211,6 +1231,10 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     }
     const definitionAnalysis = analyzeLocalDefinition(definition);
     const bodyAnalysis = analyzeExpression(body);
+    const compactBlockExpression = compactNestedBlockExpression(definition, body);
+    const compactBlockAnalysis = compactBlockExpression
+      ? analyzeExpression(compactBlockExpression)
+      : null;
     const comments = node.namedChildren.filter(
       (child) =>
         (child.type === "comment" || child.type === "documentation_comment") &&
@@ -1225,13 +1249,20 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       body.startPosition.row > definitionValue.endPosition.row + 1;
     const analyses = [definitionAnalysis, bodyAnalysis];
     return {
-      document: concat([
-        definitionAnalysis.document,
-        hardLine,
-        ...(preservesBodyGap ? [hardLine] : []),
-        ...comments.flatMap((comment) => [commentDocument(comment), hardLine]),
-        bodyAnalysis.document,
-      ]),
+      document: compactBlockAnalysis
+        ? concat([
+            definitionAnalysis.document,
+            text(" { "),
+            compactBlockAnalysis.document,
+            text(" }"),
+          ])
+        : concat([
+            definitionAnalysis.document,
+            hardLine,
+            ...(preservesBodyGap ? [hardLine] : []),
+            ...comments.flatMap((comment) => [commentDocument(comment), hardLine]),
+            bodyAnalysis.document,
+          ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
       sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
@@ -4580,10 +4611,19 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           }
           const contentNodes = [...bindings, expression];
           const rows = contentNodes.map((content) => content.startPosition.row);
+          const nested = block.parent;
+          const nestedDefinition =
+            nested?.type === "nested_definition_expression"
+              ? nested.childForFieldName("definition")
+              : null;
+          const isCompactNestedBlock = Boolean(
+            nestedDefinition && compactNestedBlockExpression(nestedDefinition, block),
+          );
           const hasCanonicalLines =
-            rows[0] !== openBrace.startPosition.row &&
-            rows.every((row, index) => index === 0 || row > (rows[index - 1] as number)) &&
-            closeBrace.startPosition.row > (rows.at(-1) as number);
+            isCompactNestedBlock ||
+            (rows[0] !== openBrace.startPosition.row &&
+              rows.every((row, index) => index === 0 || row > (rows[index - 1] as number)) &&
+              closeBrace.startPosition.row > (rows.at(-1) as number));
           if (!hasCanonicalLines) {
             const row = openBrace.startPosition.row;
             diagnostics.push({
@@ -4642,7 +4682,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           if (!definition || !body)
             throw new Error("Unable to locate the nested definition layout");
           checkLocalDefinition(definition, source, lines, filePath, diagnostics);
-          if (body.startPosition.row <= definition.endPosition.row) {
+          if (
+            body.startPosition.row <= definition.endPosition.row &&
+            !compactNestedBlockExpression(definition, body)
+          ) {
             const row = body.startPosition.row;
             diagnostics.push({
               filePath,
