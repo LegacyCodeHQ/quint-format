@@ -1547,3 +1547,45 @@ module Example {
 }
 "
 `;
+
+exports[`formatter expands a multiline definition header 1`] = `
+"module Example {
+  pure def transfer(
+    chainState: str,
+    denomination: str,
+    amount: int,
+    sender: str,
+    receiver: str,
+    sourcePort: str,
+    sourceChannel: str,
+    timeoutHeight: int,
+    timeoutTimestamp: int,
+  ): bool = {
+    true
+  }
+}
+"
+`;
+
+exports[`formatter expands a multiline definition header 2`] = `
+[
+  {
+    "column": 21,
+    "filePath": "multiline-definition-header.qnt",
+    "length": 15,
+    "line": 2,
+    "message": "expected the first parameter on an indented line",
+    "rule": "format/multiline-parameter-layout",
+    "sourceLine": "  pure def transfer(chainState: str, denomination: str, amount: int,",
+  },
+  {
+    "column": 62,
+    "filePath": "multiline-definition-header.qnt",
+    "length": 1,
+    "line": 4,
+    "message": "expected a trailing comma after the parameter",
+    "rule": "format/multiline-parameter-layout",
+    "sourceLine": "                    timeoutHeight: int, timeoutTimestamp: int): bool = {",
+  },
+]
+`;

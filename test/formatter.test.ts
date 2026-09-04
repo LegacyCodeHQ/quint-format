@@ -1408,6 +1408,35 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("expands a multiline definition header", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-definition-header.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      [
+        "  pure def transfer(",
+        "    chainState: str,",
+        "    denomination: str,",
+        "    amount: int,",
+        "    sender: str,",
+        "    receiver: str,",
+        "    sourcePort: str,",
+        "    sourceChannel: str,",
+        "    timeoutHeight: int,",
+        "    timeoutTimestamp: int,",
+        "  ): bool = {",
+      ].join("\n"),
+    );
+    expect(output).toMatchSnapshot();
+    const diagnostics = checkQuint(input, "multiline-definition-header.qnt");
+    expect([diagnostics[0], diagnostics.at(-1)]).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats an untyped parameter with a return type", () => {
     const input = readFileSync(
       new URL("fixtures/untyped-parameter-return.qnt", import.meta.url),

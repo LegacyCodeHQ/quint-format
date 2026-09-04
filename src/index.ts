@@ -97,6 +97,7 @@ interface ModuleDeclaration {
   closeParen?: Parser.SyntaxNode;
   parameters?: Parser.SyntaxNode[];
   parameterCommas?: Parser.SyntaxNode[];
+  expandedParameterList?: boolean;
   typeOpenBracket?: Parser.SyntaxNode;
   typeCloseBracket?: Parser.SyntaxNode;
   typeParameters?: Parser.SyntaxNode[];
@@ -587,11 +588,12 @@ function preservesDefinitionBodyLineBreak(
 }
 
 function definitionBodyDocument(
-  head: string,
+  head: string | Doc,
   definition: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
   bodyDocument: Doc,
 ): Doc {
+  const headDocument = typeof head === "string" ? text(head) : head;
   const comments = definition.namedChildren.filter(
     (child) =>
       (child.type === "comment" || child.type === "documentation_comment") &&
@@ -600,11 +602,11 @@ function definitionBodyDocument(
   if (comments.length === 0) {
     return requiresDefinitionBodyLineBreak(body) ||
       preservesDefinitionBodyLineBreak(definition, body)
-      ? concat([text(head), indent(concat([hardLine, bodyDocument]))])
-      : concat([text(`${head} `), bodyDocument]);
+      ? concat([headDocument, indent(concat([hardLine, bodyDocument]))])
+      : concat([headDocument, text(" "), bodyDocument]);
   }
   return concat([
-    text(head),
+    headDocument,
     indent(
       concat([
         ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
@@ -1856,7 +1858,8 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           ? (!openParen && !closeParen) || Boolean(openParen && closeParen)
           : Boolean(openParen) &&
             Boolean(closeParen) &&
-            parameterCommas.length === parameters.length - 1 &&
+            (parameterCommas.length === parameters.length - 1 ||
+              parameterCommas.length === parameters.length) &&
             parameterNames.every(
               (parameterName) =>
                 parameterName?.type === "identifier" || parameterName?.type === "hole",
@@ -1883,16 +1886,30 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const definitionHead = isStandaloneDefinition
         ? qualifier.text
         : `${qualifier ? `${qualifier.text} ` : ""}def`;
-      const parameterList =
-        openParen && closeParen
-          ? `(${parameterNames
-              .map((parameterName, index) => {
-                const parameterType = parameterTypes[index];
-                return `${parameterName?.text}${parameterType ? `: ${formatType(parameterType)}` : ""}`;
-              })
-              .join(", ")})`
-          : "";
+      const formattedParameters = parameterNames.map((parameterName, index) => {
+        const parameterType = parameterTypes[index];
+        return `${parameterName?.text}${parameterType ? `: ${formatType(parameterType)}` : ""}`;
+      });
+      const parameterList = openParen && closeParen ? `(${formattedParameters.join(", ")})` : "";
       const returnTypeAnnotation = returnType ? `: ${formatType(returnType)}` : "";
+      const inlineDefinitionHead = `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} =`;
+      const usesExpandedParameterList = Boolean(
+        openParen &&
+          closeParen &&
+          parameters.length > 0 &&
+          (openParen.startPosition.row < closeParen.endPosition.row ||
+            inlineDefinitionHead.length + 2 > 120),
+      );
+      const definitionHeadDocument = usesExpandedParameterList
+        ? concat([
+            text(`${definitionHead} ${declarationName.text}(`),
+            indent(
+              concat(formattedParameters.flatMap((parameter) => [hardLine, text(`${parameter},`)])),
+            ),
+            hardLine,
+            text(`)${returnTypeAnnotation} =`),
+          ])
+        : text(inlineDefinitionHead);
       addDeclaration({
         node,
         qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
@@ -1909,6 +1926,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         closeParen,
         parameters,
         parameterCommas,
+        expandedParameterList: usesExpandedParameterList,
         semicolon,
         equals,
         valueNode: body,
@@ -1917,12 +1935,7 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
         sequenceLiterals: expression.sequenceLiterals,
         recordLiterals: expression.recordLiterals,
         callExpressions: expression.callExpressions,
-        document: definitionBodyDocument(
-          `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} =`,
-          node,
-          body,
-          expression.document,
-        ),
+        document: definitionBodyDocument(definitionHeadDocument, node, body, expression.document),
       });
       continue;
     }
@@ -3826,60 +3839,120 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           });
         }
 
-        const afterOpenParen = source.slice(
-          declaration.openParen.endIndex,
-          firstParameter.startIndex,
-        );
-        if (afterOpenParen !== "") {
-          const row = declaration.openParen.endPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: declaration.openParen.endPosition.column + 1,
-            length: Math.max(1, afterOpenParen.length),
-            rule: "format/parameter-list-spacing",
-            message: "expected no space after '('",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-
-        for (const [index, comma] of (declaration.parameterCommas ?? []).entries()) {
-          const previousParameter = declaration.parameters[index];
-          const nextParameter = declaration.parameters[index + 1];
-          if (!previousParameter || !nextParameter) {
-            throw new Error("Unable to locate parameters around ','");
-          }
-          const beforeComma = source.slice(previousParameter.endIndex, comma.startIndex);
-          const afterComma = source.slice(comma.endIndex, nextParameter.startIndex);
-          if (beforeComma !== "" || afterComma !== " ") {
-            const row = comma.startPosition.row;
+        if (declaration.expandedParameterList) {
+          const parameterIndent = declaration.keyword.startPosition.column + 2;
+          const hasCanonicalBreak = (left: Parser.SyntaxNode, right: Parser.SyntaxNode) =>
+            right.startPosition.row === left.endPosition.row + 1 &&
+            right.startPosition.column === parameterIndent;
+          if (!hasCanonicalBreak(declaration.openParen, firstParameter)) {
+            const row = firstParameter.startPosition.row;
             diagnostics.push({
               filePath,
               line: row + 1,
-              column: comma.startPosition.column + 1,
-              length: 1,
-              rule: "format/parameter-separator-spacing",
-              message: "expected ', ' between parameters",
+              column: firstParameter.startPosition.column + 1,
+              length: Math.max(1, firstParameter.text.length),
+              rule: "format/multiline-parameter-layout",
+              message: "expected the first parameter on an indented line",
               sourceLine: lines[row] ?? "",
             });
           }
-        }
 
-        const beforeCloseParen = source.slice(
-          lastParameter.endIndex,
-          declaration.closeParen.startIndex,
-        );
-        if (beforeCloseParen !== "") {
-          const row = declaration.closeParen.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: lastParameter.endPosition.column + 1,
-            length: Math.max(1, beforeCloseParen.length),
-            rule: "format/parameter-list-spacing",
-            message: "expected no space before ')'",
-            sourceLine: lines[row] ?? "",
-          });
+          const commas = declaration.parameterCommas ?? [];
+          for (const [index, parameter] of declaration.parameters.entries()) {
+            const comma = commas[index];
+            const next = declaration.parameters[index + 1] ?? declaration.closeParen;
+            if (
+              !comma ||
+              comma.startIndex < parameter.endIndex ||
+              comma.endIndex > next.startIndex
+            ) {
+              const row = parameter.endPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: parameter.endPosition.column + 1,
+                length: 1,
+                rule: "format/multiline-parameter-layout",
+                message: "expected a trailing comma after the parameter",
+                sourceLine: lines[row] ?? "",
+              });
+              continue;
+            }
+            if (
+              source.slice(parameter.endIndex, comma.startIndex) !== "" ||
+              !hasCanonicalBreak(comma, next)
+            ) {
+              const row = comma.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: comma.startPosition.column + 1,
+                length: 1,
+                rule: "format/multiline-parameter-layout",
+                message:
+                  next.id === declaration.closeParen.id
+                    ? "expected the closing parenthesis on its own line"
+                    : "expected one parameter per indented line",
+                sourceLine: lines[row] ?? "",
+              });
+            }
+          }
+        } else {
+          const afterOpenParen = source.slice(
+            declaration.openParen.endIndex,
+            firstParameter.startIndex,
+          );
+          if (afterOpenParen !== "") {
+            const row = declaration.openParen.endPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: declaration.openParen.endPosition.column + 1,
+              length: Math.max(1, afterOpenParen.length),
+              rule: "format/parameter-list-spacing",
+              message: "expected no space after '('",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+
+          for (const [index, comma] of (declaration.parameterCommas ?? []).entries()) {
+            const previousParameter = declaration.parameters[index];
+            const nextParameter = declaration.parameters[index + 1];
+            if (!previousParameter || !nextParameter) {
+              throw new Error("Unable to locate parameters around ','");
+            }
+            const beforeComma = source.slice(previousParameter.endIndex, comma.startIndex);
+            const afterComma = source.slice(comma.endIndex, nextParameter.startIndex);
+            if (beforeComma !== "" || afterComma !== " ") {
+              const row = comma.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: comma.startPosition.column + 1,
+                length: 1,
+                rule: "format/parameter-separator-spacing",
+                message: "expected ', ' between parameters",
+                sourceLine: lines[row] ?? "",
+              });
+            }
+          }
+
+          const beforeCloseParen = source.slice(
+            lastParameter.endIndex,
+            declaration.closeParen.startIndex,
+          );
+          if (beforeCloseParen !== "") {
+            const row = declaration.closeParen.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: lastParameter.endPosition.column + 1,
+              length: Math.max(1, beforeCloseParen.length),
+              rule: "format/parameter-list-spacing",
+              message: "expected no space before ')'",
+              sourceLine: lines[row] ?? "",
+            });
+          }
         }
       }
 
