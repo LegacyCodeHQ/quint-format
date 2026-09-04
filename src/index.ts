@@ -1488,7 +1488,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       hasSourceClosingBreak &&
       !exceedsLineWidth;
     const isFullyExpandedCall =
-      arguments_.length >= 3 &&
+      arguments_.length >= 2 &&
       hasSourceClosingBreak &&
       arguments_.every((argument, index) => {
         const previous = index === 0 ? openParenthesis : arguments_[index - 1];
