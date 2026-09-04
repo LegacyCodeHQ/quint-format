@@ -4812,7 +4812,14 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
 function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
   const declarations = module.declarations.flatMap((declaration, index, allDeclarations) => {
-    if (index === 0) return [hardLine, declaration.document];
+    if (index === 0) {
+      const firstContent = declaration.leadingComments?.[0] ?? declaration.node;
+      const lineBreaks = Math.min(
+        2,
+        Math.max(1, firstContent.startPosition.row - module.openBrace.endPosition.row),
+      );
+      return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
+    }
     const previous = allDeclarations[index - 1];
     if (!previous) return [hardLine, declaration.document];
     const previousEnd = previous.trailingComments?.at(-1) ?? previous.node;

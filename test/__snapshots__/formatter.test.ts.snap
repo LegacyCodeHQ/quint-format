@@ -1393,3 +1393,12 @@ exports[`formatter preserves a blank line after a nested operator definition 1`]
 }
 "
 `;
+
+exports[`formatter preserves a blank line after the module opening brace 1`] = `
+"module Example {
+
+  // The first declaration's documentation.
+  pure val answer = 42
+}
+"
+`;

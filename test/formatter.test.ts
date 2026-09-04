@@ -30,6 +30,16 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a blank line after the module opening brace", () => {
+    const input = readFileSync(new URL("fixtures/module-opening-gap.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toContain("module Example {\n\n  // The first declaration's documentation.");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats excess final newlines", () => {
     const input = "module Example {\n}\n\n";
     const output = formatQuint(input);
