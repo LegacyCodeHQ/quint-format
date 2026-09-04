@@ -326,8 +326,8 @@ exports[`formatter formats a call expression 1`] = `
 exports[`formatter preserves a comment before a call argument 1`] = `
 "module Example {
   val result = Set(
-    // Preserve this call argument comment.
-    1
+      // Preserve this call argument comment.
+      1
   )
 }
 "
@@ -1423,9 +1423,9 @@ exports[`formatter preserves a blank line after the module opening brace 1`] = `
 exports[`formatter preserves argument groups in a multiline call 1`] = `
 "module Example {
   pure val pairs = Set(
-    ("BTC", "USDC"), ("BTC", "USDT"), ("ETH", "USDC"), ("ETH", "USDT"),
-    ("EVMOS", "USDC"), ("EVMOS", "WETH"), ("ETH", "WETH"), ("ATOM", "EVMOS"),
-    ("ATOM", "JUNO"), ("ATOM", "OSMO"), ("EVMOS", "JUNO"), ("EVMOS", "OSMO")
+      ("BTC", "USDC"), ("BTC", "USDT"), ("ETH", "USDC"), ("ETH", "USDT"),
+      ("EVMOS", "USDC"), ("EVMOS", "WETH"), ("ETH", "WETH"), ("ATOM", "EVMOS"),
+      ("ATOM", "JUNO"), ("ATOM", "OSMO"), ("EVMOS", "JUNO"), ("EVMOS", "OSMO")
   )
 }
 "
@@ -1434,18 +1434,18 @@ exports[`formatter preserves argument groups in a multiline call 1`] = `
 exports[`formatter preserves explicitly multiline calls nested in a multiline call 1`] = `
 "module Example {
   pure val channelTopology = Map(
-    "A" -> Map(
-      "B" -> "channelToB",
-      "C" -> "channelToC"
-    ),
-    "B" -> Map(
-      "A" -> "channelToA",
-      "C" -> "channelToC"
-    ),
-    "C" -> Map(
-      "A" -> "channelToA",
-      "B" -> "channelToB"
-    )
+      "A" -> Map(
+          "B" -> "channelToB",
+          "C" -> "channelToC"
+      ),
+      "B" -> Map(
+          "A" -> "channelToA",
+          "C" -> "channelToC"
+      ),
+      "C" -> Map(
+          "A" -> "channelToA",
+          "B" -> "channelToB"
+      )
   )
 }
 "
@@ -1506,12 +1506,12 @@ exports[`formatter preserves an explicitly expanded list literal 1`] = `
 exports[`formatter preserves a fully expanded call 1`] = `
 "module Example {
   pure val transferSequence = List(
-    ("A", "B"),
-    ("B", "C"),
-    ("C", "A"),
-    ("A", "C"),
-    ("C", "B"),
-    ("B", "A")
+      ("A", "B"),
+      ("B", "C"),
+      ("C", "A"),
+      ("A", "C"),
+      ("C", "B"),
+      ("B", "A")
   )
 }
 "
@@ -1624,10 +1624,10 @@ exports[`formatter preserves a trailing comment on an ordinary block result 1`] 
 exports[`formatter normalizes an aligned multiline call while preserving argument groups 1`] = `
 "module Example {
   pure val result = Set(
-    "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",
-    "sender", "receiver",
-    "transfer", "channel-topology-with-a-long-name",
-    "zero", "zero"
+      "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",
+      "sender", "receiver",
+      "transfer", "channel-topology-with-a-long-name",
+      "zero", "zero"
   )
 }
 "
@@ -1760,8 +1760,8 @@ exports[`formatter preserves a fully expanded two-argument call 1`] = `
 
   pure val result =
     compare(
-      { prefix: [1], suffix: [4, 5, 6] },
-      { prefix: [2, 7, 8, 9], suffix: [] }
+        { prefix: [1], suffix: [4, 5, 6] },
+        { prefix: [2, 7, 8, 9], suffix: [] }
     )
 }
 "
@@ -1980,6 +1980,19 @@ module Example {
     A = 1,  // first override
     B = 2   // second override
   ).*
+}
+"
+`;
+
+exports[`formatter uses a four-space continuation indent for expanded call arguments 1`] = `
+"module Example {
+  pure def verify(first: int, second: int): bool = true
+
+  pure def valid(state: str): bool =
+      state != "working" implies verify(
+          1,
+          2
+      )
 }
 "
 `;

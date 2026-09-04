@@ -1671,7 +1671,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         ? concat([
             functionAnalysis.document,
             text("("),
-            indent(concat(contentDocuments.flatMap((document) => [hardLine, document]))),
+            indentBy(concat(contentDocuments.flatMap((document) => [hardLine, document])), 2),
             hardLine,
             text(")"),
           ])
@@ -1731,7 +1731,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                   ? concat([
                       functionAnalysis.document,
                       text("("),
-                      indent(concat([hardLine, ...sourceArgumentDocuments])),
+                      indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
                       hardLine,
                       text(")"),
                     ])
@@ -4538,8 +4538,17 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             functionDot?.startPosition.column ?? callExpression.startPosition.column;
           const hangingArgumentGap = `\n${" ".repeat(callIndentation + 2)}`;
           const hangingCloseGap = `\n${" ".repeat(callIndentation)}`;
+          const expressionLineIndentation = (lines[callExpression.startPosition.row] ?? "").search(
+            /\S|$/,
+          );
+          const expandedArgumentColumn = expressionLineIndentation + 4;
+          const isVerticallyExpandedCall =
+            first.startPosition.row > openParen.endPosition.row &&
+            closeParen.startPosition.row > last.endPosition.row;
+          const expandedArgumentGap = `\n${" ".repeat(expandedArgumentColumn)}`;
+          const expandedCloseGap = `\n${" ".repeat(expressionLineIndentation)}`;
           const afterOpen = source.slice(openParen.endIndex, first.startIndex);
-          if (afterOpen !== "") {
+          if (afterOpen !== (isVerticallyExpandedCall ? expandedArgumentGap : "")) {
             const row = openParen.endPosition.row;
             diagnostics.push({
               filePath,
@@ -4567,8 +4576,13 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               });
               continue;
             }
+            const nextStartsOnNewLine = next.startPosition.row > previous.endPosition.row;
             const expectedNextGap =
-              isHangingMultilineLambdaCall && next.id === last.id ? hangingArgumentGap : " ";
+              isHangingMultilineLambdaCall && next.id === last.id
+                ? hangingArgumentGap
+                : isVerticallyExpandedCall && nextStartsOnNewLine
+                  ? expandedArgumentGap
+                  : " ";
             if (
               source.slice(previous.endIndex, comma.startIndex) !== "" ||
               source.slice(comma.endIndex, next.startIndex) !== expectedNextGap
@@ -4591,11 +4605,13 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const trailingComma = commas.find((comma) => comma.startIndex >= last.endIndex);
           const anchor = trailingComma ?? last;
           const beforeClose = source.slice(anchor.endIndex, closeParen.startIndex);
-          const hasCanonicalClose = isHangingMultilineLambdaCall
-            ? beforeClose === hangingCloseGap
-            : isMultilineLambdaCall
-              ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
-              : beforeClose === "";
+          const hasCanonicalClose = isVerticallyExpandedCall
+            ? beforeClose === expandedCloseGap
+            : isHangingMultilineLambdaCall
+              ? beforeClose === hangingCloseGap
+              : isMultilineLambdaCall
+                ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
+                : beforeClose === "";
           if (!hasCanonicalClose) {
             const row = closeParen.startPosition.row;
             diagnostics.push({
@@ -4607,6 +4623,27 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               message: "expected no space before ')'",
               sourceLine: lines[row] ?? "",
             });
+          }
+          if (isVerticallyExpandedCall) {
+            for (const [index, argument] of arguments_.entries()) {
+              const previous = index === 0 ? openParen : arguments_[index - 1];
+              if (
+                previous &&
+                argument.startPosition.row > previous.endPosition.row &&
+                argument.startPosition.column !== expandedArgumentColumn
+              ) {
+                const row = argument.startPosition.row;
+                diagnostics.push({
+                  filePath,
+                  line: row + 1,
+                  column: 1,
+                  length: Math.max(1, argument.startPosition.column),
+                  rule: "format/call-argument-indentation",
+                  message: "expected a four-space continuation indent",
+                  sourceLine: lines[row] ?? "",
+                });
+              }
+            }
           }
         } else {
           const inside = source.slice(openParen.endIndex, closeParen.startIndex);

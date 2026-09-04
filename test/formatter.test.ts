@@ -462,10 +462,10 @@ describe("formatter", () => {
     expect(output).toContain(
       [
         "  pure val result = Set(",
-        '    "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",',
-        '    "sender", "receiver",',
-        '    "transfer", "channel-topology-with-a-long-name",',
-        '    "zero", "zero"',
+        '      "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",',
+        '      "sender", "receiver",',
+        '      "transfer", "channel-topology-with-a-long-name",',
+        '      "zero", "zero"',
         "  )",
       ].join("\n"),
     );
@@ -492,6 +492,23 @@ describe("formatter", () => {
     const output = formatQuint(input);
 
     expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("uses a four-space continuation indent for expanded call arguments", () => {
+    const input = readFileSync(
+      new URL("fixtures/call-continuation-indent.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const twoSpaceArguments = input.replaceAll("\n          ", "\n        ");
+
+    expect(output).toBe(input);
+    expect(
+      checkQuint(twoSpaceArguments, "input.qnt").map((diagnostic) => diagnostic.rule),
+    ).toContain("format/call-argument-indentation");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
