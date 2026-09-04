@@ -611,11 +611,28 @@ function definitionBodyDocument(
       ? 2
       : 1,
   );
+  const equalsLineComment =
+    equals && comments[0]?.startPosition.row === equals.endPosition.row ? comments[0] : undefined;
   if (comments.length === 0) {
     return requiresDefinitionBodyLineBreak(body) ||
       preservesDefinitionBodyLineBreak(definition, body)
       ? concat([headDocument, indentBy(concat([hardLine, bodyDocument]), continuationIndentation)])
       : concat([headDocument, text(" "), bodyDocument]);
+  }
+  if (equalsLineComment) {
+    return concat([
+      headDocument,
+      text(" "),
+      commentDocument(equalsLineComment),
+      indentBy(
+        concat([
+          ...comments.slice(1).flatMap((comment) => [hardLine, commentDocument(comment)]),
+          hardLine,
+          bodyDocument,
+        ]),
+        continuationIndentation,
+      ),
+    ]);
   }
   return concat([
     headDocument,

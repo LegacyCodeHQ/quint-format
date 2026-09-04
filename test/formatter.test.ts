@@ -2158,6 +2158,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a trailing comment after definition equals", () => {
+    const input = readFileSync(
+      new URL("fixtures/definition-equals-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a four-space commented definition continuation", () => {
     const input = readFileSync(
       new URL("fixtures/four-space-definition-continuation.qnt", import.meta.url),
