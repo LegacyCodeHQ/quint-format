@@ -756,6 +756,23 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("aligns comments with a continued UFCS selector", () => {
+    const input = readFileSync(
+      new URL("fixtures/commented-ufcs-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const shallowContinuation = input.replaceAll("\n        ", "\n      ");
+
+    expect(output).toBe(input);
+    expect(checkQuint(shallowContinuation, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/field-access-indentation",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a unary expression", () => {
     const input = "module Example {\n  val negative = - 42\n}\n";
     const output = formatQuint(input);

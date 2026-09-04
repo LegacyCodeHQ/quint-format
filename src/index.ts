@@ -1174,9 +1174,14 @@ function analyzeExpressionWithClosingComment(
             : concat([analysis.document, text(`.${field.text}`)])
           : concat([
               analysis.document,
-              ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
-              hardLine,
-              text(`.${field.text}`),
+              indentBy(
+                concat([
+                  ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
+                  hardLine,
+                  text(`.${field.text}`),
+                ]),
+                ufcsContinuationIndentation(),
+              ),
             ]),
       binaryOperators: analysis.binaryOperators,
       unitLiterals: analysis.unitLiterals,
@@ -5282,9 +5287,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const hasCanonicalBeforeDot = isMultilineContinuation
             ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeDot)
             : beforeDot === "";
-          const hasComments = fieldAccess.namedChildren.some(
+          const comments = fieldAccess.namedChildren.filter(
             (child) => child.type === "comment" || child.type === "documentation_comment",
           );
+          const hasComments = comments.length > 0;
           if ((!hasComments && !hasCanonicalBeforeDot) || afterDot !== "") {
             const row = dot.startPosition.row;
             diagnostics.push({
@@ -5313,6 +5319,24 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               message: "expected a four-space continuation indent",
               sourceLine: lines[row] ?? "",
             });
+          }
+          if (hasComments && dot.startPosition.row > object.endPosition.row) {
+            const expectedColumn =
+              (lines[ufcsChainRoot(fieldAccess).startPosition.row]?.search(/\S|$/) ?? 0) +
+              ufcsContinuationIndentation() * 2;
+            for (const continuation of [...comments, dot]) {
+              if (continuation.startPosition.column === expectedColumn) continue;
+              const row = continuation.startPosition.row;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: 1,
+                length: Math.max(1, continuation.startPosition.column),
+                rule: "format/field-access-indentation",
+                message: "expected the chain comment and selector at a four-space continuation",
+                sourceLine: lines[row] ?? "",
+              });
+            }
           }
         }
 

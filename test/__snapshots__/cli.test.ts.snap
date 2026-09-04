@@ -896,6 +896,16 @@ test/fixtures/field-access-comment.qnt:3:16: error[format/equals-spacing]: expec
 3 | pure val answer=source
   |                ^
   |
+test/fixtures/field-access-comment.qnt:4:1: error[format/field-access-indentation]: expected the chain comment and selector at a four-space continuation
+  |
+4 | // Preserve this chain comment.
+  | ^
+  |
+test/fixtures/field-access-comment.qnt:5:1: error[format/field-access-indentation]: expected the chain comment and selector at a four-space continuation
+  |
+5 | .field
+  | ^
+  |
 "
 `;
 

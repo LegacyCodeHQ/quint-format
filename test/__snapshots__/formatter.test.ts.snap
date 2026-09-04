@@ -358,8 +358,8 @@ exports[`formatter preserves a comment before a field selector 1`] = `
 "module Example {
   pure val source = { field: 1 }
   pure val answer = source
-  // Preserve this chain comment.
-  .field
+      // Preserve this chain comment.
+      .field
 }
 "
 `;
@@ -2438,6 +2438,20 @@ exports[`formatter preserves a nested-definition right operand 1`] = `
 
         selected == 1
   }
+}
+"
+`;
+
+exports[`formatter aligns comments with a continued UFCS selector 1`] = `
+"module Example {
+  action init = true
+  action step = true
+
+  run execution =
+    init
+        // Explain the first transition.
+        // Keep this attached to the call.
+        .then(step)
 }
 "
 `;
