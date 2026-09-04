@@ -436,6 +436,7 @@ function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
         "any_expression",
         "and_block_expression",
         "or_block_expression",
+        "match_expression",
       ].includes(body.type),
   );
   return Boolean(
@@ -1481,13 +1482,16 @@ function analyzeExpressionWithClosingComment(
         (comment) => comment.id !== inlineArrowComment?.id,
       );
       const pattern = `${variant.text}${parameter ? `(${parameter.text})` : ""}`;
+      const rawArrowGap =
+        arm.text.slice(0, arrow.startIndex - arm.startIndex).match(/[\t ]*$/u)?.[0] ?? "";
+      const arrowGap = /^ +$/u.test(rawArrowGap) ? rawArrowGap : " ";
       const isMultilineBody = body.startPosition.row > arrow.endPosition.row;
       return {
         node: arm,
         body: bodyAnalysis,
         document: inlineArrowComment
           ? concat([
-              text(`| ${pattern} =>`),
+              text(`| ${pattern}${arrowGap}=>`),
               text(
                 arm.text.slice(
                   arrow.endIndex - arm.startIndex,
@@ -1509,12 +1513,12 @@ function analyzeExpressionWithClosingComment(
           : comments.length === 0
             ? isMultilineBody
               ? concat([
-                  text(`| ${pattern} =>`),
+                  text(`| ${pattern}${arrowGap}=>`),
                   indent(concat([hardLine, indent(bodyAnalysis.document)])),
                 ])
-              : concat([text(`| ${pattern} => `), indent(bodyAnalysis.document)])
+              : concat([text(`| ${pattern}${arrowGap}=> `), indent(bodyAnalysis.document)])
             : concat([
-                text(`| ${pattern} =>`),
+                text(`| ${pattern}${arrowGap}=>`),
                 indent(
                   concat([
                     ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
@@ -5747,7 +5751,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 /^(?:\r\n|\r|\n)[\t ]*$/.test(afterInlineArrowComment)
               : afterArrow === " " || /^(?:\r\n|\r|\n)[\t ]*$/.test(afterArrow);
             if (
-              source.slice(patternEnd.endIndex, arrow.startIndex) !== " " ||
+              !/^ +$/u.test(source.slice(patternEnd.endIndex, arrow.startIndex)) ||
               !hasCanonicalBodySeparation
             ) {
               const row = arrow.startPosition.row;

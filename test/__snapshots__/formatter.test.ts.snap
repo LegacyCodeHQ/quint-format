@@ -2472,3 +2472,16 @@ exports[`formatter indents a nested multiline call inside a UFCS continuation 1`
 }
 "
 `;
+
+exports[`formatter preserves an inline multiline match used as a lambda body 1`] = `
+"module InlineLambdaMatch {
+  type Message = Msg(int) | Other
+
+  pure def values(messages: Set[Message]): Set[int] =
+    messages.fold(Set(), (acc, message) => match message {
+      | Msg(value) => acc.union(Set(value))
+      | _          => acc
+    })
+}
+"
+`;
