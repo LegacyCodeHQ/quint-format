@@ -1817,3 +1817,14 @@ exports[`formatter preserves aligned trailing comments on local definitions 1`] 
 }
 "
 `;
+
+exports[`formatter preserves a four-space commented definition continuation 1`] = `
+"module Example {
+  const PERIOD: int
+
+  def withinPeriod: bool =
+      // Preserve the authored continuation depth.
+      PERIOD > 0
+}
+"
+`;

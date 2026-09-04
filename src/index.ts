@@ -581,20 +581,29 @@ function definitionBodyDocument(
       (child.type === "comment" || child.type === "documentation_comment") &&
       child.endIndex <= body.startIndex,
   );
+  const equals = definition.children.find((child) => child.type === "=");
+  const firstContinuationNode = comments[0] ?? body;
+  const continuationIndentation =
+    equals &&
+    firstContinuationNode.startPosition.row > equals.endPosition.row &&
+    firstContinuationNode.startPosition.column - definition.startPosition.column >= 4
+      ? 2
+      : 1;
   if (comments.length === 0) {
     return requiresDefinitionBodyLineBreak(body) ||
       preservesDefinitionBodyLineBreak(definition, body)
-      ? concat([headDocument, indent(concat([hardLine, bodyDocument]))])
+      ? concat([headDocument, indentBy(concat([hardLine, bodyDocument]), continuationIndentation)])
       : concat([headDocument, text(" "), bodyDocument]);
   }
   return concat([
     headDocument,
-    indent(
+    indentBy(
       concat([
         ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
         hardLine,
         bodyDocument,
       ]),
+      continuationIndentation,
     ),
   ]);
 }

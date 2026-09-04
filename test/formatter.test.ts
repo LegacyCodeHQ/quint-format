@@ -1786,6 +1786,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a four-space commented definition continuation", () => {
+    const input = readFileSync(
+      new URL("fixtures/four-space-definition-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a parameterless run", () => {
     const input = "module Example {\n  run scenario=true\n}\n";
     const output = formatQuint(input);
