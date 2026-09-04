@@ -645,6 +645,65 @@ function collectNodes(node: Parser.SyntaxNode, type: string): Parser.SyntaxNode[
   ];
 }
 
+function isAlignedLocalTrailingComment(
+  definition: Parser.SyntaxNode,
+  comment: Parser.SyntaxNode,
+): boolean {
+  let chainRoot = definition.parent;
+  if (chainRoot?.type !== "nested_definition_expression") return false;
+
+  while (
+    chainRoot.parent?.type === "nested_definition_expression" &&
+    chainRoot.parent.childForFieldName("body")?.id === chainRoot.id
+  ) {
+    chainRoot = chainRoot.parent;
+  }
+
+  const commentColumns: Array<number | undefined> = [];
+  const definitionIds: number[] = [];
+  let current: Parser.SyntaxNode | null = chainRoot;
+  while (current?.type === "nested_definition_expression") {
+    const currentDefinition = current.childForFieldName("definition");
+    if (!currentDefinition) break;
+    const value =
+      currentDefinition.childForFieldName("value") ?? currentDefinition.childForFieldName("body");
+    const trailingComment = value
+      ? currentDefinition.namedChildren.find(
+          (child) =>
+            (child.type === "comment" || child.type === "documentation_comment") &&
+            child.startIndex >= value.endIndex &&
+            child.startPosition.row === value.endPosition.row,
+        )
+      : undefined;
+    definitionIds.push(currentDefinition.id);
+    commentColumns.push(trailingComment?.startPosition.column);
+    current = current.childForFieldName("body");
+  }
+
+  const index = definitionIds.indexOf(definition.id);
+  if (index < 0 || commentColumns[index] !== comment.startPosition.column) return false;
+  return (
+    commentColumns[index - 1] === comment.startPosition.column ||
+    commentColumns[index + 1] === comment.startPosition.column
+  );
+}
+
+function localTrailingCommentDocuments(
+  definition: Parser.SyntaxNode,
+  value: Parser.SyntaxNode,
+  comments: Parser.SyntaxNode[],
+): Doc[] {
+  return comments.flatMap((comment) => {
+    const gap = isAlignedLocalTrailingComment(definition, comment)
+      ? definition.text.slice(
+          value.endIndex - definition.startIndex,
+          comment.startIndex - definition.startIndex,
+        )
+      : " ";
+    return [text(gap), commentDocument(comment)];
+  });
+}
+
 function analyzeLocalDefinition(node: Parser.SyntaxNode): ExpressionAnalysis {
   if (node.type === "value_definition") {
     const qualifier = node.childForFieldName("qualifier");
@@ -674,7 +733,7 @@ function analyzeLocalDefinition(node: Parser.SyntaxNode): ExpressionAnalysis {
           : text(
               `${qualifier ? "pure " : ""}val ${formatPattern(name)}${typeNode ? `: ${formatType(typeNode)}` : ""}`,
             ),
-        ...trailingComments.flatMap((comment) => [text(" "), commentDocument(comment)]),
+        ...(value ? localTrailingCommentDocuments(node, value, trailingComments) : []),
       ]),
       binaryOperators: valueAnalysis?.binaryOperators ?? [],
       unitLiterals: valueAnalysis?.unitLiterals ?? [],
@@ -726,7 +785,7 @@ function analyzeLocalDefinition(node: Parser.SyntaxNode): ExpressionAnalysis {
           : text(
               `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""}`,
             ),
-        ...trailingComments.flatMap((comment) => [text(" "), commentDocument(comment)]),
+        ...(body ? localTrailingCommentDocuments(node, body, trailingComments) : []),
       ]),
       binaryOperators: bodyAnalysis?.binaryOperators ?? [],
       unitLiterals: bodyAnalysis?.unitLiterals ?? [],
