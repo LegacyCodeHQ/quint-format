@@ -1401,10 +1401,18 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         closeParenthesis.startPosition.row >
           (arguments_.at(-1) as Parser.SyntaxNode).endPosition.row,
     );
+    const isFullyExpandedCall =
+      arguments_.length >= 3 &&
+      hasSourceClosingBreak &&
+      arguments_.every((argument, index) => {
+        const previous = index === 0 ? openParenthesis : arguments_[index - 1];
+        return Boolean(previous && argument.startPosition.row > previous.endPosition.row);
+      });
     const sourceMultilineCall =
       arguments_.length > 0 &&
       (exceedsLineWidth ||
         hasMultilineArgumentDocument ||
+        isFullyExpandedCall ||
         isNestedInVerticallyExpandedCall(node)) &&
       (hasSourceArgumentBreak || hasSourceClosingBreak);
     const sourceArgumentDocuments = analyses.flatMap((analysis, index) => {

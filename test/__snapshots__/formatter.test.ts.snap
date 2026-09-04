@@ -1496,3 +1496,17 @@ exports[`formatter preserves an explicitly expanded list literal 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a fully expanded call 1`] = `
+"module Example {
+  pure val transferSequence = List(
+    ("A", "B"),
+    ("B", "C"),
+    ("C", "A"),
+    ("A", "C"),
+    ("C", "B"),
+    ("B", "A")
+  )
+}
+"
+`;
