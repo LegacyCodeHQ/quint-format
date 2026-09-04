@@ -2234,3 +2234,57 @@ exports[`formatter preserves match placement after a definition equals sign 1`] 
 }
 "
 `;
+
+exports[`formatter formats a nested conditional as an else-if chain 1`] = `
+[
+  {
+    "column": 19,
+    "filePath": "input.qnt",
+    "length": 1,
+    "line": 3,
+    "message": "expected a line break and two-space indentation after ')'",
+    "rule": "format/conditional-branch-spacing",
+    "sourceLine": "    if (value < 0) "negative" else",
+  },
+  {
+    "column": 31,
+    "filePath": "input.qnt",
+    "length": 4,
+    "line": 3,
+    "message": "expected preserved line breaks and indentation around 'else'",
+    "rule": "format/conditional-else-spacing",
+    "sourceLine": "    if (value < 0) "negative" else",
+  },
+  {
+    "column": 20,
+    "filePath": "input.qnt",
+    "length": 1,
+    "line": 4,
+    "message": "expected a line break and two-space indentation after ')'",
+    "rule": "format/conditional-branch-spacing",
+    "sourceLine": "    if (value == 0) "zero" else",
+  },
+  {
+    "column": 28,
+    "filePath": "input.qnt",
+    "length": 4,
+    "line": 4,
+    "message": "expected preserved line breaks and indentation around 'else'",
+    "rule": "format/conditional-else-spacing",
+    "sourceLine": "    if (value == 0) "zero" else",
+  },
+]
+`;
+
+exports[`formatter formats a nested conditional as an else-if chain 2`] = `
+"module Example {
+  pure def classify(value: int): str =
+    if (value < 0)
+      "negative"
+    else if (value == 0)
+      "zero"
+    else
+      "positive"
+}
+"
+`;

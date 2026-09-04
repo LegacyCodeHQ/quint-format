@@ -1044,6 +1044,22 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats a nested conditional as an else-if chain", () => {
+    const input = readFileSync(
+      new URL("fixtures/trailing-else-if-chain.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      '    if (value < 0)\n      "negative"\n    else if (value == 0)\n      "zero"\n    else\n      "positive"',
+    );
+    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("expands the first result in a conditional chain", () => {
     const input = readFileSync(
       new URL("fixtures/expanded-chain-first-result.qnt", import.meta.url),

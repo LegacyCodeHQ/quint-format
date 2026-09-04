@@ -502,6 +502,13 @@ function isWithinConditionalCondition(node: Parser.SyntaxNode): boolean {
   return false;
 }
 
+function isElseIfBranch(node: Parser.SyntaxNode): boolean {
+  return Boolean(
+    node.parent?.type === "if_expression" &&
+      node.parent.childForFieldName("alternative")?.id === node.id,
+  );
+}
+
 function compactNestedBlockExpression(
   definition: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
@@ -1233,12 +1240,13 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     );
     const expandsSourceMultilineCondition = condition.startPosition.row < condition.endPosition.row;
     const expandsConditionalChain = alternative.type === "if_expression";
+    const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(node);
     const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
     const separatesCommentedElse = alternativeComments.length > 0;
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
-      (expandsConditionalChain ||
+      (formatsConditionalChain ||
         expandsSourceMultilineCondition ||
         hasSourceElseBreak ||
         alternativeComments.length > 0 ||
@@ -1246,13 +1254,15 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const preservesElseLineBreak =
       consequence.type !== "block_expression" &&
       alternativeComments.length === 0 &&
-      (expandsSourceMultilineCondition ||
+      (formatsConditionalChain ||
+        expandsSourceMultilineCondition ||
         elseKeyword.startPosition.row > consequence.endPosition.row);
     const preservesAlternativeLineBreak =
       alternative.type !== "block_expression" &&
       alternative.type !== "if_expression" &&
       alternativeComments.length === 0 &&
-      (expandsSourceMultilineCondition ||
+      (formatsConditionalChain ||
+        expandsSourceMultilineCondition ||
         hasSourceElseBreak ||
         alternative.startPosition.row > elseKeyword.endPosition.row);
     return {
@@ -5286,12 +5296,13 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const expandsSourceMultilineCondition =
             condition.startPosition.row < condition.endPosition.row;
           const expandsConditionalChain = alternative.type === "if_expression";
+          const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(conditional);
           const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
           const separatesCommentedElse = alternativeComments.length > 0;
           const preservesConsequenceLineBreak =
             consequence.type !== "block_expression" &&
             consequenceComments.length === 0 &&
-            (expandsConditionalChain ||
+            (formatsConditionalChain ||
               expandsSourceMultilineCondition ||
               hasSourceElseBreak ||
               alternativeComments.length > 0 ||
@@ -5318,13 +5329,15 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const preservesElseLineBreak =
             consequence.type !== "block_expression" &&
             alternativeComments.length === 0 &&
-            (expandsSourceMultilineCondition ||
+            (formatsConditionalChain ||
+              expandsSourceMultilineCondition ||
               elseKeyword.startPosition.row > consequence.endPosition.row);
           const preservesAlternativeLineBreak =
             alternative.type !== "block_expression" &&
             alternative.type !== "if_expression" &&
             alternativeComments.length === 0 &&
-            (expandsSourceMultilineCondition ||
+            (formatsConditionalChain ||
+              expandsSourceMultilineCondition ||
               hasSourceElseBreak ||
               alternative.startPosition.row > elseKeyword.endPosition.row);
           const expectedElseGap = preservesElseLineBreak
