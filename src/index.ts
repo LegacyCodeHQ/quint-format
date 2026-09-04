@@ -408,7 +408,7 @@ function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
     arrow &&
       body &&
       (body.startPosition.row > arrow.endPosition.row ||
-        body.endPosition.row > arrow.endPosition.row),
+        (body.type !== "block_expression" && body.endPosition.row > arrow.endPosition.row)),
   );
 }
 
@@ -1438,10 +1438,14 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     }
 
     const analysis = analyzeExpression(expression);
+    const isBlockBodiedLambda =
+      expression.type === "lambda_expression" &&
+      expression.childForFieldName("body")?.type === "block_expression";
     return {
-      document: isMultilineParenthesizedPostfixReceiver(node)
-        ? concat([text("("), analysis.document, hardLine, text(")")])
-        : concat([text("("), analysis.document, text(")")]),
+      document:
+        isMultilineParenthesizedPostfixReceiver(node) && !isBlockBodiedLambda
+          ? concat([text("("), analysis.document, hardLine, text(")")])
+          : concat([text("("), analysis.document, text(")")]),
       binaryOperators: analysis.binaryOperators,
       unitLiterals: analysis.unitLiterals,
       sequenceLiterals: analysis.sequenceLiterals,

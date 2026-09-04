@@ -556,6 +556,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("keeps a block-bodied lambda brace beside its arrow", () => {
+    const input = readFileSync(
+      new URL("fixtures/block-lambda-postfix.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "    ((x, y) => {\n      val result = x - y\n      if (result < 0) -result else result\n    }).app(lhs, rhs)",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment before a lambda body", () => {
     const input = readFileSync(new URL("fixtures/lambda-comment.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);
