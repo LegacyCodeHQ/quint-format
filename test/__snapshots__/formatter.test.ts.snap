@@ -1828,3 +1828,15 @@ exports[`formatter preserves a four-space commented definition continuation 1`] 
 }
 "
 `;
+
+exports[`formatter separates a braced definition from the next commented definition 1`] = `
+"module Example {
+  pure def ready = and {
+    true,
+  }
+
+  // Describe the following definition.
+  pure val isReady = ready
+}
+"
+`;

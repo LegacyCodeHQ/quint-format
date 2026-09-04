@@ -3508,6 +3508,30 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       const declarationStart = declaration.leadingComments?.[0] ?? declaration.node;
       const sharesLineWithPrevious =
         previousDeclaration?.node.endPosition.row === declarationStart.startPosition.row;
+      const previousDeclarationEnd =
+        previousDeclaration?.trailingComments?.at(-1) ?? previousDeclaration?.node;
+      const requiresCommentedDefinitionSeparation = Boolean(
+        previousDeclaration &&
+          declaration.leadingComments?.length &&
+          previousDeclaration.node.text.trimEnd().endsWith("}"),
+      );
+
+      if (
+        requiresCommentedDefinitionSeparation &&
+        previousDeclarationEnd &&
+        declarationStart.startPosition.row - previousDeclarationEnd.endPosition.row < 2
+      ) {
+        const row = declarationStart.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: declarationStart.startPosition.column + 1,
+          length: Math.max(1, declarationStart.text.length),
+          rule: "format/commented-definition-separation",
+          message: "expected one blank line before a leading comment block",
+          sourceLine: lines[row] ?? "",
+        });
+      }
 
       for (const comment of declaration.leadingComments ?? []) {
         if (comment.startPosition.column !== 2) {
@@ -5424,8 +5448,10 @@ function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
     if (!previous) return [hardLine, declaration.document];
     const previousEnd = previous.trailingComments?.at(-1) ?? previous.node;
     const declarationStart = declaration.leadingComments?.[0] ?? declaration.node;
+    const separatesCommentedDefinition =
+      Boolean(declaration.leadingComments?.length) && previous.node.text.trimEnd().endsWith("}");
     const lineBreaks = Math.max(
-      1,
+      separatesCommentedDefinition ? 2 : 1,
       declarationStart.startPosition.row - previousEnd.endPosition.row,
     );
     return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];

@@ -1345,6 +1345,22 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("separates a braced definition from the next commented definition", () => {
+    const input = readFileSync(
+      new URL("fixtures/commented-definition-separation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("  }\n\n  // Describe the following definition.");
+    expect(checkQuint(input, "input.qnt").map((diagnostic) => diagnostic.rule)).toContain(
+      "format/commented-definition-separation",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a blank line between grouped definitions", () => {
     const input = "module Example {\n  var first: int\n\n  var second: int\n}\n";
     const output = formatQuint(input);
