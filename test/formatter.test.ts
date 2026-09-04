@@ -806,6 +806,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("joins else with an immediate nested conditional", () => {
+    const input = readFileSync(new URL("fixtures/else-if-chain.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toContain('    else if (value == 0)\n      "zero"\n    else\n      "positive"');
+    expect(checkQuint(input, "input.qnt").map((diagnostic) => diagnostic.rule)).toContain(
+      "format/conditional-else-spacing",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("places a block-bodied conditional below a definition header", () => {
     const input = readFileSync(
       new URL("fixtures/block-if-definition.qnt", import.meta.url),

@@ -1145,6 +1145,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       elseKeyword.startPosition.row > consequence.endPosition.row;
     const preservesAlternativeLineBreak =
       alternative.type !== "block_expression" &&
+      alternative.type !== "if_expression" &&
       alternativeComments.length === 0 &&
       alternative.startPosition.row > elseKeyword.endPosition.row;
     return {
@@ -4769,6 +4770,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             elseKeyword.startPosition.row > consequence.endPosition.row;
           const preservesAlternativeLineBreak =
             alternative.type !== "block_expression" &&
+            alternative.type !== "if_expression" &&
             alternativeComments.length === 0 &&
             alternative.startPosition.row > elseKeyword.endPosition.row;
           const expectedElseGap = preservesElseLineBreak

@@ -1840,3 +1840,16 @@ exports[`formatter separates a braced definition from the next commented definit
 }
 "
 `;
+
+exports[`formatter joins else with an immediate nested conditional 1`] = `
+"module Example {
+  pure def classify(value: int): str =
+    if (value < 0)
+      "negative"
+    else if (value == 0)
+      "zero"
+    else
+      "positive"
+}
+"
+`;
