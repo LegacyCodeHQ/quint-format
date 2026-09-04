@@ -1030,12 +1030,12 @@ test/fixtures/conditional-comment.qnt:2:19: error[format/conditional-keyword-spa
 2 | pure val answer=if(true)1 else
   |                   ^
   |
-test/fixtures/conditional-comment.qnt:2:25: error[format/conditional-branch-spacing]: expected one space after ')'
+test/fixtures/conditional-comment.qnt:2:25: error[format/conditional-branch-spacing]: expected a line break and two-space indentation after ')'
   |
 2 | pure val answer=if(true)1 else
   |                         ^
   |
-test/fixtures/conditional-comment.qnt:2:27: error[format/conditional-else-spacing]: expected one space around 'else'
+test/fixtures/conditional-comment.qnt:2:27: error[format/conditional-else-spacing]: expected preserved line breaks and indentation around 'else'
   |
 2 | pure val answer=if(true)1 else
   |                           ^^^^

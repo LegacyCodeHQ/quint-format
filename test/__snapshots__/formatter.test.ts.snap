@@ -467,7 +467,9 @@ exports[`formatter places a block-bodied conditional below a definition header 1
 
 exports[`formatter preserves a comment before a conditional alternative 1`] = `
 "module Example {
-  pure val answer = if (true) 1 else
+  pure val answer = if (true)
+    1
+  else
     // Preserve this alternative comment.
     2
 }
@@ -1993,6 +1995,21 @@ exports[`formatter uses a four-space continuation indent for expanded call argum
           1,
           2
       )
+}
+"
+`;
+
+exports[`formatter expands the consequence when the alternative has a comment 1`] = `
+"module Example {
+  pure def choose(flag: bool): int = {
+    val selected =
+        if (flag)
+          1
+        else
+          // fallback result
+          2
+    selected
+  }
 }
 "
 `;

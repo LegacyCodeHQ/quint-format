@@ -1152,13 +1152,13 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     );
     const expandsSourceMultilineCondition = condition.startPosition.row < condition.endPosition.row;
     const expandsConditionalChain = alternative.type === "if_expression";
-    const separatesCommentedElse =
-      alternativeComments.length > 0 && elseKeyword.startPosition.row > consequence.endPosition.row;
+    const separatesCommentedElse = alternativeComments.length > 0;
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
       (expandsConditionalChain ||
         expandsSourceMultilineCondition ||
+        alternativeComments.length > 0 ||
         consequence.startPosition.row > closeParen.endPosition.row);
     const preservesElseLineBreak =
       consequence.type !== "block_expression" &&
@@ -4924,14 +4924,13 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const expandsSourceMultilineCondition =
             condition.startPosition.row < condition.endPosition.row;
           const expandsConditionalChain = alternative.type === "if_expression";
-          const separatesCommentedElse =
-            alternativeComments.length > 0 &&
-            elseKeyword.startPosition.row > consequence.endPosition.row;
+          const separatesCommentedElse = alternativeComments.length > 0;
           const preservesConsequenceLineBreak =
             consequence.type !== "block_expression" &&
             consequenceComments.length === 0 &&
             (expandsConditionalChain ||
               expandsSourceMultilineCondition ||
+              alternativeComments.length > 0 ||
               consequence.startPosition.row > closeParen.endPosition.row);
           const expectedConsequenceGap = preservesConsequenceLineBreak
             ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
@@ -4983,7 +4982,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               length: 4,
               rule: "format/conditional-else-spacing",
               message:
-                preservesElseLineBreak || preservesAlternativeLineBreak
+                preservesElseLineBreak || separatesCommentedElse || preservesAlternativeLineBreak
                   ? "expected preserved line breaks and indentation around 'else'"
                   : "expected one space around 'else'",
               sourceLine: lines[row] ?? "",

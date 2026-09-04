@@ -952,6 +952,24 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("expands the consequence when the alternative has a comment", () => {
+    const input = readFileSync(
+      new URL("fixtures/commented-else-expands-consequence.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "        if (flag)\n          1\n        else\n          // fallback result\n          2",
+    );
+    expect(checkQuint(input, "input.qnt").map((diagnostic) => diagnostic.rule)).toContain(
+      "format/conditional-branch-spacing",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment before a conditional consequence", () => {
     const input = readFileSync(
       new URL("fixtures/conditional-consequence-comment.qnt", import.meta.url),
