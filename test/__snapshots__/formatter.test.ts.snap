@@ -1930,3 +1930,13 @@ exports[`formatter preserves a leading implies continuation in a lambda 1`] = `
 }
 "
 `;
+
+exports[`formatter normalizes excess spacing before a documented declaration 1`] = `
+"module Example {
+  pure val first = 1
+
+  // Second documented value.
+  pure val second = 2
+}
+"
+`;

@@ -1467,6 +1467,24 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("normalizes excess spacing before a documented declaration", () => {
+    const input = readFileSync(
+      new URL("fixtures/excess-documented-gap.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "  pure val first = 1\n\n  // Second documented value.\n  pure val second = 2",
+    );
+    expect(checkQuint(input, "input.qnt").map((diagnostic) => diagnostic.rule)).toContain(
+      "format/commented-declaration-separation",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a blank line between grouped definitions", () => {
     const input = "module Example {\n  var first: int\n\n  var second: int\n}\n";
     const output = formatQuint(input);

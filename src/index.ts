@@ -3550,7 +3550,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       if (
         requiresCommentedDeclarationSeparation &&
         previousDeclarationEnd &&
-        declarationStart.startPosition.row - previousDeclarationEnd.endPosition.row < 2
+        declarationStart.startPosition.row - previousDeclarationEnd.endPosition.row !== 2
       ) {
         const row = declarationStart.startPosition.row;
         diagnostics.push({
@@ -3559,7 +3559,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           column: declarationStart.startPosition.column + 1,
           length: Math.max(1, declarationStart.text.length),
           rule: "format/commented-declaration-separation",
-          message: "expected one blank line before a leading comment block",
+          message: "expected exactly one blank line before a leading comment block",
           sourceLine: lines[row] ?? "",
         });
       }
@@ -5504,10 +5504,9 @@ function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
     const previousEnd = previous.trailingComments?.at(-1) ?? previous.node;
     const declarationStart = declaration.leadingComments?.[0] ?? declaration.node;
     const separatesCommentedDeclaration = Boolean(declaration.leadingComments?.length);
-    const lineBreaks = Math.max(
-      separatesCommentedDeclaration ? 2 : 1,
-      declarationStart.startPosition.row - previousEnd.endPosition.row,
-    );
+    const lineBreaks = separatesCommentedDeclaration
+      ? 2
+      : Math.max(1, declarationStart.startPosition.row - previousEnd.endPosition.row);
     return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
   });
   const danglingComments = module.danglingComments.flatMap((comment, index, allComments) => {
