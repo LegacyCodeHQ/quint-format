@@ -2387,15 +2387,31 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
 
     if (node.type === "comment" && node.text.startsWith("//")) {
       const previousDeclaration = declarations.at(-1);
+      const previousTrailingComment = previousDeclaration?.trailingComments?.at(-1);
+      const continuesTrailingComment = Boolean(
+        previousTrailingComment &&
+          node.startPosition.row === previousTrailingComment.endPosition.row + 1 &&
+          node.startPosition.column === previousTrailingComment.startPosition.column,
+      );
       if (
         previousDeclaration &&
         pendingComments.length === 0 &&
-        node.startPosition.row === previousDeclaration.node.endPosition.row
+        (node.startPosition.row === previousDeclaration.node.endPosition.row ||
+          continuesTrailingComment)
       ) {
         previousDeclaration.trailingComments = [
           ...(previousDeclaration.trailingComments ?? []),
           node,
         ];
+        if (continuesTrailingComment) {
+          previousDeclaration.document = concat([
+            previousDeclaration.document,
+            hardLine,
+            text(" ".repeat(Math.max(0, node.startPosition.column - 2))),
+            commentDocument(node),
+          ]);
+          continue;
+        }
         const sourceCommentGap = moduleNode.text.slice(
           previousDeclaration.node.endIndex - moduleNode.startIndex,
           node.startIndex - moduleNode.startIndex,
@@ -3087,6 +3103,11 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
     if (!declarationName || !declarationType || !keyword || !colon) {
       throw new Error("Unable to locate the variable declaration fields");
     }
+    const sourceTypeGap = node.text.slice(
+      colon.endIndex - node.startIndex,
+      declarationType.startIndex - node.startIndex,
+    );
+    const typeGap = /^ +$/u.test(sourceTypeGap) ? sourceTypeGap : " ";
 
     addDeclaration({
       node,
@@ -3095,7 +3116,9 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       colon,
       typeNode: declarationType,
       typeRoots: [declarationType],
-      document: text(`${keywordType} ${declarationName.text}: ${formatType(declarationType)}`),
+      document: text(
+        `${keywordType} ${declarationName.text}:${typeGap}${formatType(declarationType)}`,
+      ),
     });
   }
 
@@ -4152,7 +4175,15 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         }
       }
 
-      for (const comment of declaration.trailingComments ?? []) {
+      for (const [commentIndex, comment] of (declaration.trailingComments ?? []).entries()) {
+        const previousTrailingComment = declaration.trailingComments?.[commentIndex - 1];
+        if (
+          previousTrailingComment &&
+          comment.startPosition.row === previousTrailingComment.endPosition.row + 1 &&
+          comment.startPosition.column === previousTrailingComment.startPosition.column
+        ) {
+          continue;
+        }
         const commentGap = source.slice(declaration.node.endIndex, comment.startIndex);
         const preservesAlignment =
           declaration.valueNode?.type === "sum_type" ||
@@ -4559,7 +4590,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         }
 
         const typeGap = source.slice(declaration.colon.endIndex, declaration.typeNode.startIndex);
-        if (typeGap !== " ") {
+        const preservesDeclarationAlignment =
+          (declaration.keyword.type === "var" || declaration.keyword.type === "const") &&
+          /^ +$/u.test(typeGap);
+        if (typeGap !== " " && !preservesDeclarationAlignment) {
           const row = declaration.colon.endPosition.row;
           const hasGap =
             declaration.typeNode.startPosition.column > declaration.colon.endPosition.column;
