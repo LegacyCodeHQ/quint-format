@@ -1141,6 +1141,24 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.endIndex <= body.startIndex,
     );
     const isMultilineBody = isMultilineLambdaExpression(node);
+    let continuationAnchor = node;
+    let ancestor = node.parent;
+    while (ancestor) {
+      if (
+        ancestor.startPosition.row === node.startPosition.row &&
+        ancestor.startPosition.column < continuationAnchor.startPosition.column &&
+        ancestor.type !== "module_definition" &&
+        ancestor.type !== "source_file"
+      ) {
+        continuationAnchor = ancestor;
+      }
+      ancestor = ancestor.parent;
+    }
+    const continuationIndentation =
+      body.startPosition.row > arrow.endPosition.row &&
+      body.startPosition.column - continuationAnchor.startPosition.column >= 4
+        ? 2
+        : 1;
     return {
       document:
         comments.length === 0
@@ -1148,7 +1166,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
             ? concat([
                 parameterDocument,
                 text(" =>"),
-                indent(concat([hardLine, analysis.document])),
+                indentBy(concat([hardLine, analysis.document]), continuationIndentation),
               ])
             : concat([parameterDocument, text(" => "), analysis.document])
           : concat([

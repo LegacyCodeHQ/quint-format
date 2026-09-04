@@ -2121,3 +2121,11 @@ exports[`formatter preserves local definitions in a multiline UFCS argument 1`] 
 }
 "
 `;
+
+exports[`formatter uses a four-space continuation for a multiline lambda body 1`] = `
+"module Example {
+  pure val total = Set(1).fold(0, (sum, value) =>
+      sum + value)
+}
+"
+`;

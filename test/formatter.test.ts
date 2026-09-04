@@ -710,6 +710,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("uses a four-space continuation for a multiline lambda body", () => {
+    const input = readFileSync(
+      new URL("fixtures/four-space-lambda-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a multiline call with a lambda argument", () => {
     const input = readFileSync(
       new URL("fixtures/multiline-lambda-call.qnt", import.meta.url),
