@@ -437,6 +437,20 @@ function isNestedInVerticallyExpandedCall(node: Parser.SyntaxNode): boolean {
   return false;
 }
 
+function isIndentedDefinitionBody(node: Parser.SyntaxNode): boolean {
+  let ancestor = node.parent;
+
+  while (ancestor) {
+    if (ancestor.type === "operator_definition" || ancestor.type === "value_definition") {
+      const body = ancestor.childForFieldName("body") ?? ancestor.childForFieldName("value");
+      return body?.id === node.id && node.startPosition.column > ancestor.startPosition.column;
+    }
+    ancestor = ancestor.parent;
+  }
+
+  return false;
+}
+
 function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode): boolean {
   if (node.type !== "parenthesized_expression") return false;
   const expression = node.childForFieldName("expression");
@@ -1474,13 +1488,18 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const leftAnalysis = analyzeExpression(left);
     const rightAnalysis = analyzeExpression(right);
     const comments = inlineComments.flatMap((comment) => [text(" "), commentDocument(comment)]);
+    const hasSourceRightBreak =
+      right.startPosition.row > operator.endPosition.row &&
+      right.startPosition.column === left.startPosition.column &&
+      isIndentedDefinitionBody(node);
     return {
       document:
         rightComments.length === 0
           ? concat([
               leftAnalysis.document,
               ...comments,
-              text(` ${operator.text} `),
+              text(` ${operator.text}`),
+              hasSourceRightBreak ? hardLine : text(" "),
               rightAnalysis.document,
             ])
           : concat([
