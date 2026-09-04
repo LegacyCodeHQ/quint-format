@@ -418,15 +418,8 @@ function leadingCommentsDocument(
   );
 }
 
-function isBlockBodiedIfExpression(node: Parser.SyntaxNode): boolean {
-  if (node.type !== "if_expression") return false;
-  const consequence = node.childForFieldName("consequence");
-  const alternative = node.childForFieldName("alternative");
-  return consequence?.type === "block_expression" || alternative?.type === "block_expression";
-}
-
 function requiresDefinitionBodyLineBreak(node: Parser.SyntaxNode): boolean {
-  return isBlockBodiedIfExpression(node) || node.type === "match_expression";
+  return node.type === "match_expression";
 }
 
 function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {

@@ -698,6 +698,16 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a block-bodied conditional beside a definition header", () => {
+    const input = readFileSync(new URL("fixtures/same-line-block-if.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment before a conditional alternative", () => {
     const input = readFileSync(
       new URL("fixtures/conditional-comment.qnt", import.meta.url),
