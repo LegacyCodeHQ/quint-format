@@ -529,6 +529,13 @@ function compactNestedBlockExpression(
   return body.childForFieldName("expression");
 }
 
+function isCompactNondetSequence(definition: Parser.SyntaxNode, body: Parser.SyntaxNode): boolean {
+  return (
+    definition.childForFieldName("qualifier")?.type === "nondet" &&
+    definition.endPosition.row === body.startPosition.row
+  );
+}
+
 function compactLambdaBlockExpression(
   lambda: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
@@ -1448,6 +1455,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       comments.length === 0 &&
       definitionValue !== null &&
       body.startPosition.row > definitionValue.endPosition.row + 1;
+    const preservesCompactNondetSequence = isCompactNondetSequence(definition, body);
+    const semicolon = definition.children.find((child) => child.type === ";");
     const analyses = [definitionAnalysis, bodyAnalysis];
     return {
       document: compactBlockAnalysis
@@ -1457,13 +1466,19 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
             compactBlockAnalysis.document,
             text(" }"),
           ])
-        : concat([
-            definitionAnalysis.document,
-            hardLine,
-            ...(preservesBodyGap || preservesLeadingCommentGap ? [hardLine] : []),
-            ...comments.flatMap((comment) => [commentDocument(comment), hardLine]),
-            bodyAnalysis.document,
-          ]),
+        : preservesCompactNondetSequence
+          ? concat([
+              definitionAnalysis.document,
+              text(semicolon ? "; " : " "),
+              bodyAnalysis.document,
+            ])
+          : concat([
+              definitionAnalysis.document,
+              hardLine,
+              ...(preservesBodyGap || preservesLeadingCommentGap ? [hardLine] : []),
+              ...comments.flatMap((comment) => [commentDocument(comment), hardLine]),
+              bodyAnalysis.document,
+            ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
       sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
@@ -3719,7 +3734,11 @@ function checkLocalDefinition(
   }
 
   const semicolon = node.children.find((child) => child.type === ";");
-  if (semicolon) {
+  const nestedBody =
+    node.parent?.type === "nested_definition_expression"
+      ? node.parent.childForFieldName("body")
+      : null;
+  if (semicolon && !(nestedBody && isCompactNondetSequence(node, nestedBody))) {
     const row = semicolon.startPosition.row;
     diagnostics.push({
       filePath,
@@ -5647,9 +5666,25 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           if (!definition || !body)
             throw new Error("Unable to locate the nested definition layout");
           checkLocalDefinition(definition, source, lines, filePath, diagnostics);
-          if (
+          const preservesCompactNondetSequence = isCompactNondetSequence(definition, body);
+          const hasCanonicalCompactGap =
+            preservesCompactNondetSequence &&
+            source.slice(definition.endIndex, body.startIndex) === " ";
+          if (preservesCompactNondetSequence && !hasCanonicalCompactGap) {
+            const row = body.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: body.startPosition.column + 1,
+              length: Math.max(1, body.text.length),
+              rule: "format/nested-definition-layout",
+              message: "expected one space after the compact nondet definition",
+              sourceLine: lines[row] ?? "",
+            });
+          } else if (
             body.startPosition.row <= definition.endPosition.row &&
-            !compactNestedBlockExpression(definition, body)
+            !compactNestedBlockExpression(definition, body) &&
+            !preservesCompactNondetSequence
           ) {
             const row = body.startPosition.row;
             diagnostics.push({

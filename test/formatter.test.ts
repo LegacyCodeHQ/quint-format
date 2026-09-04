@@ -1457,6 +1457,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves compact nondet sequences with semicolons", () => {
+    const input = readFileSync(
+      new URL("fixtures/inline-nondet-sequence.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a compact block after a nested definition", () => {
     const input = readFileSync(
       new URL("fixtures/compact-nested-block.qnt", import.meta.url),
