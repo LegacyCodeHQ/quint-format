@@ -892,6 +892,13 @@ function analyzeLocalDefinition(node: Parser.SyntaxNode): ExpressionAnalysis {
 }
 
 function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
+  return analyzeExpressionWithClosingComment(node);
+}
+
+function analyzeExpressionWithClosingComment(
+  node: Parser.SyntaxNode,
+  trailingClosingComment?: Parser.SyntaxNode,
+): ExpressionAnalysis {
   if (
     node.type === "integer_literal" ||
     node.type === "boolean_literal" ||
@@ -974,32 +981,70 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
   }
 
   if (node.type === "record_literal") {
-    const entries = node.namedChildren.map((element) => {
+    const directElements = node.namedChildren.filter(
+      (child) => child.type === "record_literal_field" || child.type === "record_spread",
+    );
+    const reattachedComments = new Map<number, Parser.SyntaxNode>();
+    const reattachedCommentIds = new Set<number>();
+    for (const comment of node.namedChildren.filter(
+      (child) => child.type === "comment" || child.type === "documentation_comment",
+    )) {
+      const previousElement = [...directElements]
+        .reverse()
+        .find((element) => element.endIndex <= comment.startIndex);
+      const value = previousElement?.childForFieldName("value");
+      const nestedElements = value?.namedChildren.filter(
+        (child) => child.type === "record_literal_field" || child.type === "record_spread",
+      );
+      const lastNestedElement = nestedElements?.at(-1);
+      if (
+        previousElement &&
+        value?.type === "record_literal" &&
+        lastNestedElement?.endPosition.row === comment.startPosition.row &&
+        value.endPosition.row === comment.startPosition.row
+      ) {
+        reattachedComments.set(previousElement.id, comment);
+        reattachedCommentIds.add(comment.id);
+      }
+    }
+    const entries: Array<{
+      node: Parser.SyntaxNode;
+      document: Doc;
+      analysis?: ExpressionAnalysis;
+    }> = node.namedChildren.flatMap((element) => {
+      if (reattachedCommentIds.has(element.id)) return [];
       if (element.type === "comment" || element.type === "documentation_comment") {
-        return { node: element, document: commentDocument(element) };
+        return [{ node: element, document: commentDocument(element) }];
       }
       const value = element.childForFieldName("value");
       if (!value) {
         throw new Error("Unable to locate a record literal element value");
       }
-      const analysis = analyzeExpression(value);
+      const analysis = analyzeExpressionWithClosingComment(
+        value,
+        reattachedComments.get(element.id),
+      );
       if (element.type === "record_spread") {
-        return { node: element, document: concat([text("..."), analysis.document]), analysis };
+        return [{ node: element, document: concat([text("..."), analysis.document]), analysis }];
       }
       const name = element.childForFieldName("name");
       if (element.type !== "record_literal_field" || !name) {
         throw new Error("Formatting this record literal element is not implemented yet");
       }
-      return {
-        node: element,
-        document: concat([text(`${name.text}: `), analysis.document]),
-        analysis,
-      };
+      return [
+        {
+          node: element,
+          document: concat([text(`${name.text}: `), analysis.document]),
+          analysis,
+        },
+      ];
     });
     const analyses = entries.flatMap((entry) => (entry.analysis ? [entry.analysis] : []));
-    const hasComments = entries.some(
-      ({ node: entry }) => entry.type === "comment" || entry.type === "documentation_comment",
-    );
+    const hasComments =
+      Boolean(trailingClosingComment) ||
+      entries.some(
+        ({ node: entry }) => entry.type === "comment" || entry.type === "documentation_comment",
+      );
     const isExpanded = hasComments || node.startPosition.row < node.endPosition.row;
     const lineDocuments: Doc[] = [];
     const lineAnchors: Parser.SyntaxNode[] = [];
@@ -1018,8 +1063,24 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
           lineDocuments.push(concat([previousDocument, text(" "), entry.document]));
           lineAnchors[lineAnchors.length - 1] = entry.node;
         } else {
-          lineDocuments.push(isComment ? entry.document : concat([entry.document, text(",")]));
-          lineAnchors.push(entry.node);
+          const attachesClosingComment =
+            !isComment &&
+            Boolean(trailingClosingComment) &&
+            !entries.slice(index + 1).some((candidate) => candidate.analysis);
+          lineDocuments.push(
+            isComment
+              ? entry.document
+              : concat([
+                  entry.document,
+                  text(","),
+                  ...(attachesClosingComment && trailingClosingComment
+                    ? [text(" "), commentDocument(trailingClosingComment)]
+                    : []),
+                ]),
+          );
+          lineAnchors.push(
+            attachesClosingComment && trailingClosingComment ? trailingClosingComment : entry.node,
+          );
         }
       }
     }

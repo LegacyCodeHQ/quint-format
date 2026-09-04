@@ -2358,3 +2358,16 @@ exports[`formatter preserves an inline comment after else 1`] = `
 }
 "
 `;
+
+exports[`formatter keeps a closing-delimiter comment with the final nested record field 1`] = `
+"module Example {
+  val output = {
+    nested: {
+      first: 1,
+      second: 2, // Explain the second field.
+    },
+    result: 3,
+  }
+}
+"
+`;

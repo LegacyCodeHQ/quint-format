@@ -440,6 +440,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("keeps a closing-delimiter comment with the final nested record field", () => {
+    const input = readFileSync(
+      new URL("fixtures/nested-record-closing-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("second: 2, // Explain the second field.\n    },");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a tuple destructuring pattern", () => {
     const input = "module Example {\n  pure val ( first ,_ ) = (1, 2)\n}\n";
     const output = formatQuint(input);
