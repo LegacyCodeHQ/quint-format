@@ -1424,3 +1424,23 @@ exports[`formatter preserves argument groups in a multiline call 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves explicitly multiline calls nested in a multiline call 1`] = `
+"module Example {
+  pure val channelTopology = Map(
+    "A" -> Map(
+      "B" -> "channelToB",
+      "C" -> "channelToC"
+    ),
+    "B" -> Map(
+      "A" -> "channelToA",
+      "C" -> "channelToC"
+    ),
+    "C" -> Map(
+      "A" -> "channelToA",
+      "B" -> "channelToB"
+    )
+  )
+}
+"
+`;

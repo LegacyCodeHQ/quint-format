@@ -412,6 +412,31 @@ function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   );
 }
 
+function isNestedInVerticallyExpandedCall(node: Parser.SyntaxNode): boolean {
+  let ancestor = node.parent;
+
+  while (ancestor) {
+    if (ancestor.type === "call_expression") {
+      const openParenthesis = ancestor.children.find((child) => child.type === "(");
+      const arguments_ = ancestor.childrenForFieldName("argument");
+      const containsNodeAsArgument = arguments_.some(
+        (argument) => argument.startIndex <= node.startIndex && argument.endIndex >= node.endIndex,
+      );
+      if (!containsNodeAsArgument) {
+        ancestor = ancestor.parent;
+        continue;
+      }
+      return arguments_.some((argument, index) => {
+        const previous = index === 0 ? openParenthesis : arguments_[index - 1];
+        return Boolean(previous && argument.startPosition.row > previous.endPosition.row);
+      });
+    }
+    ancestor = ancestor.parent;
+  }
+
+  return false;
+}
+
 function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode): boolean {
   if (node.type !== "parenthesized_expression") return false;
   const expression = node.childForFieldName("expression");
@@ -1300,6 +1325,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       text(")"),
     ]);
     const inlineCallLines = renderDoc(inlineCallDocument).split("\n");
+    const hasMultilineArgumentDocument = inlineCallLines.length > 1;
     const exceedsLineWidth = inlineCallLines.some(
       (line, index) => line.length + (index === 0 ? node.startPosition.column : 0) > 120,
     );
@@ -1315,7 +1341,9 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     );
     const sourceMultilineCall =
       arguments_.length > 0 &&
-      exceedsLineWidth &&
+      (exceedsLineWidth ||
+        hasMultilineArgumentDocument ||
+        isNestedInVerticallyExpandedCall(node)) &&
       (hasSourceArgumentBreak || hasSourceClosingBreak);
     const sourceArgumentDocuments = analyses.flatMap((analysis, index) => {
       const argument = arguments_[index] as Parser.SyntaxNode;

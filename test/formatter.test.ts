@@ -429,6 +429,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves explicitly multiline calls nested in a multiline call", () => {
+    const input = readFileSync(
+      new URL("fixtures/nested-multiline-calls.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment before a call argument", () => {
     const input = readFileSync(
       new URL("fixtures/call-argument-comment.qnt", import.meta.url),
