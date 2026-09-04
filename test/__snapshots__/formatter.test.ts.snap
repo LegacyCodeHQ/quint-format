@@ -2195,3 +2195,27 @@ exports[`formatter preserves a trailing comma in a fully expanded call 2`] = `
 }
 "
 `;
+
+exports[`formatter removes a blank line after a block combinator opening 1`] = `
+[
+  {
+    "column": 1,
+    "filePath": "input.qnt",
+    "length": 1,
+    "line": 3,
+    "message": "expected block contents directly after the opening brace",
+    "rule": "format/block-combinator-opening-gap",
+    "sourceLine": "",
+  },
+]
+`;
+
+exports[`formatter removes a blank line after a block combinator opening 2`] = `
+"module Example {
+  action choose = any {
+    true,
+    false,
+  }
+}
+"
+`;

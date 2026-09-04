@@ -1342,6 +1342,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("removes a blank line after a block combinator opening", () => {
+    const input = readFileSync(
+      new URL("fixtures/block-combinator-opening-gap.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("action choose = any {\n    true,");
+    expect(output).not.toContain("any {\n\n");
+    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment inside a block combinator", () => {
     const input = readFileSync(new URL("fixtures/combinator-comment.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

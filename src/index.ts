@@ -1649,13 +1649,16 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     }
     const spacedContentDocuments = sourceLineGroups.flatMap((sourceLineGroup, index) => {
       const previous = index === 0 ? keyword : sourceLineGroups[index - 1]?.lastAnchor;
-      const lineBreaks = Math.min(
-        2,
-        Math.max(
-          1,
-          sourceLineGroup.firstAnchor.startPosition.row - (previous?.endPosition.row ?? 0),
-        ),
-      );
+      const lineBreaks =
+        index === 0
+          ? 1
+          : Math.min(
+              2,
+              Math.max(
+                1,
+                sourceLineGroup.firstAnchor.startPosition.row - (previous?.endPosition.row ?? 0),
+              ),
+            );
       const groupedDocument = group(
         concat(
           sourceLineGroup.documents.flatMap((document, documentIndex) => [
@@ -5718,6 +5721,26 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 (child.type === "comment" || child.type === "documentation_comment") &&
                 child.startPosition.row === openBrace.endPosition.row,
             );
+            const firstContent = combinator.namedChildren.find(
+              (child) => child.id !== openingComment?.id,
+            );
+            const openingAnchor = openingComment ?? openBrace;
+            if (
+              !preservesCompactLayout &&
+              firstContent &&
+              firstContent.startPosition.row > openingAnchor.endPosition.row + 1
+            ) {
+              const row = openingAnchor.endPosition.row + 1;
+              diagnostics.push({
+                filePath,
+                line: row + 1,
+                column: 1,
+                length: 1,
+                rule: "format/block-combinator-opening-gap",
+                message: "expected block contents directly after the opening brace",
+                sourceLine: lines[row] ?? "",
+              });
+            }
             if (
               openingComment &&
               source.slice(openBrace.endIndex, openingComment.startIndex) !== " "
