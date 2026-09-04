@@ -1461,6 +1461,12 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startIndex >= operator.endIndex &&
         child.endIndex <= right.startIndex,
     );
+    const operatorTrailingComments = rightComments.filter(
+      (comment) => comment.startPosition.row === operator.endPosition.row,
+    );
+    const rightOperandComments = rightComments.filter(
+      (comment) => comment.startPosition.row !== operator.endPosition.row,
+    );
     if (inlineComments.some((comment) => /[\r\n]/.test(comment.text))) {
       throw new Error("Formatting this inline comment syntax is not implemented yet");
     }
@@ -1481,9 +1487,16 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
               leftAnalysis.document,
               ...comments,
               text(` ${operator.text}`),
+              ...operatorTrailingComments.flatMap((comment) => [
+                text(" "),
+                commentDocument(comment),
+              ]),
               indent(
                 concat([
-                  ...rightComments.flatMap((comment) => [hardLine, commentDocument(comment)]),
+                  ...rightOperandComments.flatMap((comment) => [
+                    hardLine,
+                    commentDocument(comment),
+                  ]),
                   hardLine,
                   rightAnalysis.document,
                 ]),

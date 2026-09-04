@@ -1444,3 +1444,11 @@ exports[`formatter preserves explicitly multiline calls nested in a multiline ca
 }
 "
 `;
+
+exports[`formatter preserves a same-line comment after a binary operator 1`] = `
+"module Example {
+  pure val answer = true implies // Preserve this operator comment.
+    false
+}
+"
+`;
