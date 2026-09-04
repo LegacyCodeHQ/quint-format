@@ -1,6 +1,6 @@
 import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
-import { concat, type Doc, hardLine, indent, renderDoc, text } from "./document";
+import { concat, type Doc, group, hardLine, indent, line, renderDoc, text } from "./document";
 
 const parser = new Parser();
 parser.setLanguage(Quint);
@@ -1411,14 +1411,43 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       contentAnchors.push(child);
       previousEntry = child;
     }
-    const spacedContentDocuments = contentDocuments.flatMap((document, index) => {
-      const current = contentAnchors[index] as Parser.SyntaxNode;
-      const previous = index === 0 ? keyword : contentAnchors[index - 1];
+    const sourceLineGroups: Array<{
+      documents: Doc[];
+      firstAnchor: Parser.SyntaxNode;
+      lastAnchor: Parser.SyntaxNode;
+    }> = [];
+    for (const [index, document] of contentDocuments.entries()) {
+      const anchor = contentAnchors[index] as Parser.SyntaxNode;
+      const previousGroup = sourceLineGroups.at(-1);
+      if (previousGroup && anchor.startPosition.row === previousGroup.lastAnchor.endPosition.row) {
+        previousGroup.documents.push(document);
+        previousGroup.lastAnchor = anchor;
+      } else {
+        sourceLineGroups.push({
+          documents: [document],
+          firstAnchor: anchor,
+          lastAnchor: anchor,
+        });
+      }
+    }
+    const spacedContentDocuments = sourceLineGroups.flatMap((sourceLineGroup, index) => {
+      const previous = index === 0 ? keyword : sourceLineGroups[index - 1]?.lastAnchor;
       const lineBreaks = Math.min(
         2,
-        Math.max(1, current.startPosition.row - (previous?.endPosition.row ?? 0)),
+        Math.max(
+          1,
+          sourceLineGroup.firstAnchor.startPosition.row - (previous?.endPosition.row ?? 0),
+        ),
       );
-      return [...Array.from({ length: lineBreaks }, () => hardLine), document];
+      const groupedDocument = group(
+        concat(
+          sourceLineGroup.documents.flatMap((document, documentIndex) => [
+            ...(documentIndex === 0 ? [] : [line]),
+            document,
+          ]),
+        ),
+      );
+      return [...Array.from({ length: lineBreaks }, () => hardLine), groupedDocument];
     });
     return {
       document: concat([
@@ -4923,7 +4952,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             const rows = entries.map((entry) => entry.startPosition.row);
             const hasCanonicalLines =
               rows[0] !== openBrace.startPosition.row &&
-              rows.every((row, index) => index === 0 || row > (rows[index - 1] as number)) &&
+              rows.every((row, index) => index === 0 || row >= (rows[index - 1] as number)) &&
               closeBrace.startPosition.row > (rows.at(-1) as number);
             if (!hasCanonicalLines) {
               const row = openBrace.startPosition.row;
@@ -4937,7 +4966,21 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 sourceLine: lines[row] ?? "",
               });
             }
-            for (const [index, comma] of commas.entries()) {
+            for (const [index, entry] of entries.entries()) {
+              const comma = commas[index];
+              if (!comma) {
+                const row = entry.endPosition.row;
+                diagnostics.push({
+                  filePath,
+                  line: row + 1,
+                  column: entry.endPosition.column + 1,
+                  length: 1,
+                  rule: "format/block-combinator-separator-spacing",
+                  message: "expected a trailing comma after each block entry",
+                  sourceLine: lines[row] ?? "",
+                });
+                continue;
+              }
               const previous = entries[index];
               if (previous && source.slice(previous.endIndex, comma.startIndex) !== "") {
                 const row = comma.startPosition.row;
@@ -4948,6 +4991,23 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                   length: 1,
                   rule: "format/block-combinator-separator-spacing",
                   message: "expected no space before ','",
+                  sourceLine: lines[row] ?? "",
+                });
+              }
+              const next = entries[index + 1];
+              if (
+                next &&
+                next.startPosition.row === comma.endPosition.row &&
+                source.slice(comma.endIndex, next.startIndex) !== " "
+              ) {
+                const row = comma.startPosition.row;
+                diagnostics.push({
+                  filePath,
+                  line: row + 1,
+                  column: comma.endPosition.column + 1,
+                  length: Math.max(1, next.startIndex - comma.endIndex),
+                  rule: "format/block-combinator-separator-spacing",
+                  message: "expected one space after ',' between grouped block entries",
                   sourceLine: lines[row] ?? "",
                 });
               }

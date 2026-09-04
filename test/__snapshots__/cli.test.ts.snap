@@ -1232,6 +1232,16 @@ test/fixtures/and-block.qnt:2:29: error[format/block-combinator-separator-spacin
 2 |   pure val both = and {true ,false}
   |                             ^
   |
+test/fixtures/and-block.qnt:2:30: error[format/block-combinator-separator-spacing]: expected one space after ',' between grouped block entries
+  |
+2 |   pure val both = and {true ,false}
+  |                              ^
+  |
+test/fixtures/and-block.qnt:2:35: error[format/block-combinator-separator-spacing]: expected a trailing comma after each block entry
+  |
+2 |   pure val both = and {true ,false}
+  |                                   ^
+  |
 "
 `;
 

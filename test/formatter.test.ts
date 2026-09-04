@@ -990,6 +990,28 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves source-line groups in block combinators", () => {
+    const input = readFileSync(
+      new URL("fixtures/grouped-combinator-entries.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("    true, true, true,");
+    expect(output).toContain("    true, false, true,");
+    expect(output).toContain("    true, true, false,");
+    expect(output).toContain("    false, false, true,");
+    expect(output).toContain(
+      [
+        '    "first deliberately long value for width testing" == "first deliberately long value for width testing",',
+        '    "second deliberately long value for width testing" == "second deliberately long value for width testing",',
+      ].join("\n"),
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a block combinator below a definition header", () => {
     const input = readFileSync(
       new URL("fixtures/multiline-block-combinator-definition.qnt", import.meta.url),
