@@ -684,6 +684,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("keeps leading call arguments beside a multiline lambda", () => {
+    const input = readFileSync(
+      new URL("fixtures/hanging-lambda-call.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("propagates multiline layout through nested lambda calls", () => {
     const input = readFileSync(new URL("fixtures/nested-lambda-call.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

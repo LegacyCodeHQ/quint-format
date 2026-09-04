@@ -1792,3 +1792,15 @@ exports[`formatter preserves source-line groups in block combinators 1`] = `
 }
 "
 `;
+
+exports[`formatter keeps leading call arguments beside a multiline lambda 1`] = `
+"module Example {
+  pure val folded =
+    0.range(8)
+        .foldl(Map(),
+          (m, key) =>
+            if (key > 0) m.put(key, key) else m
+        )
+}
+"
+`;

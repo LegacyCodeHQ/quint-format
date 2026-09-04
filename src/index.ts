@@ -1516,6 +1516,19 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       !hasSourceArgumentBreak &&
       hasSourceClosingBreak &&
       !exceedsLineWidth;
+    const hangingMultilineLambdaCall =
+      arguments_.length > 1 &&
+      isMultilineLambdaExpression(arguments_.at(-1) as Parser.SyntaxNode) &&
+      Boolean(
+        arguments_.at(-2) &&
+          (arguments_.at(-1) as Parser.SyntaxNode).startPosition.row >
+            (arguments_.at(-2) as Parser.SyntaxNode).endPosition.row,
+      ) &&
+      arguments_.slice(0, -1).every((argument, index) => {
+        const previous = index === 0 ? openParenthesis : arguments_[index - 1];
+        return Boolean(previous && argument.startPosition.row === previous.endPosition.row);
+      }) &&
+      hasSourceClosingBreak;
     const isFullyExpandedCall =
       arguments_.length >= 2 &&
       hasSourceClosingBreak &&
@@ -1578,41 +1591,59 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
               hardLine,
               text(")"),
             ])
-          : inlineMultilineLambdaCall
+          : hangingMultilineLambdaCall
             ? concat([
                 functionAnalysis.document,
                 text("("),
-                ...analyses.flatMap((analysis, index) => [
-                  ...(index === 0 ? [] : [text(", ")]),
-                  analysis.document,
-                ]),
+                ...analyses
+                  .slice(0, -1)
+                  .flatMap((analysis, index) => [
+                    ...(index === 0 ? [] : [text(", ")]),
+                    analysis.document,
+                  ]),
+                text(","),
+                indentBy(
+                  concat([hardLine, (analyses.at(-1) as ExpressionAnalysis).document]),
+                  multilineUfcsCall ? ufcsContinuationIndentation() + 1 : 1,
+                ),
                 hardLine,
-                text(")"),
+                indentBy(text(")"), multilineUfcsCall ? ufcsContinuationIndentation() : 0),
               ])
-            : multilineUfcsCall
+            : inlineMultilineLambdaCall
               ? concat([
                   functionAnalysis.document,
-                  indentBy(
-                    concat([
-                      text("("),
-                      ...analyses.flatMap((analysis, index) => [
-                        ...(index === 0 ? [] : [text(", ")]),
-                        analysis.document,
-                      ]),
-                      text(")"),
-                    ]),
-                    ufcsContinuationIndentation(),
-                  ),
+                  text("("),
+                  ...analyses.flatMap((analysis, index) => [
+                    ...(index === 0 ? [] : [text(", ")]),
+                    analysis.document,
+                  ]),
+                  hardLine,
+                  text(")"),
                 ])
-              : sourceMultilineCall
+              : multilineUfcsCall
                 ? concat([
                     functionAnalysis.document,
-                    text("("),
-                    indent(concat([hardLine, ...sourceArgumentDocuments])),
-                    hardLine,
-                    text(")"),
+                    indentBy(
+                      concat([
+                        text("("),
+                        ...analyses.flatMap((analysis, index) => [
+                          ...(index === 0 ? [] : [text(", ")]),
+                          analysis.document,
+                        ]),
+                        text(")"),
+                      ]),
+                      ufcsContinuationIndentation(),
+                    ),
                   ])
-                : inlineCallDocument,
+                : sourceMultilineCall
+                  ? concat([
+                      functionAnalysis.document,
+                      text("("),
+                      indent(concat([hardLine, ...sourceArgumentDocuments])),
+                      hardLine,
+                      text(")"),
+                    ])
+                  : inlineCallDocument,
       binaryOperators: [
         ...functionAnalysis.binaryOperators,
         ...analyses.flatMap((analysis) => analysis.binaryOperators),
@@ -4232,6 +4263,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       }
 
       for (const callExpression of declaration.callExpressions ?? []) {
+        const functionNode = callExpression.childForFieldName("function");
         const openParen = callExpression.children.find((child) => child.type === "(");
         const closeParen = callExpression.children.find((child) => child.type === ")");
         const arguments_ = callExpression.childrenForFieldName("argument");
@@ -4239,7 +4271,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         const isMultilineLambdaCall =
           arguments_.length === 1 &&
           isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
-        if (!openParen || !closeParen) throw new Error("Unable to locate the call delimiters");
+        if (!functionNode || !openParen || !closeParen) {
+          throw new Error("Unable to locate the call delimiters");
+        }
         if (
           callExpression.namedChildren.some(
             (child) => child.type === "comment" || child.type === "documentation_comment",
@@ -4250,6 +4284,24 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         const first = arguments_[0];
         const last = arguments_.at(-1);
         if (first && last) {
+          const penultimate = arguments_.at(-2);
+          const isHangingMultilineLambdaCall =
+            arguments_.length > 1 &&
+            isMultilineLambdaExpression(last) &&
+            Boolean(penultimate && last.startPosition.row > penultimate.endPosition.row) &&
+            arguments_.slice(0, -1).every((argument, index) => {
+              const previous = index === 0 ? openParen : arguments_[index - 1];
+              return argument.startPosition.row === previous.endPosition.row;
+            }) &&
+            closeParen.startPosition.row > last.endPosition.row;
+          const functionDot =
+            functionNode.type === "field_access_expression"
+              ? functionNode.children.find((child) => child.type === ".")
+              : undefined;
+          const callIndentation =
+            functionDot?.startPosition.column ?? callExpression.startPosition.column;
+          const hangingArgumentGap = `\n${" ".repeat(callIndentation + 2)}`;
+          const hangingCloseGap = `\n${" ".repeat(callIndentation)}`;
           const afterOpen = source.slice(openParen.endIndex, first.startIndex);
           if (afterOpen !== "") {
             const row = openParen.endPosition.row;
@@ -4279,9 +4331,11 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               });
               continue;
             }
+            const expectedNextGap =
+              isHangingMultilineLambdaCall && next.id === last.id ? hangingArgumentGap : " ";
             if (
               source.slice(previous.endIndex, comma.startIndex) !== "" ||
-              source.slice(comma.endIndex, next.startIndex) !== " "
+              source.slice(comma.endIndex, next.startIndex) !== expectedNextGap
             ) {
               const row = comma.startPosition.row;
               diagnostics.push({
@@ -4290,7 +4344,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 column: comma.startPosition.column + 1,
                 length: 1,
                 rule: "format/argument-separator-spacing",
-                message: "expected ', ' between arguments",
+                message:
+                  expectedNextGap === " "
+                    ? "expected ', ' between arguments"
+                    : "expected a line break and continuation indentation after ','",
                 sourceLine: lines[row] ?? "",
               });
             }
@@ -4298,9 +4355,11 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const trailingComma = commas.find((comma) => comma.startIndex >= last.endIndex);
           const anchor = trailingComma ?? last;
           const beforeClose = source.slice(anchor.endIndex, closeParen.startIndex);
-          const hasCanonicalClose = isMultilineLambdaCall
-            ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
-            : beforeClose === "";
+          const hasCanonicalClose = isHangingMultilineLambdaCall
+            ? beforeClose === hangingCloseGap
+            : isMultilineLambdaCall
+              ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
+              : beforeClose === "";
           if (!hasCanonicalClose) {
             const row = closeParen.startPosition.row;
             diagnostics.push({
