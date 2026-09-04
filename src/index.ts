@@ -501,6 +501,13 @@ function isOrdinaryBlockResult(node: Parser.SyntaxNode): boolean {
   return node.parent?.type === "block_expression";
 }
 
+function isNestedDefinitionBody(node: Parser.SyntaxNode): boolean {
+  return Boolean(
+    node.parent?.type === "nested_definition_expression" &&
+      node.parent.childForFieldName("body")?.id === node.id,
+  );
+}
+
 function isWithinConditionalCondition(node: Parser.SyntaxNode): boolean {
   let ancestor = node.parent;
   while (ancestor) {
@@ -2233,7 +2240,8 @@ function analyzeExpressionWithClosingComment(
       right.startPosition.row > operator.endPosition.row &&
       (isIndentedExpressionBody(node) ||
         isBlockCombinatorEntry(node) ||
-        isOrdinaryBlockResult(node));
+        isOrdinaryBlockResult(node) ||
+        isNestedDefinitionBody(node));
     const hasSourceOperatorBreak =
       inlineComments.length === 0 &&
       rightComments.length === 0 &&
@@ -2241,7 +2249,8 @@ function analyzeExpressionWithClosingComment(
       (isWithinConditionalCondition(node) ||
         isIndentedExpressionBody(node) ||
         isBlockCombinatorEntry(node) ||
-        isOrdinaryBlockResult(node));
+        isOrdinaryBlockResult(node) ||
+        isNestedDefinitionBody(node));
     const operatorContinuationIndentation = 2;
     return {
       document:
@@ -4828,14 +4837,16 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           (isWithinConditionalCondition(operator.node.parent ?? operator.node) ||
             isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
             isBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
-            isOrdinaryBlockResult(operator.node.parent ?? operator.node));
+            isOrdinaryBlockResult(operator.node.parent ?? operator.node) ||
+            isNestedDefinitionBody(operator.node.parent ?? operator.node));
         const preservesRightOperandBreak =
           operator.inlineComments.length === 0 &&
           operator.rightComments.length === 0 &&
           operator.right.startPosition.row > operator.node.endPosition.row &&
           (isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
             isBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
-            isOrdinaryBlockResult(operator.node.parent ?? operator.node));
+            isOrdinaryBlockResult(operator.node.parent ?? operator.node) ||
+            isNestedDefinitionBody(operator.node.parent ?? operator.node));
         const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
           : beforeOperator === " ";

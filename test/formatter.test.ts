@@ -2220,6 +2220,23 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a nested-definition right operand", () => {
+    const input = readFileSync(
+      new URL("fixtures/binary-nested-definition.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const shallowOperand = input.replace("\n        val selected", "\n      val selected");
+
+    expect(output).toBe(input);
+    expect(checkQuint(shallowOperand, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/binary-operator-indentation",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a binary continuation in a lambda body", () => {
     const input = readFileSync(
       new URL("fixtures/lambda-binary-continuation.qnt", import.meta.url),
