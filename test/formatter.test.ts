@@ -671,14 +671,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("preserves a leading implies continuation in a lambda", () => {
+  test("uses a four-space leading operator continuation in a lambda", () => {
     const input = readFileSync(
       new URL("fixtures/preserved-lambda-implies.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
 
-    expect(output).toBe(input);
+    expect(output).toContain(
+      "  pure val valid = Set(1, 2).forall(value =>\n    (value > 0)\n        implies (value >= 1)\n  )",
+    );
+    expect(checkQuint(input, "input.qnt").map((diagnostic) => diagnostic.rule)).toContain(
+      "format/binary-operator-indentation",
+    );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

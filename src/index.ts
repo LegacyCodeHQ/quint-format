@@ -1803,7 +1803,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       rightComments.length === 0 &&
       operator.startPosition.row > left.endPosition.row &&
       (isWithinConditionalCondition(node) || isIndentedExpressionBody(node));
-    const operatorContinuationIndentation = isWithinConditionalCondition(node) ? 2 : 1;
+    const operatorContinuationIndentation = 2;
     return {
       document:
         rightComments.length === 0
@@ -4284,9 +4284,6 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           operator.node.startPosition.row > operator.left.endPosition.row &&
           (isWithinConditionalCondition(operator.node.parent ?? operator.node) ||
             isIndentedExpressionBody(operator.node.parent ?? operator.node));
-        const isConditionalOperatorContinuation =
-          preservesLeadingOperatorBreak &&
-          isWithinConditionalCondition(operator.node.parent ?? operator.node);
         const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
           : beforeOperator === " ";
@@ -4307,7 +4304,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             sourceLine: lines[row] ?? "",
           });
         }
-        if (isConditionalOperatorContinuation) {
+        if (preservesLeadingOperatorBreak) {
           const expressionLine = lines[operator.left.startPosition.row] ?? "";
           const expectedColumn = expressionLine.search(/\S|$/) + 4;
           if (operator.node.startPosition.column !== expectedColumn) {

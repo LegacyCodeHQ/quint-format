@@ -1909,16 +1909,6 @@ exports[`formatter expands the first result in a conditional chain 1`] = `
 "
 `;
 
-exports[`formatter preserves a leading implies continuation in a lambda 1`] = `
-"module Example {
-  pure val valid = Set(1, 2).forall(value =>
-    (value > 0)
-      implies (value >= 1)
-  )
-}
-"
-`;
-
 exports[`formatter normalizes excess spacing before a documented declaration 1`] = `
 "module Example {
   pure val first = 1
@@ -1950,6 +1940,16 @@ exports[`formatter uses a four-space leading operator continuation in a conditio
       "SUCCESS"
     else
       "NOT_ENOUGH_TRUST"
+}
+"
+`;
+
+exports[`formatter uses a four-space leading operator continuation in a lambda 1`] = `
+"module Example {
+  pure val valid = Set(1, 2).forall(value =>
+    (value > 0)
+        implies (value >= 1)
+  )
 }
 "
 `;
