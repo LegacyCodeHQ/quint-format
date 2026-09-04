@@ -3,6 +3,7 @@
 ## Requirements
 
 - [Bun](https://bun.sh/)
+- [Node.js](https://nodejs.org/) 22 or newer
 - The `quint` executable, for validation against Quint's reference parser
 
 ## Setup
@@ -11,6 +12,7 @@
 git clone git@github.com:LegacyCodeHQ/quint-format.git
 cd quint-format
 bun install
+bun run build
 bun test
 ```
 
@@ -18,6 +20,7 @@ bun test
 
 ```sh
 bun run check
+bun run build
 bun run format
 bun test
 bun run test:official -- /path/to/quint/examples

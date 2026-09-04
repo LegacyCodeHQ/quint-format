@@ -2686,3 +2686,9 @@ test/fixtures/definition-matrix.qnt:14:35: error[format/equals-spacing]: expecte
    |
 "
 `;
+
+exports[`command-line checker runs the compiled distribution with Node.js 1`] = `
+"module Example {
+}
+"
+`;

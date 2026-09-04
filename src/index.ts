@@ -1,6 +1,6 @@
 import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
-import { concat, type Doc, group, hardLine, indent, line, renderDoc, text } from "./document";
+import { concat, type Doc, group, hardLine, indent, line, renderDoc, text } from "./document.js";
 
 const parser = new Parser();
 parser.setLanguage(Quint);

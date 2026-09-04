@@ -7,6 +7,25 @@ import { fileURLToPath } from "node:url";
 const projectRoot = fileURLToPath(new URL("..", import.meta.url));
 
 describe("command-line checker", () => {
+  test("runs the compiled distribution with Node.js", () => {
+    const build = Bun.spawnSync(["bun", "run", "build"], { cwd: projectRoot });
+
+    expect(build.exitCode).toBe(0);
+
+    const manifest = JSON.parse(readFileSync(join(projectRoot, "package.json"), "utf8"));
+    expect(manifest.bin).toEqual({ quintfmt: "dist/cli.js" });
+    expect(manifest.engines).toEqual({ node: ">=22" });
+
+    const result = Bun.spawnSync(
+      ["node", "dist/cli.js", "test/fixtures/compact-empty-module.qnt"],
+      { cwd: projectRoot },
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout.toString()).toMatchSnapshot();
+    expect(result.stderr.toString()).toBe("");
+  });
+
   test("formats one file to standard output", () => {
     const result = Bun.spawnSync(
       ["bun", "run", "src/cli.ts", "test/fixtures/compact-empty-module.qnt"],

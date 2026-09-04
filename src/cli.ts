@@ -1,9 +1,9 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import { randomUUID } from "node:crypto";
 import { readdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
-import { checkQuint, formatQuint, QuintSyntaxError, renderDiagnostic } from "./index";
+import { checkQuint, formatQuint, QuintSyntaxError, renderDiagnostic } from "./index.js";
 
 const [command, ...filePaths] = process.argv.slice(2);
 

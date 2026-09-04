@@ -9,6 +9,8 @@ modes remain the responsibility of the Quint compiler.
 
 ## Install
 
+Requires Node.js 22 or newer.
+
 ```sh
 npm install --global @legacycodehq/quint-format
 ```

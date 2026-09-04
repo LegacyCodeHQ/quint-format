@@ -4,8 +4,16 @@
   "description": "An opinionated formatter for the Quint specification language",
   "license": "Apache-2.0",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "bin": {
-    "quintfmt": "src/cli.ts"
+    "quintfmt": "dist/cli.js"
   },
   "repository": {
     "type": "git",
@@ -16,14 +24,23 @@
     "url": "https://github.com/LegacyCodeHQ/quint-format/issues"
   },
   "files": [
-    "src"
+    "dist/cli.js",
+    "dist/document.js",
+    "dist/index.d.ts",
+    "dist/index.js"
   ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "check": "biome check . && tsc --noEmit",
+    "build": "tsc --project tsconfig.build.json",
+    "check": "biome check . && tsc --noEmit && tsc --project tsconfig.build.json --noEmit",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome lint .",
     "test": "bun test",
+    "prepack": "npm run build",
+    "prepublishOnly": "bun test && bun run check",
     "test:official": "bun scripts/check-official-examples.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -31,6 +48,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.11",
     "@types/bun": "^1.4.0",
+    "@types/node": "^22.0.0",
     "typescript": "^7.0.2"
   },
   "dependencies": {
