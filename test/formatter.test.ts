@@ -968,6 +968,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("attaches postfix access to a multiline parenthesized expression", () => {
+    const input = readFileSync(
+      new URL("fixtures/parenthesized-postfix.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "    ((x, y) =>\n      val result = x * y\n      if (result > 0) result else 0\n    ).app(lhs, rhs)",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats an integer subtraction expression", () => {
     const input = "module Example {\nval delta=3-1\n}\n";
     const output = formatQuint(input);

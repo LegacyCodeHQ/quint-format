@@ -412,6 +412,18 @@ function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   );
 }
 
+function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode): boolean {
+  if (node.type !== "parenthesized_expression") return false;
+  const expression = node.childForFieldName("expression");
+  const parent = node.parent;
+  return Boolean(
+    expression &&
+      expression.startPosition.row < expression.endPosition.row &&
+      parent?.type === "field_access_expression" &&
+      parent.childForFieldName("object")?.id === node.id,
+  );
+}
+
 function ufcsChainRoot(node: Parser.SyntaxNode): Parser.SyntaxNode {
   let current = node;
   while (current.parent) {
@@ -788,7 +800,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startIndex >= object.endIndex &&
         child.endIndex <= field.startIndex,
     );
-    const isMultilineContinuation = isMultilineUfcsContinuation(node);
+    const isMultilineContinuation =
+      isMultilineUfcsContinuation(node) && !isMultilineParenthesizedPostfixReceiver(object);
     return {
       document:
         comments.length === 0
@@ -1426,7 +1439,9 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
 
     const analysis = analyzeExpression(expression);
     return {
-      document: concat([text("("), analysis.document, text(")")]),
+      document: isMultilineParenthesizedPostfixReceiver(node)
+        ? concat([text("("), analysis.document, hardLine, text(")")])
+        : concat([text("("), analysis.document, text(")")]),
       binaryOperators: analysis.binaryOperators,
       unitLiterals: analysis.unitLiterals,
       sequenceLiterals: analysis.sequenceLiterals,
