@@ -542,7 +542,7 @@ describe("formatter", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      "      Set(1, 2, 3)\n        .filter(value => value > 1)\n        .oneOf()",
+      "      Set(1, 2, 3)\n          .filter(value => value > 1)\n          .oneOf()",
     );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
@@ -557,9 +557,32 @@ describe("formatter", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      'pure val error = ensure(true, "first message")\n    .andEnsure(false, "second message")',
+      'pure val error = ensure(true, "first message")\n      .andEnsure(false, "second message")',
     );
     expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("uses a four-space structural indent for UFCS continuations", () => {
+    const input = readFileSync(
+      new URL("fixtures/four-space-ufcs-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      [
+        '    nondet key = Set("one")',
+        "        .oneOf()",
+        "    val updated = states",
+        "        .set(key, 1)",
+        "    states' = states",
+        "        .set(key, updated.get(key))",
+      ].join("\n"),
+    );
+    expect(output).toMatchSnapshot();
+    expect(checkQuint(input, "unformatted.qnt")).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
@@ -866,7 +889,7 @@ describe("formatter", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      '    state\' =\n      state.with("first", 1)\n        .with("second", 2),',
+      '    state\' =\n      state.with("first", 1)\n          .with("second", 2),',
     );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);

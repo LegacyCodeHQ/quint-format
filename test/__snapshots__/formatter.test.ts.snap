@@ -1249,8 +1249,8 @@ exports[`formatter preserves all aligned dots in a nondet UFCS chain 1`] = `
   action step =
     nondet choice =
       Set(1, 2, 3)
-        .filter(value => value > 1)
-        .oneOf()
+          .filter(value => value > 1)
+          .oneOf()
     selected' = choice
 }
 "
@@ -1283,7 +1283,7 @@ exports[`formatter preserves a single multiline UFCS continuation 1`] = `
     if (previous != "") previous else ensure(condition, message)
 
   pure val error = ensure(true, "first message")
-    .andEnsure(false, "second message")
+      .andEnsure(false, "second message")
 }
 "
 `;
@@ -1309,7 +1309,7 @@ exports[`formatter preserves an explicit line break in a primed assignment chain
   action update = all {
     state' =
       state.with("first", 1)
-        .with("second", 2),
+          .with("second", 2),
   }
 }
 "
@@ -1648,4 +1648,61 @@ exports[`formatter keeps a secondary lambda header beside the call opening 1`] =
   }
 }
 "
+`;
+
+exports[`formatter uses a four-space structural indent for UFCS continuations 1`] = `
+"module Example {
+  var states: str -> int
+
+  action step = {
+    nondet key = Set("one")
+        .oneOf()
+    val updated = states
+        .set(key, 1)
+    states' = states
+        .set(key, updated.get(key))
+  }
+}
+"
+`;
+
+exports[`formatter uses a four-space structural indent for UFCS continuations 2`] = `
+[
+  {
+    "column": 1,
+    "filePath": "unformatted.qnt",
+    "length": 27,
+    "line": 6,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/field-access-indentation",
+    "sourceLine": "                           .oneOf()",
+  },
+  {
+    "column": 1,
+    "filePath": "unformatted.qnt",
+    "length": 22,
+    "line": 8,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/field-access-indentation",
+    "sourceLine": "                      .set(key, 1)",
+  },
+  {
+    "column": 5,
+    "filePath": "unformatted.qnt",
+    "length": 59,
+    "line": 9,
+    "message": "expected the nested definition body on a new line",
+    "rule": "format/nested-definition-layout",
+    "sourceLine": "    states' = states",
+  },
+  {
+    "column": 1,
+    "filePath": "unformatted.qnt",
+    "length": 15,
+    "line": 10,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/field-access-indentation",
+    "sourceLine": "               .set(key, updated.get(key))",
+  },
+]
 `;
