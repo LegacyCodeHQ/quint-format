@@ -487,6 +487,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a partially expanded call within the line width", () => {
+    const input = readFileSync(
+      new URL("fixtures/partially-expanded-call.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("normalizes an aligned multiline call while preserving argument groups", () => {
     const input = readFileSync(
       new URL("fixtures/aligned-multiline-call.qnt", import.meta.url),

@@ -1773,6 +1773,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       (exceedsLineWidth ||
         (hasMultilineArgumentDocument && !hasInlineMultilineLambdaArgument) ||
         isFullyExpandedCall ||
+        (hasSourceArgumentBreak && hasSourceClosingBreak) ||
         isNestedInVerticallyExpandedCall(node)) &&
       (hasSourceArgumentBreak || hasSourceClosingBreak);
     const sourceArgumentDocuments = analyses.flatMap((analysis, index) => {
