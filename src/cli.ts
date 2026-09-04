@@ -53,7 +53,7 @@ if (command && command !== "--check" && filePaths.length === 0) {
   }
 } else if ((command !== "--check" && command !== "--write") || filePaths.length === 0) {
   process.stderr.write(
-    "Usage: quint-format <file> | quint-format --check <path>... | quint-format --write <path>...\n",
+    "Usage: quintfmt <file> | quintfmt --check <path>... | quintfmt --write <path>...\n",
   );
   process.exitCode = 2;
 } else {

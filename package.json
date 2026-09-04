@@ -5,8 +5,19 @@
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
-    "quint-format": "src/cli.ts"
+    "quintfmt": "src/cli.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LegacyCodeHQ/quint-format.git"
+  },
+  "homepage": "https://github.com/LegacyCodeHQ/quint-format#readme",
+  "bugs": {
+    "url": "https://github.com/LegacyCodeHQ/quint-format/issues"
+  },
+  "files": [
+    "src"
+  ],
   "scripts": {
     "check": "biome check . && tsc --noEmit",
     "format": "biome format --write .",
