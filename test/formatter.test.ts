@@ -452,6 +452,28 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("normalizes an aligned multiline call while preserving argument groups", () => {
+    const input = readFileSync(
+      new URL("fixtures/aligned-multiline-call.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      [
+        "  pure val result = Set(",
+        '    "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",',
+        '    "sender", "receiver",',
+        '    "transfer", "channel-topology-with-a-long-name",',
+        '    "zero", "zero"',
+        "  )",
+      ].join("\n"),
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a fully expanded call", () => {
     const input = readFileSync(new URL("fixtures/expanded-call.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

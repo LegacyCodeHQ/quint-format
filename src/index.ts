@@ -1509,7 +1509,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       );
       return [
         ...(index > 0 ? [text(",")] : []),
-        ...(startsOnNewLine ? [hardLine] : index > 0 ? [text(" ")] : []),
+        ...(index > 0 && startsOnNewLine ? [hardLine] : index > 0 ? [text(" ")] : []),
         analysis.document,
       ];
     });
@@ -1568,8 +1568,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
               ? concat([
                   functionAnalysis.document,
                   text("("),
-                  indent(concat(sourceArgumentDocuments)),
-                  ...(hasSourceClosingBreak ? [hardLine] : []),
+                  indent(concat([hardLine, ...sourceArgumentDocuments])),
+                  hardLine,
                   text(")"),
                 ])
               : inlineCallDocument,

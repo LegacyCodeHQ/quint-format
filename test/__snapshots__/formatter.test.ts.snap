@@ -1624,3 +1624,15 @@ exports[`formatter preserves a trailing comment on an ordinary block result 1`] 
 }
 "
 `;
+
+exports[`formatter normalizes an aligned multiline call while preserving argument groups 1`] = `
+"module Example {
+  pure val result = Set(
+    "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",
+    "sender", "receiver",
+    "transfer", "channel-topology-with-a-long-name",
+    "zero", "zero"
+  )
+}
+"
+`;
