@@ -1636,3 +1636,16 @@ exports[`formatter normalizes an aligned multiline call while preserving argumen
 }
 "
 `;
+
+exports[`formatter keeps a secondary lambda header beside the call opening 1`] = `
+"module Example {
+  var values: str -> int
+
+  action update = {
+    values' = values.setBy("one", value =>
+      value + 1
+    )
+  }
+}
+"
+`;

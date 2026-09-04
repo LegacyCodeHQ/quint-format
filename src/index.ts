@@ -1474,6 +1474,13 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     ]);
     const inlineCallLines = renderDoc(inlineCallDocument).split("\n");
     const hasMultilineArgumentDocument = inlineCallLines.length > 1;
+    const hasInlineMultilineLambdaArgument = arguments_.some((argument, index) => {
+      const previous = index === 0 ? openParenthesis : arguments_[index - 1];
+      return (
+        isMultilineLambdaExpression(argument) &&
+        Boolean(previous && argument.startPosition.row === previous.endPosition.row)
+      );
+    });
     const exceedsLineWidth = inlineCallLines.some(
       (line, index) => line.length + (index === 0 ? node.startPosition.column : 0) > 120,
     );
@@ -1487,6 +1494,13 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         closeParenthesis.startPosition.row >
           (arguments_.at(-1) as Parser.SyntaxNode).endPosition.row,
     );
+    const inlineMultilineLambdaCall =
+      arguments_.length > 1 &&
+      isMultilineLambdaExpression(arguments_.at(-1) as Parser.SyntaxNode) &&
+      hasInlineMultilineLambdaArgument &&
+      !hasSourceArgumentBreak &&
+      hasSourceClosingBreak &&
+      !exceedsLineWidth;
     const isFullyExpandedCall =
       arguments_.length >= 3 &&
       hasSourceClosingBreak &&
@@ -1497,7 +1511,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const sourceMultilineCall =
       arguments_.length > 0 &&
       (exceedsLineWidth ||
-        hasMultilineArgumentDocument ||
+        (hasMultilineArgumentDocument && !hasInlineMultilineLambdaArgument) ||
         isFullyExpandedCall ||
         isNestedInVerticallyExpandedCall(node)) &&
       (hasSourceArgumentBreak || hasSourceClosingBreak);
@@ -1549,30 +1563,41 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
               hardLine,
               text(")"),
             ])
-          : multilineUfcsCall
+          : inlineMultilineLambdaCall
             ? concat([
                 functionAnalysis.document,
-                indentBy(
-                  concat([
-                    text("("),
-                    ...analyses.flatMap((analysis, index) => [
-                      ...(index === 0 ? [] : [text(", ")]),
-                      analysis.document,
-                    ]),
-                    text(")"),
-                  ]),
-                  ufcsContinuationIndentation(functionNode),
-                ),
+                text("("),
+                ...analyses.flatMap((analysis, index) => [
+                  ...(index === 0 ? [] : [text(", ")]),
+                  analysis.document,
+                ]),
+                hardLine,
+                text(")"),
               ])
-            : sourceMultilineCall
+            : multilineUfcsCall
               ? concat([
                   functionAnalysis.document,
-                  text("("),
-                  indent(concat([hardLine, ...sourceArgumentDocuments])),
-                  hardLine,
-                  text(")"),
+                  indentBy(
+                    concat([
+                      text("("),
+                      ...analyses.flatMap((analysis, index) => [
+                        ...(index === 0 ? [] : [text(", ")]),
+                        analysis.document,
+                      ]),
+                      text(")"),
+                    ]),
+                    ufcsContinuationIndentation(functionNode),
+                  ),
                 ])
-              : inlineCallDocument,
+              : sourceMultilineCall
+                ? concat([
+                    functionAnalysis.document,
+                    text("("),
+                    indent(concat([hardLine, ...sourceArgumentDocuments])),
+                    hardLine,
+                    text(")"),
+                  ])
+                : inlineCallDocument,
       binaryOperators: [
         ...functionAnalysis.binaryOperators,
         ...analyses.flatMap((analysis) => analysis.binaryOperators),
