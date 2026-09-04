@@ -635,6 +635,38 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("indents a nested multiline call inside a UFCS continuation", () => {
+    const input = readFileSync(
+      new URL("fixtures/nested-call-in-chain.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected = [
+      "module Example {",
+      "  action init = true",
+      "  action step(values: Set[int]): bool = true",
+      "",
+      "  run execution =",
+      "    init",
+      "        // Explain the first transition.",
+      "        // Keep this attached to the call.",
+      "        .then(step(Set(",
+      "            1,",
+      "            2,",
+      "        )))",
+      "}",
+      "",
+    ].join("\n");
+    const diagnosticRules = checkQuint(input, "input.qnt").map(({ rule }) => rule);
+
+    expect(output).toBe(expected);
+    expect(diagnosticRules).toContain("format/call-argument-indentation");
+    expect(diagnosticRules).toContain("format/call-delimiter-spacing");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment before a call argument", () => {
     const input = readFileSync(
       new URL("fixtures/call-argument-comment.qnt", import.meta.url),

@@ -607,10 +607,7 @@ function isMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
   if (node.type !== "field_access_expression") return false;
   const object = node.childForFieldName("object");
   const dot = node.children.find((child) => child.type === ".");
-  const hasComments = node.namedChildren.some(
-    (child) => child.type === "comment" || child.type === "documentation_comment",
-  );
-  return Boolean(object && dot && !hasComments && dot.startPosition.row > object.endPosition.row);
+  return Boolean(object && dot && dot.startPosition.row > object.endPosition.row);
 }
 
 function ufcsContinuationIndentation(): number {
@@ -5305,6 +5302,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           }
           if (
             isMultilineContinuation &&
+            !hasComments &&
             dot.startPosition.column !==
               (lines[ufcsChainRoot(fieldAccess).startPosition.row]?.search(/\S|$/) ?? 0) +
                 ufcsContinuationIndentation() * 2

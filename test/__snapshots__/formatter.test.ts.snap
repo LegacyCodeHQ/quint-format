@@ -2455,3 +2455,20 @@ exports[`formatter aligns comments with a continued UFCS selector 1`] = `
 }
 "
 `;
+
+exports[`formatter indents a nested multiline call inside a UFCS continuation 1`] = `
+"module Example {
+  action init = true
+  action step(values: Set[int]): bool = true
+
+  run execution =
+    init
+        // Explain the first transition.
+        // Keep this attached to the call.
+        .then(step(Set(
+            1,
+            2,
+        )))
+}
+"
+`;
