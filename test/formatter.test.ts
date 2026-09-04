@@ -860,6 +860,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a trailing comment on an ordinary block result", () => {
+    const input = readFileSync(
+      new URL("fixtures/block-result-trailing-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats all block combinators", () => {
     const input = readFileSync(new URL("fixtures/block-combinators.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

@@ -1312,20 +1312,46 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     });
     const analysis = analyzeExpression(expression);
     const analyses = [...bindingAnalyses.map(({ value }) => value), analysis];
-    const contentDocuments = node.namedChildren.map((child) => {
+    const contentDocuments: Doc[] = [];
+    let previousContent: Parser.SyntaxNode | undefined;
+    for (const child of node.namedChildren) {
       if (child.type === "comment" || child.type === "documentation_comment") {
-        return commentDocument(child);
+        const isTrailingContentComment =
+          previousContent?.endPosition.row === child.startPosition.row;
+        if (isTrailingContentComment) {
+          const contentDocument = contentDocuments.pop();
+          if (!contentDocument || !previousContent) {
+            throw new Error("Unable to attach the trailing block content comment");
+          }
+          const commentGap = node.text.slice(
+            previousContent.endIndex - node.startIndex,
+            child.startIndex - node.startIndex,
+          );
+          contentDocuments.push(
+            concat([contentDocument, text(commentGap), commentDocument(child)]),
+          );
+        } else {
+          contentDocuments.push(commentDocument(child));
+        }
+        previousContent = undefined;
+        continue;
       }
       if (child.id === expression.id) {
-        return analysis.document;
+        contentDocuments.push(analysis.document);
+        previousContent = child;
+        continue;
       }
       const bindingIndex = bindings.findIndex((binding) => binding.id === child.id);
       const binding = bindingAnalyses[bindingIndex];
       if (binding) {
-        return concat([text(`nondet ${binding.name.text} = `), binding.value.document]);
+        contentDocuments.push(
+          concat([text(`nondet ${binding.name.text} = `), binding.value.document]),
+        );
+        previousContent = child;
+        continue;
       }
       throw new Error("Formatting this block content is not implemented yet");
-    });
+    }
     return {
       document: concat([
         text("{"),

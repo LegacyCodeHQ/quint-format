@@ -1613,3 +1613,14 @@ exports[`formatter preserves a block-bodied conditional beside a definition head
 }
 "
 `;
+
+exports[`formatter preserves a trailing comment on an ordinary block result 1`] = `
+"module Example {
+  pure def choose = if (true) {
+    1  // chosen result
+  } else {
+    2
+  }
+}
+"
+`;
