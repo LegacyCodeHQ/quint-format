@@ -437,10 +437,13 @@ function isNestedInVerticallyExpandedCall(node: Parser.SyntaxNode): boolean {
   return false;
 }
 
-function isIndentedDefinitionBody(node: Parser.SyntaxNode): boolean {
+function isIndentedExpressionBody(node: Parser.SyntaxNode): boolean {
   let ancestor = node.parent;
 
   while (ancestor) {
+    if (ancestor.type === "lambda_expression") {
+      return ancestor.childForFieldName("body")?.id === node.id;
+    }
     if (ancestor.type === "operator_definition" || ancestor.type === "value_definition") {
       const body = ancestor.childForFieldName("body") ?? ancestor.childForFieldName("value");
       return body?.id === node.id && node.startPosition.column > ancestor.startPosition.column;
@@ -1492,7 +1495,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       right.startPosition.row > operator.endPosition.row &&
       (right.startPosition.column === left.startPosition.column ||
         right.startPosition.column === left.startPosition.column + 2) &&
-      isIndentedDefinitionBody(node);
+      isIndentedExpressionBody(node);
     return {
       document:
         rightComments.length === 0

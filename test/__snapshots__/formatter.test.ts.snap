@@ -1461,3 +1461,16 @@ exports[`formatter preserves a line break after a binary operator 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a binary continuation in a lambda body 1`] = `
+"module Example {
+  pure val chains = Set("a")
+
+  pure val valid =
+    chains.forall(chain =>
+      chain != "b" implies
+        chain == "a"
+    )
+}
+"
+`;
