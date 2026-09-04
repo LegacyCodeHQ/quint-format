@@ -793,6 +793,24 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("expands result branches after a multiline condition", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-condition-branches.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      '    if ((value == 0) or value == 1)\n      "SUCCESS"\n    else\n      "NOT_ENOUGH_TRUST"',
+    );
+    expect(checkQuint(input, "input.qnt").map((diagnostic) => diagnostic.rule)).toContain(
+      "format/conditional-branch-spacing",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves an explicit line break after else", () => {
     const input = readFileSync(
       new URL("fixtures/explicit-else-break.qnt", import.meta.url),

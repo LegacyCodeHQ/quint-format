@@ -1135,19 +1135,23 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startIndex >= consequence.endIndex &&
         child.endIndex <= alternative.startIndex,
     );
+    const expandsSourceMultilineCondition = condition.startPosition.row < condition.endPosition.row;
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
-      consequence.startPosition.row > closeParen.endPosition.row;
+      (expandsSourceMultilineCondition ||
+        consequence.startPosition.row > closeParen.endPosition.row);
     const preservesElseLineBreak =
       consequence.type !== "block_expression" &&
       alternativeComments.length === 0 &&
-      elseKeyword.startPosition.row > consequence.endPosition.row;
+      (expandsSourceMultilineCondition ||
+        elseKeyword.startPosition.row > consequence.endPosition.row);
     const preservesAlternativeLineBreak =
       alternative.type !== "block_expression" &&
       alternative.type !== "if_expression" &&
       alternativeComments.length === 0 &&
-      alternative.startPosition.row > elseKeyword.endPosition.row;
+      (expandsSourceMultilineCondition ||
+        alternative.startPosition.row > elseKeyword.endPosition.row);
     return {
       document: concat([
         text("if ("),
@@ -4741,10 +4745,13 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               child.startIndex >= consequence.endIndex &&
               child.endIndex <= alternative.startIndex,
           );
+          const expandsSourceMultilineCondition =
+            condition.startPosition.row < condition.endPosition.row;
           const preservesConsequenceLineBreak =
             consequence.type !== "block_expression" &&
             consequenceComments.length === 0 &&
-            consequence.startPosition.row > closeParen.endPosition.row;
+            (expandsSourceMultilineCondition ||
+              consequence.startPosition.row > closeParen.endPosition.row);
           const expectedConsequenceGap = preservesConsequenceLineBreak
             ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
             : " ";
@@ -4767,12 +4774,14 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const preservesElseLineBreak =
             consequence.type !== "block_expression" &&
             alternativeComments.length === 0 &&
-            elseKeyword.startPosition.row > consequence.endPosition.row;
+            (expandsSourceMultilineCondition ||
+              elseKeyword.startPosition.row > consequence.endPosition.row);
           const preservesAlternativeLineBreak =
             alternative.type !== "block_expression" &&
             alternative.type !== "if_expression" &&
             alternativeComments.length === 0 &&
-            alternative.startPosition.row > elseKeyword.endPosition.row;
+            (expandsSourceMultilineCondition ||
+              alternative.startPosition.row > elseKeyword.endPosition.row);
           const expectedElseGap = preservesElseLineBreak
             ? `\n${" ".repeat(conditional.startPosition.column)}`
             : " ";
