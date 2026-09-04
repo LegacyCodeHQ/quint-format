@@ -1136,6 +1136,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.endIndex <= alternative.startIndex,
     );
     const expandsSourceMultilineCondition = condition.startPosition.row < condition.endPosition.row;
+    const separatesCommentedElse =
+      alternativeComments.length > 0 && elseKeyword.startPosition.row > consequence.endPosition.row;
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
@@ -1178,7 +1180,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                 : [text(" "), alternativeAnalysis.document]),
             ]
           : [
-              text(" else"),
+              ...(separatesCommentedElse ? [hardLine, text("else")] : [text(" else")]),
               indent(
                 concat([
                   ...alternativeComments.flatMap((comment) => [hardLine, commentDocument(comment)]),
@@ -4745,6 +4747,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           );
           const expandsSourceMultilineCondition =
             condition.startPosition.row < condition.endPosition.row;
+          const separatesCommentedElse =
+            alternativeComments.length > 0 &&
+            elseKeyword.startPosition.row > consequence.endPosition.row;
           const preservesConsequenceLineBreak =
             consequence.type !== "block_expression" &&
             consequenceComments.length === 0 &&
@@ -4782,7 +4787,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               alternative.startPosition.row > elseKeyword.endPosition.row);
           const expectedElseGap = preservesElseLineBreak
             ? `\n${" ".repeat(conditional.startPosition.column)}`
-            : " ";
+            : separatesCommentedElse
+              ? `\n${" ".repeat(conditional.startPosition.column)}`
+              : " ";
           const expectedAlternativeGap = preservesAlternativeLineBreak
             ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
             : " ";

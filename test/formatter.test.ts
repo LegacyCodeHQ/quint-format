@@ -873,6 +873,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("places pre-else comments inside the alternative branch", () => {
+    const input = readFileSync(
+      new URL("fixtures/comment-before-else.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      '    else if (second)\n      "SECOND"\n    else\n      // Explain the final fallback.\n      "THIRD"',
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment before a conditional consequence", () => {
     const input = readFileSync(
       new URL("fixtures/conditional-consequence-comment.qnt", import.meta.url),

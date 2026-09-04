@@ -1880,3 +1880,16 @@ exports[`formatter separates documented declaration groups 1`] = `
 }
 "
 `;
+
+exports[`formatter places pre-else comments inside the alternative branch 1`] = `
+"module Example {
+  pure def result(first: bool, second: bool): str =
+    if (first) "FIRST"
+    else if (second)
+      "SECOND"
+    else
+      // Explain the final fallback.
+      "THIRD"
+}
+"
+`;
