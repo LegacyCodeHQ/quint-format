@@ -1742,6 +1742,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves aligned trailing comments on module definitions", () => {
+    const input = readFileSync(
+      new URL("fixtures/aligned-module-definition-comments.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a trailing module-body comment", () => {
     const input = readFileSync(
       new URL("fixtures/trailing-module-comment.qnt", import.meta.url),

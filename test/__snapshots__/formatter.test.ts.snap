@@ -2054,3 +2054,11 @@ exports[`formatter preserves a multiline assumption with a four-space continuati
 }
 "
 `;
+
+exports[`formatter preserves aligned trailing comments on module definitions 1`] = `
+"module Example {
+  pure val SHORT = 1      // Short value
+  pure val LONGER = 22    // Longer value
+}
+"
+`;

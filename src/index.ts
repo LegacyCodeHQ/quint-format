@@ -419,6 +419,10 @@ function leadingCommentsDocument(
   );
 }
 
+function preservesTrailingCommentAlignment(gap: string): boolean {
+  return /^ {2,}$/.test(gap);
+}
+
 function requiresDefinitionBodyLineBreak(node: Parser.SyntaxNode): boolean {
   return node.type === "match_expression";
 }
@@ -1967,13 +1971,14 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           ...(previousDeclaration.trailingComments ?? []),
           node,
         ];
-        const preservesSumVariantAlignment = previousDeclaration.valueNode?.type === "sum_type";
-        const commentGap = preservesSumVariantAlignment
-          ? moduleNode.text.slice(
-              previousDeclaration.node.endIndex - moduleNode.startIndex,
-              node.startIndex - moduleNode.startIndex,
-            )
-          : " ";
+        const sourceCommentGap = moduleNode.text.slice(
+          previousDeclaration.node.endIndex - moduleNode.startIndex,
+          node.startIndex - moduleNode.startIndex,
+        );
+        const preservesAlignment =
+          previousDeclaration.valueNode?.type === "sum_type" ||
+          preservesTrailingCommentAlignment(sourceCommentGap);
+        const commentGap = preservesAlignment ? sourceCommentGap : " ";
         previousDeclaration.document = concat([
           previousDeclaration.document,
           text(commentGap),
@@ -3717,8 +3722,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
       for (const comment of declaration.trailingComments ?? []) {
         const commentGap = source.slice(declaration.node.endIndex, comment.startIndex);
-        const preservesSumVariantAlignment = declaration.valueNode?.type === "sum_type";
-        if (!preservesSumVariantAlignment && commentGap !== " ") {
+        const preservesAlignment =
+          declaration.valueNode?.type === "sum_type" ||
+          preservesTrailingCommentAlignment(commentGap);
+        if (!preservesAlignment && commentGap !== " ") {
           const row = comment.startPosition.row;
           diagnostics.push({
             filePath,
