@@ -837,6 +837,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("expands the first result in a conditional chain", () => {
+    const input = readFileSync(
+      new URL("fixtures/expanded-chain-first-result.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain('    if (value < 0)\n      "NEGATIVE"\n    else if (value == 0)');
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("places a block-bodied conditional below a definition header", () => {
     const input = readFileSync(
       new URL("fixtures/block-if-definition.qnt", import.meta.url),

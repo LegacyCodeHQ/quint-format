@@ -1136,12 +1136,14 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.endIndex <= alternative.startIndex,
     );
     const expandsSourceMultilineCondition = condition.startPosition.row < condition.endPosition.row;
+    const expandsConditionalChain = alternative.type === "if_expression";
     const separatesCommentedElse =
       alternativeComments.length > 0 && elseKeyword.startPosition.row > consequence.endPosition.row;
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
-      (expandsSourceMultilineCondition ||
+      (expandsConditionalChain ||
+        expandsSourceMultilineCondition ||
         consequence.startPosition.row > closeParen.endPosition.row);
     const preservesElseLineBreak =
       consequence.type !== "block_expression" &&
@@ -4747,13 +4749,15 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           );
           const expandsSourceMultilineCondition =
             condition.startPosition.row < condition.endPosition.row;
+          const expandsConditionalChain = alternative.type === "if_expression";
           const separatesCommentedElse =
             alternativeComments.length > 0 &&
             elseKeyword.startPosition.row > consequence.endPosition.row;
           const preservesConsequenceLineBreak =
             consequence.type !== "block_expression" &&
             consequenceComments.length === 0 &&
-            (expandsSourceMultilineCondition ||
+            (expandsConditionalChain ||
+              expandsSourceMultilineCondition ||
               consequence.startPosition.row > closeParen.endPosition.row);
           const expectedConsequenceGap = preservesConsequenceLineBreak
             ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
