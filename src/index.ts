@@ -722,6 +722,22 @@ function collectNodes(node: Parser.SyntaxNode, type: string): Parser.SyntaxNode[
   ];
 }
 
+function isCompactDefaultMatch(node: Parser.SyntaxNode): boolean {
+  const arms = node.childrenForFieldName("arm");
+  const arm = arms[0];
+  const variant = arm?.childForFieldName("variant");
+  return Boolean(
+    arms.length === 1 &&
+      arm &&
+      variant?.type === "hole" &&
+      !arm.childForFieldName("parameter") &&
+      node.startPosition.row === node.endPosition.row &&
+      node.endPosition.column <= 120 &&
+      collectNodes(node, "comment").length === 0 &&
+      collectNodes(node, "documentation_comment").length === 0,
+  );
+}
+
 function isAlignedLocalTrailingComment(
   definition: Parser.SyntaxNode,
   comment: Parser.SyntaxNode,
@@ -1361,6 +1377,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       };
     });
     const analyses = [valueAnalysis, ...armAnalyses.map(({ body }) => body)];
+    const compactDefaultMatch = isCompactDefaultMatch(node);
     const contentDocuments: Doc[] = [];
     let previousArm: (typeof armAnalyses)[number] | undefined;
     for (const child of node.namedChildren.filter((candidate) => candidate.id !== value.id)) {
@@ -1387,14 +1404,22 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       previousArm = arm;
     }
     return {
-      document: concat([
-        text("match "),
-        valueAnalysis.document,
-        text(" {"),
-        indent(concat(contentDocuments.flatMap((document) => [hardLine, document]))),
-        hardLine,
-        text("}"),
-      ]),
+      document: compactDefaultMatch
+        ? concat([
+            text("match "),
+            valueAnalysis.document,
+            text(" { _ => "),
+            armAnalyses[0]?.body.document ?? text(""),
+            text(" }"),
+          ])
+        : concat([
+            text("match "),
+            valueAnalysis.document,
+            text(" {"),
+            indent(concat(contentDocuments.flatMap((document) => [hardLine, document]))),
+            hardLine,
+            text("}"),
+          ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
       sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
@@ -5398,10 +5423,20 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             throw new Error("Unable to locate the match layout");
           }
           const rows = arms.map((arm) => arm.startPosition.row);
+          const compactDefaultMatch = isCompactDefaultMatch(matchExpression);
+          const compactArm = arms[0];
+          const hasCanonicalCompactLayout = Boolean(
+            compactDefaultMatch &&
+              compactArm &&
+              !compactArm.children.some((child) => child.type === "|") &&
+              source.slice(openBrace.endIndex, compactArm.startIndex) === " " &&
+              source.slice(compactArm.endIndex, closeBrace.startIndex) === " ",
+          );
           const hasCanonicalLines =
-            rows[0] !== openBrace.startPosition.row &&
-            rows.every((row, index) => index === 0 || row > (rows[index - 1] as number)) &&
-            closeBrace.startPosition.row > (rows.at(-1) as number);
+            hasCanonicalCompactLayout ||
+            (rows[0] !== openBrace.startPosition.row &&
+              rows.every((row, index) => index === 0 || row > (rows[index - 1] as number)) &&
+              closeBrace.startPosition.row > (rows.at(-1) as number));
           if (!hasCanonicalLines) {
             const row = openBrace.startPosition.row;
             diagnostics.push({
@@ -5410,7 +5445,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               column: openBrace.startPosition.column + 1,
               length: 1,
               rule: "format/match-layout",
-              message: "expected match arms and the closing brace on separate lines",
+              message: compactDefaultMatch
+                ? "expected one space inside the compact default match braces"
+                : "expected match arms and the closing brace on separate lines",
               sourceLine: lines[row] ?? "",
             });
           }

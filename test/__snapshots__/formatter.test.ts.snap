@@ -2320,3 +2320,10 @@ exports[`formatter preserves compact nondet sequences with semicolons 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a compact one-arm default match 1`] = `
+"module Example {
+  val expected = match 42 { _ => "default" }
+}
+"
+`;

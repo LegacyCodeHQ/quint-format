@@ -1164,6 +1164,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a compact one-arm default match", () => {
+    const input = readFileSync(
+      new URL("fixtures/compact-default-match.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("places a match expression below a definition header", () => {
     const input = readFileSync(new URL("fixtures/match-definition.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);
