@@ -1342,6 +1342,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves aligned trailing comments on module instance overrides", () => {
+    const input = readFileSync(
+      new URL("fixtures/instance-trailing-comments.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats anonymous instances", () => {
     const input = readFileSync(new URL("fixtures/anonymous-instance.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);
