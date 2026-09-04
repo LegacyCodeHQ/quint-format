@@ -404,7 +404,12 @@ function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   if (node.type !== "lambda_expression") return false;
   const arrow = node.children.find((child) => child.type === "=>");
   const body = node.childForFieldName("body");
-  return Boolean(arrow && body && body.startPosition.row > arrow.endPosition.row);
+  return Boolean(
+    arrow &&
+      body &&
+      (body.startPosition.row > arrow.endPosition.row ||
+        body.endPosition.row > arrow.endPosition.row),
+  );
 }
 
 function ufcsChainRoot(node: Parser.SyntaxNode): Parser.SyntaxNode {
