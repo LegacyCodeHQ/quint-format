@@ -2407,7 +2407,14 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           previousDeclaration.document = concat([
             previousDeclaration.document,
             hardLine,
-            text(" ".repeat(Math.max(0, node.startPosition.column - 2))),
+            text(
+              " ".repeat(
+                Math.max(
+                  0,
+                  node.startPosition.column - previousDeclaration.node.startPosition.column,
+                ),
+              ),
+            ),
             commentDocument(node),
           ]);
           continue;

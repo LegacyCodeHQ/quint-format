@@ -2127,6 +2127,26 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("shifts a continuation comment with its declaration", () => {
+    const input = readFileSync(
+      new URL("fixtures/shifted-continuation-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected = [
+      "module ShiftedContinuation {",
+      "  const Quorum: Set[Set[str]] // The set of quorums, where a quorum is a",
+      "                              // large enough set of acceptors.",
+      "}",
+      "",
+    ].join("\n");
+
+    expect(output).toBe(expected);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a trailing module-body comment", () => {
     const input = readFileSync(
       new URL("fixtures/trailing-module-comment.qnt", import.meta.url),

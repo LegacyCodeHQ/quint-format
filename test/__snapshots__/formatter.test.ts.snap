@@ -2495,3 +2495,11 @@ exports[`formatter preserves aligned declarations with a continuation comment 1`
 }
 "
 `;
+
+exports[`formatter shifts a continuation comment with its declaration 1`] = `
+"module ShiftedContinuation {
+  const Quorum: Set[Set[str]] // The set of quorums, where a quorum is a
+                              // large enough set of acceptors.
+}
+"
+`;
