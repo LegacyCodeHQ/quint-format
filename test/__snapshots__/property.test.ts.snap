@@ -3,7 +3,7 @@
 exports[`formatter properties converges for deterministic whitespace fuzz cases 1`] = `
 {
   "cases": 128,
-  "uniqueOutputs": 23,
+  "uniqueOutputs": 30,
 }
 `;
 
