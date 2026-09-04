@@ -2393,17 +2393,24 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
           node.startPosition.row === previousTrailingComment.endPosition.row + 1 &&
           node.startPosition.column === previousTrailingComment.startPosition.column,
       );
+      const startsIndentedTrailingComment = Boolean(
+        previousDeclaration &&
+          !previousTrailingComment &&
+          node.startPosition.row === previousDeclaration.node.endPosition.row + 1 &&
+          node.startPosition.column > previousDeclaration.node.startPosition.column,
+      );
       if (
         previousDeclaration &&
         pendingComments.length === 0 &&
         (node.startPosition.row === previousDeclaration.node.endPosition.row ||
-          continuesTrailingComment)
+          continuesTrailingComment ||
+          startsIndentedTrailingComment)
       ) {
         previousDeclaration.trailingComments = [
           ...(previousDeclaration.trailingComments ?? []),
           node,
         ];
-        if (continuesTrailingComment) {
+        if (continuesTrailingComment || startsIndentedTrailingComment) {
           previousDeclaration.document = concat([
             previousDeclaration.document,
             hardLine,
@@ -4184,10 +4191,15 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
       for (const [commentIndex, comment] of (declaration.trailingComments ?? []).entries()) {
         const previousTrailingComment = declaration.trailingComments?.[commentIndex - 1];
+        const startsIndentedTrailingComment =
+          commentIndex === 0 &&
+          comment.startPosition.row === declaration.node.endPosition.row + 1 &&
+          comment.startPosition.column > declaration.node.startPosition.column;
         if (
-          previousTrailingComment &&
-          comment.startPosition.row === previousTrailingComment.endPosition.row + 1 &&
-          comment.startPosition.column === previousTrailingComment.startPosition.column
+          startsIndentedTrailingComment ||
+          (previousTrailingComment &&
+            comment.startPosition.row === previousTrailingComment.endPosition.row + 1 &&
+            comment.startPosition.column === previousTrailingComment.startPosition.column)
         ) {
           continue;
         }

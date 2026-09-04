@@ -2147,6 +2147,29 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("attaches indented comments to the preceding declaration", () => {
+    const input = readFileSync(
+      new URL("fixtures/indented-post-declaration-comments.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected = [
+      "module IndentedPostDeclarationComments {",
+      "  var votes: str -> Set[(int, int)]",
+      "      // votes[a] is the set of votes cast by acceptor a",
+      "  var maxBal: str -> int",
+      "      // maxBal[a] is a ballot number. Acceptor a will cast",
+      "      // further votes only in ballots numbered greater than maxBal[a]",
+      "}",
+      "",
+    ].join("\n");
+
+    expect(output).toBe(expected);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a trailing module-body comment", () => {
     const input = readFileSync(
       new URL("fixtures/trailing-module-comment.qnt", import.meta.url),
