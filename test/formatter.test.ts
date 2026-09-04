@@ -1162,6 +1162,21 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a blank line before trailing module comments", () => {
+    const input = readFileSync(
+      new URL("fixtures/module-trailing-comment-gap.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "  pure val answer = 42\n\n  // Run this example with the simulator.\n  // Additional command details follow here.",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves trailing source comments", () => {
     const input = readFileSync(
       new URL("fixtures/trailing-source-comments.qnt", import.meta.url),

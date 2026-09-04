@@ -941,7 +941,18 @@ exports[`formatter preserves a trailing line comment 1`] = `
 exports[`formatter preserves a trailing module-body comment 1`] = `
 "module Example {
   pure val answer = 42
+
   // Kept for future work
+}
+"
+`;
+
+exports[`formatter preserves a blank line before trailing module comments 1`] = `
+"module Example {
+  pure val answer = 42
+
+  // Run this example with the simulator.
+  // Additional command details follow here.
 }
 "
 `;

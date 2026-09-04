@@ -4830,10 +4830,18 @@ function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
     );
     return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
   });
-  const danglingComments = module.danglingComments.flatMap((comment) => [
-    hardLine,
-    commentDocument(comment),
-  ]);
+  const danglingComments = module.danglingComments.flatMap((comment, index, allComments) => {
+    const lastDeclaration = module.declarations.at(-1);
+    const previous =
+      index === 0
+        ? (lastDeclaration?.trailingComments?.at(-1) ?? lastDeclaration?.node ?? module.openBrace)
+        : allComments[index - 1];
+    const lineBreaks = Math.min(
+      2,
+      Math.max(1, comment.startPosition.row - (previous?.endPosition.row ?? 0)),
+    );
+    return [...Array.from({ length: lineBreaks }, () => hardLine), commentDocument(comment)];
+  });
   const body = [...declarations, ...danglingComments];
   return renderDoc(
     concat([text(`module ${module.name} {`), indent(concat(body)), hardLine, text("}"), hardLine]),
