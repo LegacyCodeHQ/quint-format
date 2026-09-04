@@ -698,6 +698,27 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("keeps a record-returning lambda's braces attached", () => {
+    const input = readFileSync(
+      new URL("fixtures/record-lambda-braces.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      [
+        '  pure val records = Set("one").mapBy(name => {',
+        "    name: name,",
+        "    count: 1,",
+        "  })",
+      ].join("\n"),
+    );
+    expect(output).toMatchSnapshot();
+    expect(checkQuint(input, "unformatted.qnt")).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a comment before a lambda body", () => {
     const input = readFileSync(new URL("fixtures/lambda-comment.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);

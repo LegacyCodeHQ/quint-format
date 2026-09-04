@@ -426,11 +426,13 @@ function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   if (node.type !== "lambda_expression") return false;
   const arrow = node.children.find((child) => child.type === "=>");
   const body = node.childForFieldName("body");
+  const hasBraceDelimitedBody =
+    body?.type === "block_expression" || body?.type === "record_literal";
   return Boolean(
     arrow &&
       body &&
       (body.startPosition.row > arrow.endPosition.row ||
-        (body.type !== "block_expression" && body.endPosition.row > arrow.endPosition.row)),
+        (!hasBraceDelimitedBody && body.endPosition.row > arrow.endPosition.row)),
   );
 }
 
