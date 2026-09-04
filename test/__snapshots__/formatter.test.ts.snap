@@ -1864,3 +1864,19 @@ exports[`formatter expands result branches after a multiline condition 1`] = `
 }
 "
 `;
+
+exports[`formatter separates documented declaration groups 1`] = `
+"module Example {
+  // First documented constant.
+  const FIRST: int
+
+  // Second documented constant.
+  const SECOND: int
+
+  // Third documented constant,
+  // with a multiline comment block.
+  const THIRD: int
+  var state: int
+}
+"
+`;

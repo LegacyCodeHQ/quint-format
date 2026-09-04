@@ -1385,8 +1385,29 @@ describe("formatter", () => {
 
     expect(output).toContain("  }\n\n  // Describe the following definition.");
     expect(checkQuint(input, "input.qnt").map((diagnostic) => diagnostic.rule)).toContain(
-      "format/commented-definition-separation",
+      "format/commented-declaration-separation",
     );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("separates documented declaration groups", () => {
+    const input = readFileSync(
+      new URL("fixtures/commented-declaration-groups.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "  const FIRST: int\n\n  // Second documented constant.\n  const SECOND: int\n\n  // Third documented constant,",
+    );
+    expect(output).toContain("  const THIRD: int\n  var state: int");
+    expect(
+      checkQuint(input, "input.qnt").filter(
+        (diagnostic) => diagnostic.rule === "format/commented-declaration-separation",
+      ),
+    ).toHaveLength(2);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

@@ -3515,14 +3515,12 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         previousDeclaration?.node.endPosition.row === declarationStart.startPosition.row;
       const previousDeclarationEnd =
         previousDeclaration?.trailingComments?.at(-1) ?? previousDeclaration?.node;
-      const requiresCommentedDefinitionSeparation = Boolean(
-        previousDeclaration &&
-          declaration.leadingComments?.length &&
-          previousDeclaration.node.text.trimEnd().endsWith("}"),
+      const requiresCommentedDeclarationSeparation = Boolean(
+        previousDeclaration && declaration.leadingComments?.length,
       );
 
       if (
-        requiresCommentedDefinitionSeparation &&
+        requiresCommentedDeclarationSeparation &&
         previousDeclarationEnd &&
         declarationStart.startPosition.row - previousDeclarationEnd.endPosition.row < 2
       ) {
@@ -3532,7 +3530,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           line: row + 1,
           column: declarationStart.startPosition.column + 1,
           length: Math.max(1, declarationStart.text.length),
-          rule: "format/commented-definition-separation",
+          rule: "format/commented-declaration-separation",
           message: "expected one blank line before a leading comment block",
           sourceLine: lines[row] ?? "",
         });
@@ -5459,10 +5457,9 @@ function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
     if (!previous) return [hardLine, declaration.document];
     const previousEnd = previous.trailingComments?.at(-1) ?? previous.node;
     const declarationStart = declaration.leadingComments?.[0] ?? declaration.node;
-    const separatesCommentedDefinition =
-      Boolean(declaration.leadingComments?.length) && previous.node.text.trimEnd().endsWith("}");
+    const separatesCommentedDeclaration = Boolean(declaration.leadingComments?.length);
     const lineBreaks = Math.max(
-      separatesCommentedDefinition ? 2 : 1,
+      separatesCommentedDeclaration ? 2 : 1,
       declarationStart.startPosition.row - previousEnd.endPosition.row,
     );
     return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
