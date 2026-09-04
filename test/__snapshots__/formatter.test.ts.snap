@@ -1413,3 +1413,14 @@ exports[`formatter preserves a blank line after the module opening brace 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves argument groups in a multiline call 1`] = `
+"module Example {
+  pure val pairs = Set(
+    ("BTC", "USDC"), ("BTC", "USDT"), ("ETH", "USDC"), ("ETH", "USDT"),
+    ("EVMOS", "USDC"), ("EVMOS", "WETH"), ("ETH", "WETH"), ("ATOM", "EVMOS"),
+    ("ATOM", "JUNO"), ("ATOM", "OSMO"), ("EVMOS", "JUNO"), ("EVMOS", "OSMO")
+  )
+}
+"
+`;

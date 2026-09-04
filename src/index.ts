@@ -1280,6 +1280,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const functionNode = node.childForFieldName("function");
     const arguments_ = node.childrenForFieldName("argument");
     if (!functionNode) throw new Error("Unable to locate the call target");
+    const openParenthesis = node.children.find((child) => child.type === "(");
+    const closeParenthesis = [...node.children].reverse().find((child) => child.type === ")");
     const functionAnalysis = analyzeExpression(functionNode);
     const analyses = arguments_.map(analyzeExpression);
     const hasComments = node.namedChildren.some(
@@ -1288,6 +1290,45 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const multilineLambdaArgument =
       arguments_.length === 1 && isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
     const multilineUfcsCall = isMultilineUfcsContinuation(functionNode);
+    const inlineCallDocument = concat([
+      functionAnalysis.document,
+      text("("),
+      ...analyses.flatMap((analysis, index) => [
+        ...(index === 0 ? [] : [text(", ")]),
+        analysis.document,
+      ]),
+      text(")"),
+    ]);
+    const inlineCallLines = renderDoc(inlineCallDocument).split("\n");
+    const exceedsLineWidth = inlineCallLines.some(
+      (line, index) => line.length + (index === 0 ? node.startPosition.column : 0) > 120,
+    );
+    const hasSourceArgumentBreak = arguments_.some((argument, index) => {
+      const previous = index === 0 ? openParenthesis : arguments_[index - 1];
+      return previous && argument.startPosition.row > previous.endPosition.row;
+    });
+    const hasSourceClosingBreak = Boolean(
+      closeParenthesis &&
+        arguments_.at(-1) &&
+        closeParenthesis.startPosition.row >
+          (arguments_.at(-1) as Parser.SyntaxNode).endPosition.row,
+    );
+    const sourceMultilineCall =
+      arguments_.length > 0 &&
+      exceedsLineWidth &&
+      (hasSourceArgumentBreak || hasSourceClosingBreak);
+    const sourceArgumentDocuments = analyses.flatMap((analysis, index) => {
+      const argument = arguments_[index] as Parser.SyntaxNode;
+      const previous = index === 0 ? openParenthesis : arguments_[index - 1];
+      const startsOnNewLine = Boolean(
+        previous && argument.startPosition.row > previous.endPosition.row,
+      );
+      return [
+        ...(index > 0 ? [text(",")] : []),
+        ...(startsOnNewLine ? [hardLine] : index > 0 ? [text(" ")] : []),
+        analysis.document,
+      ];
+    });
     const contentDocuments = hasComments
       ? node.namedChildren.flatMap((child) => {
           if (child.id === functionNode.id) return [];
@@ -1339,15 +1380,15 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                   ufcsContinuationIndentation(functionNode),
                 ),
               ])
-            : concat([
-                functionAnalysis.document,
-                text("("),
-                ...analyses.flatMap((analysis, index) => [
-                  ...(index === 0 ? [] : [text(", ")]),
-                  analysis.document,
-                ]),
-                text(")"),
-              ]),
+            : sourceMultilineCall
+              ? concat([
+                  functionAnalysis.document,
+                  text("("),
+                  indent(concat(sourceArgumentDocuments)),
+                  ...(hasSourceClosingBreak ? [hardLine] : []),
+                  text(")"),
+                ])
+              : inlineCallDocument,
       binaryOperators: [
         ...functionAnalysis.binaryOperators,
         ...analyses.flatMap((analysis) => analysis.binaryOperators),
