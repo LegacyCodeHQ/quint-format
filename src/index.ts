@@ -2332,12 +2332,18 @@ function analyzeExpressionWithClosingComment(
     const isBlockBodiedLambda =
       expression.type === "lambda_expression" &&
       expression.childForFieldName("body")?.type === "block_expression";
+    const isBlockCombinator = [
+      "all_expression",
+      "any_expression",
+      "and_block_expression",
+      "or_block_expression",
+    ].includes(expression.type);
     const isExplicitlyExpanded =
       node.startPosition.row < expression.startPosition.row ||
       expression.endPosition.row < node.endPosition.row;
     return {
       document:
-        isMultilineParenthesizedPostfixReceiver(node) && !isBlockBodiedLambda
+        isMultilineParenthesizedPostfixReceiver(node) && !isBlockBodiedLambda && !isBlockCombinator
           ? concat([text("("), analysis.document, hardLine, text(")")])
           : isExplicitlyExpanded
             ? concat([

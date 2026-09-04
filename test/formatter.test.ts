@@ -1891,6 +1891,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("attaches a parenthesized all expression to its postfix call", () => {
+    const input = readFileSync(
+      new URL("fixtures/parenthesized-all-postfix.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats an integer subtraction expression", () => {
     const input = "module Example {\nval delta=3-1\n}\n";
     const output = formatQuint(input);

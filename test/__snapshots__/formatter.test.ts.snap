@@ -2514,3 +2514,16 @@ exports[`formatter attaches indented comments to the preceding declaration 1`] =
 }
 "
 `;
+
+exports[`formatter attaches a parenthesized all expression to its postfix call 1`] = `
+"module ParenthesizedAllPostfix {
+  var n: int
+
+  run sequence = (all {
+    n' = 1,
+  }).then(all {
+    n' = 2,
+  })
+}
+"
+`;
