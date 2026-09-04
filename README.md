@@ -7,12 +7,14 @@ An independent, opinionated formatter for the
 `quintfmt` is not an official Quint project. Semantic checks such as types and
 modes remain the responsibility of the Quint compiler.
 
+> This release is an early public preview targeting Quint 0.32.x.
+
 ## Install
 
 Requires Node.js 22 or newer.
 
 ```sh
-npm install --global @legacycodehq/quint-format
+npm install --global @legacycodehq/quint-format@next
 ```
 
 ## Use

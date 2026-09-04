@@ -1,6 +1,6 @@
 {
   "name": "@legacycodehq/quint-format",
-  "version": "0.32.0",
+  "version": "0.1.0-alpha.1",
   "description": "An opinionated formatter for the Quint specification language",
   "license": "Apache-2.0",
   "type": "module",
@@ -22,6 +22,9 @@
   "homepage": "https://github.com/LegacyCodeHQ/quint-format#readme",
   "bugs": {
     "url": "https://github.com/LegacyCodeHQ/quint-format/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "dist/cli.js",
