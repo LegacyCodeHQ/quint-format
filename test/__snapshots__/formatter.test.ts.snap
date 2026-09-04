@@ -2106,3 +2106,18 @@ exports[`formatter preserves local definitions in a multiline parenthesized expr
 }
 "
 `;
+
+exports[`formatter preserves local definitions in a multiline UFCS argument 1`] = `
+"module Example {
+  action init = true
+  action step(value) = true
+
+  run scenario =
+    init.then(step(0))
+        .then(
+          val value = 1
+          step(value)
+        ).then(step(2))
+}
+"
+`;

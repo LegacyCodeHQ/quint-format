@@ -1718,6 +1718,11 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         closeParenthesis.startPosition.row >
           (arguments_.at(-1) as Parser.SyntaxNode).endPosition.row,
     );
+    const multilineLocalDefinitionArgument =
+      arguments_.length === 1 &&
+      arguments_[0]?.type === "nested_definition_expression" &&
+      hasSourceArgumentBreak &&
+      hasSourceClosingBreak;
     const inlineMultilineLambdaCall =
       arguments_.length > 1 &&
       isMultilineLambdaExpression(arguments_.at(-1) as Parser.SyntaxNode) &&
@@ -1823,30 +1828,41 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                   hardLine,
                   text(")"),
                 ])
-              : multilineUfcsCall
+              : multilineLocalDefinitionArgument
                 ? concat([
                     functionAnalysis.document,
+                    text("("),
                     indentBy(
-                      concat([
-                        text("("),
-                        ...analyses.flatMap((analysis, index) => [
-                          ...(index === 0 ? [] : [text(", ")]),
-                          analysis.document,
-                        ]),
-                        text(")"),
-                      ]),
-                      ufcsContinuationIndentation(),
+                      concat([hardLine, (analyses[0] as ExpressionAnalysis).document]),
+                      multilineUfcsCall ? ufcsContinuationIndentation() + 1 : 1,
                     ),
+                    hardLine,
+                    indentBy(text(")"), multilineUfcsCall ? ufcsContinuationIndentation() : 0),
                   ])
-                : sourceMultilineCall
+                : multilineUfcsCall
                   ? concat([
                       functionAnalysis.document,
-                      text("("),
-                      indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
-                      hardLine,
-                      text(")"),
+                      indentBy(
+                        concat([
+                          text("("),
+                          ...analyses.flatMap((analysis, index) => [
+                            ...(index === 0 ? [] : [text(", ")]),
+                            analysis.document,
+                          ]),
+                          text(")"),
+                        ]),
+                        ufcsContinuationIndentation(),
+                      ),
                     ])
-                  : inlineCallDocument,
+                  : sourceMultilineCall
+                    ? concat([
+                        functionAnalysis.document,
+                        text("("),
+                        indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
+                        hardLine,
+                        text(")"),
+                      ])
+                    : inlineCallDocument,
       binaryOperators: [
         ...functionAnalysis.binaryOperators,
         ...analyses.flatMap((analysis) => analysis.binaryOperators),
