@@ -1597,38 +1597,48 @@ function analyzeExpressionWithClosingComment(
     );
     const definitionValue =
       definition.childForFieldName("value") ?? definition.childForFieldName("body");
-    const firstComment = comments[0];
+    const trailingDefinitionComments = comments.filter(
+      (comment) => comment.startPosition.row === definitionValue?.endPosition.row,
+    );
+    const leadingBodyComments = comments.filter(
+      (comment) => comment.startPosition.row !== definitionValue?.endPosition.row,
+    );
+    const semicolon = definition.children.find((child) => child.type === ";");
+    let trailingCommentAnchor =
+      semicolon?.endIndex ?? definitionValue?.endIndex ?? definition.endIndex;
+    const definitionDocument = concat([
+      definitionAnalysis.document,
+      ...trailingDefinitionComments.flatMap((comment) => {
+        const gap = node.text.slice(
+          trailingCommentAnchor - node.startIndex,
+          comment.startIndex - node.startIndex,
+        );
+        trailingCommentAnchor = comment.endIndex;
+        return [text(gap), commentDocument(comment)];
+      }),
+    ]);
+    const firstComment = leadingBodyComments[0];
     const preservesLeadingCommentGap = Boolean(
       firstComment &&
         definitionValue &&
         firstComment.startPosition.row > definitionValue.endPosition.row + 1,
     );
     const preservesBodyGap =
-      comments.length === 0 &&
+      leadingBodyComments.length === 0 &&
       definitionValue !== null &&
       body.startPosition.row > definitionValue.endPosition.row + 1;
     const preservesCompactNondetSequence = isCompactNondetSequence(definition, body);
-    const semicolon = definition.children.find((child) => child.type === ";");
     const analyses = [definitionAnalysis, bodyAnalysis];
     return {
       document: compactBlockAnalysis
-        ? concat([
-            definitionAnalysis.document,
-            text(" { "),
-            compactBlockAnalysis.document,
-            text(" }"),
-          ])
+        ? concat([definitionDocument, text(" { "), compactBlockAnalysis.document, text(" }")])
         : preservesCompactNondetSequence
-          ? concat([
-              definitionAnalysis.document,
-              text(semicolon ? "; " : " "),
-              bodyAnalysis.document,
-            ])
+          ? concat([definitionDocument, text(semicolon ? "; " : " "), bodyAnalysis.document])
           : concat([
-              definitionAnalysis.document,
+              definitionDocument,
               hardLine,
               ...(preservesBodyGap || preservesLeadingCommentGap ? [hardLine] : []),
-              ...comments.flatMap((comment) => [commentDocument(comment), hardLine]),
+              ...leadingBodyComments.flatMap((comment) => [commentDocument(comment), hardLine]),
               bodyAnalysis.document,
             ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),

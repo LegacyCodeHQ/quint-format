@@ -2384,3 +2384,13 @@ exports[`formatter preserves a trailing comment on a conditional consequence 1`]
 }
 "
 `;
+
+exports[`formatter preserves a trailing comment on a nested definition 1`] = `
+"module Example {
+  action step =
+    nondet selected = Set(1, 2).oneOf() // Finish this choice.
+    nondet dirty = Set(1, 2).oneOf()
+    selected != dirty
+}
+"
+`;
