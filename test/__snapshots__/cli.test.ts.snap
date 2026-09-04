@@ -1222,10 +1222,10 @@ test/fixtures/block-expression-comment.qnt:2:12: error[format/equals-spacing]: e
 `;
 
 exports[`command-line checker reports noncanonical block-combinator formatting 1`] = `
-"test/fixtures/and-block.qnt:2:23: error[format/block-combinator-layout]: expected choices and the closing brace on separate lines
+"test/fixtures/and-block.qnt:2:24: error[format/block-combinator-brace-spacing]: expected one space inside compact block-combinator braces
   |
 2 |   pure val both = and {true ,false}
-  |                       ^
+  |                        ^
   |
 test/fixtures/and-block.qnt:2:29: error[format/block-combinator-separator-spacing]: expected no space before ','
   |
@@ -1236,11 +1236,6 @@ test/fixtures/and-block.qnt:2:30: error[format/block-combinator-separator-spacin
   |
 2 |   pure val both = and {true ,false}
   |                              ^
-  |
-test/fixtures/and-block.qnt:2:35: error[format/block-combinator-separator-spacing]: expected a trailing comma after each block entry
-  |
-2 |   pure val both = and {true ,false}
-  |                                   ^
   |
 "
 `;

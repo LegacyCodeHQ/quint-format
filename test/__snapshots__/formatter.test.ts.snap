@@ -644,21 +644,13 @@ exports[`formatter formats all block combinators 1`] = `
 "module Example {
   var count: int
 
-  action choose = any {
-    count' = 1, count' = 2,
-  }
+  action choose = any { count' = 1, count' = 2 }
 
-  action advance = all {
-    count >= 0, count' = count + 1,
-  }
+  action advance = all { count >= 0, count' = count + 1 }
 
-  pure val both = and {
-    true, false,
-  }
+  pure val both = and { true, false }
 
-  pure val either = or {
-    false, true,
-  }
+  pure val either = or { false, true }
 }
 "
 `;
@@ -2040,6 +2032,15 @@ exports[`formatter preserves a trailing comment on a block combinator opening 1`
     true,
     false,
   }
+}
+"
+`;
+
+exports[`formatter preserves a compact block combinator 1`] = `
+"module Example {
+  action first = true
+  action second = false
+  action choose = any { first, second }
 }
 "
 `;

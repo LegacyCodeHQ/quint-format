@@ -1147,6 +1147,26 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a compact block combinator", () => {
+    const input = readFileSync(
+      new URL("fixtures/compact-block-combinator.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const compactWithoutSpaces = input.replace("any { first, second }", "any {first,second}");
+
+    expect(output).toBe(input);
+    expect(checkQuint(compactWithoutSpaces, "input.qnt").map(({ rule }) => rule)).toEqual(
+      expect.arrayContaining([
+        "format/block-combinator-brace-spacing",
+        "format/block-combinator-separator-spacing",
+      ]),
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves source-line groups in block combinators", () => {
     const input = readFileSync(
       new URL("fixtures/grouped-combinator-entries.qnt", import.meta.url),

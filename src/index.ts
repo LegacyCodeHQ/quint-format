@@ -1463,7 +1463,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const entries = node.childrenForFieldName(fieldName);
     const keyword = node.children.find((child) => ["any", "all", "and", "or"].includes(child.type));
     const openBrace = node.children.find((child) => child.type === "{");
-    if (!keyword || !openBrace || entries.length === 0) {
+    const closeBrace = [...node.children].reverse().find((child) => child.type === "}");
+    if (!keyword || !openBrace || !closeBrace || entries.length === 0) {
       throw new Error("Unable to locate the block combinator entries");
     }
     const openingComment = node.namedChildren.find(
@@ -1472,6 +1473,34 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startPosition.row === openBrace.endPosition.row,
     );
     const analyses = entries.map(analyzeExpression);
+    const hasComments = node.namedChildren.some(
+      (child) => child.type === "comment" || child.type === "documentation_comment",
+    );
+    const compactDocument = concat([
+      text(`${keyword.text} { `),
+      ...analyses.flatMap((analysis, index) => [
+        ...(index === 0 ? [] : [text(", ")]),
+        analysis.document,
+      ]),
+      text(" }"),
+    ]);
+    const compactText = renderDoc(compactDocument);
+    const preservesCompactLayout =
+      !hasComments &&
+      openBrace.startPosition.row === closeBrace.startPosition.row &&
+      entries.every((entry) => entry.startPosition.row === openBrace.startPosition.row) &&
+      !compactText.includes("\n") &&
+      node.startPosition.column + compactText.length <= 120;
+    if (preservesCompactLayout) {
+      return {
+        document: compactDocument,
+        binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
+        unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
+        sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
+        recordLiterals: analyses.flatMap((analysis) => analysis.recordLiterals),
+        callExpressions: analyses.flatMap((analysis) => analysis.callExpressions),
+      };
+    }
     const contentDocuments: Doc[] = [];
     const contentAnchors: Parser.SyntaxNode[] = [];
     let previousEntry: Parser.SyntaxNode | undefined;
@@ -5335,10 +5364,21 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               throw new Error("Unable to locate the block combinator layout");
             }
             const rows = entries.map((entry) => entry.startPosition.row);
+            const comments = combinator.namedChildren.filter(
+              (child) => child.type === "comment" || child.type === "documentation_comment",
+            );
+            const hasCompactLayout =
+              openBrace.startPosition.row === closeBrace.startPosition.row &&
+              rows.every((row) => row === openBrace.startPosition.row);
+            const preservesCompactLayout =
+              hasCompactLayout &&
+              comments.length === 0 &&
+              (lines[openBrace.startPosition.row]?.length ?? 0) <= 120;
             const hasCanonicalLines =
-              rows[0] !== openBrace.startPosition.row &&
-              rows.every((row, index) => index === 0 || row >= (rows[index - 1] as number)) &&
-              closeBrace.startPosition.row > (rows.at(-1) as number);
+              preservesCompactLayout ||
+              (rows[0] !== openBrace.startPosition.row &&
+                rows.every((row, index) => index === 0 || row >= (rows[index - 1] as number)) &&
+                closeBrace.startPosition.row > (rows.at(-1) as number));
             if (!hasCanonicalLines) {
               const row = openBrace.startPosition.row;
               diagnostics.push({
@@ -5350,6 +5390,25 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
                 message: "expected choices and the closing brace on separate lines",
                 sourceLine: lines[row] ?? "",
               });
+            }
+            if (preservesCompactLayout) {
+              const firstEntry = entries[0] as Parser.SyntaxNode;
+              const lastEntry = entries.at(-1) as Parser.SyntaxNode;
+              if (
+                source.slice(openBrace.endIndex, firstEntry.startIndex) !== " " ||
+                source.slice(lastEntry.endIndex, closeBrace.startIndex) !== " "
+              ) {
+                const row = openBrace.startPosition.row;
+                diagnostics.push({
+                  filePath,
+                  line: row + 1,
+                  column: openBrace.endPosition.column + 1,
+                  length: 1,
+                  rule: "format/block-combinator-brace-spacing",
+                  message: "expected one space inside compact block-combinator braces",
+                  sourceLine: lines[row] ?? "",
+                });
+              }
             }
             const openingComment = combinator.namedChildren.find(
               (child) =>
@@ -5373,6 +5432,21 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             }
             for (const [index, entry] of entries.entries()) {
               const comma = commas[index];
+              if (preservesCompactLayout && index === entries.length - 1) {
+                if (comma) {
+                  const row = comma.startPosition.row;
+                  diagnostics.push({
+                    filePath,
+                    line: row + 1,
+                    column: comma.startPosition.column + 1,
+                    length: 1,
+                    rule: "format/block-combinator-separator-spacing",
+                    message: "expected no trailing comma in a compact block combinator",
+                    sourceLine: lines[row] ?? "",
+                  });
+                }
+                continue;
+              }
               if (!comma) {
                 const row = entry.endPosition.row;
                 diagnostics.push({
