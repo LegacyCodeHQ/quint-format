@@ -1783,6 +1783,14 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         !hasSourceClosingBreak &&
         !hangingFirstLineExceedsWidth,
     );
+    const partiallyExpandedCallWithClosingBreak = Boolean(
+      arguments_.length >= 2 &&
+        openParenthesis &&
+        arguments_[0]?.startPosition.row === openParenthesis.endPosition.row &&
+        hasSourceArgumentBreak &&
+        hasSourceClosingBreak &&
+        !hangingFirstLineExceedsWidth,
+    );
     const multilineLocalDefinitionArgument =
       arguments_.length === 1 &&
       arguments_[0]?.type === "nested_definition_expression" &&
@@ -1905,7 +1913,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                     hardLine,
                     indentBy(text(")"), multilineUfcsCall ? ufcsContinuationIndentation() : 0),
                   ])
-                : hangingGroupedCall
+                : partiallyExpandedCallWithClosingBreak
                   ? concat([
                       functionAnalysis.document,
                       text("("),
@@ -1913,32 +1921,43 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                         concat(sourceArgumentDocuments),
                         multilineUfcsCall ? ufcsContinuationIndentation() + 2 : 2,
                       ),
-                      text(")"),
+                      hardLine,
+                      indentBy(text(")"), multilineUfcsCall ? ufcsContinuationIndentation() : 0),
                     ])
-                  : multilineUfcsCall
+                  : hangingGroupedCall
                     ? concat([
                         functionAnalysis.document,
+                        text("("),
                         indentBy(
-                          concat([
-                            text("("),
-                            ...analyses.flatMap((analysis, index) => [
-                              ...(index === 0 ? [] : [text(", ")]),
-                              analysis.document,
-                            ]),
-                            text(")"),
-                          ]),
-                          ufcsContinuationIndentation(),
+                          concat(sourceArgumentDocuments),
+                          multilineUfcsCall ? ufcsContinuationIndentation() + 2 : 2,
                         ),
+                        text(")"),
                       ])
-                    : sourceMultilineCall
+                    : multilineUfcsCall
                       ? concat([
                           functionAnalysis.document,
-                          text("("),
-                          indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
-                          hardLine,
-                          text(")"),
+                          indentBy(
+                            concat([
+                              text("("),
+                              ...analyses.flatMap((analysis, index) => [
+                                ...(index === 0 ? [] : [text(", ")]),
+                                analysis.document,
+                              ]),
+                              text(")"),
+                            ]),
+                            ufcsContinuationIndentation(),
+                          ),
                         ])
-                      : inlineCallDocument,
+                      : sourceMultilineCall
+                        ? concat([
+                            functionAnalysis.document,
+                            text("("),
+                            indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
+                            hardLine,
+                            text(")"),
+                          ])
+                        : inlineCallDocument,
       binaryOperators: [
         ...functionAnalysis.binaryOperators,
         ...analyses.flatMap((analysis) => analysis.binaryOperators),
@@ -4813,6 +4832,14 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const isVerticallyExpandedCall =
             first.startPosition.row > openParen.endPosition.row &&
             closeParen.startPosition.row > last.endPosition.row;
+          const hasSourceArgumentBreak = arguments_.some((argument, index) => {
+            const previous = index === 0 ? openParen : arguments_[index - 1];
+            return argument.startPosition.row > previous.endPosition.row;
+          });
+          const isPartiallyExpandedCallWithClosingBreak =
+            first.startPosition.row === openParen.endPosition.row &&
+            hasSourceArgumentBreak &&
+            closeParen.startPosition.row > last.endPosition.row;
           const expandedArgumentGap = `\n${" ".repeat(expandedArgumentColumn)}`;
           const expandedCloseGap = `\n${" ".repeat(expressionLineIndentation)}`;
           const afterOpen = source.slice(openParen.endIndex, first.startIndex);
@@ -4848,7 +4875,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             const expectedNextGap =
               isHangingMultilineLambdaCall && next.id === last.id
                 ? hangingArgumentGap
-                : isVerticallyExpandedCall && nextStartsOnNewLine
+                : (isVerticallyExpandedCall || isPartiallyExpandedCallWithClosingBreak) &&
+                    nextStartsOnNewLine
                   ? expandedArgumentGap
                   : " ";
             if (
@@ -4875,13 +4903,15 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const beforeClose = source.slice(anchor.endIndex, closeParen.startIndex);
           const hasCanonicalClose = isVerticallyExpandedCall
             ? beforeClose === expandedCloseGap
-            : isHangingMultilineLambdaCall
-              ? beforeClose === hangingCloseGap
-              : isMultilineLambdaCall
-                ? isMultilineUfcsCall
-                  ? beforeClose === hangingCloseGap
-                  : /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
-                : beforeClose === "";
+            : isPartiallyExpandedCallWithClosingBreak
+              ? beforeClose === expandedCloseGap
+              : isHangingMultilineLambdaCall
+                ? beforeClose === hangingCloseGap
+                : isMultilineLambdaCall
+                  ? isMultilineUfcsCall
+                    ? beforeClose === hangingCloseGap
+                    : /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
+                  : beforeClose === "";
           if (!hasCanonicalClose) {
             const row = closeParen.startPosition.row;
             diagnostics.push({
@@ -4894,7 +4924,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               sourceLine: lines[row] ?? "",
             });
           }
-          if (isVerticallyExpandedCall) {
+          if (isVerticallyExpandedCall || isPartiallyExpandedCallWithClosingBreak) {
             for (const [index, argument] of arguments_.entries()) {
               const previous = index === 0 ? openParen : arguments_[index - 1];
               if (

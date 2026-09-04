@@ -513,6 +513,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a leading call argument beside the opening parenthesis", () => {
+    const input = readFileSync(
+      new URL("fixtures/inline-leading-call-argument.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("normalizes an aligned multiline call while preserving argument groups", () => {
     const input = readFileSync(
       new URL("fixtures/aligned-multiline-call.qnt", import.meta.url),

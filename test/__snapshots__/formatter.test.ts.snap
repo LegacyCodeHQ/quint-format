@@ -2162,3 +2162,12 @@ exports[`formatter preserves a compact single-expression lambda block 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a leading call argument beside the opening parenthesis 1`] = `
+"module Example {
+  pure val decreased: List[int] = [1, 2, 3].foldl([],
+      (list, value) => list.append(if (value >= 0) value else (value - 1))
+  )
+}
+"
+`;
