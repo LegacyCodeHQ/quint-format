@@ -392,7 +392,8 @@ function formatExpandedRecordType(node: Parser.SyntaxNode): Doc {
 
 function commentDocument(node: Parser.SyntaxNode): Doc {
   const continuationPrefix = " ".repeat(node.startPosition.column);
-  const lines = node.text.split(/\r\n|\r|\n/).map((line, index) => {
+  const lines = node.text.split(/\r\n|\r|\n/).map((rawLine, index) => {
+    const line = rawLine.replace(/[ \t]+$/u, "");
     if (index === 0 || continuationPrefix.length === 0) {
       return line;
     }
@@ -3428,6 +3429,33 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
   }
 
   const lines = source.split(/\r?\n/);
+  const comments = [
+    ...analyzedSource.modules.flatMap((module) => [
+      ...module.leadingComments,
+      ...module.node.descendantsOfType(["comment", "documentation_comment"]),
+    ]),
+    ...analyzedSource.trailingComments,
+  ];
+  const commentRows = new Set<number>();
+  for (const comment of comments) {
+    for (let row = comment.startPosition.row; row <= comment.endPosition.row; row += 1) {
+      commentRows.add(row);
+    }
+  }
+  for (const row of commentRows) {
+    const sourceLine = lines[row] ?? "";
+    const trailingWhitespace = sourceLine.match(/[ \t]+$/u)?.[0];
+    if (!trailingWhitespace) continue;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: sourceLine.length - trailingWhitespace.length + 1,
+      length: trailingWhitespace.length,
+      rule: "format/comment-trailing-whitespace",
+      message: "unexpected trailing whitespace in comment",
+      sourceLine,
+    });
+  }
   for (const [moduleIndex, module] of analyzedSource.modules.entries()) {
     const moduleStart = module.leadingComments[0] ?? module.node;
 

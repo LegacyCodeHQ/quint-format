@@ -1513,6 +1513,32 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("removes trailing whitespace from comments", () => {
+    const input = [
+      "module Example {",
+      "  // First explanation.   ",
+      "  pure val first = 1",
+      "",
+      "  /**",
+      "   * Second explanation.  ",
+      "   */",
+      "  pure val second = 2",
+      "}",
+      "",
+    ].join("\n");
+    const output = formatQuint(input);
+    const diagnostics = checkQuint(input, "input.qnt").filter(
+      (diagnostic) => diagnostic.rule === "format/comment-trailing-whitespace",
+    );
+
+    expect(output).not.toMatch(/[ \t]+$/m);
+    expect(diagnostics).toHaveLength(2);
+    expect(diagnostics[0]).toMatchObject({ line: 2, column: 24, length: 3 });
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves blank lines between leading comment groups", () => {
     const input = readFileSync(
       new URL("fixtures/leading-comment-gaps.qnt", import.meta.url),

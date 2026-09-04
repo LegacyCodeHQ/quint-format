@@ -1940,3 +1940,16 @@ exports[`formatter normalizes excess spacing before a documented declaration 1`]
 }
 "
 `;
+
+exports[`formatter removes trailing whitespace from comments 1`] = `
+"module Example {
+  // First explanation.
+  pure val first = 1
+
+  /**
+   * Second explanation.
+   */
+  pure val second = 2
+}
+"
+`;
