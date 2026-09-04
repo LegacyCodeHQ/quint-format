@@ -860,6 +860,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a blank line after a nested operator definition", () => {
+    const input = readFileSync(
+      new URL("fixtures/nested-operator-gap.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("      items.append(1)\n    }\n\n    appendOne(values)");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a nested definition below an action header", () => {
     const input = readFileSync(
       new URL("fixtures/multiline-nested-definition.qnt", import.meta.url),

@@ -1380,3 +1380,16 @@ exports[`formatter keeps a block-bodied lambda brace beside its arrow 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a blank line after a nested operator definition 1`] = `
+"module Example {
+  pure def sort(values: List[int]): List[int] = {
+    pure def appendOne(items: List[int]): List[int] = {
+      items.append(1)
+    }
+
+    appendOne(values)
+  }
+}
+"
+`;

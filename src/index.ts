@@ -1143,7 +1143,8 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startIndex >= definition.endIndex &&
         child.endIndex <= body.startIndex,
     );
-    const definitionValue = definition.childForFieldName("value");
+    const definitionValue =
+      definition.childForFieldName("value") ?? definition.childForFieldName("body");
     const preservesBodyGap =
       comments.length === 0 &&
       definitionValue !== null &&
