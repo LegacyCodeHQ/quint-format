@@ -2095,3 +2095,14 @@ exports[`formatter preserves a trailing comment after definition equals 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves local definitions in a multiline parenthesized expression 1`] = `
+"module Example {
+  val result = (
+      val left = 1
+      val right = 2
+      left + right
+  )
+}
+"
+`;

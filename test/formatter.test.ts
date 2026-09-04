@@ -1554,6 +1554,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves local definitions in a multiline parenthesized expression", () => {
+    const input = readFileSync(
+      new URL("fixtures/multiline-parenthesized-definitions.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("attaches postfix access to a multiline parenthesized expression", () => {
     const input = readFileSync(
       new URL("fixtures/parenthesized-postfix.qnt", import.meta.url),

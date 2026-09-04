@@ -1981,11 +1981,21 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const isBlockBodiedLambda =
       expression.type === "lambda_expression" &&
       expression.childForFieldName("body")?.type === "block_expression";
+    const isExplicitlyExpanded =
+      node.startPosition.row < expression.startPosition.row ||
+      expression.endPosition.row < node.endPosition.row;
     return {
       document:
         isMultilineParenthesizedPostfixReceiver(node) && !isBlockBodiedLambda
           ? concat([text("("), analysis.document, hardLine, text(")")])
-          : concat([text("("), analysis.document, text(")")]),
+          : isExplicitlyExpanded
+            ? concat([
+                text("("),
+                indentBy(concat([hardLine, analysis.document]), 2),
+                hardLine,
+                text(")"),
+              ])
+            : concat([text("("), analysis.document, text(")")]),
       binaryOperators: analysis.binaryOperators,
       unitLiterals: analysis.unitLiterals,
       sequenceLiterals: analysis.sequenceLiterals,
