@@ -1487,3 +1487,12 @@ exports[`formatter preserves a blank line between block combinator entries 1`] =
 }
 "
 `;
+
+exports[`formatter preserves an explicitly expanded list literal 1`] = `
+"module Example {
+  pure val expected = [
+    { port: "transfer", channel: "channelToA" }
+  ]
+}
+"
+`;

@@ -327,6 +327,16 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves an explicitly expanded list literal", () => {
+    const input = readFileSync(new URL("fixtures/expanded-list.qnt", import.meta.url), "utf8");
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a tuple literal", () => {
     const input = "module Example {\n  val pair = ( 1 ,2, )\n}\n";
     const output = formatQuint(input);

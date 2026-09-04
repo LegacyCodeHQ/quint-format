@@ -740,15 +740,47 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     const elements = node.childrenForFieldName("element");
     const analyses = elements.map(analyzeExpression);
     const [openDelimiter, closeDelimiter] = node.type === "list_literal" ? ["[", "]"] : ["(", ")"];
+    const openDelimiterNode = node.children.find((child) => child.type === openDelimiter);
+    const closeDelimiterNode = [...node.children]
+      .reverse()
+      .find((child) => child.type === closeDelimiter);
+    const firstElement = elements[0];
+    const lastElement = elements.at(-1);
+    const isExpandedList = Boolean(
+      node.type === "list_literal" &&
+        openDelimiterNode &&
+        closeDelimiterNode &&
+        firstElement &&
+        lastElement &&
+        firstElement.startPosition.row > openDelimiterNode.endPosition.row &&
+        closeDelimiterNode.startPosition.row > lastElement.endPosition.row,
+    );
+    const elementDocuments = analyses.flatMap((analysis, index) => {
+      const element = elements[index] as Parser.SyntaxNode;
+      const previous = elements[index - 1];
+      const startsOnNewLine = index === 0 || element.startPosition.row > previous.endPosition.row;
+      return [
+        ...(index > 0 ? [text(",")] : []),
+        ...(startsOnNewLine ? [hardLine] : index > 0 ? [text(" ")] : []),
+        analysis.document,
+      ];
+    });
     return {
-      document: concat([
-        text(openDelimiter),
-        ...analyses.flatMap((analysis, index) => [
-          ...(index === 0 ? [] : [text(", ")]),
-          analysis.document,
-        ]),
-        text(closeDelimiter),
-      ]),
+      document: isExpandedList
+        ? concat([
+            text(openDelimiter),
+            indent(concat(elementDocuments)),
+            hardLine,
+            text(closeDelimiter),
+          ])
+        : concat([
+            text(openDelimiter),
+            ...analyses.flatMap((analysis, index) => [
+              ...(index === 0 ? [] : [text(", ")]),
+              analysis.document,
+            ]),
+            text(closeDelimiter),
+          ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
       sequenceLiterals: [node, ...analyses.flatMap((analysis) => analysis.sequenceLiterals)],
