@@ -1261,6 +1261,11 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startIndex >= consequence.endIndex &&
         child.endIndex <= alternative.startIndex,
     );
+    const inlineElseComment =
+      alternativeComments.length === 1 &&
+      alternativeComments[0]?.startPosition.row === elseKeyword.endPosition.row
+        ? alternativeComments[0]
+        : undefined;
     const expandsSourceMultilineCondition = condition.startPosition.row < condition.endPosition.row;
     const expandsConditionalChain = alternative.type === "if_expression";
     const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(node);
@@ -1306,23 +1311,39 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
                 ]),
               ),
             ]),
-        ...(alternativeComments.length === 0
+        ...(inlineElseComment
           ? [
-              ...(preservesElseLineBreak ? [hardLine, text("else")] : [text(" else")]),
-              ...(preservesAlternativeLineBreak
-                ? [indent(concat([hardLine, alternativeAnalysis.document]))]
-                : [text(" "), alternativeAnalysis.document]),
-            ]
-          : [
-              ...(separatesCommentedElse ? [hardLine, text("else")] : [text(" else")]),
-              indent(
-                concat([
-                  ...alternativeComments.flatMap((comment) => [hardLine, commentDocument(comment)]),
-                  hardLine,
-                  alternativeAnalysis.document,
-                ]),
+              hardLine,
+              text("else"),
+              text(
+                node.text.slice(
+                  elseKeyword.endIndex - node.startIndex,
+                  inlineElseComment.startIndex - node.startIndex,
+                ),
               ),
-            ]),
+              commentDocument(inlineElseComment),
+              indent(concat([hardLine, alternativeAnalysis.document])),
+            ]
+          : alternativeComments.length === 0
+            ? [
+                ...(preservesElseLineBreak ? [hardLine, text("else")] : [text(" else")]),
+                ...(preservesAlternativeLineBreak
+                  ? [indent(concat([hardLine, alternativeAnalysis.document]))]
+                  : [text(" "), alternativeAnalysis.document]),
+              ]
+            : [
+                ...(separatesCommentedElse ? [hardLine, text("else")] : [text(" else")]),
+                indent(
+                  concat([
+                    ...alternativeComments.flatMap((comment) => [
+                      hardLine,
+                      commentDocument(comment),
+                    ]),
+                    hardLine,
+                    alternativeAnalysis.document,
+                  ]),
+                ),
+              ]),
       ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
@@ -5366,6 +5387,11 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               child.startIndex >= consequence.endIndex &&
               child.endIndex <= alternative.startIndex,
           );
+          const inlineElseComment =
+            alternativeComments.length === 1 &&
+            alternativeComments[0]?.startPosition.row === elseKeyword.endPosition.row
+              ? alternativeComments[0]
+              : undefined;
           const expandsSourceMultilineCondition =
             condition.startPosition.row < condition.endPosition.row;
           const expandsConditionalChain = alternative.type === "if_expression";
@@ -5421,9 +5447,14 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           const expectedAlternativeGap = preservesAlternativeLineBreak
             ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
             : " ";
+          const hasCanonicalAlternativeGap = inlineElseComment
+            ? /^[\t ]+$/.test(source.slice(elseKeyword.endIndex, inlineElseComment.startIndex)) &&
+              source.slice(inlineElseComment.endIndex, alternative.startIndex) ===
+                `\n${" ".repeat(conditional.startPosition.column + 2)}`
+            : source.slice(elseKeyword.endIndex, alternative.startIndex) === expectedAlternativeGap;
           if (
             source.slice(consequence.endIndex, elseKeyword.startIndex) !== expectedElseGap ||
-            source.slice(elseKeyword.endIndex, alternative.startIndex) !== expectedAlternativeGap
+            !hasCanonicalAlternativeGap
           ) {
             const row = elseKeyword.startPosition.row;
             diagnostics.push({

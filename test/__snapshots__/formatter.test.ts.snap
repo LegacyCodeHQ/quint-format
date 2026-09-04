@@ -2342,3 +2342,19 @@ exports[`formatter preserves an aligned comment after a match-arm arrow 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves an inline comment after else 1`] = `
+"module Example {
+  const inner: int
+
+  val result =
+    if (inner == 2)
+      1
+    else // inner is not 2
+      if (inner == 3)
+        2
+      else
+        3
+}
+"
+`;
