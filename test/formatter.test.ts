@@ -807,6 +807,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a blank line before a nested definition body", () => {
+    const input = readFileSync(
+      new URL("fixtures/nested-definition-gap.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("    pure val doubled = value * 2\n\n    doubled + 1");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a nested definition below an action header", () => {
     const input = readFileSync(
       new URL("fixtures/multiline-nested-definition.qnt", import.meta.url),

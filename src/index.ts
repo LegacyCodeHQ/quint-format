@@ -1111,11 +1111,17 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         child.startIndex >= definition.endIndex &&
         child.endIndex <= body.startIndex,
     );
+    const definitionValue = definition.childForFieldName("value");
+    const preservesBodyGap =
+      comments.length === 0 &&
+      definitionValue !== null &&
+      body.startPosition.row > definitionValue.endPosition.row + 1;
     const analyses = [definitionAnalysis, bodyAnalysis];
     return {
       document: concat([
         definitionAnalysis.document,
         hardLine,
+        ...(preservesBodyGap ? [hardLine] : []),
         ...comments.flatMap((comment) => [commentDocument(comment), hardLine]),
         bodyAnalysis.document,
       ]),

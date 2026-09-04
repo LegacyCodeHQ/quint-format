@@ -1309,3 +1309,14 @@ exports[`formatter preserves an explicit line break after else 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a blank line before a nested definition body 1`] = `
+"module Example {
+  pure def calculate(value: int): int = {
+    pure val doubled = value * 2
+
+    doubled + 1
+  }
+}
+"
+`;
