@@ -489,12 +489,11 @@ exports[`formatter formats a match expression 1`] = `
 "module Example {
   type Option = Some(int) | None
 
-  pure def getOrZero(value: Option): int =
-    match value {
-      | Some(x) => x
-      | None => 0
-      | _ => 0
-    }
+  pure def getOrZero(value: Option): int = match value {
+    | Some(x) => x
+    | None => 0
+    | _ => 0
+  }
 }
 "
 `;
@@ -564,12 +563,11 @@ exports[`formatter indents multiline match-arm bodies below their arms 2`] = `
 exports[`formatter preserves comments between match arms 1`] = `
 "module Example {
   type Step = First | Second
-  pure def value(step) =
-    match step {
-      // Preserve this arm comment.
-      | First => 1
-      | Second => 2
-    }
+  pure def value(step) = match step {
+    // Preserve this arm comment.
+    | First => 1
+    | Second => 2
+  }
 }
 "
 `;
@@ -577,13 +575,12 @@ exports[`formatter preserves comments between match arms 1`] = `
 exports[`formatter preserves a comment before a match-arm body 1`] = `
 "module Example {
   type Step = First | Second
-  pure def value(step) =
-    match step {
-      | First =>
-        // Preserve this arm body comment.
-        1
-      | Second => 2
-    }
+  pure def value(step) = match step {
+    | First =>
+      // Preserve this arm body comment.
+      1
+    | Second => 2
+  }
 }
 "
 `;
@@ -2216,6 +2213,24 @@ exports[`formatter removes a blank line after a block combinator opening 2`] = `
     true,
     false,
   }
+}
+"
+`;
+
+exports[`formatter preserves match placement after a definition equals sign 1`] = `
+"module Example {
+  type Option = Some(int) | None
+
+  pure def inline(value: Option): int = match value {
+    | Some(result) => result
+    | None => 0
+  }
+
+  pure def expanded(value: Option): int =
+    match value {
+      | Some(result) => result
+      | None => 0
+    }
 }
 "
 `;

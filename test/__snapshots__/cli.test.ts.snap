@@ -1,12 +1,7 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`command-line checker reports noncanonical match-arm formatting 1`] = `
-"test/fixtures/match-check.qnt:4:42: error[format/equals-spacing]: expected a line break after '='
-  |
-4 |   pure def getOrZero(value: Option): int = match value {
-  |                                          ^
-  |
-test/fixtures/match-check.qnt:5:12: error[format/match-pattern-spacing]: expected no space after '('
+"test/fixtures/match-check.qnt:5:12: error[format/match-pattern-spacing]: expected no space after '('
   |
 5 |     | Some( x )=>x
   |            ^
@@ -25,12 +20,7 @@ test/fixtures/match-check.qnt:5:16: error[format/match-arrow-spacing]: expected 
 `;
 
 exports[`command-line checker reports an inline match layout 1`] = `
-"test/fixtures/match-expression.qnt:4:42: error[format/equals-spacing]: expected a line break after '='
-  |
-4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
-  |                                          ^
-  |
-test/fixtures/match-expression.qnt:4:56: error[format/match-layout]: expected match arms and the closing brace on separate lines
+"test/fixtures/match-expression.qnt:4:56: error[format/match-layout]: expected match arms and the closing brace on separate lines
   |
 4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
   |                                                        ^
@@ -1098,7 +1088,7 @@ test/fixtures/match-comment.qnt:3:1: error[format/module-body-indentation]: expe
 3 | pure def value(step)=match step{
   | ^
   |
-test/fixtures/match-comment.qnt:3:21: error[format/equals-spacing]: expected a line break after '='
+test/fixtures/match-comment.qnt:3:21: error[format/equals-spacing]: expected one space around '='
   |
 3 | pure def value(step)=match step{
   |                     ^
@@ -1142,7 +1132,7 @@ test/fixtures/match-arm-body-comment.qnt:3:1: error[format/module-body-indentati
 3 | pure def value(step)=match step{
   | ^
   |
-test/fixtures/match-arm-body-comment.qnt:3:21: error[format/equals-spacing]: expected a line break after '='
+test/fixtures/match-arm-body-comment.qnt:3:21: error[format/equals-spacing]: expected one space around '='
   |
 3 | pure def value(step)=match step{
   |                     ^

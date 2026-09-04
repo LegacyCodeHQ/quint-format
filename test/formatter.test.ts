@@ -1158,6 +1158,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves match placement after a definition equals sign", () => {
+    const input = readFileSync(
+      new URL("fixtures/match-definition-placement.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("indents multiline match-arm bodies below their arms", () => {
     const input = readFileSync(
       new URL("fixtures/match-arm-block-indentation.qnt", import.meta.url),

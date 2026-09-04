@@ -423,10 +423,6 @@ function preservesTrailingCommentAlignment(gap: string): boolean {
   return /^ {2,}$/.test(gap);
 }
 
-function requiresDefinitionBodyLineBreak(node: Parser.SyntaxNode): boolean {
-  return node.type === "match_expression";
-}
-
 function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   if (node.type !== "lambda_expression") return false;
   const arrow = node.children.find((child) => child.type === "=>");
@@ -634,8 +630,7 @@ function definitionBodyDocument(
   const equalsLineComment =
     equals && comments[0]?.startPosition.row === equals.endPosition.row ? comments[0] : undefined;
   if (comments.length === 0) {
-    return requiresDefinitionBodyLineBreak(body) ||
-      preservesDefinitionBodyLineBreak(definition, body)
+    return preservesDefinitionBodyLineBreak(definition, body)
       ? concat([headDocument, indentBy(concat([hardLine, bodyDocument]), continuationIndentation)])
       : concat([headDocument, text(" "), bodyDocument]);
   }
@@ -4538,7 +4533,6 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
         const requiresLineBreakAfterEquals =
           isMultilineSum ||
-          requiresDefinitionBodyLineBreak(declaration.valueNode) ||
           preservesDefinitionBodyLineBreak(declaration.node, declaration.valueNode);
         const hasCanonicalAfterEquals = requiresLineBreakAfterEquals
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterEquals)
