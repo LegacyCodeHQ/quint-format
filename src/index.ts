@@ -487,6 +487,20 @@ function isIndentedExpressionBody(node: Parser.SyntaxNode): boolean {
   return false;
 }
 
+function isWithinConditionalCondition(node: Parser.SyntaxNode): boolean {
+  let ancestor = node.parent;
+  while (ancestor) {
+    if (ancestor.type === "if_expression") {
+      const condition = ancestor.childForFieldName("condition");
+      return Boolean(
+        condition && condition.startIndex <= node.startIndex && condition.endIndex >= node.endIndex,
+      );
+    }
+    ancestor = ancestor.parent;
+  }
+  return false;
+}
+
 function compactNestedBlockExpression(
   definition: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
@@ -1783,22 +1797,32 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       (right.startPosition.column === left.startPosition.column ||
         right.startPosition.column === left.startPosition.column + 2) &&
       isIndentedExpressionBody(node);
+    const hasSourceOperatorBreak =
+      inlineComments.length === 0 &&
+      rightComments.length === 0 &&
+      operator.startPosition.row > left.endPosition.row &&
+      isWithinConditionalCondition(node);
     return {
       document:
         rightComments.length === 0
-          ? hasSourceRightBreak
+          ? hasSourceOperatorBreak
             ? concat([
                 leftAnalysis.document,
-                ...comments,
-                text(` ${operator.text}`),
-                indent(concat([hardLine, rightAnalysis.document])),
+                indent(concat([hardLine, text(`${operator.text} `), rightAnalysis.document])),
               ])
-            : concat([
-                leftAnalysis.document,
-                ...comments,
-                text(` ${operator.text} `),
-                rightAnalysis.document,
-              ])
+            : hasSourceRightBreak
+              ? concat([
+                  leftAnalysis.document,
+                  ...comments,
+                  text(` ${operator.text}`),
+                  indent(concat([hardLine, rightAnalysis.document])),
+                ])
+              : concat([
+                  leftAnalysis.document,
+                  ...comments,
+                  text(` ${operator.text} `),
+                  rightAnalysis.document,
+                ])
           : concat([
               leftAnalysis.document,
               ...comments,
@@ -4222,8 +4246,16 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
         const beforeOperator = source.slice(commentAnchor.endIndex, operator.node.startIndex);
         const afterOperator = source.slice(operator.node.endIndex, operator.right.startIndex);
+        const preservesLeadingOperatorBreak =
+          operator.inlineComments.length === 0 &&
+          operator.rightComments.length === 0 &&
+          operator.node.startPosition.row > operator.left.endPosition.row &&
+          isWithinConditionalCondition(operator.node.parent ?? operator.node);
+        const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
+          ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
+          : beforeOperator === " ";
         if (
-          beforeOperator !== " " ||
+          !hasCanonicalBeforeOperator ||
           (operator.rightComments.length === 0 && afterOperator !== " ")
         ) {
           const row = operator.node.startPosition.row;
@@ -4233,7 +4265,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             column: operator.node.startPosition.column + 1,
             length: operator.node.text.length,
             rule: "format/binary-operator-spacing",
-            message: `expected one space around '${operator.node.text}'`,
+            message: preservesLeadingOperatorBreak
+              ? `expected a line break before '${operator.node.text}' and one space after it`
+              : `expected one space around '${operator.node.text}'`,
             sourceLine: lines[row] ?? "",
           });
         }
