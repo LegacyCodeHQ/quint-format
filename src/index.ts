@@ -1273,6 +1273,12 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
     );
     const definitionValue =
       definition.childForFieldName("value") ?? definition.childForFieldName("body");
+    const firstComment = comments[0];
+    const preservesLeadingCommentGap = Boolean(
+      firstComment &&
+        definitionValue &&
+        firstComment.startPosition.row > definitionValue.endPosition.row + 1,
+    );
     const preservesBodyGap =
       comments.length === 0 &&
       definitionValue !== null &&
@@ -1289,7 +1295,7 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
         : concat([
             definitionAnalysis.document,
             hardLine,
-            ...(preservesBodyGap ? [hardLine] : []),
+            ...(preservesBodyGap || preservesLeadingCommentGap ? [hardLine] : []),
             ...comments.flatMap((comment) => [commentDocument(comment), hardLine]),
             bodyAnalysis.document,
           ]),

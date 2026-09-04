@@ -1589,3 +1589,16 @@ exports[`formatter expands a multiline definition header 2`] = `
   },
 ]
 `;
+
+exports[`formatter preserves a blank line before a commented local definition 1`] = `
+"module Example {
+  pure def build = {
+    pure val data = { value: 1 }
+
+    // Construct the packet.
+    pure val packet = { data: data }
+    packet
+  }
+}
+"
+`;
