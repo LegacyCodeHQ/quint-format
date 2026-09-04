@@ -1803,13 +1803,17 @@ function analyzeExpression(node: Parser.SyntaxNode): ExpressionAnalysis {
       rightComments.length === 0 &&
       operator.startPosition.row > left.endPosition.row &&
       (isWithinConditionalCondition(node) || isIndentedExpressionBody(node));
+    const operatorContinuationIndentation = isWithinConditionalCondition(node) ? 2 : 1;
     return {
       document:
         rightComments.length === 0
           ? hasSourceOperatorBreak
             ? concat([
                 leftAnalysis.document,
-                indent(concat([hardLine, text(`${operator.text} `), rightAnalysis.document])),
+                indentBy(
+                  concat([hardLine, text(`${operator.text} `), rightAnalysis.document]),
+                  operatorContinuationIndentation,
+                ),
               ])
             : hasSourceRightBreak
               ? concat([
@@ -4280,6 +4284,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           operator.node.startPosition.row > operator.left.endPosition.row &&
           (isWithinConditionalCondition(operator.node.parent ?? operator.node) ||
             isIndentedExpressionBody(operator.node.parent ?? operator.node));
+        const isConditionalOperatorContinuation =
+          preservesLeadingOperatorBreak &&
+          isWithinConditionalCondition(operator.node.parent ?? operator.node);
         const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
           ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
           : beforeOperator === " ";
@@ -4299,6 +4306,22 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               : `expected one space around '${operator.node.text}'`,
             sourceLine: lines[row] ?? "",
           });
+        }
+        if (isConditionalOperatorContinuation) {
+          const expressionLine = lines[operator.left.startPosition.row] ?? "";
+          const expectedColumn = expressionLine.search(/\S|$/) + 4;
+          if (operator.node.startPosition.column !== expectedColumn) {
+            const row = operator.node.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: 1,
+              length: Math.max(1, operator.node.startPosition.column),
+              rule: "format/binary-operator-indentation",
+              message: "expected a four-space continuation indent",
+              sourceLine: lines[row] ?? "",
+            });
+          }
         }
       }
 

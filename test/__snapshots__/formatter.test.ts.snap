@@ -1858,7 +1858,7 @@ exports[`formatter expands result branches after a multiline condition 1`] = `
 "module Example {
   pure def classify(value: int): str =
     if ((value == 0)
-      or value == 1)
+        or value == 1)
       "SUCCESS"
     else
       "NOT_ENOUGH_TRUST"
@@ -1909,18 +1909,6 @@ exports[`formatter expands the first result in a conditional chain 1`] = `
 "
 `;
 
-exports[`formatter preserves a leading or continuation in a conditional 1`] = `
-"module Example {
-  pure def classify(value: int): str =
-    if ((value == 0)
-      or value == 1)
-      "SUCCESS"
-    else
-      "NOT_ENOUGH_TRUST"
-}
-"
-`;
-
 exports[`formatter preserves a leading implies continuation in a lambda 1`] = `
 "module Example {
   pure val valid = Set(1, 2).forall(value =>
@@ -1950,6 +1938,18 @@ exports[`formatter removes trailing whitespace from comments 1`] = `
    * Second explanation.
    */
   pure val second = 2
+}
+"
+`;
+
+exports[`formatter uses a four-space leading operator continuation in a conditional 1`] = `
+"module Example {
+  pure def classify(value: int): str =
+    if ((value == 0)
+        or value == 1)
+      "SUCCESS"
+    else
+      "NOT_ENOUGH_TRUST"
 }
 "
 `;
