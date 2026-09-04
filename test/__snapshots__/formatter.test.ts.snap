@@ -2394,3 +2394,13 @@ exports[`formatter preserves a trailing comment on a nested definition 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves a leading binary continuation in a block combinator 1`] = `
+"module Example {
+  pure val holds = and {
+    1.in(Set(1, 2))
+        implies 1 == 1,
+  }
+}
+"
+`;

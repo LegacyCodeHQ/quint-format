@@ -488,6 +488,15 @@ function isIndentedExpressionBody(node: Parser.SyntaxNode): boolean {
   return false;
 }
 
+function isBlockCombinatorEntry(node: Parser.SyntaxNode): boolean {
+  return Boolean(
+    node.parent &&
+      ["all_expression", "any_expression", "and_block_expression", "or_block_expression"].includes(
+        node.parent.type,
+      ),
+  );
+}
+
 function isWithinConditionalCondition(node: Parser.SyntaxNode): boolean {
   let ancestor = node.parent;
   while (ancestor) {
@@ -2226,7 +2235,9 @@ function analyzeExpressionWithClosingComment(
       inlineComments.length === 0 &&
       rightComments.length === 0 &&
       operator.startPosition.row > left.endPosition.row &&
-      (isWithinConditionalCondition(node) || isIndentedExpressionBody(node));
+      (isWithinConditionalCondition(node) ||
+        isIndentedExpressionBody(node) ||
+        isBlockCombinatorEntry(node));
     const operatorContinuationIndentation = 2;
     return {
       document:
@@ -4802,7 +4813,8 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
           operator.rightComments.length === 0 &&
           operator.node.startPosition.row > operator.left.endPosition.row &&
           (isWithinConditionalCondition(operator.node.parent ?? operator.node) ||
-            isIndentedExpressionBody(operator.node.parent ?? operator.node));
+            isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
+            isBlockCombinatorEntry(operator.node.parent ?? operator.node));
         const preservesRightOperandBreak =
           operator.inlineComments.length === 0 &&
           operator.rightComments.length === 0 &&

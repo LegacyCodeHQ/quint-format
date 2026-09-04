@@ -2165,6 +2165,23 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a leading binary continuation in a block combinator", () => {
+    const input = readFileSync(
+      new URL("fixtures/block-leading-binary-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const twoSpaceContinuation = input.replace("\n        implies", "\n      implies");
+
+    expect(output).toBe(input);
+    expect(
+      checkQuint(twoSpaceContinuation, "input.qnt").map((diagnostic) => diagnostic.rule),
+    ).toContain("format/binary-operator-indentation");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a binary continuation in a lambda body", () => {
     const input = readFileSync(
       new URL("fixtures/lambda-binary-continuation.qnt", import.meta.url),
