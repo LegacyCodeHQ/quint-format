@@ -1515,7 +1515,7 @@ test/fixtures/instance-override-comment.qnt:5:1: error[format/module-body-indent
 5 | import Library(
   | ^
   |
-test/fixtures/instance-override-comment.qnt:5:15: error[format/instance-delimiter-spacing]: expected no space around instance parentheses
+test/fixtures/instance-override-comment.qnt:5:15: error[format/instance-delimiter-spacing]: expected expanded instance overrides with two-space indentation
   |
 5 | import Library(
   |               ^
@@ -1598,7 +1598,7 @@ test/fixtures/anonymous-instance-comment.qnt:5:1: error[format/module-body-inden
 5 | import Library(
   | ^
   |
-test/fixtures/anonymous-instance-comment.qnt:5:15: error[format/instance-delimiter-spacing]: expected no space around instance parentheses
+test/fixtures/anonymous-instance-comment.qnt:5:15: error[format/instance-delimiter-spacing]: expected expanded instance overrides with two-space indentation
   |
 5 | import Library(
   |               ^

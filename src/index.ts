@@ -2039,6 +2039,14 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       const hasComments = node.namedChildren.some(
         (child) => child.type === "comment" || child.type === "documentation_comment",
       );
+      const firstOverride = overrides[0];
+      const lastOverride = overrides.at(-1);
+      const isExpandedInstance = Boolean(
+        firstOverride &&
+          lastOverride &&
+          firstOverride.startPosition.row > openParen.endPosition.row &&
+          closeParen.startPosition.row > lastOverride.endPosition.row,
+      );
       const overrideDocuments = hasComments
         ? node.namedChildren
             .filter(
@@ -2089,17 +2097,35 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
                 `)${alias ? ` as ${formatPattern(alias)}` : ""}${sourceNode ? ` from ${sourceNode.text}` : ""}`,
               ),
             ])
-          : concat([
-              text(`import ${formatPattern(importedModule)}(`),
-              ...overrideAnalyses.flatMap(({ name, value }, index) => [
-                ...(index === 0 ? [] : [text(", ")]),
-                text(`${formatPattern(name)} = `),
-                value.document,
+          : isExpandedInstance
+            ? concat([
+                text(`import ${formatPattern(importedModule)}(`),
+                indent(
+                  concat(
+                    overrideAnalyses.flatMap(({ name, value }, index) => [
+                      hardLine,
+                      text(`${formatPattern(name)} = `),
+                      value.document,
+                      ...(index < overrideAnalyses.length - 1 ? [text(",")] : []),
+                    ]),
+                  ),
+                ),
+                hardLine,
+                text(
+                  `)${alias ? ` as ${formatPattern(alias)}` : ""}${sourceNode ? ` from ${sourceNode.text}` : ""}`,
+                ),
+              ])
+            : concat([
+                text(`import ${formatPattern(importedModule)}(`),
+                ...overrideAnalyses.flatMap(({ name, value }, index) => [
+                  ...(index === 0 ? [] : [text(", ")]),
+                  text(`${formatPattern(name)} = `),
+                  value.document,
+                ]),
+                text(
+                  `)${alias ? ` as ${formatPattern(alias)}` : ""}${sourceNode ? ` from ${sourceNode.text}` : ""}`,
+                ),
               ]),
-              text(
-                `)${alias ? ` as ${formatPattern(alias)}` : ""}${sourceNode ? ` from ${sourceNode.text}` : ""}`,
-              ),
-            ]),
       });
       continue;
     }
@@ -2134,6 +2160,14 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
       });
       const hasComments = node.namedChildren.some(
         (child) => child.type === "comment" || child.type === "documentation_comment",
+      );
+      const firstOverride = overrides[0];
+      const lastOverride = overrides.at(-1);
+      const isExpandedInstance = Boolean(
+        firstOverride &&
+          lastOverride &&
+          firstOverride.startPosition.row > openParen.endPosition.row &&
+          closeParen.startPosition.row > lastOverride.endPosition.row,
       );
       const overrideDocuments = hasComments
         ? node.namedChildren
@@ -2180,15 +2214,31 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
               hardLine,
               text(`).*${sourceNode ? ` from ${sourceNode.text}` : ""}`),
             ])
-          : concat([
-              text(`import ${formatPattern(importedModule)}(`),
-              ...overrideAnalyses.flatMap(({ name, value }, index) => [
-                ...(index === 0 ? [] : [text(", ")]),
-                text(`${formatPattern(name)} = `),
-                value.document,
+          : isExpandedInstance
+            ? concat([
+                text(`import ${formatPattern(importedModule)}(`),
+                indent(
+                  concat(
+                    overrideAnalyses.flatMap(({ name, value }, index) => [
+                      hardLine,
+                      text(`${formatPattern(name)} = `),
+                      value.document,
+                      ...(index < overrideAnalyses.length - 1 ? [text(",")] : []),
+                    ]),
+                  ),
+                ),
+                hardLine,
+                text(`).*${sourceNode ? ` from ${sourceNode.text}` : ""}`),
+              ])
+            : concat([
+                text(`import ${formatPattern(importedModule)}(`),
+                ...overrideAnalyses.flatMap(({ name, value }, index) => [
+                  ...(index === 0 ? [] : [text(", ")]),
+                  text(`${formatPattern(name)} = `),
+                  value.document,
+                ]),
+                text(`).*${sourceNode ? ` from ${sourceNode.text}` : ""}`),
               ]),
-              text(`).*${sourceNode ? ` from ${sourceNode.text}` : ""}`),
-            ]),
       });
       continue;
     }
@@ -3438,7 +3488,19 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         const insideEnd = last
           ? source.slice(last.endIndex, declaration.instanceCloseParen.startIndex)
           : "";
-        if (afterModule !== "" || insideStart !== "" || insideEnd !== "") {
+        const isExpandedInstance = Boolean(
+          first &&
+            last &&
+            first.startPosition.row > declaration.instanceOpenParen.endPosition.row &&
+            declaration.instanceCloseParen.startPosition.row > last.endPosition.row,
+        );
+        const hasCanonicalDelimiters = isExpandedInstance
+          ? afterModule === "" &&
+            first?.startPosition.column === declaration.node.startPosition.column + 2 &&
+            declaration.instanceCloseParen.startPosition.column ===
+              declaration.node.startPosition.column
+          : afterModule === "" && insideStart === "" && insideEnd === "";
+        if (!hasCanonicalDelimiters) {
           const row = declaration.instanceOpenParen.startPosition.row;
           diagnostics.push({
             filePath,
@@ -3446,7 +3508,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             column: declaration.instanceOpenParen.startPosition.column + 1,
             length: 1,
             rule: "format/instance-delimiter-spacing",
-            message: "expected no space around instance parentheses",
+            message: isExpandedInstance
+              ? "expected expanded instance overrides with two-space indentation"
+              : "expected no space around instance parentheses",
             sourceLine: lines[row] ?? "",
           });
         }
@@ -3489,7 +3553,10 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
             });
           } else if (
             source.slice(previous.endIndex, comma.startIndex) !== "" ||
-            source.slice(comma.endIndex, next.startIndex) !== " "
+            (isExpandedInstance
+              ? !/^\r?\n[\t ]*$/.test(source.slice(comma.endIndex, next.startIndex)) ||
+                next.startPosition.column !== declaration.node.startPosition.column + 2
+              : source.slice(comma.endIndex, next.startIndex) !== " ")
           ) {
             const row = comma.startPosition.row;
             diagnostics.push({
@@ -3498,7 +3565,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
               column: comma.startPosition.column + 1,
               length: 1,
               rule: "format/instance-override-separator-spacing",
-              message: "expected ', ' between instance overrides",
+              message: isExpandedInstance
+                ? "expected each instance override on its own indented line"
+                : "expected ', ' between instance overrides",
               sourceLine: lines[row] ?? "",
             });
           }

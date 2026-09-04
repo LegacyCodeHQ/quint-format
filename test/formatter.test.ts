@@ -1053,6 +1053,19 @@ describe("formatter", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves an expanded anonymous instance", () => {
+    const input = readFileSync(
+      new URL("fixtures/expanded-instance-import.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves comments in anonymous instance overrides", () => {
     const input = readFileSync(
       new URL("fixtures/anonymous-instance-comment.qnt", import.meta.url),

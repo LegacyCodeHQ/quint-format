@@ -1522,3 +1522,18 @@ exports[`formatter preserves a compact block after a nested definition 1`] = `
 }
 "
 `;
+
+exports[`formatter preserves an expanded anonymous instance 1`] = `
+"module Source {
+  const possibleChannelTopologies: Set[str]
+}
+
+module Example {
+  pure val myChannelNames = Set("channelToA", "channelToB")
+
+  import Source(
+    possibleChannelTopologies = myChannelNames
+  ).*
+}
+"
+`;
