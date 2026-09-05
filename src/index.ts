@@ -11,6 +11,7 @@ import {
   preservesTrailingCommentAlignment,
 } from "./comments.js";
 import { checkDeclarationLayout } from "./declaration-checker.js";
+import { checkDefinitionBody } from "./definition-checker.js";
 import type { FormatDiagnostic } from "./diagnostics.js";
 import { concat, type Doc, group, hardLine, indent, line, renderDoc, text } from "./document.js";
 import { checkFinalNewline } from "./final-newline-checker.js";
@@ -2559,58 +2560,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
 
       checkPatternSpacing(declaration.nameNode, source, lines, filePath, diagnostics);
       diagnostics.push(...checkParameterList(declaration, source, filePath, lines));
-
-      if (declaration.equals && declaration.valueNode) {
-        const equalsAnchor =
-          declaration.typeNode ??
-          declaration.closeParen ??
-          declaration.typeCloseBracket ??
-          declaration.nameNode;
-        const beforeEquals = source.slice(equalsAnchor.endIndex, declaration.equals.startIndex);
-        const afterEquals = source.slice(
-          declaration.equals.endIndex,
-          declaration.valueNode.startIndex,
-        );
-        const isMultilineSum =
-          declaration.valueNode.type === "sum_type" &&
-          declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
-        const requiresLineBreakAfterEquals =
-          isMultilineSum ||
-          preservesDefinitionBodyLineBreak(declaration.node, declaration.valueNode);
-        const hasCanonicalAfterEquals = requiresLineBreakAfterEquals
-          ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterEquals)
-          : afterEquals === " ";
-        if (beforeEquals !== " " || !hasCanonicalAfterEquals) {
-          const row = declaration.equals.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: declaration.equals.startPosition.column + 1,
-            length: 1,
-            rule: "format/equals-spacing",
-            message: requiresLineBreakAfterEquals
-              ? "expected a line break after '='"
-              : "expected one space around '='",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-        if (
-          declaration.node.type === "assumption_declaration" &&
-          declaration.valueNode.startPosition.row > declaration.equals.endPosition.row &&
-          declaration.valueNode.startPosition.column !== declaration.node.startPosition.column + 4
-        ) {
-          const row = declaration.valueNode.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: 1,
-            length: Math.max(1, declaration.valueNode.startPosition.column),
-            rule: "format/definition-body-indentation",
-            message: "expected a four-space continuation indent",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-      }
+      diagnostics.push(...checkDefinitionBody(declaration, source, filePath, lines));
 
       if (declaration.semicolon) {
         const row = declaration.semicolon.startPosition.row;
