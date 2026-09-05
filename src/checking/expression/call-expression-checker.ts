@@ -67,9 +67,6 @@ export function checkCallExpressions(
         closeParen.startPosition.row > last.endPosition.row;
       const expandedArgumentGap = `\n${" ".repeat(expandedArgumentColumn)}`;
       const expandedCloseGap = `\n${" ".repeat(expressionLineIndentation)}`;
-      const requiresTrailingComma =
-        functionNode.type !== "field_access_expression" &&
-        closeParen.startPosition.row > last.endPosition.row;
       const afterOpen = source.slice(openParen.endIndex, first.startIndex);
       if (afterOpen !== (isVerticallyExpandedCall ? expandedArgumentGap : "")) {
         const row = openParen.endPosition.row;
@@ -87,7 +84,6 @@ export function checkCallExpressions(
         const previous = arguments_[index];
         const next = arguments_[index + 1];
         if (!previous || !next) {
-          if (requiresTrailingComma) continue;
           const row = comma.startPosition.row;
           diagnostics.push({
             filePath,
@@ -95,7 +91,7 @@ export function checkCallExpressions(
             column: comma.startPosition.column + 1,
             length: 1,
             rule: "format/unnecessary-trailing-comma",
-            message: "trailing commas are omitted from inline calls",
+            message: "trailing commas are omitted from calls",
             sourceLine: lines[row] ?? "",
           });
           continue;
@@ -128,18 +124,6 @@ export function checkCallExpressions(
         }
       }
       const trailingComma = commas.find((comma) => comma.startIndex >= last.endIndex);
-      if (requiresTrailingComma && !trailingComma) {
-        const row = last.endPosition.row;
-        diagnostics.push({
-          filePath,
-          line: row + 1,
-          column: last.endPosition.column + 1,
-          length: 1,
-          rule: "format/missing-trailing-comma",
-          message: "expected a trailing comma in a multiline call",
-          sourceLine: lines[row] ?? "",
-        });
-      }
       const anchor = trailingComma ?? last;
       const beforeClose = source.slice(anchor.endIndex, closeParen.startIndex);
       const hasCanonicalClose = isVerticallyExpandedCall

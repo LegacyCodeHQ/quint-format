@@ -12,7 +12,7 @@ exports[`call expressions preserves argument groups in a multiline call 1`] = `
   pure val pairs = Set(
       ("BTC", "USDC"), ("BTC", "USDT"), ("ETH", "USDC"), ("ETH", "USDT"),
       ("EVMOS", "USDC"), ("EVMOS", "WETH"), ("ETH", "WETH"), ("ATOM", "EVMOS"),
-      ("ATOM", "JUNO"), ("ATOM", "OSMO"), ("EVMOS", "JUNO"), ("EVMOS", "OSMO"),
+      ("ATOM", "JUNO"), ("ATOM", "OSMO"), ("EVMOS", "JUNO"), ("EVMOS", "OSMO")
   )
 }
 "
@@ -25,7 +25,7 @@ exports[`call expressions preserves a partially expanded call within the line wi
 
   pure val result = combine(
       1, 2, 3,
-      4, 5,
+      4, 5
   )
 }
 "
@@ -57,7 +57,7 @@ exports[`call expressions normalizes an aligned multiline call while preserving 
       "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",
       "sender", "receiver",
       "transfer", "channel-topology-with-a-long-name",
-      "zero", "zero",
+      "zero", "zero"
   )
 }
 "
@@ -71,31 +71,31 @@ exports[`call expressions preserves a fully expanded call 1`] = `
       ("C", "A"),
       ("A", "C"),
       ("C", "B"),
-      ("B", "A"),
+      ("B", "A")
   )
 }
 "
 `;
 
-exports[`call expressions preserves a trailing comma in a fully expanded call 1`] = `
+exports[`call expressions removes a trailing comma from a fully expanded call 1`] = `
 [
   {
     "column": 17,
     "filePath": "input.qnt",
     "length": 1,
     "line": 4,
-    "message": "expected a trailing comma in a multiline call",
-    "rule": "format/missing-trailing-comma",
-    "sourceLine": "      "bob" -> 2",
+    "message": "trailing commas are omitted from calls",
+    "rule": "format/unnecessary-trailing-comma",
+    "sourceLine": "      "bob" -> 2,",
   },
 ]
 `;
 
-exports[`call expressions preserves a trailing comma in a fully expanded call 2`] = `
+exports[`call expressions removes a trailing comma from a fully expanded call 2`] = `
 "module Example {
   pure val balances = Map(
       "alice" -> 1,
-      "bob" -> 2,
+      "bob" -> 2
   )
 }
 "
@@ -108,7 +108,7 @@ exports[`call expressions preserves a fully expanded two-argument call 1`] = `
   pure val result =
     compare(
         { prefix: [1], suffix: [4, 5, 6] },
-        { prefix: [2, 7, 8, 9], suffix: [] },
+        { prefix: [2, 7, 8, 9], suffix: [] }
     )
 }
 "
@@ -121,7 +121,7 @@ exports[`call expressions uses a four-space continuation indent for expanded cal
   pure def valid(state: str): bool =
       state != "working" implies verify(
           1,
-          2,
+          2
       )
 }
 "
@@ -132,16 +132,16 @@ exports[`call expressions preserves explicitly multiline calls nested in a multi
   pure val channelTopology = Map(
       "A" -> Map(
           "B" -> "channelToB",
-          "C" -> "channelToC",
+          "C" -> "channelToC"
       ),
       "B" -> Map(
           "A" -> "channelToA",
-          "C" -> "channelToC",
+          "C" -> "channelToC"
       ),
       "C" -> Map(
           "A" -> "channelToA",
-          "B" -> "channelToB",
-      ),
+          "B" -> "channelToB"
+      )
   )
 }
 "
@@ -158,7 +158,7 @@ exports[`call expressions indents a nested multiline call inside a UFCS continua
         // Keep this attached to the call.
         .then(step(Set(
             1,
-            2,
+            2
         )))
 }
 "
@@ -168,7 +168,7 @@ exports[`call expressions preserves a comment before a call argument 1`] = `
 "module Example {
   val result = Set(
       // Preserve this call argument comment.
-      1,
+      1
   )
 }
 "

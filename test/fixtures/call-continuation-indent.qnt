@@ -4,6 +4,6 @@ module Example {
   pure def valid(state: str): bool =
       state != "working" implies verify(
           1,
-          2,
+          2
       )
 }

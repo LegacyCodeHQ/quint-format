@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import Quint from "@legacycodehq/tree-sitter-quint";
+import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+import { namedParseTreeSignature } from "../support/parse-tree";
+
+const parser = new Parser();
+parser.setLanguage(Quint);
 
 describe("call expressions", () => {
   test("formats a call expression", () => {
@@ -77,7 +83,7 @@ describe("call expressions", () => {
         '      "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",',
         '      "sender", "receiver",',
         '      "transfer", "channel-topology-with-a-long-name",',
-        '      "zero", "zero",',
+        '      "zero", "zero"',
         "  )",
       ].join("\n"),
     );
@@ -96,19 +102,24 @@ describe("call expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("preserves a trailing comma in a fully expanded call", () => {
+  test("removes a trailing comma from a fully expanded call", () => {
     const input = readFileSync(
       new URL("../fixtures/expanded-call-trailing-comma.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
-    const withoutTrailingComma = input.replace('      "bob" -> 2,\n', '      "bob" -> 2\n');
+    const expected = input.replace('      "bob" -> 2,\n', '      "bob" -> 2\n');
 
-    expect(output).toBe(input);
-    expect(checkQuint(withoutTrailingComma, "input.qnt")).toMatchSnapshot();
+    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
+    expect(output).toBe(expected);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
   test("preserves a fully expanded two-argument call", () => {
@@ -171,7 +182,7 @@ describe("call expressions", () => {
       "        // Keep this attached to the call.",
       "        .then(step(Set(",
       "            1,",
-      "            2,",
+      "            2",
       "        )))",
       "}",
       "",

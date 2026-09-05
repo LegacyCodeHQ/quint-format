@@ -8,6 +8,6 @@ module Example {
        // Keep this attached to the call.
       .then(step(Set(
         1,
-        2,
+        2
         )))
 }
