@@ -2,7 +2,7 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
-import { concat, hardLine, indent, text } from "@/formatting/document.js";
+import { concat, hardLine, indent, renderDoc, text } from "@/formatting/document.js";
 import { formatCommentedTuplePattern, formatPattern } from "@/formatting/pattern-formatter.js";
 import { compactLambdaBlockExpression, isMultilineLambdaExpression } from "@/parsing/syntax.js";
 
@@ -54,11 +54,27 @@ export function analyzeLambdaExpression(
       }
       ancestor = ancestor.parent;
     }
-    const continuationIndentation =
+    const sourceContinuationIndentation =
       body.startPosition.row > arrow.endPosition.row &&
       body.startPosition.column - continuationAnchor.startPosition.column >= 4
         ? 2
         : 1;
+    const enclosingCall = node.parent?.type === "call_expression" ? node.parent : undefined;
+    const callArguments = enclosingCall?.childrenForFieldName("argument") ?? [];
+    const argumentIndex = callArguments.findIndex((argument) => argument.id === node.id);
+    const previousArgument = callArguments[argumentIndex - 1];
+    const isInlineSecondaryArgument = Boolean(
+      previousArgument && previousArgument.endPosition.row === node.startPosition.row,
+    );
+    const preservedBodyExceedsLineWidth = renderDoc(
+      indentBy(concat([hardLine, analysis.document]), sourceContinuationIndentation),
+    )
+      .split("\n")
+      .some((line) => line.length > 120);
+    const continuationIndentation =
+      isInlineSecondaryArgument && preservedBodyExceedsLineWidth
+        ? 1
+        : sourceContinuationIndentation;
     return {
       document: compactBlockExpression
         ? concat([parameterDocument, text(" => { "), analysis.document, text(" }")])

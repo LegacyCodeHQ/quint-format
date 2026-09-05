@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import Quint from "@legacycodehq/tree-sitter-quint";
+import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+import { namedParseTreeSignature } from "../support/parse-tree";
+
+const parser = new Parser();
+parser.setLanguage(Quint);
 
 describe("lambdas", () => {
   test("formats lambda parameter forms", () => {
@@ -99,6 +105,23 @@ describe("lambdas", () => {
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("stabilizes lambda indentation when its call expands", () => {
+    const input = readFileSync(
+      new URL("../fixtures/fold-lambda-call-expansion.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
   test("propagates multiline layout through nested lambda calls", () => {
