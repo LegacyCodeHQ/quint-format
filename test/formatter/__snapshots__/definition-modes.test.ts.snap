@@ -1,0 +1,112 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`definition modes formats a pure definition 1`] = `
+"module Example {
+  pure def answer = 42
+}
+"
+`;
+
+exports[`definition modes formats a pure value definition 1`] = `
+"module Example {
+  pure val answer = 42
+}
+"
+`;
+
+exports[`definition modes formats a parameterless action 1`] = `
+"module Example {
+  action initialize = true
+}
+"
+`;
+
+exports[`definition modes preserves a comment before a definition body 1`] = `
+"module Example {
+  action init =
+    // Preserve this body comment.
+    true
+}
+"
+`;
+
+exports[`definition modes preserves a trailing comment after definition equals 1`] = `
+"module Example {
+  pure def choose(value: int): int = // Preserve the source-line annotation
+    if (value > 0) {
+      value
+    } else {
+      0
+    }
+}
+"
+`;
+
+exports[`definition modes preserves a four-space commented definition continuation 1`] = `
+"module Example {
+  const PERIOD: int
+
+  def withinPeriod: bool =
+      // Preserve the authored continuation depth.
+      PERIOD > 0
+}
+"
+`;
+
+exports[`definition modes formats a parameterless run 1`] = `
+"module Example {
+  run scenario = true
+}
+"
+`;
+
+exports[`definition modes formats a parameterless temporal definition 1`] = `
+"module Example {
+  temporal invariant = true
+}
+"
+`;
+
+exports[`definition modes preserves an explicit line break after definition equals 1`] = `
+"module Example {
+  temporal eventuallyTrue =
+    eventually(true)
+}
+"
+`;
+
+exports[`definition modes formats a parameterless nondet definition 1`] = `
+"module Example {
+  nondet selection = true
+}
+"
+`;
+
+exports[`definition modes formats empty parameter lists across definition modes 1`] = `
+"module Example {
+  action step(): bool = true
+  run scenario(): bool = true
+  temporal property(): bool = true
+  nondet choose(): int = 1
+}
+"
+`;
+
+exports[`definition modes formats rich definitions and types across every mode 1`] = `
+"module Matrix {
+  type Pair[a, b] = (a, b)
+  type Callback[a, b] = (a) => b
+  var n: int
+  pure def identity(value: List[Set[int]]): List[Set[int]] = value
+  pure def apply(value: int, callback: (int) => str): str = callback(value)
+  def stateValue(offset: int): int = n + offset
+  action advance(amount: int): bool = all {
+    amount > 0,
+    n' = n + amount,
+  }
+  run scenario(start: int): bool = (n' = start).then(n' = start + 1)
+  temporal positive(limit: int): bool = always(n >= limit)
+  nondet choose(values: Set[int]): int = values.oneOf()
+}
+"
+`;

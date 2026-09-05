@@ -1,0 +1,97 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`module instances formats module instances and overrides 1`] = `
+"module Library {
+  const N: int
+  const Flag: bool
+}
+
+module Example {
+  import Library(N = 1, Flag = true) as Lib
+}
+"
+`;
+
+exports[`module instances preserves comments among module instance overrides 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(
+    // Preserve this override comment.
+    N = 1
+  ) as Lib
+}
+"
+`;
+
+exports[`module instances preserves aligned trailing comments on module instance overrides 1`] = `
+"module Library {
+  const A: int
+  const B: int
+}
+
+module Example {
+  import Library(
+    A = 1,  // first override
+    B = 2   // second override
+  ) as Lib
+}
+"
+`;
+
+exports[`module instances formats anonymous instances 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(N = 1).*
+}
+"
+`;
+
+exports[`module instances preserves an expanded anonymous instance 1`] = `
+"module Source {
+  const possibleChannelTopologies: Set[str]
+}
+
+module Example {
+  pure val myChannelNames = Set("channelToA", "channelToB")
+
+  import Source(
+    possibleChannelTopologies = myChannelNames
+  ).*
+}
+"
+`;
+
+exports[`module instances preserves comments in anonymous instance overrides 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(
+    // Preserve this anonymous override comment.
+    N = 1
+  ).*
+}
+"
+`;
+
+exports[`module instances preserves aligned trailing comments on anonymous instance overrides 1`] = `
+"module Library {
+  const A: int
+  const B: int
+}
+
+module Example {
+  import Library(
+    A = 1,  // first override
+    B = 2   // second override
+  ).*
+}
+"
+`;

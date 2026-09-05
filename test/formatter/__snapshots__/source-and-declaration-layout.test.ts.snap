@@ -1,0 +1,72 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`source and declaration layout preserves a source hashbang 1`] = `
+"#!/usr/bin/env -S quint typecheck
+module Example {
+}
+"
+`;
+
+exports[`source and declaration layout formats multiple top-level modules 1`] = `
+"module First {
+}
+
+module Second {
+}
+"
+`;
+
+exports[`source and declaration layout preserves adjacent definitions 1`] = `
+"module Example {
+  var first: int
+  var second: int
+}
+"
+`;
+
+exports[`source and declaration layout separates a braced definition from the next commented definition 1`] = `
+"module Example {
+  pure def ready = and {
+    true,
+  }
+
+  // Describe the following definition.
+  pure val isReady = ready
+}
+"
+`;
+
+exports[`source and declaration layout separates documented declaration groups 1`] = `
+"module Example {
+  // First documented constant.
+  const FIRST: int
+
+  // Second documented constant.
+  const SECOND: int
+
+  // Third documented constant,
+  // with a multiline comment block.
+  const THIRD: int
+  var state: int
+}
+"
+`;
+
+exports[`source and declaration layout normalizes excess spacing before a documented declaration 1`] = `
+"module Example {
+  pure val first = 1
+
+  // Second documented value.
+  pure val second = 2
+}
+"
+`;
+
+exports[`source and declaration layout preserves a blank line between grouped definitions 1`] = `
+"module Example {
+  var first: int
+
+  var second: int
+}
+"
+`;

@@ -1,0 +1,170 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`comments preserves a leading line comment 1`] = `
+"module Example {
+  // The answer
+  val answer = 42
+}
+"
+`;
+
+exports[`comments preserves a definition documentation comment 1`] = `
+"module Example {
+  /// The answer
+  val answer = 42
+}
+"
+`;
+
+exports[`comments removes trailing whitespace from comments 1`] = `
+"module Example {
+  // First explanation.
+  pure val first = 1
+
+  /**
+   * Second explanation.
+   */
+  pure val second = 2
+}
+"
+`;
+
+exports[`comments preserves blank lines between leading comment groups 1`] = `
+"module Example {
+  val source = 1
+
+  // First disabled example
+  // val first = source
+
+  // Second disabled example
+  // val second = source
+
+  def update(value) = value
+}
+"
+`;
+
+exports[`comments preserves a leading single-line block comment 1`] = `
+"module Example {
+  /* The answer */
+  val answer = 42
+}
+"
+`;
+
+exports[`comments indents a leading multiline block comment 1`] = `
+"module Example {
+  /*
+   * The answer
+   */
+  val answer = 42
+}
+"
+`;
+
+exports[`comments preserves a module documentation comment 1`] = `
+"/// Module documentation
+module Example {
+}
+"
+`;
+
+exports[`comments preserves blank lines between top-level comment groups 1`] = `
+"/**
+ * First notice.
+ */
+
+/**
+ * Second notice.
+ */
+module Example {
+}
+"
+`;
+
+exports[`comments preserves a trailing line comment 1`] = `
+"module Example {
+  val answer = 42 // The answer
+}
+"
+`;
+
+exports[`comments preserves aligned trailing comments on module definitions 1`] = `
+"module Example {
+  pure val SHORT = 1      // Short value
+  pure val LONGER = 22    // Longer value
+}
+"
+`;
+
+exports[`comments preserves aligned declarations with a continuation comment 1`] = `
+"module AlignedDeclarations {
+  var maxBal:   str -> int
+  var maxVBal:  str -> int // maxVBal and maxVal form the largest vote
+  var maxVal:   str -> int  // or a sentinel value when the acceptor
+                            // has not cast any vote.
+}
+"
+`;
+
+exports[`comments shifts a continuation comment with its declaration 1`] = `
+"module ShiftedContinuation {
+  const Quorum: Set[Set[str]] // The set of quorums, where a quorum is a
+                              // large enough set of acceptors.
+}
+"
+`;
+
+exports[`comments attaches indented comments to the preceding declaration 1`] = `
+"module IndentedPostDeclarationComments {
+  var votes: str -> Set[(int, int)]
+      // votes[a] is the set of votes cast by acceptor a
+  var maxBal: str -> int
+      // maxBal[a] is a ballot number. Acceptor a will cast
+      // further votes only in ballots numbered greater than maxBal[a]
+}
+"
+`;
+
+exports[`comments preserves a trailing module-body comment 1`] = `
+"module Example {
+  pure val answer = 42
+
+  // Kept for future work
+}
+"
+`;
+
+exports[`comments preserves a blank line before trailing module comments 1`] = `
+"module Example {
+  pure val answer = 42
+
+  // Run this example with the simulator.
+  // Additional command details follow here.
+}
+"
+`;
+
+exports[`comments preserves trailing source comments 1`] = `
+"module Example {
+}
+
+/*! answer !*/
+
+/*! 1 + 1 !*/
+"
+`;
+
+exports[`comments preserves a comment inside an otherwise empty module 1`] = `
+"module Example {
+  // Intentionally empty
+}
+"
+`;
+
+exports[`comments preserves an inline block comment 1`] = `
+"module Example {
+  val total = 1 /* left */ + 2
+}
+"
+`;

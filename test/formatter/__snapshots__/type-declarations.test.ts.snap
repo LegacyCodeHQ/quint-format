@@ -1,0 +1,75 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`type declarations formats a primitive type alias 1`] = `
+"module Example {
+  type Count = int
+}
+"
+`;
+
+exports[`type declarations formats an uninterpreted type 1`] = `
+"module Example {
+  type DOMAIN
+}
+"
+`;
+
+exports[`type declarations formats a named type alias 1`] = `
+"module Example {
+  type DOMAIN
+
+  type Copy = DOMAIN
+}
+"
+`;
+
+exports[`type declarations formats a polymorphic type alias 1`] = `
+"module Example {
+  type Box[a] = List[a]
+}
+"
+`;
+
+exports[`type declarations formats a polymorphic type application 1`] = `
+"module Example {
+  type Box[a] = List[a]
+
+  const boxes: Box[int]
+}
+"
+`;
+
+exports[`type declarations formats an inline sum type 1`] = `
+"module Example {
+  type Elem = S(str) | I(int)
+}
+"
+`;
+
+exports[`type declarations formats a multiline sum type 1`] = `
+"module Example {
+  type Option[a] =
+    | Some(a)
+    | None
+}
+"
+`;
+
+exports[`type declarations preserves comments between sum-type variants 1`] = `
+"module Example {
+  type Step =
+    | First
+    // Preserve this variant comment.
+    | Second
+}
+"
+`;
+
+exports[`type declarations preserves trailing comments on sum-type variants 1`] = `
+"module Example {
+  type LastDraw =
+    | Self(str) // The name of someone who drew themself
+    | Ok        // The draw was Ok
+}
+"
+`;

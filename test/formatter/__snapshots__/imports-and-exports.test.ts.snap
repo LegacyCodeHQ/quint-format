@@ -1,0 +1,46 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`imports and exports formats named and wildcard imports and exports 1`] = `
+"module Library {
+  pure val value = 1
+}
+
+module Consumer {
+  import Library
+  import Library as Lib
+  import Library.value
+  import Library.*
+  export Library
+  export Library as Public
+  export Library.value
+  export Library.*
+}
+"
+`;
+
+exports[`imports and exports formats source-qualified imports 1`] = `
+"module Example {
+  import Library from "./quint-format-source-library"
+  import Library.value from "./quint-format-source-library"
+  import Library.* from "./quint-format-source-library"
+}
+"
+`;
+
+exports[`imports and exports keeps individually commented imports in one group 1`] = `
+"module basics {
+  pure val one = 1
+}
+
+module extras {
+  pure val two = 2
+}
+
+module Example {
+  // Import the basic definitions.
+  import basics.*
+  // Import the extra definitions.
+  import extras.*
+}
+"
+`;

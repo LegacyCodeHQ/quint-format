@@ -1,0 +1,182 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`lambdas formats lambda parameter forms 1`] = `
+"module Example {
+  pure val identity = x => x
+
+  pure val add = (x, y) => x + y
+
+  pure val sumPair = ((x, y)) => x + y
+}
+"
+`;
+
+exports[`lambdas uses a four-space continuation for a multiline lambda body 1`] = `
+"module Example {
+  pure val total = Set(1).fold(0, (sum, value) =>
+      sum + value)
+}
+"
+`;
+
+exports[`lambdas preserves a multiline call with a lambda argument 1`] = `
+"module Example {
+  const names: Set[str]
+
+  val all_present = names.forall(name =>
+    names.contains(name)
+  )
+}
+"
+`;
+
+exports[`lambdas indents a multiline lambda within a UFCS call 1`] = `
+"module Example {
+  pure def proposals(values) =
+      values
+          .map(value =>
+            { id: value }
+          )
+}
+"
+`;
+
+exports[`lambdas uses a four-space leading operator continuation in a lambda 1`] = `
+"module Example {
+  pure val valid = Set(1, 2).forall(value =>
+    (value > 0)
+        implies (value >= 1)
+  )
+}
+"
+`;
+
+exports[`lambdas keeps a secondary lambda header beside the call opening 1`] = `
+"module Example {
+  var values: str -> int
+
+  action update = {
+    values' = values.setBy("one", value =>
+      value + 1
+    )
+  }
+}
+"
+`;
+
+exports[`lambdas keeps leading call arguments beside a multiline lambda 1`] = `
+"module Example {
+  pure val folded =
+    0.range(8)
+        .foldl(Map(),
+          (m, key) =>
+            if (key > 0) m.put(key, key) else m
+        )
+}
+"
+`;
+
+exports[`lambdas propagates multiline layout through nested lambda calls 1`] = `
+"module Example {
+  type Result = Ok(int) | Err(str)
+
+  pure def bind(result: Result, callback: int => Result): Result =
+    match result {
+      | Ok(value) => callback(value)
+      | Err(_) => result
+    }
+
+  pure def combine(lhs: Result, rhs: Result): Result =
+    lhs.bind(left =>
+      rhs.bind(right =>
+        if (left == right)
+          Ok(left)
+        else
+          Err("different")
+      )
+    )
+}
+"
+`;
+
+exports[`lambdas keeps a block-bodied lambda brace beside its arrow 1`] = `
+"module Example {
+  pure def app(op: (int, int) => int, lhs: int, rhs: int): int = op(lhs, rhs)
+
+  pure def absoluteDifference(lhs: int, rhs: int): int =
+    ((x, y) => {
+      val result = x - y
+      if (result < 0) -result else result
+    }).app(lhs, rhs)
+}
+"
+`;
+
+exports[`lambdas preserves a compact single-expression lambda block 1`] = `
+"module Example {
+  pure def listForall(list: List[a], pred: a => bool): bool = {
+    list.foldl(true, (result, element) => { if (pred(element)) result else false })
+  }
+}
+"
+`;
+
+exports[`lambdas keeps a record-returning lambda's braces attached 1`] = `
+"module Example {
+  pure val records = Set("one").mapBy(name => {
+    name: name,
+    count: 1,
+  })
+}
+"
+`;
+
+exports[`lambdas keeps a record-returning lambda's braces attached 2`] = `
+[
+  {
+    "column": 13,
+    "filePath": "unformatted.qnt",
+    "length": 1,
+    "line": 4,
+    "message": "expected a trailing comma after each record element",
+    "rule": "format/multiline-record-separator",
+    "sourceLine": "    count: 1",
+  },
+]
+`;
+
+exports[`lambdas keeps block-combinator lambda bodies attached 1`] = `
+"module Example {
+  pure val values = Set(1, 2)
+
+  val allCase = values.exists(value => all {
+    value > 0,
+    value < 3,
+  })
+
+  val anyCase = values.exists(value => any {
+    value == 1,
+    value == 2,
+  })
+
+  val andCase = values.exists(value => and {
+    value > 0,
+    value < 3,
+  })
+
+  val orCase = values.exists(value => or {
+    value == 1,
+    value == 2,
+  })
+}
+"
+`;
+
+exports[`lambdas preserves a comment before a lambda body 1`] = `
+"module Example {
+  pure val increment = (value =>
+    // Preserve this lambda comment.
+    value + 1)
+}
+"
+`;

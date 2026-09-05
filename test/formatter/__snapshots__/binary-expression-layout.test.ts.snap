@@ -1,0 +1,96 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`binary expression layout preserves a comment before a binary right operand 1`] = `
+"module Example {
+  pure val answer = true and
+    // Preserve this right operand comment.
+    false
+}
+"
+`;
+
+exports[`binary expression layout preserves a same-line comment after a binary operator 1`] = `
+"module Example {
+  pure val answer = true implies // Preserve this operator comment.
+    false
+}
+"
+`;
+
+exports[`binary expression layout preserves a line break after a binary operator 1`] = `
+"module Example {
+  pure val answer =
+    true and
+        false
+}
+"
+`;
+
+exports[`binary expression layout uses a four-space right-operand continuation 1`] = `
+"module Example {
+  pure def valid(flag: bool): bool =
+      flag implies
+          true
+}
+"
+`;
+
+exports[`binary expression layout preserves a leading binary continuation in a block combinator 1`] = `
+"module Example {
+  pure val holds = and {
+    1.in(Set(1, 2))
+        implies 1 == 1,
+  }
+}
+"
+`;
+
+exports[`binary expression layout preserves a binary right-operand continuation in a block combinator 1`] = `
+"module Example {
+  pure val holds = and {
+    1.in(Set(1, 2)) implies
+        1 == 1,
+  }
+}
+"
+`;
+
+exports[`binary expression layout preserves a three-line binary expression in an ordinary block 1`] = `
+"module Example {
+  pure val holds = Set(1, 2).forall(first => {
+    Set(1, 2).forall(second => {
+      first == second
+          implies
+              first != 0
+    })
+  })
+}
+"
+`;
+
+exports[`binary expression layout preserves a nested-definition right operand 1`] = `
+"module Example {
+  pure val holds = {
+    val values = Set(1, 2)
+
+    values.size() == 2 implies
+        val selected = 1
+
+        selected == 1
+  }
+}
+"
+`;
+
+exports[`binary expression layout preserves a binary continuation in a lambda body 1`] = `
+"module Example {
+  pure val chains = Set("a")
+
+  pure val valid =
+    chains.forall(chain =>
+      chain != "b" implies
+          chain == "a"
+    )
+}
+"
+`;

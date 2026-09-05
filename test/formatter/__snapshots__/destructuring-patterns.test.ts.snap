@@ -1,0 +1,26 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`destructuring patterns formats a tuple destructuring pattern 1`] = `
+"module Example {
+  pure val (first, _) = (1, 2)
+}
+"
+`;
+
+exports[`destructuring patterns preserves comments in a tuple destructuring pattern 1`] = `
+"module Example {
+  pure val first = ((
+    // Preserve this tuple field comment.
+    x,
+    y
+  )) => x
+}
+"
+`;
+
+exports[`destructuring patterns formats a record destructuring pattern 1`] = `
+"module Example {
+  pure val { first, second } = { first: 1, second: 2 }
+}
+"
+`;

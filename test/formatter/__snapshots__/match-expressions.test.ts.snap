@@ -1,0 +1,169 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`match expressions formats a match expression 1`] = `
+"module Example {
+  type Option = Some(int) | None
+
+  pure def getOrZero(value: Option): int = match value {
+    | Some(x) => x
+    | None => 0
+    | _ => 0
+  }
+}
+"
+`;
+
+exports[`match expressions preserves a compact one-arm default match 1`] = `
+"module Example {
+  val expected = match 42 { _ => "default" }
+}
+"
+`;
+
+exports[`match expressions places a match expression below a definition header 1`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+
+  action step =
+    match status {
+      | Ready => {
+          status' = Waiting
+        }
+      | Waiting => {
+          status' = Ready
+        }
+    }
+}
+"
+`;
+
+exports[`match expressions preserves match placement after a definition equals sign 1`] = `
+"module Example {
+  type Option = Some(int) | None
+
+  pure def inline(value: Option): int = match value {
+    | Some(result) => result
+    | None => 0
+  }
+
+  pure def expanded(value: Option): int =
+    match value {
+      | Some(result) => result
+      | None => 0
+    }
+}
+"
+`;
+
+exports[`match expressions preserves an inline multiline match used as a lambda body 1`] = `
+"module InlineLambdaMatch {
+  type Message = Msg(int) | Other
+
+  pure def values(messages: Set[Message]): Set[int] =
+    messages.fold(Set(), (acc, message) => match message {
+      | Msg(value) => acc.union(Set(value))
+      | _          => acc
+    })
+}
+"
+`;
+
+exports[`match expressions indents multiline match-arm bodies below their arms 1`] = `
+[
+  {
+    "column": 1,
+    "filePath": "match-arm-block-indentation.qnt",
+    "length": 8,
+    "line": 9,
+    "message": "expected the nested match-arm body to be indented one level",
+    "rule": "format/match-arm-body-indentation",
+    "sourceLine": "        n' = n,",
+  },
+  {
+    "column": 1,
+    "filePath": "match-arm-block-indentation.qnt",
+    "length": 8,
+    "line": 13,
+    "message": "expected the nested match-arm body to be indented one level",
+    "rule": "format/match-arm-body-indentation",
+    "sourceLine": "        n' = n + 1,",
+  },
+]
+`;
+
+exports[`match expressions indents multiline match-arm bodies below their arms 2`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+  var n: int
+
+  action step =
+    match status {
+      | Ready => all {
+          n' = n,
+          status' = Waiting,
+        }
+      | Waiting => all {
+          n' = n + 1,
+          status' = Ready,
+        }
+    }
+}
+"
+`;
+
+exports[`match expressions preserves comments between match arms 1`] = `
+"module Example {
+  type Step = First | Second
+  pure def value(step) = match step {
+    // Preserve this arm comment.
+    | First => 1
+    | Second => 2
+  }
+}
+"
+`;
+
+exports[`match expressions preserves a comment before a match-arm body 1`] = `
+"module Example {
+  type Step = First | Second
+  pure def value(step) = match step {
+    | First =>
+      // Preserve this arm body comment.
+      1
+    | Second => 2
+  }
+}
+"
+`;
+
+exports[`match expressions preserves an aligned comment after a match-arm arrow 1`] = `
+"module Example {
+  type Mode = Ready | Waiting
+
+  const mode: Mode
+
+  val result = match mode {
+    | Ready => 1
+    | Waiting =>        // Explain this arm.
+        2
+  }
+}
+"
+`;
+
+exports[`match expressions preserves a multiline match-arm body with a trailing comment 1`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+
+  val number =
+    match status {
+      | Ready =>
+          1 // Ready has a value
+      | Waiting => 0
+    }
+}
+"
+`;

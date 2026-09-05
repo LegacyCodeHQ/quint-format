@@ -1,0 +1,175 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`call expressions formats a call expression 1`] = `
+"module Example {
+  val values = Set(1, 2)
+}
+"
+`;
+
+exports[`call expressions preserves argument groups in a multiline call 1`] = `
+"module Example {
+  pure val pairs = Set(
+      ("BTC", "USDC"), ("BTC", "USDT"), ("ETH", "USDC"), ("ETH", "USDT"),
+      ("EVMOS", "USDC"), ("EVMOS", "WETH"), ("ETH", "WETH"), ("ATOM", "EVMOS"),
+      ("ATOM", "JUNO"), ("ATOM", "OSMO"), ("EVMOS", "JUNO"), ("EVMOS", "OSMO"),
+  )
+}
+"
+`;
+
+exports[`call expressions preserves a partially expanded call within the line width 1`] = `
+"module Example {
+  pure def combine(first: int, second: int, third: int, fourth: int, fifth: int): int =
+    first + second + third + fourth + fifth
+
+  pure val result = combine(
+      1, 2, 3,
+      4, 5,
+  )
+}
+"
+`;
+
+exports[`call expressions preserves a hanging partially expanded call 1`] = `
+"module Example {
+  pure def combine(first: int, second: int, third: int, fourth: int, fifth: int): int =
+    first + second + third + fourth + fifth
+
+  pure val result = combine(1, 2, 3,
+      4, 5)
+}
+"
+`;
+
+exports[`call expressions preserves a leading call argument beside the opening parenthesis 1`] = `
+"module Example {
+  pure val decreased: List[int] = [ 1, 2, 3 ].foldl([],
+      (list, value) => list.append(if (value >= 0) value else (value - 1))
+  )
+}
+"
+`;
+
+exports[`call expressions normalizes an aligned multiline call while preserving argument groups 1`] = `
+"module Example {
+  pure val result = Set(
+      "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",
+      "sender", "receiver",
+      "transfer", "channel-topology-with-a-long-name",
+      "zero", "zero",
+  )
+}
+"
+`;
+
+exports[`call expressions preserves a fully expanded call 1`] = `
+"module Example {
+  pure val transferSequence = List(
+      ("A", "B"),
+      ("B", "C"),
+      ("C", "A"),
+      ("A", "C"),
+      ("C", "B"),
+      ("B", "A"),
+  )
+}
+"
+`;
+
+exports[`call expressions preserves a trailing comma in a fully expanded call 1`] = `
+[
+  {
+    "column": 17,
+    "filePath": "input.qnt",
+    "length": 1,
+    "line": 4,
+    "message": "expected a trailing comma in a multiline call",
+    "rule": "format/missing-trailing-comma",
+    "sourceLine": "      "bob" -> 2",
+  },
+]
+`;
+
+exports[`call expressions preserves a trailing comma in a fully expanded call 2`] = `
+"module Example {
+  pure val balances = Map(
+      "alice" -> 1,
+      "bob" -> 2,
+  )
+}
+"
+`;
+
+exports[`call expressions preserves a fully expanded two-argument call 1`] = `
+"module Example {
+  pure def compare(left, right) = true
+
+  pure val result =
+    compare(
+        { prefix: [ 1 ], suffix: [ 4, 5, 6 ] },
+        { prefix: [ 2, 7, 8, 9 ], suffix: [] },
+    )
+}
+"
+`;
+
+exports[`call expressions uses a four-space continuation indent for expanded call arguments 1`] = `
+"module Example {
+  pure def verify(first: int, second: int): bool = true
+
+  pure def valid(state: str): bool =
+      state != "working" implies verify(
+          1,
+          2,
+      )
+}
+"
+`;
+
+exports[`call expressions preserves explicitly multiline calls nested in a multiline call 1`] = `
+"module Example {
+  pure val channelTopology = Map(
+      "A" -> Map(
+          "B" -> "channelToB",
+          "C" -> "channelToC",
+      ),
+      "B" -> Map(
+          "A" -> "channelToA",
+          "C" -> "channelToC",
+      ),
+      "C" -> Map(
+          "A" -> "channelToA",
+          "B" -> "channelToB",
+      ),
+  )
+}
+"
+`;
+
+exports[`call expressions indents a nested multiline call inside a UFCS continuation 1`] = `
+"module Example {
+  action init = true
+  action step(values: Set[int]): bool = true
+
+  run execution =
+    init
+        // Explain the first transition.
+        // Keep this attached to the call.
+        .then(step(Set(
+            1,
+            2,
+        )))
+}
+"
+`;
+
+exports[`call expressions preserves a comment before a call argument 1`] = `
+"module Example {
+  val result = Set(
+      // Preserve this call argument comment.
+      1,
+  )
+}
+"
+`;

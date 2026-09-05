@@ -1,0 +1,34 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`modules formats an empty module 1`] = `
+"module Example {
+}
+"
+`;
+
+exports[`modules formats spacing after the module keyword 1`] = `
+"module Example {
+}
+"
+`;
+
+exports[`modules formats spacing before the module brace 1`] = `
+"module Example {
+}
+"
+`;
+
+exports[`modules preserves a blank line after the module opening brace 1`] = `
+"module Example {
+
+  // The first declaration's documentation.
+  pure val answer = 42
+}
+"
+`;
+
+exports[`modules formats excess final newlines 1`] = `
+"module Example {
+}
+"
+`;

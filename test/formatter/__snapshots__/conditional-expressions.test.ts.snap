@@ -1,0 +1,264 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`conditional expressions formats a conditional expression 1`] = `
+"module Example {
+  pure val answer = if (true) 1 else 2
+}
+"
+`;
+
+exports[`conditional expressions preserves multiline unbraced conditional branches 1`] = `
+"module Example {
+  pure def choose(condition: bool): int =
+    if (condition)
+      1
+    else
+      2
+}
+"
+`;
+
+exports[`conditional expressions expands inline results when else starts on a new line 1`] = `
+"module Example {
+  pure def choose(flag: bool): int =
+      if (flag)
+        1
+      else
+        2
+}
+"
+`;
+
+exports[`conditional expressions expands result branches after a multiline condition 1`] = `
+"module Example {
+  pure def classify(value: int): str =
+    if ((value == 0)
+        or value == 1)
+      "SUCCESS"
+    else
+      "NOT_ENOUGH_TRUST"
+}
+"
+`;
+
+exports[`conditional expressions uses a four-space leading operator continuation in a conditional 1`] = `
+"module Example {
+  pure def classify(value: int): str =
+    if ((value == 0)
+        or value == 1)
+      "SUCCESS"
+    else
+      "NOT_ENOUGH_TRUST"
+}
+"
+`;
+
+exports[`conditional expressions preserves an explicit line break after else 1`] = `
+"module Example {
+  type State = { value: int }
+
+  pure def update(condition: bool, state: State): State =
+    if (condition) {
+      value: state.value,
+    } else
+      pure val nextValue = state.value + 1
+      {
+        value: nextValue,
+      }
+}
+"
+`;
+
+exports[`conditional expressions joins else with an immediate nested conditional 1`] = `
+"module Example {
+  pure def classify(value: int): str =
+    if (value < 0)
+      "negative"
+    else if (value == 0)
+      "zero"
+    else
+      "positive"
+}
+"
+`;
+
+exports[`conditional expressions formats a nested conditional as an else-if chain 1`] = `
+[
+  {
+    "column": 19,
+    "filePath": "input.qnt",
+    "length": 1,
+    "line": 3,
+    "message": "expected a line break and two-space indentation after ')'",
+    "rule": "format/conditional-branch-spacing",
+    "sourceLine": "    if (value < 0) "negative" else",
+  },
+  {
+    "column": 31,
+    "filePath": "input.qnt",
+    "length": 4,
+    "line": 3,
+    "message": "expected preserved line breaks and indentation around 'else'",
+    "rule": "format/conditional-else-spacing",
+    "sourceLine": "    if (value < 0) "negative" else",
+  },
+  {
+    "column": 20,
+    "filePath": "input.qnt",
+    "length": 1,
+    "line": 4,
+    "message": "expected a line break and two-space indentation after ')'",
+    "rule": "format/conditional-branch-spacing",
+    "sourceLine": "    if (value == 0) "zero" else",
+  },
+  {
+    "column": 28,
+    "filePath": "input.qnt",
+    "length": 4,
+    "line": 4,
+    "message": "expected preserved line breaks and indentation around 'else'",
+    "rule": "format/conditional-else-spacing",
+    "sourceLine": "    if (value == 0) "zero" else",
+  },
+]
+`;
+
+exports[`conditional expressions formats a nested conditional as an else-if chain 2`] = `
+"module Example {
+  pure def classify(value: int): str =
+    if (value < 0)
+      "negative"
+    else if (value == 0)
+      "zero"
+    else
+      "positive"
+}
+"
+`;
+
+exports[`conditional expressions expands the first result in a conditional chain 1`] = `
+"module Example {
+  pure def classify(value: int): str =
+    if (value < 0)
+      "NEGATIVE"
+    else if (value == 0)
+      "ZERO"
+    else
+      "POSITIVE"
+}
+"
+`;
+
+exports[`conditional expressions places a block-bodied conditional below a definition header 1`] = `
+"module Example {
+  var ready: bool
+  var n: int
+
+  action step =
+    if (ready) {
+      n' = n
+    } else {
+      n' = n + 1
+    }
+}
+"
+`;
+
+exports[`conditional expressions preserves a block-bodied conditional beside a definition header 1`] = `
+"module Example {
+  pure val result = if (true) {
+    1
+  } else {
+    2
+  }
+}
+"
+`;
+
+exports[`conditional expressions preserves a comment before a conditional alternative 1`] = `
+"module Example {
+  pure val answer = if (true)
+    1
+  else
+    // Preserve this alternative comment.
+    2
+}
+"
+`;
+
+exports[`conditional expressions preserves a trailing comment on a conditional consequence 1`] = `
+"module Example {
+  const ready: bool
+
+  val result =
+    if (ready)
+      { status: 1 } // Keep this with the first branch.
+    else
+      { status: 2 }
+}
+"
+`;
+
+exports[`conditional expressions preserves a trailing comment on a nested definition 1`] = `
+"module Example {
+  action step =
+    nondet selected = Set(1, 2).oneOf() // Finish this choice.
+    nondet dirty = Set(1, 2).oneOf()
+    selected != dirty
+}
+"
+`;
+
+exports[`conditional expressions preserves an inline comment after else 1`] = `
+"module Example {
+  const inner: int
+
+  val result =
+    if (inner == 2)
+      1
+    else // inner is not 2
+      if (inner == 3)
+        2
+      else
+        3
+}
+"
+`;
+
+exports[`conditional expressions places pre-else comments inside the alternative branch 1`] = `
+"module Example {
+  pure def result(first: bool, second: bool): str =
+    if (first)
+      "FIRST"
+    else if (second)
+      "SECOND"
+    else
+      // Explain the final fallback.
+      "THIRD"
+}
+"
+`;
+
+exports[`conditional expressions expands the consequence when the alternative has a comment 1`] = `
+"module Example {
+  pure def choose(flag: bool): int = {
+    val selected =
+        if (flag)
+          1
+        else
+          // fallback result
+          2
+    selected
+  }
+}
+"
+`;
+
+exports[`conditional expressions preserves a comment before a conditional consequence 1`] = `
+"module Example {
+  pure val answer = if (true)
+    // Preserve this consequence comment.
+    1 else 2
+}
+"
+`;

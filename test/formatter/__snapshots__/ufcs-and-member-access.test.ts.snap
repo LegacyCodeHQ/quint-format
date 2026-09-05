@@ -1,0 +1,147 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`UFCS and member access formats a UFCS call expression 1`] = `
+"module Example {
+  val count = Set(1).size()
+}
+"
+`;
+
+exports[`UFCS and member access preserves aligned dots in a multiline UFCS chain 1`] = `
+"module Example {
+  var n: int
+
+  action init = n' = 0
+  action step = n' = n + 1
+
+  run trace =
+    init.then(step)
+        .then(step)
+        .then(all {
+          n' = n,
+          assert(n >= 0),
+        })
+}
+"
+`;
+
+exports[`UFCS and member access preserves all aligned dots in a nondet UFCS chain 1`] = `
+"module Example {
+  var selected: int
+
+  action step =
+    nondet choice =
+      Set(1, 2, 3)
+          .filter(value => value > 1)
+          .oneOf()
+    selected' = choice
+}
+"
+`;
+
+exports[`UFCS and member access preserves a single multiline UFCS continuation 1`] = `
+"module Example {
+  pure def ensure(condition: bool, message: str): str = if (condition) "" else message
+  pure def andEnsure(previous: str, condition: bool, message: str): str =
+    if (previous != "") previous else ensure(condition, message)
+
+  pure val error = ensure(true, "first message")
+      .andEnsure(false, "second message")
+}
+"
+`;
+
+exports[`UFCS and member access uses a four-space structural indent for UFCS continuations 1`] = `
+"module Example {
+  var states: str -> int
+
+  action step = {
+    nondet key = Set("one")
+        .oneOf()
+    val updated = states
+        .set(key, 1)
+    states' = states
+        .set(key, updated.get(key))
+  }
+}
+"
+`;
+
+exports[`UFCS and member access uses a four-space structural indent for UFCS continuations 2`] = `
+[
+  {
+    "column": 1,
+    "filePath": "unformatted.qnt",
+    "length": 27,
+    "line": 6,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/field-access-indentation",
+    "sourceLine": "                           .oneOf()",
+  },
+  {
+    "column": 1,
+    "filePath": "unformatted.qnt",
+    "length": 22,
+    "line": 8,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/field-access-indentation",
+    "sourceLine": "                      .set(key, 1)",
+  },
+  {
+    "column": 5,
+    "filePath": "unformatted.qnt",
+    "length": 59,
+    "line": 9,
+    "message": "expected the nested definition body on a new line",
+    "rule": "format/nested-definition-layout",
+    "sourceLine": "    states' = states",
+  },
+  {
+    "column": 1,
+    "filePath": "unformatted.qnt",
+    "length": 15,
+    "line": 10,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/field-access-indentation",
+    "sourceLine": "               .set(key, updated.get(key))",
+  },
+]
+`;
+
+exports[`UFCS and member access formats an index expression 1`] = `
+"module Example {
+  val first = List(1, 2)[0]
+}
+"
+`;
+
+exports[`UFCS and member access formats a field-access expression 1`] = `
+"module Example {
+  val answer = { value: 1 }.value
+}
+"
+`;
+
+exports[`UFCS and member access preserves a comment before a field selector 1`] = `
+"module Example {
+  pure val source = { field: 1 }
+  pure val answer = source
+      // Preserve this chain comment.
+      .field
+}
+"
+`;
+
+exports[`UFCS and member access aligns comments with a continued UFCS selector 1`] = `
+"module Example {
+  action init = true
+  action step = true
+
+  run execution =
+    init
+        // Explain the first transition.
+        // Keep this attached to the call.
+        .then(step)
+}
+"
+`;

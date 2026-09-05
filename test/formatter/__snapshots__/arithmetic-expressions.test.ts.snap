@@ -1,0 +1,8 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`arithmetic expressions formats an integer subtraction expression 1`] = `
+"module Example {
+  val delta = 3 - 1
+}
+"
+`;

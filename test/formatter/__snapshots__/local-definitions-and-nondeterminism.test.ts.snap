@@ -1,0 +1,147 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`local definitions and nondeterminism formats a nondeterministic binding 1`] = `
+"module Example {
+  var count: int
+
+  action step = {
+    nondet choice = Set(1, 2).oneOf()
+    count' = choice
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism formats nested definitions 1`] = `
+"module Example {
+  pure def calculate(value: int): int = {
+    pure val doubled: int = value * 2
+    pure def increment(number: int): int = number + 1
+    increment(doubled)
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves compact nondet sequences with semicolons 1`] = `
+"module Example {
+  action use(value, amount) = true
+
+  action step = any {
+    nondet value = Set(1, 2, 3).oneOf(); use(value, value),
+    all {
+      nondet index = Set(1, 2, 3).oneOf(); nondet amount = Set(1, 2, 3).oneOf() use(index, amount),
+    },
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves a compact block after a nested definition 1`] = `
+"module Example {
+  pure val channelTopology = Map("A" -> "channelToA")
+
+  run simulationTest = all {
+    def show(a) = true { show(channelTopology) },
+    true,
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves a blank line before a nested definition body 1`] = `
+"module Example {
+  pure def calculate(value: int): int = {
+    pure val doubled = value * 2
+
+    doubled + 1
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves a blank line after a nested operator definition 1`] = `
+"module Example {
+  pure def sort(values: List[int]): List[int] = {
+    pure def appendOne(items: List[int]): List[int] = {
+      items.append(1)
+    }
+
+    appendOne(values)
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves a nested definition below an action header 1`] = `
+"module Example {
+  var n: int
+
+  action step =
+    nondet value = Set(1, 2, 3).oneOf()
+    all {
+      n' = value,
+      value > 0,
+    }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves a comment after a nested definition 1`] = `
+"module Example {
+  action step = {
+    val answer = 42
+    // Preserve this comment.
+    answer
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves a blank line before a commented local definition 1`] = `
+"module Example {
+  pure def build = {
+    pure val data = { value: 1 }
+
+    // Construct the packet.
+    pure val packet = { data: data }
+    packet
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves a trailing comment on a local definition 1`] = `
+"module Example {
+  action step = {
+    val answer = 42 // Preserve this local comment.
+    answer
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves aligned trailing comments on local definitions 1`] = `
+"module Example {
+  pure def total = {
+    val first = 1     // First value
+    val second = 22   // Second value
+    val third = 333   // Third value
+    val fourth = 4444 // Fourth value
+    first + second + third + fourth
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves a comment before a local definition body 1`] = `
+"module Example {
+  action step = {
+    val answer =
+      // Preserve this local body comment.
+      42
+    answer
+  }
+}
+"
+`;

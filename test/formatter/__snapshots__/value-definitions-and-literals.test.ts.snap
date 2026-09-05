@@ -1,0 +1,138 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`value definitions and literals formats an integer value definition 1`] = `
+"module Example {
+  val answer = 42
+}
+"
+`;
+
+exports[`value definitions and literals removes an optional value semicolon 1`] = `
+"module Example {
+  val answer = 42
+}
+"
+`;
+
+exports[`value definitions and literals formats a Boolean value definition 1`] = `
+"module Example {
+  val ready = true
+}
+"
+`;
+
+exports[`value definitions and literals formats a string value definition 1`] = `
+"module Example {
+  val greeting = "hello"
+}
+"
+`;
+
+exports[`value definitions and literals formats a typed value definition 1`] = `
+"module Example {
+  val answer: int = 42
+}
+"
+`;
+
+exports[`value definitions and literals formats an integer addition expression 1`] = `
+"module Example {
+  val total = 1 + 2
+}
+"
+`;
+
+exports[`value definitions and literals formats an identifier value expression 1`] = `
+"module Example {
+  const source: int
+  val copy = source
+}
+"
+`;
+
+exports[`value definitions and literals formats a unit literal 1`] = `
+"module Example {
+  val empty = ()
+}
+"
+`;
+
+exports[`value definitions and literals formats a list literal 1`] = `
+"module Example {
+  val values = [ 1, 2 ]
+}
+"
+`;
+
+exports[`value definitions and literals preserves an explicitly expanded list literal 1`] = `
+"module Example {
+  pure val expected = [
+    { port: "transfer", channel: "channelToA" }
+  ]
+}
+"
+`;
+
+exports[`value definitions and literals formats a tuple literal 1`] = `
+"module Example {
+  val pair = (1, 2)
+}
+"
+`;
+
+exports[`value definitions and literals formats a record literal 1`] = `
+"module Example {
+  val user = { name: "Alice", age: 42 }
+}
+"
+`;
+
+exports[`value definitions and literals preserves a multiline record literal 1`] = `
+"module Example {
+  pure val account = {
+    owner: "alice",
+    balance: 0,
+  }
+}
+"
+`;
+
+exports[`value definitions and literals preserves source-line groups in a multiline record literal 1`] = `
+"module Example {
+  pure val message = {
+    source: "alice", round: 1,
+    value: "ready", validRound: 0,
+  }
+}
+"
+`;
+
+exports[`value definitions and literals formats a record spread 1`] = `
+"module Example {
+  val extended = { b: 2, ...{ a: 1 } }
+}
+"
+`;
+
+exports[`value definitions and literals preserves comments in record literals 1`] = `
+"module Example {
+  val state = {
+    first: 1, // first value
+    second: 2,
+  }
+}
+"
+`;
+
+exports[`value definitions and literals keeps a closing-delimiter comment with the final nested record field 1`] = `
+"module Example {
+  val output = {
+    nested: {
+      first: 1,
+      second: 2, // Explain the second field.
+    },
+    result: 3,
+  }
+}
+"
+`;

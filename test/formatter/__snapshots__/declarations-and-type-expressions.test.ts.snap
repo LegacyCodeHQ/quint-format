@@ -1,0 +1,151 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`declarations and type expressions indents a variable declaration in a module 1`] = `
+"module Example {
+  var n: int
+}
+"
+`;
+
+exports[`declarations and type expressions formats spacing after a type colon 1`] = `
+"module Example {
+  var n: int
+}
+"
+`;
+
+exports[`declarations and type expressions removes spacing before a type colon 1`] = `
+"module Example {
+  var n: int
+}
+"
+`;
+
+exports[`declarations and type expressions formats spacing after var 1`] = `
+"module Example {
+  var n: int
+}
+"
+`;
+
+exports[`declarations and type expressions formats a constant declaration 1`] = `
+"module Example {
+  const N: int
+}
+"
+`;
+
+exports[`declarations and type expressions formats a Set type 1`] = `
+"module Example {
+  const Values: Set[int]
+}
+"
+`;
+
+exports[`declarations and type expressions formats a tuple type 1`] = `
+"module Example {
+  const Pair: (int, str)
+}
+"
+`;
+
+exports[`declarations and type expressions formats a record type 1`] = `
+"module Example {
+  const User: { name: str, active: bool }
+}
+"
+`;
+
+exports[`declarations and type expressions preserves a multiline record type 1`] = `
+"module Example {
+  type Account = {
+    owner: str,
+    balance: int,
+  }
+}
+"
+`;
+
+exports[`declarations and type expressions preserves comments in a record type 1`] = `
+"module Example {
+  type Item = {
+    // Preserve this field comment.
+    id: int,
+  }
+}
+"
+`;
+
+exports[`declarations and type expressions preserves aligned trailing comments in a record type 1`] = `
+"module Example {
+  type State = {
+    outPackets: Set[int],              // outgoing packets
+    acknowledgements: Set[int],        // incoming acknowledgements
+  }
+}
+"
+`;
+
+exports[`declarations and type expressions formats an empty record type 1`] = `
+"module Example {
+  type Empty = {}
+}
+"
+`;
+
+exports[`declarations and type expressions formats an open record type 1`] = `
+"module Example {
+  const User: { name: str | r }
+}
+"
+`;
+
+exports[`declarations and type expressions formats a function type 1`] = `
+"module Example {
+  const mapper: int -> str
+}
+"
+`;
+
+exports[`declarations and type expressions formats an operator type 1`] = `
+"module Example {
+  const predicate: (int, str) => bool
+}
+"
+`;
+
+exports[`declarations and type expressions formats a zero-parameter operator type 1`] = `
+"module Example {
+  const thunk: () => bool
+}
+"
+`;
+
+exports[`declarations and type expressions formats a direct operator type 1`] = `
+"module Example {
+  const predicate: int => bool
+}
+"
+`;
+
+exports[`declarations and type expressions formats a parenthesized type 1`] = `
+"module Example {
+  const values: (Set[int])
+}
+"
+`;
+
+exports[`declarations and type expressions formats a unit type 1`] = `
+"module Example {
+  const empty: ()
+}
+"
+`;
+
+exports[`declarations and type expressions places declarations on separate lines 1`] = `
+"module Example {
+  var a: int
+  var b: int
+}
+"
+`;

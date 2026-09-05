@@ -1,0 +1,25 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`assumptions formats a Boolean assumption 1`] = `
+"module Example {
+  assume Safe = true
+}
+"
+`;
+
+exports[`assumptions formats spacing around assumption equals 1`] = `
+"module Example {
+  assume Safe = true
+}
+"
+`;
+
+exports[`assumptions preserves a multiline assumption with a four-space continuation 1`] = `
+"module Example {
+  const Values: Set[int]
+
+  assume NonEmpty =
+      Values != Set()
+}
+"
+`;

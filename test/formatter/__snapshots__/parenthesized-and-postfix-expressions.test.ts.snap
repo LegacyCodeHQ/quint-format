@@ -1,0 +1,60 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`parenthesized and postfix expressions formats a parenthesized expression 1`] = `
+"module Example {
+  val total = (1 + 2)
+}
+"
+`;
+
+exports[`parenthesized and postfix expressions preserves local definitions in a multiline parenthesized expression 1`] = `
+"module Example {
+  val result = (
+      val left = 1
+      val right = 2
+      left + right
+  )
+}
+"
+`;
+
+exports[`parenthesized and postfix expressions preserves local definitions in a multiline UFCS argument 1`] = `
+"module Example {
+  action init = true
+  action step(value) = true
+
+  run scenario =
+    init.then(step(0))
+        .then(
+          val value = 1
+          step(value)
+        ).then(step(2))
+}
+"
+`;
+
+exports[`parenthesized and postfix expressions attaches postfix access to a multiline parenthesized expression 1`] = `
+"module Example {
+  pure def app(op: (int, int) => int, lhs: int, rhs: int): int = op(lhs, rhs)
+
+  pure def multiply(lhs: int, rhs: int): int =
+    ((x, y) =>
+      val result = x * y
+      if (result > 0) result else 0
+    ).app(lhs, rhs)
+}
+"
+`;
+
+exports[`parenthesized and postfix expressions attaches a parenthesized all expression to its postfix call 1`] = `
+"module ParenthesizedAllPostfix {
+  var n: int
+
+  run sequence = (all {
+    n' = 1,
+  }).then(all {
+    n' = 2,
+  })
+}
+"
+`;

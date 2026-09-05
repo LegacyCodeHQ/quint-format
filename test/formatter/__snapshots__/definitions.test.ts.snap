@@ -1,0 +1,108 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`definitions formats a general assumption expression 1`] = `
+"module Example {
+  const Flag: bool
+
+  assume Holds = Flag
+}
+"
+`;
+
+exports[`definitions formats a parameterless def definition 1`] = `
+"module Example {
+  def answer = 42
+}
+"
+`;
+
+exports[`definitions formats a def parameter 1`] = `
+"module Example {
+  def identity(value) = value
+}
+"
+`;
+
+exports[`definitions formats an ignored def parameter 1`] = `
+"module Example {
+  pure def ignore(_: int): int = 0
+}
+"
+`;
+
+exports[`definitions formats multiple def parameters 1`] = `
+"module Example {
+  def choose(left, right) = left
+}
+"
+`;
+
+exports[`definitions formats a typed def header 1`] = `
+"module Example {
+  def identity(value: int): int = value
+}
+"
+`;
+
+exports[`definitions expands a multiline definition header 1`] = `
+"module Example {
+  pure def transfer(
+    chainState: str,
+    denomination: str,
+    amount: int,
+    sender: str,
+    receiver: str,
+    sourcePort: str,
+    sourceChannel: str,
+    timeoutHeight: int,
+    timeoutTimestamp: int,
+  ): bool = {
+    true
+  }
+}
+"
+`;
+
+exports[`definitions expands a multiline definition header 2`] = `
+[
+  {
+    "column": 21,
+    "filePath": "multiline-definition-header.qnt",
+    "length": 15,
+    "line": 2,
+    "message": "expected the first parameter on an indented line",
+    "rule": "format/multiline-parameter-layout",
+    "sourceLine": "  pure def transfer(chainState: str, denomination: str, amount: int,",
+  },
+  {
+    "column": 62,
+    "filePath": "multiline-definition-header.qnt",
+    "length": 1,
+    "line": 4,
+    "message": "expected a trailing comma after the parameter",
+    "rule": "format/multiline-parameter-layout",
+    "sourceLine": "                    timeoutHeight: int, timeoutTimestamp: int): bool = {",
+  },
+]
+`;
+
+exports[`definitions formats an untyped parameter with a return type 1`] = `
+"module Example {
+  def identity(value): int = value
+}
+"
+`;
+
+exports[`definitions formats List types in a def header 1`] = `
+"module Example {
+  def identity(xs: List[int]): List[int] = xs
+}
+"
+`;
+
+exports[`definitions removes an optional definition semicolon 1`] = `
+"module Example {
+  def answer = 42
+}
+"
+`;
