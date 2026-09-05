@@ -81,29 +81,35 @@ describe("declarations and type expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("preserves a multiline record type", () => {
+  test("removes a trailing comma from a multiline record type", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-record-type.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
+    const expected = input.replace("    balance: int,\n", "    balance: int\n");
 
-    expect(output).toContain("type Account = {\n    owner: str,\n    balance: int,\n  }");
+    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
+    expect(output).toBe(expected);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
-  test("adds a missing trailing comma to a multiline record type", () => {
+  test("preserves a multiline record type without a trailing comma", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-record-type-missing-comma.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
 
-    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toEqual([
-      "format/multiline-record-separator",
-    ]);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

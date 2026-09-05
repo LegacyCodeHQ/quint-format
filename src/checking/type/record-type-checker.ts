@@ -58,7 +58,8 @@ export function checkRecordType(node: Parser.SyntaxNode, context: TypeCheckConte
         (candidate) =>
           candidate.startIndex >= field.endIndex && candidate.startIndex < boundary.startIndex,
       );
-      if (!comma || source.slice(field.endIndex, comma.startIndex) !== "") {
+      const requiresSeparator = Boolean(nextField || (row && row.startIndex > field.endIndex));
+      if (requiresSeparator && (!comma || source.slice(field.endIndex, comma.startIndex) !== "")) {
         const row = field.endPosition.row;
         diagnostics.push({
           filePath,
@@ -66,7 +67,19 @@ export function checkRecordType(node: Parser.SyntaxNode, context: TypeCheckConte
           column: field.endPosition.column + 1,
           length: 1,
           rule: "format/multiline-record-separator",
-          message: "expected a trailing comma after each record field",
+          message: "expected a comma between record fields",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+      if (!requiresSeparator && comma) {
+        const row = comma.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: comma.startPosition.column + 1,
+          length: 1,
+          rule: "format/unnecessary-trailing-comma",
+          message: "trailing commas are omitted from record types",
           sourceLine: lines[row] ?? "",
         });
       }
@@ -76,8 +89,21 @@ export function checkRecordType(node: Parser.SyntaxNode, context: TypeCheckConte
     if (isExpanded) continue;
     const previousField = fields[index];
     const nextField = fields[index + 1];
-    if (!previousField || !nextField) {
+    if (!previousField) {
       throw new Error("Unable to locate record fields around ','");
+    }
+    if (!nextField) {
+      const row = comma.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: comma.startPosition.column + 1,
+        length: 1,
+        rule: "format/unnecessary-trailing-comma",
+        message: "trailing commas are omitted from record types",
+        sourceLine: lines[row] ?? "",
+      });
+      continue;
     }
     const beforeComma = source.slice(previousField.endIndex, comma.startIndex);
     const afterComma = source.slice(comma.endIndex, nextField.startIndex);

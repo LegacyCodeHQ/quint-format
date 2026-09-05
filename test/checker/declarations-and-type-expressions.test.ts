@@ -42,8 +42,8 @@ describe("checker diagnostics", () => {
       expectFormattingViolation("record-type.qnt");
     });
 
-    test("reports a missing multiline record-type trailing comma", () => {
-      expectFormattingViolation("multiline-record-type-missing-comma.qnt");
+    test("reports a multiline record-type trailing comma", () => {
+      expectFormattingViolation("multiline-record-type.qnt");
     });
 
     test("reports noncanonical commented-record-type formatting", () => {

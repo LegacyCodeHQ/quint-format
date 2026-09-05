@@ -22,10 +22,17 @@ export function formatExpandedRecordType(node: Parser.SyntaxNode): Doc {
             candidate.endIndex <= child.startIndex,
         );
         const gapStart = comma?.endIndex ?? previousField?.endIndex ?? child.startIndex;
-        const commentGap = node.text.slice(
+        const sourceCommentGap = node.text.slice(
           gapStart - node.startIndex,
           child.startIndex - node.startIndex,
         );
+        const previousFieldHasFollowingFieldOrRow = node.namedChildren.some(
+          (candidate) =>
+            candidate.startIndex > child.endIndex &&
+            (candidate.type === "record_type_field" || (row && candidate.id === row.id)),
+        );
+        const commentGap =
+          comma && !previousFieldHasFollowingFieldOrRow ? ` ${sourceCommentGap}` : sourceCommentGap;
         entries.push(concat([fieldDocument, text(commentGap), commentDocument(child)]));
       } else {
         entries.push(commentDocument(child));
@@ -37,7 +44,14 @@ export function formatExpandedRecordType(node: Parser.SyntaxNode): Doc {
       const name = child.childForFieldName("name");
       const fieldType = child.childForFieldName("type");
       if (!name || !fieldType) throw new Error("Unable to locate a commented record field type");
-      entries.push(text(`${name.text}: ${formatType(fieldType)},`));
+      const hasFollowingFieldOrRow = node.namedChildren.some(
+        (candidate) =>
+          candidate.startIndex > child.endIndex &&
+          (candidate.type === "record_type_field" || (row && candidate.id === row.id)),
+      );
+      entries.push(
+        text(`${name.text}: ${formatType(fieldType)}${hasFollowingFieldOrRow ? "," : ""}`),
+      );
       previousField = child;
       continue;
     }

@@ -107,6 +107,15 @@ test/fixtures/record-type.qnt:2:33: error[format/type-colon-spacing]: expected o
 "
 `;
 
+exports[`checker diagnostics declarations and type expressions reports a multiline record-type trailing comma 1`] = `
+"test/fixtures/multiline-record-type.qnt:4:17: error[format/unnecessary-trailing-comma]: trailing commas are omitted from record types
+  |
+4 |     balance: int,
+  |                 ^
+  |
+"
+`;
+
 exports[`checker diagnostics declarations and type expressions reports noncanonical commented-record-type formatting 1`] = `
 "test/fixtures/record-type-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
@@ -127,6 +136,11 @@ test/fixtures/record-type-comment.qnt:4:4: error[format/type-colon-spacing]: exp
   |
 4 | id:int,
   |    ^
+  |
+test/fixtures/record-type-comment.qnt:4:7: error[format/unnecessary-trailing-comma]: trailing commas are omitted from record types
+  |
+4 | id:int,
+  |       ^
   |
 "
 `;
@@ -268,15 +282,6 @@ exports[`checker diagnostics declarations and type expressions reports adjacent 
   |
 2 |   var a: int  var b: int
   |               ^^^
-  |
-"
-`;
-
-exports[`checker diagnostics declarations and type expressions reports a missing multiline record-type trailing comma 1`] = `
-"test/fixtures/multiline-record-type-missing-comma.qnt:4:15: error[format/multiline-record-separator]: expected a trailing comma after each record field
-  |
-4 |     right: int
-  |               ^
   |
 "
 `;

@@ -56,11 +56,35 @@ exports[`declarations and type expressions formats a record type 1`] = `
 "
 `;
 
-exports[`declarations and type expressions preserves a multiline record type 1`] = `
+exports[`declarations and type expressions removes a trailing comma from a multiline record type 1`] = `
+[
+  {
+    "column": 17,
+    "filePath": "input.qnt",
+    "length": 1,
+    "line": 4,
+    "message": "trailing commas are omitted from record types",
+    "rule": "format/unnecessary-trailing-comma",
+    "sourceLine": "    balance: int,",
+  },
+]
+`;
+
+exports[`declarations and type expressions removes a trailing comma from a multiline record type 2`] = `
 "module Example {
   type Account = {
     owner: str,
-    balance: int,
+    balance: int
+  }
+}
+"
+`;
+
+exports[`declarations and type expressions preserves a multiline record type without a trailing comma 1`] = `
+"module Example {
+  type Pair = {
+    left: int,
+    right: int
   }
 }
 "
@@ -70,7 +94,7 @@ exports[`declarations and type expressions preserves comments in a record type 1
 "module Example {
   type Item = {
     // Preserve this field comment.
-    id: int,
+    id: int
   }
 }
 "
@@ -80,7 +104,7 @@ exports[`declarations and type expressions preserves aligned trailing comments i
 "module Example {
   type State = {
     outPackets: Set[int],              // outgoing packets
-    acknowledgements: Set[int],        // incoming acknowledgements
+    acknowledgements: Set[int]         // incoming acknowledgements
   }
 }
 "
@@ -146,16 +170,6 @@ exports[`declarations and type expressions places declarations on separate lines
 "module Example {
   var a: int
   var b: int
-}
-"
-`;
-
-exports[`declarations and type expressions adds a missing trailing comma to a multiline record type 1`] = `
-"module Example {
-  type Pair = {
-    left: int,
-    right: int,
-  }
 }
 "
 `;
