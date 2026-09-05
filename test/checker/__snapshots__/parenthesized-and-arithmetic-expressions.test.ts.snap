@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker parenthesized and arithmetic expressions reports noncanonical parenthesized expression formatting 1`] = `
+exports[`checker diagnostics parenthesized and arithmetic expressions reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | val total=(1+2)
@@ -19,7 +19,7 @@ test/fixtures/parenthesized-expression.qnt:2:13: error[format/binary-operator-sp
 "
 `;
 
-exports[`command-line checker parenthesized and arithmetic expressions reports noncanonical subtraction formatting 1`] = `
+exports[`checker diagnostics parenthesized and arithmetic expressions reports noncanonical subtraction formatting 1`] = `
 "test/fixtures/subtraction-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | val delta=3-1
