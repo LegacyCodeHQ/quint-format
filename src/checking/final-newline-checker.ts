@@ -1,4 +1,4 @@
-import type { FormatDiagnostic } from "./diagnostics.js";
+import type { FormatDiagnostic } from "../diagnostics.js";
 
 function positionAtIndex(source: string, index: number) {
   const lines = source.slice(0, index).split(/\r\n|\r|\n/);

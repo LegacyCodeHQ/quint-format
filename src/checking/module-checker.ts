@@ -1,5 +1,5 @@
-import type { AnalyzedSourceModule } from "./analysis.js";
-import type { FormatDiagnostic } from "./diagnostics.js";
+import type { AnalyzedSourceModule } from "../analysis.js";
+import type { FormatDiagnostic } from "../diagnostics.js";
 
 export function checkModuleLayout(
   module: AnalyzedSourceModule,

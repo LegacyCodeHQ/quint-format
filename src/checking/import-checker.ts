@@ -1,5 +1,5 @@
-import type { ModuleDeclaration } from "./analysis.js";
-import type { FormatDiagnostic } from "./diagnostics.js";
+import type { ModuleDeclaration } from "../analysis.js";
+import type { FormatDiagnostic } from "../diagnostics.js";
 
 export function checkImportSpacing(
   declaration: ModuleDeclaration,

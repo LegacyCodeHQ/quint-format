@@ -1,5 +1,5 @@
 import { analyzeSource } from "./analysis/source-analyzer.js";
-import { checkAnalyzedSource } from "./checker.js";
+import { checkAnalyzedSource } from "./checking/checker.js";
 import type { FormatDiagnostic } from "./diagnostics.js";
 import { renderSource } from "./source-renderer.js";
 

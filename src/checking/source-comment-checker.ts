@@ -1,5 +1,5 @@
-import type { AnalyzedSource } from "./analysis.js";
-import type { FormatDiagnostic } from "./diagnostics.js";
+import type { AnalyzedSource } from "../analysis.js";
+import type { FormatDiagnostic } from "../diagnostics.js";
 
 export function checkCommentTrailingWhitespace(
   analyzedSource: AnalyzedSource,

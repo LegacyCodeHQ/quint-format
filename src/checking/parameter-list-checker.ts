@@ -1,6 +1,6 @@
 import type Parser from "tree-sitter";
-import type { ModuleDeclaration } from "./analysis.js";
-import type { FormatDiagnostic } from "./diagnostics.js";
+import type { ModuleDeclaration } from "../analysis.js";
+import type { FormatDiagnostic } from "../diagnostics.js";
 
 export function checkParameterList(
   declaration: ModuleDeclaration,

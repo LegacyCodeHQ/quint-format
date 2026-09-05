@@ -1,6 +1,6 @@
-import type { ModuleDeclaration } from "./analysis.js";
-import { preservesTrailingCommentAlignment } from "./comments.js";
-import type { FormatDiagnostic } from "./diagnostics.js";
+import type { ModuleDeclaration } from "../analysis.js";
+import { preservesTrailingCommentAlignment } from "../comments.js";
+import type { FormatDiagnostic } from "../diagnostics.js";
 
 export function checkDeclarationLayout(
   declaration: ModuleDeclaration,
