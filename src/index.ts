@@ -58,6 +58,7 @@ import { checkTypeAnnotations } from "./type-annotation-checker.js";
 import { checkTypeDelimiterSpacing } from "./type-checker.js";
 import { canFormatType, formatSumVariant, formatType } from "./type-formatter.js";
 import { checkTypeParameters } from "./type-parameter-checker.js";
+import { checkUnaryExpressions } from "./unary-expression-checker.js";
 import { checkUnitLiterals } from "./unit-literal-checker.js";
 
 export { type FormatDiagnostic, renderDiagnostic } from "./diagnostics.js";
@@ -2601,27 +2602,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         diagnostics.push(
           ...checkFieldAccessExpressions(declaration.valueNode, source, filePath, lines),
         );
-
-        for (const unaryExpression of collectNodes(declaration.valueNode, "unary_expression")) {
-          const operator = unaryExpression.childForFieldName("operator");
-          const operand = unaryExpression.childForFieldName("operand");
-          if (!operator || !operand) {
-            throw new Error("Unable to locate the unary expression operands");
-          }
-          const gap = source.slice(operator.endIndex, operand.startIndex);
-          if (gap !== "") {
-            const row = operator.endPosition.row;
-            diagnostics.push({
-              filePath,
-              line: row + 1,
-              column: operator.endPosition.column + 1,
-              length: Math.max(1, gap.length),
-              rule: "format/unary-operator-spacing",
-              message: `expected no space after '${operator.text}'`,
-              sourceLine: lines[row] ?? "",
-            });
-          }
-        }
+        diagnostics.push(...checkUnaryExpressions(declaration.valueNode, source, filePath, lines));
 
         for (const lambda of collectNodes(declaration.valueNode, "lambda_expression")) {
           const parameters = lambda.childrenForFieldName("parameter");
