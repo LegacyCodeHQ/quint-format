@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { projectRoot } from "./support/cli";
+import { projectRoot } from "../support/cli";
 
 describe("command-line checker", () => {
   describe("definition modes", () => {
