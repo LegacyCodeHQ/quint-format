@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker assumptions reports an unindented assumption 1`] = `
+exports[`checker diagnostics assumptions reports an unindented assumption 1`] = `
 "test/fixtures/assumption-declaration.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | assume Safe = true
@@ -9,7 +9,7 @@ exports[`command-line checker assumptions reports an unindented assumption 1`] =
 "
 `;
 
-exports[`command-line checker assumptions reports noncanonical spacing around assumption equals 1`] = `
+exports[`checker diagnostics assumptions reports noncanonical spacing around assumption equals 1`] = `
 "test/fixtures/assumption-equals-spacing.qnt:2:14: error[format/equals-spacing]: expected one space around '='
   |
 2 |   assume Safe=true
