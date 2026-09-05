@@ -1,9 +1,9 @@
 import type Parser from "tree-sitter";
-import type { ModuleDeclaration } from "../../core/analysis.js";
-import { definitionBodyDocument } from "../../formatting/definition-body-formatter.js";
-import { formatPattern } from "../../formatting/pattern-formatter.js";
-import { formatType } from "../../formatting/type-formatter.js";
-import { analyzeExpression } from "../expression/expression-analyzer.js";
+import { analyzeExpression } from "@/analysis/expression/expression-analyzer.js";
+import type { ModuleDeclaration } from "@/core/analysis.js";
+import { definitionBodyDocument } from "@/formatting/definition-body-formatter.js";
+import { formatPattern } from "@/formatting/pattern-formatter.js";
+import { formatType } from "@/formatting/type-formatter.js";
 
 export function analyzeValueDefinition(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
   if (node.type !== "value_definition") return undefined;

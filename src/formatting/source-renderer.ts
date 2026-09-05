@@ -1,4 +1,4 @@
-import type { AnalyzedModule, AnalyzedSource } from "../core/analysis.js";
+import type { AnalyzedModule, AnalyzedSource } from "@/core/analysis.js";
 import { commentDocument, leadingCommentsDocument } from "./comments.js";
 import { concat, hardLine, indent, renderDoc, text } from "./document.js";
 

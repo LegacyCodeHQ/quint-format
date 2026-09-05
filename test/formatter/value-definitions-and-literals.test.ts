@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { checkQuint, formatQuint } from "../../src/index";
+import { checkQuint, formatQuint } from "@/index.js";
 
 describe("value definitions and literals", () => {
   test("formats an integer value definition", () => {

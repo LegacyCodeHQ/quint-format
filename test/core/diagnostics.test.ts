@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { checkQuint, formatQuint, QuintSyntaxError, renderDiagnostic } from "../../src/index";
+import { checkQuint, formatQuint, QuintSyntaxError, renderDiagnostic } from "@/index.js";
 
 describe("diagnostic hardening", () => {
   test("reports Unicode-aware source columns", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { checkQuint, formatQuint } from "../../src/index";
+import { checkQuint, formatQuint } from "@/index.js";
 
 describe("call expressions", () => {
   test("formats a call expression", () => {

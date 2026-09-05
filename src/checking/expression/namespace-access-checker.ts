@@ -1,6 +1,6 @@
 import type Parser from "tree-sitter";
-import type { FormatDiagnostic } from "../../core/diagnostics.js";
-import { collectNodes } from "../../parsing/syntax.js";
+import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { collectNodes } from "@/parsing/syntax.js";
 
 export function checkNamespaceAccess(
   root: Parser.SyntaxNode,

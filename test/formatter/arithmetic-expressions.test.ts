@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { checkQuint, formatQuint } from "../../src/index";
+import { checkQuint, formatQuint } from "@/index.js";
 
 describe("arithmetic expressions", () => {
   test("formats an integer subtraction expression", () => {

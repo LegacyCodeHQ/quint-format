@@ -1,6 +1,6 @@
 import type Parser from "tree-sitter";
-import type { FormatDiagnostic } from "../../core/diagnostics.js";
-import { collectNodes, isElseIfBranch } from "../../parsing/syntax.js";
+import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { collectNodes, isElseIfBranch } from "@/parsing/syntax.js";
 
 export function checkConditionalExpressions(
   root: Parser.SyntaxNode,

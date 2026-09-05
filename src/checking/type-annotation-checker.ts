@@ -1,5 +1,5 @@
-import type { ModuleDeclaration } from "../core/analysis.js";
-import type { FormatDiagnostic } from "../core/diagnostics.js";
+import type { ModuleDeclaration } from "@/core/analysis.js";
+import type { FormatDiagnostic } from "@/core/diagnostics.js";
 
 export function checkTypeAnnotations(
   declaration: ModuleDeclaration,

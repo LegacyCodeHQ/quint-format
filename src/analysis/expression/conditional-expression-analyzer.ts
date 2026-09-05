@@ -1,8 +1,8 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "../../core/analysis.js";
-import { commentDocument } from "../../formatting/comments.js";
-import { concat, hardLine, indent, text } from "../../formatting/document.js";
-import { isElseIfBranch } from "../../parsing/syntax.js";
+import type { ExpressionAnalysis } from "@/core/analysis.js";
+import { commentDocument } from "@/formatting/comments.js";
+import { concat, hardLine, indent, text } from "@/formatting/document.js";
+import { isElseIfBranch } from "@/parsing/syntax.js";
 
 export function analyzeConditionalExpression(
   node: Parser.SyntaxNode,

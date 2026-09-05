@@ -1,8 +1,8 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "../../core/analysis.js";
-import { commentDocument } from "../../formatting/comments.js";
-import { concat, hardLine, text } from "../../formatting/document.js";
-import { compactNestedBlockExpression, isCompactNondetSequence } from "../../parsing/syntax.js";
+import type { ExpressionAnalysis } from "@/core/analysis.js";
+import { commentDocument } from "@/formatting/comments.js";
+import { concat, hardLine, text } from "@/formatting/document.js";
+import { compactNestedBlockExpression, isCompactNondetSequence } from "@/parsing/syntax.js";
 import { analyzeLocalDefinition } from "./local-definition-analyzer.js";
 
 export function analyzeNestedDefinitionExpression(

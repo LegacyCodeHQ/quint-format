@@ -1,14 +1,14 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "../../core/analysis.js";
-import { commentDocument } from "../../formatting/comments.js";
-import { indentBy } from "../../formatting/definition-body-formatter.js";
-import { concat, type Doc, hardLine, renderDoc, text } from "../../formatting/document.js";
+import type { ExpressionAnalysis } from "@/core/analysis.js";
+import { commentDocument } from "@/formatting/comments.js";
+import { indentBy } from "@/formatting/definition-body-formatter.js";
+import { concat, type Doc, hardLine, renderDoc, text } from "@/formatting/document.js";
 import {
   isMultilineLambdaExpression,
   isMultilineUfcsContinuation,
   isNestedInVerticallyExpandedCall,
   ufcsContinuationIndentation,
-} from "../../parsing/syntax.js";
+} from "@/parsing/syntax.js";
 
 export function analyzeCallExpression(
   node: Parser.SyntaxNode,

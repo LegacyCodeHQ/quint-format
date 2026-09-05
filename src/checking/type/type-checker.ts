@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import type { FormatDiagnostic } from "../../core/diagnostics.js";
+import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { checkFunctionType } from "./function-type-checker.js";
 import { checkOperatorType } from "./operator-type-checker.js";
 import { checkParameterizedType } from "./parameterized-type-checker.js";

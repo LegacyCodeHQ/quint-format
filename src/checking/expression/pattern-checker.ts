@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import type { FormatDiagnostic } from "../../core/diagnostics.js";
+import type { FormatDiagnostic } from "@/core/diagnostics.js";
 
 export function checkPatternSpacing(
   node: Parser.SyntaxNode,

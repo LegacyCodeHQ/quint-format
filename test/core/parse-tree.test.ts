@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
-import { formatQuint } from "../../src/index";
+import { formatQuint } from "@/index.js";
 import { namedParseTreeSignature } from "../support/parse-tree";
 
 const parser = new Parser();

@@ -1,12 +1,12 @@
-import type { BinaryOperator } from "../../core/analysis.js";
-import type { FormatDiagnostic } from "../../core/diagnostics.js";
+import type { BinaryOperator } from "@/core/analysis.js";
+import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
   isNestedDefinitionBody,
   isOrdinaryBlockResult,
   isWithinConditionalCondition,
-} from "../../parsing/syntax.js";
+} from "@/parsing/syntax.js";
 
 export function checkBinaryExpressions(
   operators: BinaryOperator[],

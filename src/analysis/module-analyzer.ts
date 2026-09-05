@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import type { AnalyzedModule } from "../core/analysis.js";
+import type { AnalyzedModule } from "@/core/analysis.js";
 import { analyzeAssumptionDeclaration } from "./declaration/assumption-declaration-analyzer.js";
 import { analyzeImportExportDeclaration } from "./declaration/import-export-declaration-analyzer.js";
 import { analyzeModuleInstance } from "./declaration/module-instance-analyzer.js";

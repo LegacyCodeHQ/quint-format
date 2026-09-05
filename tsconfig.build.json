@@ -3,6 +3,10 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@scripts/*": ["./scripts/*"]
+    },
     "strict": true,
     "skipLibCheck": true,
     "types": ["node"],

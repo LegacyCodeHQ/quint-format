@@ -1,11 +1,11 @@
 import type Parser from "tree-sitter";
-import type { ModuleDeclaration } from "../core/analysis.js";
+import type { ModuleDeclaration } from "@/core/analysis.js";
 import {
   commentDocument,
   leadingCommentsDocument,
   preservesTrailingCommentAlignment,
-} from "../formatting/comments.js";
-import { concat, hardLine, text } from "../formatting/document.js";
+} from "@/formatting/comments.js";
+import { concat, hardLine, text } from "@/formatting/document.js";
 
 export class ModuleDeclarationCollector {
   readonly declarations: ModuleDeclaration[] = [];

@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
-import type { ModuleDeclaration } from "../../core/analysis.js";
-import { definitionBodyDocument } from "../../formatting/definition-body-formatter.js";
-import { analyzeExpression } from "../expression/expression-analyzer.js";
+import { analyzeExpression } from "@/analysis/expression/expression-analyzer.js";
+import type { ModuleDeclaration } from "@/core/analysis.js";
+import { definitionBodyDocument } from "@/formatting/definition-body-formatter.js";
 
 export function analyzeAssumptionDeclaration(
   node: Parser.SyntaxNode,

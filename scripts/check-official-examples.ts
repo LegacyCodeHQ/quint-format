@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
-import { checkQuint, formatQuint } from "../src/index";
+import { checkQuint, formatQuint } from "@/index.js";
 import { namedParseTreeSignature } from "../test/support/parse-tree";
 
 export interface CorpusAuditSummary {
