@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker namespace access and assignments reports noncanonical namespace-access formatting 1`] = `
+exports[`checker diagnostics namespace access and assignments reports noncanonical namespace-access formatting 1`] = `
 "test/fixtures/namespace-access.qnt:2:27: error[format/namespace-access-spacing]: expected no space around '::'
   |
 2 |   pure val apply = (Scope :: x)=>Scope :: x
@@ -19,7 +19,7 @@ test/fixtures/namespace-access.qnt:2:40: error[format/namespace-access-spacing]:
 "
 `;
 
-exports[`command-line checker namespace access and assignments reports noncanonical primed-assignment formatting 1`] = `
+exports[`checker diagnostics namespace access and assignments reports noncanonical primed-assignment formatting 1`] = `
 "test/fixtures/primed-assignment.qnt:4:27: error[format/prime-spacing]: expected no space before "'"
   |
 4 |   action increment = count '  =count + 1
