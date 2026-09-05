@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker imports and module instances reports noncanonical named and wildcard imports and exports 1`] = `
+exports[`checker diagnostics imports and module instances reports noncanonical named and wildcard imports and exports 1`] = `
 "test/fixtures/imports-exports.qnt:4:1: error[format/module-separation]: expected one blank line between modules
   |
 4 | module Consumer {
@@ -89,7 +89,7 @@ test/fixtures/imports-exports.qnt:12:17: error[format/import-selector-spacing]: 
 "
 `;
 
-exports[`command-line checker imports and module instances reports noncanonical source-qualified imports 1`] = `
+exports[`checker diagnostics imports and module instances reports noncanonical source-qualified imports 1`] = `
 "test/fixtures/source-imports.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 |  import Library   from   "./quint-format-source-library"
@@ -133,7 +133,7 @@ test/fixtures/source-imports.qnt:4:22: error[format/import-source-spacing]: expe
 "
 `;
 
-exports[`command-line checker imports and module instances reports noncanonical module instances and overrides 1`] = `
+exports[`checker diagnostics imports and module instances reports noncanonical module instances and overrides 1`] = `
 "test/fixtures/module-instance.qnt:5:1: error[format/module-separation]: expected one blank line between modules
   |
 5 | module Example {
@@ -177,7 +177,7 @@ test/fixtures/module-instance.qnt:6:38: error[format/import-alias-spacing]: expe
 "
 `;
 
-exports[`command-line checker imports and module instances reports noncanonical instance-override comment formatting 1`] = `
+exports[`checker diagnostics imports and module instances reports noncanonical instance-override comment formatting 1`] = `
 "test/fixtures/instance-override-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Library{
@@ -226,7 +226,7 @@ test/fixtures/instance-override-comment.qnt:8:2: error[format/import-alias-spaci
 "
 `;
 
-exports[`command-line checker imports and module instances reports noncanonical anonymous instances 1`] = `
+exports[`checker diagnostics imports and module instances reports noncanonical anonymous instances 1`] = `
 "test/fixtures/anonymous-instance.qnt:4:1: error[format/module-separation]: expected one blank line between modules
   |
 4 | module Example {
@@ -260,7 +260,7 @@ test/fixtures/anonymous-instance.qnt:5:26: error[format/import-selector-spacing]
 "
 `;
 
-exports[`command-line checker imports and module instances reports noncanonical anonymous-instance comment formatting 1`] = `
+exports[`checker diagnostics imports and module instances reports noncanonical anonymous-instance comment formatting 1`] = `
 "test/fixtures/anonymous-instance-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Library{
