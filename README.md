@@ -2,7 +2,7 @@
 
 [![Built with Clarity](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FLegacyCodeHQ%2Fclarity-cli%2Frefs%2Fheads%2Fmain%2Fbadges%2Fshields.io.json)](https://github.com/LegacyCodeHQ/clarity-cli)
 [![License](https://img.shields.io/github/license/LegacyCodeHQ/quint-format)](LICENSE)
-[![npm version](https://img.shields.io/npm/v/@legacycodehq/quint-format)](https://www.npmjs.com/package/@legacycodehq/quint-format)
+[![npm version](https://img.shields.io/npm/v/@legacycodehq/quint-format/next?label=npm)](https://www.npmjs.com/package/@legacycodehq/quint-format)
 
 An opinionated formatter for the
 [Quint specification language](https://quint-lang.org/), powered by
