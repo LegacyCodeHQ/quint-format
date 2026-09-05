@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker declarations and type expressions reports an unindented module declaration 1`] = `
+exports[`checker diagnostics declarations and type expressions reports an unindented module declaration 1`] = `
 "test/fixtures/variable-indentation.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | var n: int
@@ -9,7 +9,7 @@ exports[`command-line checker declarations and type expressions reports an unind
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports missing spacing after a type colon 1`] = `
+exports[`checker diagnostics declarations and type expressions reports missing spacing after a type colon 1`] = `
 "test/fixtures/type-colon-spacing.qnt:2:9: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   var n:int
@@ -18,7 +18,7 @@ exports[`command-line checker declarations and type expressions reports missing 
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports whitespace before a type colon 1`] = `
+exports[`checker diagnostics declarations and type expressions reports whitespace before a type colon 1`] = `
 "test/fixtures/before-type-colon.qnt:2:8: error[format/type-colon-spacing]: expected no space before ':'
   |
 2 |   var n : int
@@ -27,7 +27,7 @@ exports[`command-line checker declarations and type expressions reports whitespa
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical spacing after var 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical spacing after var 1`] = `
 "test/fixtures/variable-keyword-spacing.qnt:2:6: error[format/declaration-keyword-spacing]: expected one space after 'var'
   |
 2 |   var   n: int
@@ -36,7 +36,7 @@ exports[`command-line checker declarations and type expressions reports noncanon
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports an unindented constant declaration 1`] = `
+exports[`checker diagnostics declarations and type expressions reports an unindented constant declaration 1`] = `
 "test/fixtures/constant-declaration.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | const N: int
@@ -45,7 +45,7 @@ exports[`command-line checker declarations and type expressions reports an unind
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical Set-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical Set-type formatting 1`] = `
 "test/fixtures/set-type.qnt:2:16: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const Values:Set[ int ]
@@ -64,7 +64,7 @@ test/fixtures/set-type.qnt:2:24: error[format/type-delimiter-spacing]: expected 
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical tuple-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical tuple-type formatting 1`] = `
 "test/fixtures/tuple-type.qnt:2:14: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const Pair:( int ,str )
@@ -88,7 +88,7 @@ test/fixtures/tuple-type.qnt:2:24: error[format/type-delimiter-spacing]: expecte
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical record-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical record-type formatting 1`] = `
 "test/fixtures/record-type.qnt:2:14: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const User:{ name: str,active:bool }
@@ -107,7 +107,7 @@ test/fixtures/record-type.qnt:2:33: error[format/type-colon-spacing]: expected o
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical commented-record-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical commented-record-type formatting 1`] = `
 "test/fixtures/record-type-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -131,7 +131,7 @@ test/fixtures/record-type-comment.qnt:4:4: error[format/type-colon-spacing]: exp
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical empty-record-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical empty-record-type formatting 1`] = `
 "test/fixtures/empty-record-type.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 |  type Empty={  }
@@ -150,7 +150,7 @@ test/fixtures/empty-record-type.qnt:2:14: error[format/type-delimiter-spacing]: 
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical open-record-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical open-record-type formatting 1`] = `
 "test/fixtures/open-record-type.qnt:2:14: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const User:{ name: str|r }
@@ -164,7 +164,7 @@ test/fixtures/open-record-type.qnt:2:25: error[format/record-row-spacing]: expec
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical function-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical function-type formatting 1`] = `
 "test/fixtures/function-type.qnt:2:16: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const mapper:int->str
@@ -178,7 +178,7 @@ test/fixtures/function-type.qnt:2:19: error[format/type-operator-spacing]: expec
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical operator-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical operator-type formatting 1`] = `
 "test/fixtures/operator-type.qnt:2:19: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const predicate:( int ,str )=>bool
@@ -207,7 +207,7 @@ test/fixtures/operator-type.qnt:2:31: error[format/type-operator-spacing]: expec
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical zero-parameter-operator-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical zero-parameter-operator-type formatting 1`] = `
 "test/fixtures/zero-parameter-operator-type.qnt:2:17: error[format/type-delimiter-spacing]: expected no space inside '()'
   |
 2 |   const thunk: ( ) => bool
@@ -216,7 +216,7 @@ exports[`command-line checker declarations and type expressions reports noncanon
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical direct-operator-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical direct-operator-type formatting 1`] = `
 "test/fixtures/direct-operator-type.qnt:2:19: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const predicate:int=>bool
@@ -230,7 +230,7 @@ test/fixtures/direct-operator-type.qnt:2:22: error[format/type-operator-spacing]
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical parenthesized-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical parenthesized-type formatting 1`] = `
 "test/fixtures/parenthesized-type.qnt:2:18: error[format/type-delimiter-spacing]: expected no space after '('
   |
 2 |   const values: ( Set[ int ] )
@@ -254,7 +254,7 @@ test/fixtures/parenthesized-type.qnt:2:29: error[format/type-delimiter-spacing]:
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports noncanonical unit-type formatting 1`] = `
+exports[`checker diagnostics declarations and type expressions reports noncanonical unit-type formatting 1`] = `
 "test/fixtures/unit-type.qnt:2:17: error[format/type-delimiter-spacing]: expected no space inside '()'
   |
 2 |   const empty: ( )
@@ -263,7 +263,7 @@ exports[`command-line checker declarations and type expressions reports noncanon
 "
 `;
 
-exports[`command-line checker declarations and type expressions reports adjacent declarations on the same line 1`] = `
+exports[`checker diagnostics declarations and type expressions reports adjacent declarations on the same line 1`] = `
 "test/fixtures/declaration-line-break.qnt:2:15: error[format/declaration-line-break]: expected each declaration on a separate line
   |
 2 |   var a: int  var b: int
