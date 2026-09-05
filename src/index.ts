@@ -50,6 +50,7 @@ import {
 } from "./syntax.js";
 import { checkTypeDelimiterSpacing } from "./type-checker.js";
 import { canFormatType, formatSumVariant, formatType } from "./type-formatter.js";
+import { checkTypeParameters } from "./type-parameter-checker.js";
 
 export { type FormatDiagnostic, renderDiagnostic } from "./diagnostics.js";
 export { QuintSyntaxError } from "./parser.js";
@@ -2547,91 +2548,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       );
       diagnostics.push(...checkImportSpacing(declaration, source, filePath, lines));
       diagnostics.push(...checkModuleInstance(declaration, source, filePath, lines));
-
-      if (
-        declaration.typeOpenBracket &&
-        declaration.typeCloseBracket &&
-        declaration.typeParameters?.length
-      ) {
-        const firstParameter = declaration.typeParameters[0];
-        const lastParameter = declaration.typeParameters.at(-1);
-        if (!firstParameter || !lastParameter) {
-          throw new Error("Unable to locate the type parameters");
-        }
-
-        const beforeOpenBracket = source.slice(
-          declaration.nameNode.endIndex,
-          declaration.typeOpenBracket.startIndex,
-        );
-        if (beforeOpenBracket !== "") {
-          const row = declaration.typeOpenBracket.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: declaration.nameNode.endPosition.column + 1,
-            length: Math.max(1, beforeOpenBracket.length),
-            rule: "format/type-parameter-list-spacing",
-            message: "expected no space before '['",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-
-        const afterOpenBracket = source.slice(
-          declaration.typeOpenBracket.endIndex,
-          firstParameter.startIndex,
-        );
-        if (afterOpenBracket !== "") {
-          const row = declaration.typeOpenBracket.endPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: declaration.typeOpenBracket.endPosition.column + 1,
-            length: Math.max(1, afterOpenBracket.length),
-            rule: "format/type-parameter-list-spacing",
-            message: "expected no space after '['",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-
-        for (const [index, comma] of (declaration.typeParameterCommas ?? []).entries()) {
-          const previousParameter = declaration.typeParameters[index];
-          const nextParameter = declaration.typeParameters[index + 1];
-          if (!previousParameter || !nextParameter) {
-            throw new Error("Unable to locate type parameters around ','");
-          }
-          const beforeComma = source.slice(previousParameter.endIndex, comma.startIndex);
-          const afterComma = source.slice(comma.endIndex, nextParameter.startIndex);
-          if (beforeComma !== "" || afterComma !== " ") {
-            const row = comma.startPosition.row;
-            diagnostics.push({
-              filePath,
-              line: row + 1,
-              column: comma.startPosition.column + 1,
-              length: 1,
-              rule: "format/type-parameter-separator-spacing",
-              message: "expected ', ' between type parameters",
-              sourceLine: lines[row] ?? "",
-            });
-          }
-        }
-
-        const beforeCloseBracket = source.slice(
-          lastParameter.endIndex,
-          declaration.typeCloseBracket.startIndex,
-        );
-        if (beforeCloseBracket !== "") {
-          const row = declaration.typeCloseBracket.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: lastParameter.endPosition.column + 1,
-            length: Math.max(1, beforeCloseBracket.length),
-            rule: "format/type-parameter-list-spacing",
-            message: "expected no space before ']'",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-      }
+      diagnostics.push(...checkTypeParameters(declaration, source, filePath, lines));
 
       for (const parameter of declaration.parameters ?? []) {
         const parameterName = parameter.childForFieldName("name");
