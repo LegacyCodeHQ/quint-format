@@ -5,7 +5,7 @@ import { definitionBodyDocument } from "../../formatting/definition-body-formatt
 import { concat, type Doc, text } from "../../formatting/document.js";
 import { formatPattern } from "../../formatting/pattern-formatter.js";
 import { formatType } from "../../formatting/type-formatter.js";
-import { isAlignedLocalTrailingComment } from "../../syntax.js";
+import { isAlignedLocalTrailingComment } from "../../parsing/syntax.js";
 
 function localTrailingCommentDocuments(
   definition: Parser.SyntaxNode,

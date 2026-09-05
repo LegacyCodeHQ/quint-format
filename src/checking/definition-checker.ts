@@ -1,6 +1,6 @@
 import type { ModuleDeclaration } from "../analysis.js";
 import type { FormatDiagnostic } from "../diagnostics.js";
-import { preservesDefinitionBodyLineBreak } from "../syntax.js";
+import { preservesDefinitionBodyLineBreak } from "../parsing/syntax.js";
 
 export function checkDefinitionBody(
   declaration: ModuleDeclaration,

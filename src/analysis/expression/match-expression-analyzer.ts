@@ -2,7 +2,7 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "../../analysis.js";
 import { commentDocument } from "../../formatting/comments.js";
 import { concat, type Doc, hardLine, indent, text } from "../../formatting/document.js";
-import { isCompactDefaultMatch } from "../../syntax.js";
+import { isCompactDefaultMatch } from "../../parsing/syntax.js";
 
 export function analyzeMatchExpression(
   node: Parser.SyntaxNode,

@@ -8,7 +8,7 @@ import {
   isMultilineUfcsContinuation,
   isNestedInVerticallyExpandedCall,
   ufcsContinuationIndentation,
-} from "../../syntax.js";
+} from "../../parsing/syntax.js";
 
 export function analyzeCallExpression(
   node: Parser.SyntaxNode,

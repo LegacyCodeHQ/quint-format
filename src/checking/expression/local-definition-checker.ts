@@ -1,6 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "../../diagnostics.js";
-import { isCompactNondetSequence } from "../../syntax.js";
+import { isCompactNondetSequence } from "../../parsing/syntax.js";
 import { checkTypeDelimiterSpacing } from "../type/type-checker.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
 

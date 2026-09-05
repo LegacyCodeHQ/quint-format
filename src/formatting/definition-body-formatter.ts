@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import { preservesDefinitionBodyLineBreak } from "../syntax.js";
+import { preservesDefinitionBodyLineBreak } from "../parsing/syntax.js";
 import { commentDocument } from "./comments.js";
 import { concat, type Doc, hardLine, indent, text } from "./document.js";
 

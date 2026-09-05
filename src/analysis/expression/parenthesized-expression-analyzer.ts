@@ -2,7 +2,7 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "../../analysis.js";
 import { indentBy } from "../../formatting/definition-body-formatter.js";
 import { concat, hardLine, text } from "../../formatting/document.js";
-import { isMultilineParenthesizedPostfixReceiver } from "../../syntax.js";
+import { isMultilineParenthesizedPostfixReceiver } from "../../parsing/syntax.js";
 
 export function analyzeParenthesizedExpression(
   node: Parser.SyntaxNode,

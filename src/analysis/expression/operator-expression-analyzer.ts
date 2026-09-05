@@ -9,7 +9,7 @@ import {
   isNestedDefinitionBody,
   isOrdinaryBlockResult,
   isWithinConditionalCondition,
-} from "../../syntax.js";
+} from "../../parsing/syntax.js";
 
 export function analyzeOperatorExpression(
   node: Parser.SyntaxNode,

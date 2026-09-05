@@ -5,7 +5,7 @@ import {
   isMultilineUfcsContinuation,
   ufcsChainRoot,
   ufcsContinuationIndentation,
-} from "../../syntax.js";
+} from "../../parsing/syntax.js";
 
 export function checkFieldAccessExpressions(
   root: Parser.SyntaxNode,

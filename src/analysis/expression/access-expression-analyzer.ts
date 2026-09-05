@@ -7,7 +7,7 @@ import {
   isMultilineParenthesizedPostfixReceiver,
   isMultilineUfcsContinuation,
   ufcsContinuationIndentation,
-} from "../../syntax.js";
+} from "../../parsing/syntax.js";
 
 export function analyzeAccessExpression(
   node: Parser.SyntaxNode,

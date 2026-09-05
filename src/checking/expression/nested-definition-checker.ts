@@ -4,7 +4,7 @@ import {
   collectNodes,
   compactNestedBlockExpression,
   isCompactNondetSequence,
-} from "../../syntax.js";
+} from "../../parsing/syntax.js";
 import { checkLocalDefinition } from "./local-definition-checker.js";
 
 export function checkNestedDefinitions(

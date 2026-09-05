@@ -4,7 +4,7 @@ import {
   collectNodes,
   compactLambdaBlockExpression,
   compactNestedBlockExpression,
-} from "../../syntax.js";
+} from "../../parsing/syntax.js";
 
 export function checkBlockExpressions(
   root: Parser.SyntaxNode,
