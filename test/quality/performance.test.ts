@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
-import { checkQuint, formatQuint } from "../src/index";
-import { namedParseTreeSignature } from "./support/parse-tree";
+import { checkQuint, formatQuint } from "../../src/index";
+import { namedParseTreeSignature } from "../support/parse-tree";
 
 const parser = new Parser();
 parser.setLanguage(Quint);

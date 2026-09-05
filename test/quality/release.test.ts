@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const projectRoot = fileURLToPath(new URL("..", import.meta.url));
+const projectRoot = fileURLToPath(new URL("../..", import.meta.url));
 const packageJson = JSON.parse(readFileSync(join(projectRoot, "package.json"), "utf8"));
 
 function checkReleaseTag(tag: string) {
