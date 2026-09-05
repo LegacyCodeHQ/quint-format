@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker definitions reports noncanonical general assumption formatting 1`] = `
+exports[`checker diagnostics definitions reports noncanonical general assumption formatting 1`] = `
 "test/fixtures/assumption-expression.qnt:4:15: error[format/equals-spacing]: expected one space around '='
   |
 4 |   assume Holds=Flag
@@ -9,7 +9,7 @@ exports[`command-line checker definitions reports noncanonical general assumptio
 "
 `;
 
-exports[`command-line checker definitions reports noncanonical parameterless def formatting 1`] = `
+exports[`checker diagnostics definitions reports noncanonical parameterless def formatting 1`] = `
 "test/fixtures/def-definition.qnt:2:13: error[format/equals-spacing]: expected one space around '='
   |
 2 |   def answer=42
@@ -18,7 +18,7 @@ exports[`command-line checker definitions reports noncanonical parameterless def
 "
 `;
 
-exports[`command-line checker definitions reports noncanonical def-parameter formatting 1`] = `
+exports[`checker diagnostics definitions reports noncanonical def-parameter formatting 1`] = `
 "test/fixtures/def-parameter.qnt:2:16: error[format/parameter-list-spacing]: expected no space after '('
   |
 2 |   def identity( value )=value
@@ -37,7 +37,7 @@ test/fixtures/def-parameter.qnt:2:24: error[format/equals-spacing]: expected one
 "
 `;
 
-exports[`command-line checker definitions reports noncanonical ignored-parameter formatting 1`] = `
+exports[`checker diagnostics definitions reports noncanonical ignored-parameter formatting 1`] = `
 "test/fixtures/hole-parameter.qnt:2:19: error[format/parameter-list-spacing]: expected no space after '('
   |
 2 |   pure def ignore( _: int ): int = 0
@@ -51,7 +51,7 @@ test/fixtures/hole-parameter.qnt:2:26: error[format/parameter-list-spacing]: exp
 "
 `;
 
-exports[`command-line checker definitions reports noncanonical multiple-def-parameter formatting 1`] = `
+exports[`checker diagnostics definitions reports noncanonical multiple-def-parameter formatting 1`] = `
 "test/fixtures/multiple-def-parameters.qnt:2:19: error[format/parameter-separator-spacing]: expected ', ' between parameters
   |
 2 |   def choose(left ,right)=left
@@ -65,7 +65,7 @@ test/fixtures/multiple-def-parameters.qnt:2:26: error[format/equals-spacing]: ex
 "
 `;
 
-exports[`command-line checker definitions reports noncanonical typed-def-header formatting 1`] = `
+exports[`checker diagnostics definitions reports noncanonical typed-def-header formatting 1`] = `
 "test/fixtures/typed-def-header.qnt:2:21: error[format/type-colon-spacing]: expected no space before ':'
   |
 2 |   def identity(value :int) :int=value
@@ -94,7 +94,7 @@ test/fixtures/typed-def-header.qnt:2:32: error[format/equals-spacing]: expected 
 "
 `;
 
-exports[`command-line checker definitions reports a noncanonical untyped parameter with a return type 1`] = `
+exports[`checker diagnostics definitions reports a noncanonical untyped parameter with a return type 1`] = `
 "test/fixtures/untyped-parameter-return.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 |  def identity( value ) : int=value
@@ -123,7 +123,7 @@ test/fixtures/untyped-parameter-return.qnt:2:29: error[format/equals-spacing]: e
 "
 `;
 
-exports[`command-line checker definitions reports noncanonical List-typed-header formatting 1`] = `
+exports[`checker diagnostics definitions reports noncanonical List-typed-header formatting 1`] = `
 "test/fixtures/list-typed-header.qnt:2:25: error[format/type-delimiter-spacing]: expected no space after '['
   |
 2 |   def identity(xs: List[ int ]): List[ int ] = xs
@@ -147,7 +147,7 @@ test/fixtures/list-typed-header.qnt:2:43: error[format/type-delimiter-spacing]: 
 "
 `;
 
-exports[`command-line checker definitions reports an optional definition semicolon 1`] = `
+exports[`checker diagnostics definitions reports an optional definition semicolon 1`] = `
 "test/fixtures/definition-semicolon.qnt:2:13: error[format/equals-spacing]: expected one space around '='
   |
 2 |   def answer=42;
