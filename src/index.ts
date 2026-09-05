@@ -37,6 +37,7 @@ import { checkPatternSpacing } from "./pattern-checker.js";
 import { formatCommentedTuplePattern, formatPattern } from "./pattern-formatter.js";
 import { checkRecordLiterals } from "./record-literal-checker.js";
 import { formatExpandedRecordType } from "./record-type-formatter.js";
+import { checkOptionalSemicolon } from "./semicolon-checker.js";
 import { checkSequenceLiterals } from "./sequence-literal-checker.js";
 import {
   checkCommentTrailingWhitespace,
@@ -2576,18 +2577,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       diagnostics.push(...checkParameterList(declaration, source, filePath, lines));
       diagnostics.push(...checkDefinitionBody(declaration, source, filePath, lines));
 
-      if (declaration.semicolon) {
-        const row = declaration.semicolon.startPosition.row;
-        diagnostics.push({
-          filePath,
-          line: row + 1,
-          column: declaration.semicolon.startPosition.column + 1,
-          length: 1,
-          rule: "format/unnecessary-semicolon",
-          message: "optional semicolons are omitted",
-          sourceLine: lines[row] ?? "",
-        });
-      }
+      diagnostics.push(...checkOptionalSemicolon(declaration, filePath, lines));
 
       diagnostics.push(
         ...checkBinaryExpressions(declaration.binaryOperators ?? [], source, filePath, lines),
