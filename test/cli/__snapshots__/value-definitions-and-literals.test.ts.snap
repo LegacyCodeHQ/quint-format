@@ -1,0 +1,273 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`command-line checker value definitions and literals reports an unindented integer value definition 1`] = `
+"test/fixtures/value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | val answer = 42
+  | ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports an optional value semicolon 1`] = `
+"test/fixtures/value-semicolon.qnt:2:13: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   val answer=42;
+  |             ^
+  |
+test/fixtures/value-semicolon.qnt:2:16: error[format/unnecessary-semicolon]: optional semicolons are omitted
+  |
+2 |   val answer=42;
+  |                ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports an unindented Boolean value definition 1`] = `
+"test/fixtures/boolean-value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | val ready = true
+  | ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports an unindented string value definition 1`] = `
+"test/fixtures/string-value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | val greeting = "hello"
+  | ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports noncanonical typed value formatting 1`] = `
+"test/fixtures/typed-value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | val answer:int=42
+  | ^
+  |
+test/fixtures/typed-value-definition.qnt:2:12: error[format/type-colon-spacing]: expected one space after ':'
+  |
+2 | val answer:int=42
+  |            ^
+  |
+test/fixtures/typed-value-definition.qnt:2:15: error[format/equals-spacing]: expected one space around '='
+  |
+2 | val answer:int=42
+  |               ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports noncanonical addition formatting 1`] = `
+"test/fixtures/addition-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | val total=1+2
+  | ^
+  |
+test/fixtures/addition-expression.qnt:2:10: error[format/equals-spacing]: expected one space around '='
+  |
+2 | val total=1+2
+  |          ^
+  |
+test/fixtures/addition-expression.qnt:2:12: error[format/binary-operator-spacing]: expected one space around '+'
+  |
+2 | val total=1+2
+  |            ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports noncanonical identifier value formatting 1`] = `
+"test/fixtures/identifier-value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | const source: int
+  | ^
+  |
+test/fixtures/identifier-value-definition.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+3 | val copy=source
+  | ^
+  |
+test/fixtures/identifier-value-definition.qnt:3:9: error[format/equals-spacing]: expected one space around '='
+  |
+3 | val copy=source
+  |         ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports noncanonical unit-literal formatting 1`] = `
+"test/fixtures/unit-literal.qnt:2:16: error[format/expression-delimiter-spacing]: expected no space inside '()'
+  |
+2 |   val empty = ( )
+  |                ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports noncanonical list-literal formatting 1`] = `
+"test/fixtures/list-literal.qnt:2:17: error[format/expression-delimiter-spacing]: expected one space after '['
+  |
+2 |   val values = [1 ,2,]
+  |                 ^
+  |
+test/fixtures/list-literal.qnt:2:19: error[format/expression-separator-spacing]: expected ', ' between list elements
+  |
+2 |   val values = [1 ,2,]
+  |                   ^
+  |
+test/fixtures/list-literal.qnt:2:21: error[format/unnecessary-trailing-comma]: trailing commas are omitted from inline lists
+  |
+2 |   val values = [1 ,2,]
+  |                     ^
+  |
+test/fixtures/list-literal.qnt:2:22: error[format/expression-delimiter-spacing]: expected one space before ']'
+  |
+2 |   val values = [1 ,2,]
+  |                      ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports noncanonical tuple-literal formatting 1`] = `
+"test/fixtures/tuple-literal.qnt:2:15: error[format/expression-delimiter-spacing]: expected no space after '('
+  |
+2 |   val pair = ( 1 ,2, )
+  |               ^
+  |
+test/fixtures/tuple-literal.qnt:2:18: error[format/expression-separator-spacing]: expected ', ' between tuple elements
+  |
+2 |   val pair = ( 1 ,2, )
+  |                  ^
+  |
+test/fixtures/tuple-literal.qnt:2:20: error[format/unnecessary-trailing-comma]: trailing commas are omitted from inline tuples
+  |
+2 |   val pair = ( 1 ,2, )
+  |                    ^
+  |
+test/fixtures/tuple-literal.qnt:2:21: error[format/expression-delimiter-spacing]: expected no space before ')'
+  |
+2 |   val pair = ( 1 ,2, )
+  |                     ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports noncanonical record-literal formatting 1`] = `
+"test/fixtures/record-literal.qnt:2:15: error[format/expression-delimiter-spacing]: expected one space after '{'
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |               ^
+  |
+test/fixtures/record-literal.qnt:2:19: error[format/expression-colon-spacing]: expected no space before ':'
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |                   ^
+  |
+test/fixtures/record-literal.qnt:2:21: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |                     ^
+  |
+test/fixtures/record-literal.qnt:2:29: error[format/expression-separator-spacing]: expected ', ' between record fields
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |                             ^
+  |
+test/fixtures/record-literal.qnt:2:34: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |                                  ^
+  |
+test/fixtures/record-literal.qnt:2:36: error[format/unnecessary-trailing-comma]: trailing commas are omitted from inline records
+  |
+2 |   val user = {name :"Alice" ,age:42, }
+  |                                    ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports noncanonical record-spread formatting 1`] = `
+"test/fixtures/record-spread.qnt:2:19: error[format/expression-delimiter-spacing]: expected one space after '{'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                   ^
+  |
+test/fixtures/record-spread.qnt:2:21: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                     ^
+  |
+test/fixtures/record-spread.qnt:2:23: error[format/expression-separator-spacing]: expected ', ' between record elements
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                       ^
+  |
+test/fixtures/record-spread.qnt:2:27: error[format/record-spread-spacing]: expected no space after '...'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                           ^
+  |
+test/fixtures/record-spread.qnt:2:29: error[format/expression-delimiter-spacing]: expected one space after '{'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                             ^
+  |
+test/fixtures/record-spread.qnt:2:31: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                               ^
+  |
+test/fixtures/record-spread.qnt:2:32: error[format/expression-delimiter-spacing]: expected one space before '}'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                                ^
+  |
+test/fixtures/record-spread.qnt:2:33: error[format/expression-delimiter-spacing]: expected one space before '}'
+  |
+2 |   val extended = {b:2 ,... {a:1}}
+  |                                 ^
+  |
+"
+`;
+
+exports[`command-line checker value definitions and literals reports noncanonical commented-record formatting 1`] = `
+"test/fixtures/commented-record.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 |  val state={ first:1, // first value
+  | ^
+  |
+test/fixtures/commented-record.qnt:2:11: error[format/equals-spacing]: expected one space around '='
+  |
+2 |  val state={ first:1, // first value
+  |           ^
+  |
+test/fixtures/commented-record.qnt:2:13: error[format/commented-record-layout]: expected commented record contents on separate lines
+  |
+2 |  val state={ first:1, // first value
+  |             ^
+  |
+test/fixtures/commented-record.qnt:2:20: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+2 |  val state={ first:1, // first value
+  |                    ^
+  |
+test/fixtures/commented-record.qnt:3:8: error[format/expression-colon-spacing]: expected one space after ':'
+  |
+3 | second:2 }
+  |        ^
+  |
+test/fixtures/commented-record.qnt:3:9: error[format/commented-record-separator]: expected a trailing comma after each record element
+  |
+3 | second:2 }
+  |         ^
+  |
+test/fixtures/commented-record.qnt:3:9: error[format/commented-record-layout]: expected the closing brace on its own line
+  |
+3 | second:2 }
+  |         ^
+  |
+"
+`;
