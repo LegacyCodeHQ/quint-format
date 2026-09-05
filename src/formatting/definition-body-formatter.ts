@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
+import { preservesDefinitionBodyLineBreak } from "../syntax.js";
 import { commentDocument } from "./comments.js";
 import { concat, type Doc, hardLine, indent, text } from "./document.js";
-import { preservesDefinitionBodyLineBreak } from "./syntax.js";
 
 export function indentBy(document: Doc, levels: number): Doc {
   let indented = document;

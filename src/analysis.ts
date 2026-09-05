@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import type { Doc } from "./document.js";
+import type { Doc } from "./formatting/document.js";
 
 export interface ModuleDeclaration {
   node: Parser.SyntaxNode;

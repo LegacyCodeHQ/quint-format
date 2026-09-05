@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "../../analysis.js";
-import { concat, hardLine, indent, text } from "../../document.js";
-import { formatPattern } from "../../pattern-formatter.js";
+import { concat, hardLine, indent, text } from "../../formatting/document.js";
+import { formatPattern } from "../../formatting/pattern-formatter.js";
 
 export function analyzeAssignmentExpression(
   node: Parser.SyntaxNode,

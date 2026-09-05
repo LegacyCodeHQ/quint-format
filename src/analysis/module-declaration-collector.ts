@@ -4,8 +4,8 @@ import {
   commentDocument,
   leadingCommentsDocument,
   preservesTrailingCommentAlignment,
-} from "../comments.js";
-import { concat, hardLine, text } from "../document.js";
+} from "../formatting/comments.js";
+import { concat, hardLine, text } from "../formatting/document.js";
 
 export class ModuleDeclarationCollector {
   readonly declarations: ModuleDeclaration[] = [];

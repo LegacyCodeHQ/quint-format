@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
 import type { ModuleDeclaration } from "../../analysis.js";
-import { text } from "../../document.js";
-import { formatType } from "../../type-formatter.js";
+import { text } from "../../formatting/document.js";
+import { formatType } from "../../formatting/type-formatter.js";
 
 export function analyzeVariableDeclaration(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
   const keywordType =

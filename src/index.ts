@@ -1,7 +1,7 @@
 import { analyzeSource } from "./analysis/source-analyzer.js";
 import { checkAnalyzedSource } from "./checking/checker.js";
 import type { FormatDiagnostic } from "./diagnostics.js";
-import { renderSource } from "./source-renderer.js";
+import { renderSource } from "./formatting/source-renderer.js";
 
 export { type FormatDiagnostic, renderDiagnostic } from "./diagnostics.js";
 export { QuintSyntaxError } from "./parser.js";

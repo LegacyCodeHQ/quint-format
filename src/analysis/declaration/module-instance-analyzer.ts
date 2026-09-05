@@ -1,8 +1,8 @@
 import type Parser from "tree-sitter";
 import type { ExpressionAnalysis, ModuleDeclaration } from "../../analysis.js";
-import { commentDocument } from "../../comments.js";
-import { concat, type Doc, hardLine, indent, text } from "../../document.js";
-import { formatPattern } from "../../pattern-formatter.js";
+import { commentDocument } from "../../formatting/comments.js";
+import { concat, type Doc, hardLine, indent, text } from "../../formatting/document.js";
+import { formatPattern } from "../../formatting/pattern-formatter.js";
 import { analyzeExpression } from "../expression/expression-analyzer.js";
 
 interface OverrideAnalysis {
