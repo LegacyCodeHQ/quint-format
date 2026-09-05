@@ -1,8 +1,8 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "./analysis.js";
-import { indentBy } from "./definition-body-formatter.js";
-import { concat, hardLine, text } from "./document.js";
-import { isMultilineParenthesizedPostfixReceiver } from "./syntax.js";
+import type { ExpressionAnalysis } from "../../analysis.js";
+import { indentBy } from "../../definition-body-formatter.js";
+import { concat, hardLine, text } from "../../document.js";
+import { isMultilineParenthesizedPostfixReceiver } from "../../syntax.js";
 
 export function analyzeParenthesizedExpression(
   node: Parser.SyntaxNode,

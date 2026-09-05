@@ -1,15 +1,15 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "./analysis.js";
-import { commentDocument } from "./comments.js";
-import { indentBy } from "./definition-body-formatter.js";
-import { concat, hardLine, indent, text } from "./document.js";
+import type { ExpressionAnalysis } from "../../analysis.js";
+import { commentDocument } from "../../comments.js";
+import { indentBy } from "../../definition-body-formatter.js";
+import { concat, hardLine, indent, text } from "../../document.js";
 import {
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
   isNestedDefinitionBody,
   isOrdinaryBlockResult,
   isWithinConditionalCondition,
-} from "./syntax.js";
+} from "../../syntax.js";
 
 export function analyzeOperatorExpression(
   node: Parser.SyntaxNode,

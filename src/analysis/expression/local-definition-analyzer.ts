@@ -1,11 +1,11 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "./analysis.js";
-import { commentDocument } from "./comments.js";
-import { definitionBodyDocument } from "./definition-body-formatter.js";
-import { concat, type Doc, text } from "./document.js";
-import { formatPattern } from "./pattern-formatter.js";
-import { isAlignedLocalTrailingComment } from "./syntax.js";
-import { formatType } from "./type-formatter.js";
+import type { ExpressionAnalysis } from "../../analysis.js";
+import { commentDocument } from "../../comments.js";
+import { definitionBodyDocument } from "../../definition-body-formatter.js";
+import { concat, type Doc, text } from "../../document.js";
+import { formatPattern } from "../../pattern-formatter.js";
+import { isAlignedLocalTrailingComment } from "../../syntax.js";
+import { formatType } from "../../type-formatter.js";
 
 function localTrailingCommentDocuments(
   definition: Parser.SyntaxNode,

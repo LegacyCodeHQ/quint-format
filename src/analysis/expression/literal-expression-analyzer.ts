@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "./analysis.js";
-import { commentDocument } from "./comments.js";
-import { concat, type Doc, group, hardLine, indent, line, text } from "./document.js";
+import type { ExpressionAnalysis } from "../../analysis.js";
+import { commentDocument } from "../../comments.js";
+import { concat, type Doc, group, hardLine, indent, line, text } from "../../document.js";
 
 export function analyzeLiteralExpression(
   node: Parser.SyntaxNode,

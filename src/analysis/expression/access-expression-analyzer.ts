@@ -1,13 +1,13 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "./analysis.js";
-import { commentDocument } from "./comments.js";
-import { indentBy } from "./definition-body-formatter.js";
-import { concat, hardLine, text } from "./document.js";
+import type { ExpressionAnalysis } from "../../analysis.js";
+import { commentDocument } from "../../comments.js";
+import { indentBy } from "../../definition-body-formatter.js";
+import { concat, hardLine, text } from "../../document.js";
 import {
   isMultilineParenthesizedPostfixReceiver,
   isMultilineUfcsContinuation,
   ufcsContinuationIndentation,
-} from "./syntax.js";
+} from "../../syntax.js";
 
 export function analyzeAccessExpression(
   node: Parser.SyntaxNode,

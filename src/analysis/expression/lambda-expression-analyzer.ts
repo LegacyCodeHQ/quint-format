@@ -1,10 +1,10 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "./analysis.js";
-import { commentDocument } from "./comments.js";
-import { indentBy } from "./definition-body-formatter.js";
-import { concat, hardLine, indent, text } from "./document.js";
-import { formatCommentedTuplePattern, formatPattern } from "./pattern-formatter.js";
-import { compactLambdaBlockExpression, isMultilineLambdaExpression } from "./syntax.js";
+import type { ExpressionAnalysis } from "../../analysis.js";
+import { commentDocument } from "../../comments.js";
+import { indentBy } from "../../definition-body-formatter.js";
+import { concat, hardLine, indent, text } from "../../document.js";
+import { formatCommentedTuplePattern, formatPattern } from "../../pattern-formatter.js";
+import { compactLambdaBlockExpression, isMultilineLambdaExpression } from "../../syntax.js";
 
 export function analyzeLambdaExpression(
   node: Parser.SyntaxNode,
