@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker conditional expressions reports noncanonical conditional formatting 1`] = `
+exports[`checker diagnostics conditional expressions reports noncanonical conditional formatting 1`] = `
 "test/fixtures/conditional-expression.qnt:2:23: error[format/conditional-keyword-spacing]: expected one space after 'if'
   |
 2 |   pure val answer = if( true )1  else  2
@@ -29,7 +29,7 @@ test/fixtures/conditional-expression.qnt:2:34: error[format/conditional-else-spa
 "
 `;
 
-exports[`command-line checker conditional expressions reports noncanonical conditional-comment formatting 1`] = `
+exports[`checker diagnostics conditional expressions reports noncanonical conditional-comment formatting 1`] = `
 "test/fixtures/conditional-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -63,7 +63,7 @@ test/fixtures/conditional-comment.qnt:2:27: error[format/conditional-else-spacin
 "
 `;
 
-exports[`command-line checker conditional expressions reports noncanonical conditional-consequence comment formatting 1`] = `
+exports[`checker diagnostics conditional expressions reports noncanonical conditional-consequence comment formatting 1`] = `
 "test/fixtures/conditional-consequence-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
