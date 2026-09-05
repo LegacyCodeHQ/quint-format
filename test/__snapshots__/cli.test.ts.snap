@@ -1,33 +1,5 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker source and declaration layout reports a compact module after a hashbang 1`] = `
-"test/fixtures/hashbang.qnt:2:16: error[format/empty-module]: empty module braces must be on separate lines
-  |
-2 | module Example {}
-  |                ^^
-  |
-"
-`;
-
-exports[`command-line checker source and declaration layout reports noncanonical multiple-module layout 1`] = `
-"test/fixtures/multiple-modules.qnt:1:14: error[format/empty-module]: empty module braces must be on separate lines
-  |
-1 | module First {} module Second {}
-  |              ^^
-  |
-test/fixtures/multiple-modules.qnt:1:17: error[format/module-separation]: expected one blank line between modules
-  |
-1 | module First {} module Second {}
-  |                 ^^^^^^
-  |
-test/fixtures/multiple-modules.qnt:1:31: error[format/empty-module]: empty module braces must be on separate lines
-  |
-1 | module First {} module Second {}
-  |                               ^^
-  |
-"
-`;
-
 exports[`command-line checker comments and comment layout reports noncanonical leading line-comment formatting 1`] = `
 "test/fixtures/leading-line-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
