@@ -1,104 +1,105 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`formatter preserves aligned dots in a multiline UFCS chain 1`] = `
-"module Example {
-  var n: int
-
-  action init = n' = 0
-  action step = n' = n + 1
-
-  run trace =
-    init.then(step)
-        .then(step)
-        .then(all {
-          n' = n,
-          assert(n >= 0),
-        })
-}
-"
-`;
-
-exports[`formatter formats an empty module 1`] = `
+exports[`formatter modules formats an empty module 1`] = `
 "module Example {
 }
 "
 `;
 
-exports[`formatter formats spacing after the module keyword 1`] = `
+exports[`formatter modules formats spacing after the module keyword 1`] = `
 "module Example {
 }
 "
 `;
 
-exports[`formatter formats spacing before the module brace 1`] = `
+exports[`formatter modules formats spacing before the module brace 1`] = `
 "module Example {
 }
 "
 `;
 
-exports[`formatter formats excess final newlines 1`] = `
+exports[`formatter modules preserves a blank line after the module opening brace 1`] = `
+"module Example {
+
+  // The first declaration's documentation.
+  pure val answer = 42
+}
+"
+`;
+
+exports[`formatter modules formats excess final newlines 1`] = `
 "module Example {
 }
 "
 `;
 
-exports[`formatter indents a variable declaration in a module 1`] = `
+exports[`formatter declarations and type expressions indents a variable declaration in a module 1`] = `
 "module Example {
   var n: int
 }
 "
 `;
 
-exports[`formatter formats spacing after a type colon 1`] = `
+exports[`formatter declarations and type expressions formats spacing after a type colon 1`] = `
 "module Example {
   var n: int
 }
 "
 `;
 
-exports[`formatter removes spacing before a type colon 1`] = `
+exports[`formatter declarations and type expressions removes spacing before a type colon 1`] = `
 "module Example {
   var n: int
 }
 "
 `;
 
-exports[`formatter formats spacing after var 1`] = `
+exports[`formatter declarations and type expressions formats spacing after var 1`] = `
 "module Example {
   var n: int
 }
 "
 `;
 
-exports[`formatter formats a constant declaration 1`] = `
+exports[`formatter declarations and type expressions formats a constant declaration 1`] = `
 "module Example {
   const N: int
 }
 "
 `;
 
-exports[`formatter formats a Set type 1`] = `
+exports[`formatter declarations and type expressions formats a Set type 1`] = `
 "module Example {
   const Values: Set[int]
 }
 "
 `;
 
-exports[`formatter formats a tuple type 1`] = `
+exports[`formatter declarations and type expressions formats a tuple type 1`] = `
 "module Example {
   const Pair: (int, str)
 }
 "
 `;
 
-exports[`formatter formats a record type 1`] = `
+exports[`formatter declarations and type expressions formats a record type 1`] = `
 "module Example {
   const User: { name: str, active: bool }
 }
 "
 `;
 
-exports[`formatter preserves comments in a record type 1`] = `
+exports[`formatter declarations and type expressions preserves a multiline record type 1`] = `
+"module Example {
+  type Account = {
+    owner: str,
+    balance: int,
+  }
+}
+"
+`;
+
+exports[`formatter declarations and type expressions preserves comments in a record type 1`] = `
 "module Example {
   type Item = {
     // Preserve this field comment.
@@ -108,7 +109,7 @@ exports[`formatter preserves comments in a record type 1`] = `
 "
 `;
 
-exports[`formatter preserves aligned trailing comments in a record type 1`] = `
+exports[`formatter declarations and type expressions preserves aligned trailing comments in a record type 1`] = `
 "module Example {
   type State = {
     outPackets: Set[int],              // outgoing packets
@@ -118,63 +119,63 @@ exports[`formatter preserves aligned trailing comments in a record type 1`] = `
 "
 `;
 
-exports[`formatter formats an empty record type 1`] = `
+exports[`formatter declarations and type expressions formats an empty record type 1`] = `
 "module Example {
   type Empty = {}
 }
 "
 `;
 
-exports[`formatter formats an open record type 1`] = `
+exports[`formatter declarations and type expressions formats an open record type 1`] = `
 "module Example {
   const User: { name: str | r }
 }
 "
 `;
 
-exports[`formatter formats a function type 1`] = `
+exports[`formatter declarations and type expressions formats a function type 1`] = `
 "module Example {
   const mapper: int -> str
 }
 "
 `;
 
-exports[`formatter formats an operator type 1`] = `
+exports[`formatter declarations and type expressions formats an operator type 1`] = `
 "module Example {
   const predicate: (int, str) => bool
 }
 "
 `;
 
-exports[`formatter formats a zero-parameter operator type 1`] = `
+exports[`formatter declarations and type expressions formats a zero-parameter operator type 1`] = `
 "module Example {
   const thunk: () => bool
 }
 "
 `;
 
-exports[`formatter formats a direct operator type 1`] = `
+exports[`formatter declarations and type expressions formats a direct operator type 1`] = `
 "module Example {
   const predicate: int => bool
 }
 "
 `;
 
-exports[`formatter formats a parenthesized type 1`] = `
+exports[`formatter declarations and type expressions formats a parenthesized type 1`] = `
 "module Example {
   const values: (Set[int])
 }
 "
 `;
 
-exports[`formatter formats a unit type 1`] = `
+exports[`formatter declarations and type expressions formats a unit type 1`] = `
 "module Example {
   const empty: ()
 }
 "
 `;
 
-exports[`formatter places declarations on separate lines 1`] = `
+exports[`formatter declarations and type expressions places declarations on separate lines 1`] = `
 "module Example {
   var a: int
   var b: int
@@ -182,63 +183,73 @@ exports[`formatter places declarations on separate lines 1`] = `
 "
 `;
 
-exports[`formatter formats a Boolean assumption 1`] = `
+exports[`formatter assumptions formats a Boolean assumption 1`] = `
 "module Example {
   assume Safe = true
 }
 "
 `;
 
-exports[`formatter formats spacing around assumption equals 1`] = `
+exports[`formatter assumptions formats spacing around assumption equals 1`] = `
 "module Example {
   assume Safe = true
 }
 "
 `;
 
-exports[`formatter formats an integer value definition 1`] = `
+exports[`formatter assumptions preserves a multiline assumption with a four-space continuation 1`] = `
+"module Example {
+  const Values: Set[int]
+
+  assume NonEmpty =
+      Values != Set()
+}
+"
+`;
+
+exports[`formatter value definitions and literals formats an integer value definition 1`] = `
 "module Example {
   val answer = 42
 }
 "
 `;
 
-exports[`formatter removes an optional value semicolon 1`] = `
+exports[`formatter value definitions and literals removes an optional value semicolon 1`] = `
 "module Example {
   val answer = 42
 }
 "
 `;
 
-exports[`formatter formats a Boolean value definition 1`] = `
+exports[`formatter value definitions and literals formats a Boolean value definition 1`] = `
 "module Example {
   val ready = true
 }
 "
 `;
 
-exports[`formatter formats a string value definition 1`] = `
+exports[`formatter value definitions and literals formats a string value definition 1`] = `
 "module Example {
   val greeting = "hello"
 }
 "
 `;
 
-exports[`formatter formats a typed value definition 1`] = `
+exports[`formatter value definitions and literals formats a typed value definition 1`] = `
 "module Example {
   val answer: int = 42
 }
 "
 `;
 
-exports[`formatter formats an integer addition expression 1`] = `
+exports[`formatter value definitions and literals formats an integer addition expression 1`] = `
 "module Example {
   val total = 1 + 2
 }
 "
 `;
 
-exports[`formatter formats an identifier value expression 1`] = `
+exports[`formatter value definitions and literals formats an identifier value expression 1`] = `
 "module Example {
   const source: int
   val copy = source
@@ -246,42 +257,71 @@ exports[`formatter formats an identifier value expression 1`] = `
 "
 `;
 
-exports[`formatter formats a unit literal 1`] = `
+exports[`formatter value definitions and literals formats a unit literal 1`] = `
 "module Example {
   val empty = ()
 }
 "
 `;
 
-exports[`formatter formats a list literal 1`] = `
+exports[`formatter value definitions and literals formats a list literal 1`] = `
 "module Example {
   val values = [ 1, 2 ]
 }
 "
 `;
 
-exports[`formatter formats a tuple literal 1`] = `
+exports[`formatter value definitions and literals preserves an explicitly expanded list literal 1`] = `
+"module Example {
+  pure val expected = [
+    { port: "transfer", channel: "channelToA" }
+  ]
+}
+"
+`;
+
+exports[`formatter value definitions and literals formats a tuple literal 1`] = `
 "module Example {
   val pair = (1, 2)
 }
 "
 `;
 
-exports[`formatter formats a record literal 1`] = `
+exports[`formatter value definitions and literals formats a record literal 1`] = `
 "module Example {
   val user = { name: "Alice", age: 42 }
 }
 "
 `;
 
-exports[`formatter formats a record spread 1`] = `
+exports[`formatter value definitions and literals preserves a multiline record literal 1`] = `
+"module Example {
+  pure val account = {
+    owner: "alice",
+    balance: 0,
+  }
+}
+"
+`;
+
+exports[`formatter value definitions and literals preserves source-line groups in a multiline record literal 1`] = `
+"module Example {
+  pure val message = {
+    source: "alice", round: 1,
+    value: "ready", validRound: 0,
+  }
+}
+"
+`;
+
+exports[`formatter value definitions and literals formats a record spread 1`] = `
 "module Example {
   val extended = { b: 2, ...{ a: 1 } }
 }
 "
 `;
 
-exports[`formatter preserves comments in record literals 1`] = `
+exports[`formatter value definitions and literals preserves comments in record literals 1`] = `
 "module Example {
   val state = {
     first: 1, // first value
@@ -291,14 +331,27 @@ exports[`formatter preserves comments in record literals 1`] = `
 "
 `;
 
-exports[`formatter formats a tuple destructuring pattern 1`] = `
+exports[`formatter value definitions and literals keeps a closing-delimiter comment with the final nested record field 1`] = `
+"module Example {
+  val output = {
+    nested: {
+      first: 1,
+      second: 2, // Explain the second field.
+    },
+    result: 3,
+  }
+}
+"
+`;
+
+exports[`formatter destructuring patterns formats a tuple destructuring pattern 1`] = `
 "module Example {
   pure val (first, _) = (1, 2)
 }
 "
 `;
 
-exports[`formatter preserves comments in a tuple destructuring pattern 1`] = `
+exports[`formatter destructuring patterns preserves comments in a tuple destructuring pattern 1`] = `
 "module Example {
   pure val first = ((
     // Preserve this tuple field comment.
@@ -309,1109 +362,21 @@ exports[`formatter preserves comments in a tuple destructuring pattern 1`] = `
 "
 `;
 
-exports[`formatter formats a record destructuring pattern 1`] = `
+exports[`formatter destructuring patterns formats a record destructuring pattern 1`] = `
 "module Example {
   pure val { first, second } = { first: 1, second: 2 }
 }
 "
 `;
 
-exports[`formatter formats a call expression 1`] = `
+exports[`formatter call expressions formats a call expression 1`] = `
 "module Example {
   val values = Set(1, 2)
 }
 "
 `;
 
-exports[`formatter preserves a comment before a call argument 1`] = `
-"module Example {
-  val result = Set(
-      // Preserve this call argument comment.
-      1,
-  )
-}
-"
-`;
-
-exports[`formatter formats a UFCS call expression 1`] = `
-"module Example {
-  val count = Set(1).size()
-}
-"
-`;
-
-exports[`formatter formats an index expression 1`] = `
-"module Example {
-  val first = List(1, 2)[0]
-}
-"
-`;
-
-exports[`formatter formats a field-access expression 1`] = `
-"module Example {
-  val answer = { value: 1 }.value
-}
-"
-`;
-
-exports[`formatter preserves a comment before a field selector 1`] = `
-"module Example {
-  pure val source = { field: 1 }
-  pure val answer = source
-      // Preserve this chain comment.
-      .field
-}
-"
-`;
-
-exports[`formatter formats a unary expression 1`] = `
-"module Example {
-  val negative = -42
-}
-"
-`;
-
-exports[`formatter formats every binary operator 1`] = `
-"module Example {
-  pure val pair = 1 -> 2
-
-  pure val implication = true implies false
-
-  temporal response = true leadsTo false
-
-  pure val equivalence = true iff false
-
-  pure val disjunction = true or false
-
-  pure val conjunction = true and false
-
-  pure val equal = 1 == 1
-
-  pure val unequal = 1 != 2
-
-  pure val less = 1 < 2
-
-  pure val lessOrEqual = 1 <= 2
-
-  pure val greater = 2 > 1
-
-  pure val greaterOrEqual = 2 >= 1
-
-  pure val sum = 1 + 2
-
-  pure val delta = 2 - 1
-
-  pure val product = 2 * 3
-
-  pure val quotient = 6 / 2
-
-  pure val remainder = 7 % 3
-
-  pure val power = 2 ^ 3
-}
-"
-`;
-
-exports[`formatter formats lambda parameter forms 1`] = `
-"module Example {
-  pure val identity = x => x
-
-  pure val add = (x, y) => x + y
-
-  pure val sumPair = ((x, y)) => x + y
-}
-"
-`;
-
-exports[`formatter preserves a multiline call with a lambda argument 1`] = `
-"module Example {
-  const names: Set[str]
-
-  val all_present = names.forall(name =>
-    names.contains(name)
-  )
-}
-"
-`;
-
-exports[`formatter preserves a comment before a lambda body 1`] = `
-"module Example {
-  pure val increment = (value =>
-    // Preserve this lambda comment.
-    value + 1)
-}
-"
-`;
-
-exports[`formatter formats a conditional expression 1`] = `
-"module Example {
-  pure val answer = if (true) 1 else 2
-}
-"
-`;
-
-exports[`formatter places a block-bodied conditional below a definition header 1`] = `
-"module Example {
-  var ready: bool
-  var n: int
-
-  action step =
-    if (ready) {
-      n' = n
-    } else {
-      n' = n + 1
-    }
-}
-"
-`;
-
-exports[`formatter preserves a comment before a conditional alternative 1`] = `
-"module Example {
-  pure val answer = if (true)
-    1
-  else
-    // Preserve this alternative comment.
-    2
-}
-"
-`;
-
-exports[`formatter preserves a comment before a conditional consequence 1`] = `
-"module Example {
-  pure val answer = if (true)
-    // Preserve this consequence comment.
-    1 else 2
-}
-"
-`;
-
-exports[`formatter formats a match expression 1`] = `
-"module Example {
-  type Option = Some(int) | None
-
-  pure def getOrZero(value: Option): int = match value {
-    | Some(x) => x
-    | None => 0
-    | _ => 0
-  }
-}
-"
-`;
-
-exports[`formatter places a match expression below a definition header 1`] = `
-"module Example {
-  type Status = Ready | Waiting
-  var status: Status
-
-  action step =
-    match status {
-      | Ready => {
-          status' = Waiting
-        }
-      | Waiting => {
-          status' = Ready
-        }
-    }
-}
-"
-`;
-
-exports[`formatter indents multiline match-arm bodies below their arms 1`] = `
-[
-  {
-    "column": 1,
-    "filePath": "match-arm-block-indentation.qnt",
-    "length": 8,
-    "line": 9,
-    "message": "expected the nested match-arm body to be indented one level",
-    "rule": "format/match-arm-body-indentation",
-    "sourceLine": "        n' = n,",
-  },
-  {
-    "column": 1,
-    "filePath": "match-arm-block-indentation.qnt",
-    "length": 8,
-    "line": 13,
-    "message": "expected the nested match-arm body to be indented one level",
-    "rule": "format/match-arm-body-indentation",
-    "sourceLine": "        n' = n + 1,",
-  },
-]
-`;
-
-exports[`formatter indents multiline match-arm bodies below their arms 2`] = `
-"module Example {
-  type Status = Ready | Waiting
-  var status: Status
-  var n: int
-
-  action step =
-    match status {
-      | Ready => all {
-          n' = n,
-          status' = Waiting,
-        }
-      | Waiting => all {
-          n' = n + 1,
-          status' = Ready,
-        }
-    }
-}
-"
-`;
-
-exports[`formatter preserves comments between match arms 1`] = `
-"module Example {
-  type Step = First | Second
-  pure def value(step) = match step {
-    // Preserve this arm comment.
-    | First => 1
-    | Second => 2
-  }
-}
-"
-`;
-
-exports[`formatter preserves a comment before a match-arm body 1`] = `
-"module Example {
-  type Step = First | Second
-  pure def value(step) = match step {
-    | First =>
-      // Preserve this arm body comment.
-      1
-    | Second => 2
-  }
-}
-"
-`;
-
-exports[`formatter preserves a multiline match-arm body with a trailing comment 1`] = `
-"module Example {
-  type Status = Ready | Waiting
-  var status: Status
-
-  val number =
-    match status {
-      | Ready =>
-          1 // Ready has a value
-      | Waiting => 0
-    }
-}
-"
-`;
-
-exports[`formatter formats namespace access 1`] = `
-"module Example {
-  pure val apply = (Scope::x) => Scope::x
-}
-"
-`;
-
-exports[`formatter formats a primed assignment 1`] = `
-"module Example {
-  var count: int
-
-  action increment = count' = count + 1
-}
-"
-`;
-
-exports[`formatter formats an ordinary block expression 1`] = `
-"module Example {
-  var count: int
-
-  action initialize = {
-    count' = 0
-  }
-}
-"
-`;
-
-exports[`formatter preserves a comment inside an ordinary block 1`] = `
-"module Example {
-  action step = {
-    // Preserve this block comment.
-    true
-  }
-}
-"
-`;
-
-exports[`formatter formats all block combinators 1`] = `
-"module Example {
-  var count: int
-
-  action choose = any { count' = 1, count' = 2 }
-
-  action advance = all { count >= 0, count' = count + 1 }
-
-  pure val both = and { true, false }
-
-  pure val either = or { false, true }
-}
-"
-`;
-
-exports[`formatter preserves a block combinator below a definition header 1`] = `
-"module Example {
-  var n: int
-
-  action step =
-    all {
-      n' = n,
-      n >= 0,
-    }
-}
-"
-`;
-
-exports[`formatter preserves a comment inside a block combinator 1`] = `
-"module Example {
-  action step = all {
-    // Preserve this conjunct comment.
-    true,
-  }
-}
-"
-`;
-
-exports[`formatter preserves aligned trailing comments in a block combinator 1`] = `
-"module Example {
-  var first: int
-  var second: int
-  var third: int
-  var fourth: int
-
-  action init = all {
-    first' = 1,  // First value
-    second' = 2, // Second value
-    third' = 3,  // Third value
-    fourth' = 4,  // Fourth value
-  }
-}
-"
-`;
-
-exports[`formatter formats a nondeterministic binding 1`] = `
-"module Example {
-  var count: int
-
-  action step = {
-    nondet choice = Set(1, 2).oneOf()
-    count' = choice
-  }
-}
-"
-`;
-
-exports[`formatter formats nested definitions 1`] = `
-"module Example {
-  pure def calculate(value: int): int = {
-    pure val doubled: int = value * 2
-    pure def increment(number: int): int = number + 1
-    increment(doubled)
-  }
-}
-"
-`;
-
-exports[`formatter preserves a nested definition below an action header 1`] = `
-"module Example {
-  var n: int
-
-  action step =
-    nondet value = Set(1, 2, 3).oneOf()
-    all {
-      n' = value,
-      value > 0,
-    }
-}
-"
-`;
-
-exports[`formatter preserves a comment after a nested definition 1`] = `
-"module Example {
-  action step = {
-    val answer = 42
-    // Preserve this comment.
-    answer
-  }
-}
-"
-`;
-
-exports[`formatter preserves a trailing comment on a local definition 1`] = `
-"module Example {
-  action step = {
-    val answer = 42 // Preserve this local comment.
-    answer
-  }
-}
-"
-`;
-
-exports[`formatter preserves a comment before a local definition body 1`] = `
-"module Example {
-  action step = {
-    val answer =
-      // Preserve this local body comment.
-      42
-    answer
-  }
-}
-"
-`;
-
-exports[`formatter formats named and wildcard imports and exports 1`] = `
-"module Library {
-  pure val value = 1
-}
-
-module Consumer {
-  import Library
-  import Library as Lib
-  import Library.value
-  import Library.*
-  export Library
-  export Library as Public
-  export Library.value
-  export Library.*
-}
-"
-`;
-
-exports[`formatter formats source-qualified imports 1`] = `
-"module Example {
-  import Library from "./quint-format-source-library"
-  import Library.value from "./quint-format-source-library"
-  import Library.* from "./quint-format-source-library"
-}
-"
-`;
-
-exports[`formatter formats module instances and overrides 1`] = `
-"module Library {
-  const N: int
-  const Flag: bool
-}
-
-module Example {
-  import Library(N = 1, Flag = true) as Lib
-}
-"
-`;
-
-exports[`formatter preserves comments among module instance overrides 1`] = `
-"module Library {
-  const N: int
-}
-
-module Example {
-  import Library(
-    // Preserve this override comment.
-    N = 1
-  ) as Lib
-}
-"
-`;
-
-exports[`formatter formats anonymous instances 1`] = `
-"module Library {
-  const N: int
-}
-
-module Example {
-  import Library(N = 1).*
-}
-"
-`;
-
-exports[`formatter preserves comments in anonymous instance overrides 1`] = `
-"module Library {
-  const N: int
-}
-
-module Example {
-  import Library(
-    // Preserve this anonymous override comment.
-    N = 1
-  ).*
-}
-"
-`;
-
-exports[`formatter formats a parenthesized expression 1`] = `
-"module Example {
-  val total = (1 + 2)
-}
-"
-`;
-
-exports[`formatter formats an integer subtraction expression 1`] = `
-"module Example {
-  val delta = 3 - 1
-}
-"
-`;
-
-exports[`formatter preserves a source hashbang 1`] = `
-"#!/usr/bin/env -S quint typecheck
-module Example {
-}
-"
-`;
-
-exports[`formatter formats multiple top-level modules 1`] = `
-"module First {
-}
-
-module Second {
-}
-"
-`;
-
-exports[`formatter preserves adjacent definitions 1`] = `
-"module Example {
-  var first: int
-  var second: int
-}
-"
-`;
-
-exports[`formatter preserves a blank line between grouped definitions 1`] = `
-"module Example {
-  var first: int
-
-  var second: int
-}
-"
-`;
-
-exports[`formatter preserves a leading line comment 1`] = `
-"module Example {
-  // The answer
-  val answer = 42
-}
-"
-`;
-
-exports[`formatter preserves a definition documentation comment 1`] = `
-"module Example {
-  /// The answer
-  val answer = 42
-}
-"
-`;
-
-exports[`formatter preserves a leading single-line block comment 1`] = `
-"module Example {
-  /* The answer */
-  val answer = 42
-}
-"
-`;
-
-exports[`formatter indents a leading multiline block comment 1`] = `
-"module Example {
-  /*
-   * The answer
-   */
-  val answer = 42
-}
-"
-`;
-
-exports[`formatter preserves a module documentation comment 1`] = `
-"/// Module documentation
-module Example {
-}
-"
-`;
-
-exports[`formatter preserves a trailing line comment 1`] = `
-"module Example {
-  val answer = 42 // The answer
-}
-"
-`;
-
-exports[`formatter preserves a trailing module-body comment 1`] = `
-"module Example {
-  pure val answer = 42
-
-  // Kept for future work
-}
-"
-`;
-
-exports[`formatter preserves a blank line before trailing module comments 1`] = `
-"module Example {
-  pure val answer = 42
-
-  // Run this example with the simulator.
-  // Additional command details follow here.
-}
-"
-`;
-
-exports[`formatter preserves trailing source comments 1`] = `
-"module Example {
-}
-
-/*! answer !*/
-
-/*! 1 + 1 !*/
-"
-`;
-
-exports[`formatter preserves a comment inside an otherwise empty module 1`] = `
-"module Example {
-  // Intentionally empty
-}
-"
-`;
-
-exports[`formatter preserves an inline block comment 1`] = `
-"module Example {
-  val total = 1 /* left */ + 2
-}
-"
-`;
-
-exports[`formatter preserves a comment before a binary right operand 1`] = `
-"module Example {
-  pure val answer = true and
-    // Preserve this right operand comment.
-    false
-}
-"
-`;
-
-exports[`formatter formats a general assumption expression 1`] = `
-"module Example {
-  const Flag: bool
-
-  assume Holds = Flag
-}
-"
-`;
-
-exports[`formatter formats a parameterless def definition 1`] = `
-"module Example {
-  def answer = 42
-}
-"
-`;
-
-exports[`formatter formats a def parameter 1`] = `
-"module Example {
-  def identity(value) = value
-}
-"
-`;
-
-exports[`formatter formats an ignored def parameter 1`] = `
-"module Example {
-  pure def ignore(_: int): int = 0
-}
-"
-`;
-
-exports[`formatter formats multiple def parameters 1`] = `
-"module Example {
-  def choose(left, right) = left
-}
-"
-`;
-
-exports[`formatter formats a typed def header 1`] = `
-"module Example {
-  def identity(value: int): int = value
-}
-"
-`;
-
-exports[`formatter formats an untyped parameter with a return type 1`] = `
-"module Example {
-  def identity(value): int = value
-}
-"
-`;
-
-exports[`formatter formats List types in a def header 1`] = `
-"module Example {
-  def identity(xs: List[int]): List[int] = xs
-}
-"
-`;
-
-exports[`formatter removes an optional definition semicolon 1`] = `
-"module Example {
-  def answer = 42
-}
-"
-`;
-
-exports[`formatter formats a primitive type alias 1`] = `
-"module Example {
-  type Count = int
-}
-"
-`;
-
-exports[`formatter formats an uninterpreted type 1`] = `
-"module Example {
-  type DOMAIN
-}
-"
-`;
-
-exports[`formatter formats a named type alias 1`] = `
-"module Example {
-  type DOMAIN
-
-  type Copy = DOMAIN
-}
-"
-`;
-
-exports[`formatter formats a polymorphic type alias 1`] = `
-"module Example {
-  type Box[a] = List[a]
-}
-"
-`;
-
-exports[`formatter formats a polymorphic type application 1`] = `
-"module Example {
-  type Box[a] = List[a]
-
-  const boxes: Box[int]
-}
-"
-`;
-
-exports[`formatter formats an inline sum type 1`] = `
-"module Example {
-  type Elem = S(str) | I(int)
-}
-"
-`;
-
-exports[`formatter formats a multiline sum type 1`] = `
-"module Example {
-  type Option[a] =
-    | Some(a)
-    | None
-}
-"
-`;
-
-exports[`formatter preserves comments between sum-type variants 1`] = `
-"module Example {
-  type Step =
-    | First
-    // Preserve this variant comment.
-    | Second
-}
-"
-`;
-
-exports[`formatter preserves trailing comments on sum-type variants 1`] = `
-"module Example {
-  type LastDraw =
-    | Self(str) // The name of someone who drew themself
-    | Ok        // The draw was Ok
-}
-"
-`;
-
-exports[`formatter formats a pure definition 1`] = `
-"module Example {
-  pure def answer = 42
-}
-"
-`;
-
-exports[`formatter formats a pure value definition 1`] = `
-"module Example {
-  pure val answer = 42
-}
-"
-`;
-
-exports[`formatter formats a parameterless action 1`] = `
-"module Example {
-  action initialize = true
-}
-"
-`;
-
-exports[`formatter preserves a comment before a definition body 1`] = `
-"module Example {
-  action init =
-    // Preserve this body comment.
-    true
-}
-"
-`;
-
-exports[`formatter formats a parameterless run 1`] = `
-"module Example {
-  run scenario = true
-}
-"
-`;
-
-exports[`formatter formats a parameterless temporal definition 1`] = `
-"module Example {
-  temporal invariant = true
-}
-"
-`;
-
-exports[`formatter formats a parameterless nondet definition 1`] = `
-"module Example {
-  nondet selection = true
-}
-"
-`;
-
-exports[`formatter formats empty parameter lists across definition modes 1`] = `
-"module Example {
-  action step(): bool = true
-  run scenario(): bool = true
-  temporal property(): bool = true
-  nondet choose(): int = 1
-}
-"
-`;
-
-exports[`formatter formats rich definitions and types across every mode 1`] = `
-"module Matrix {
-  type Pair[a, b] = (a, b)
-  type Callback[a, b] = (a) => b
-  var n: int
-  pure def identity(value: List[Set[int]]): List[Set[int]] = value
-  pure def apply(value: int, callback: (int) => str): str = callback(value)
-  def stateValue(offset: int): int = n + offset
-  action advance(amount: int): bool = all {
-    amount > 0,
-    n' = n + amount,
-  }
-  run scenario(start: int): bool = (n' = start).then(n' = start + 1)
-  temporal positive(limit: int): bool = always(n >= limit)
-  nondet choose(values: Set[int]): int = values.oneOf()
-}
-"
-`;
-
-exports[`formatter preserves blank lines between leading comment groups 1`] = `
-"module Example {
-  val source = 1
-
-  // First disabled example
-  // val first = source
-
-  // Second disabled example
-  // val second = source
-
-  def update(value) = value
-}
-"
-`;
-
-exports[`formatter preserves an explicit line break after definition equals 1`] = `
-"module Example {
-  temporal eventuallyTrue =
-    eventually(true)
-}
-"
-`;
-
-exports[`formatter preserves all aligned dots in a nondet UFCS chain 1`] = `
-"module Example {
-  var selected: int
-
-  action step =
-    nondet choice =
-      Set(1, 2, 3)
-          .filter(value => value > 1)
-          .oneOf()
-    selected' = choice
-}
-"
-`;
-
-exports[`formatter preserves a multiline record type 1`] = `
-"module Example {
-  type Account = {
-    owner: str,
-    balance: int,
-  }
-}
-"
-`;
-
-exports[`formatter preserves a multiline record literal 1`] = `
-"module Example {
-  pure val account = {
-    owner: "alice",
-    balance: 0,
-  }
-}
-"
-`;
-
-exports[`formatter preserves a single multiline UFCS continuation 1`] = `
-"module Example {
-  pure def ensure(condition: bool, message: str): str = if (condition) "" else message
-  pure def andEnsure(previous: str, condition: bool, message: str): str =
-    if (previous != "") previous else ensure(condition, message)
-
-  pure val error = ensure(true, "first message")
-      .andEnsure(false, "second message")
-}
-"
-`;
-
-exports[`formatter preserves blank lines between top-level comment groups 1`] = `
-"/**
- * First notice.
- */
-
-/**
- * Second notice.
- */
-module Example {
-}
-"
-`;
-
-exports[`formatter preserves an explicit line break in a primed assignment chain 1`] = `
-"module Example {
-  type State = { first: int, second: int }
-  var state: State
-
-  action update = all {
-    state' =
-      state.with("first", 1)
-          .with("second", 2),
-  }
-}
-"
-`;
-
-exports[`formatter preserves an explicit line break after else 1`] = `
-"module Example {
-  type State = { value: int }
-
-  pure def update(condition: bool, state: State): State =
-    if (condition) {
-      value: state.value,
-    } else
-      pure val nextValue = state.value + 1
-      {
-        value: nextValue,
-      }
-}
-"
-`;
-
-exports[`formatter preserves a blank line before a nested definition body 1`] = `
-"module Example {
-  pure def calculate(value: int): int = {
-    pure val doubled = value * 2
-
-    doubled + 1
-  }
-}
-"
-`;
-
-exports[`formatter preserves multiline unbraced conditional branches 1`] = `
-"module Example {
-  pure def choose(condition: bool): int =
-    if (condition)
-      1
-    else
-      2
-}
-"
-`;
-
-exports[`formatter propagates multiline layout through nested lambda calls 1`] = `
-"module Example {
-  type Result = Ok(int) | Err(str)
-
-  pure def bind(result: Result, callback: int => Result): Result =
-    match result {
-      | Ok(value) => callback(value)
-      | Err(_) => result
-    }
-
-  pure def combine(lhs: Result, rhs: Result): Result =
-    lhs.bind(left =>
-      rhs.bind(right =>
-        if (left == right)
-          Ok(left)
-        else
-          Err("different")
-      )
-    )
-}
-"
-`;
-
-exports[`formatter attaches postfix access to a multiline parenthesized expression 1`] = `
-"module Example {
-  pure def app(op: (int, int) => int, lhs: int, rhs: int): int = op(lhs, rhs)
-
-  pure def multiply(lhs: int, rhs: int): int =
-    ((x, y) =>
-      val result = x * y
-      if (result > 0) result else 0
-    ).app(lhs, rhs)
-}
-"
-`;
-
-exports[`formatter keeps a block-bodied lambda brace beside its arrow 1`] = `
-"module Example {
-  pure def app(op: (int, int) => int, lhs: int, rhs: int): int = op(lhs, rhs)
-
-  pure def absoluteDifference(lhs: int, rhs: int): int =
-    ((x, y) => {
-      val result = x - y
-      if (result < 0) -result else result
-    }).app(lhs, rhs)
-}
-"
-`;
-
-exports[`formatter preserves a blank line after a nested operator definition 1`] = `
-"module Example {
-  pure def sort(values: List[int]): List[int] = {
-    pure def appendOne(items: List[int]): List[int] = {
-      items.append(1)
-    }
-
-    appendOne(values)
-  }
-}
-"
-`;
-
-exports[`formatter preserves a blank line after the module opening brace 1`] = `
-"module Example {
-
-  // The first declaration's documentation.
-  pure val answer = 42
-}
-"
-`;
-
-exports[`formatter preserves argument groups in a multiline call 1`] = `
+exports[`formatter call expressions preserves argument groups in a multiline call 1`] = `
 "module Example {
   pure val pairs = Set(
       ("BTC", "USDC"), ("BTC", "USDT"), ("ETH", "USDC"), ("ETH", "USDT"),
@@ -1422,7 +387,116 @@ exports[`formatter preserves argument groups in a multiline call 1`] = `
 "
 `;
 
-exports[`formatter preserves explicitly multiline calls nested in a multiline call 1`] = `
+exports[`formatter call expressions preserves a partially expanded call within the line width 1`] = `
+"module Example {
+  pure def combine(first: int, second: int, third: int, fourth: int, fifth: int): int =
+    first + second + third + fourth + fifth
+
+  pure val result = combine(
+      1, 2, 3,
+      4, 5,
+  )
+}
+"
+`;
+
+exports[`formatter call expressions preserves a hanging partially expanded call 1`] = `
+"module Example {
+  pure def combine(first: int, second: int, third: int, fourth: int, fifth: int): int =
+    first + second + third + fourth + fifth
+
+  pure val result = combine(1, 2, 3,
+      4, 5)
+}
+"
+`;
+
+exports[`formatter call expressions preserves a leading call argument beside the opening parenthesis 1`] = `
+"module Example {
+  pure val decreased: List[int] = [ 1, 2, 3 ].foldl([],
+      (list, value) => list.append(if (value >= 0) value else (value - 1))
+  )
+}
+"
+`;
+
+exports[`formatter call expressions normalizes an aligned multiline call while preserving argument groups 1`] = `
+"module Example {
+  pure val result = Set(
+      "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",
+      "sender", "receiver",
+      "transfer", "channel-topology-with-a-long-name",
+      "zero", "zero",
+  )
+}
+"
+`;
+
+exports[`formatter call expressions preserves a fully expanded call 1`] = `
+"module Example {
+  pure val transferSequence = List(
+      ("A", "B"),
+      ("B", "C"),
+      ("C", "A"),
+      ("A", "C"),
+      ("C", "B"),
+      ("B", "A"),
+  )
+}
+"
+`;
+
+exports[`formatter call expressions preserves a trailing comma in a fully expanded call 1`] = `
+[
+  {
+    "column": 17,
+    "filePath": "input.qnt",
+    "length": 1,
+    "line": 4,
+    "message": "expected a trailing comma in a multiline call",
+    "rule": "format/missing-trailing-comma",
+    "sourceLine": "      "bob" -> 2",
+  },
+]
+`;
+
+exports[`formatter call expressions preserves a trailing comma in a fully expanded call 2`] = `
+"module Example {
+  pure val balances = Map(
+      "alice" -> 1,
+      "bob" -> 2,
+  )
+}
+"
+`;
+
+exports[`formatter call expressions preserves a fully expanded two-argument call 1`] = `
+"module Example {
+  pure def compare(left, right) = true
+
+  pure val result =
+    compare(
+        { prefix: [ 1 ], suffix: [ 4, 5, 6 ] },
+        { prefix: [ 2, 7, 8, 9 ], suffix: [] },
+    )
+}
+"
+`;
+
+exports[`formatter call expressions uses a four-space continuation indent for expanded call arguments 1`] = `
+"module Example {
+  pure def verify(first: int, second: int): bool = true
+
+  pure def valid(state: str): bool =
+      state != "working" implies verify(
+          1,
+          2,
+      )
+}
+"
+`;
+
+exports[`formatter call expressions preserves explicitly multiline calls nested in a multiline call 1`] = `
 "module Example {
   pure val channelTopology = Map(
       "A" -> Map(
@@ -1442,202 +516,85 @@ exports[`formatter preserves explicitly multiline calls nested in a multiline ca
 "
 `;
 
-exports[`formatter preserves a same-line comment after a binary operator 1`] = `
+exports[`formatter call expressions indents a nested multiline call inside a UFCS continuation 1`] = `
 "module Example {
-  pure val answer = true implies // Preserve this operator comment.
-    false
+  action init = true
+  action step(values: Set[int]): bool = true
+
+  run execution =
+    init
+        // Explain the first transition.
+        // Keep this attached to the call.
+        .then(step(Set(
+            1,
+            2,
+        )))
 }
 "
 `;
 
-exports[`formatter preserves a line break after a binary operator 1`] = `
+exports[`formatter call expressions preserves a comment before a call argument 1`] = `
 "module Example {
-  pure val answer =
-    true and
-        false
+  val result = Set(
+      // Preserve this call argument comment.
+      1,
+  )
 }
 "
 `;
 
-exports[`formatter preserves a binary continuation in a lambda body 1`] = `
+exports[`formatter UFCS and member access formats a UFCS call expression 1`] = `
 "module Example {
-  pure val chains = Set("a")
-
-  pure val valid =
-    chains.forall(chain =>
-      chain != "b" implies
-          chain == "a"
-    )
+  val count = Set(1).size()
 }
 "
 `;
 
-exports[`formatter preserves a blank line between block combinator entries 1`] = `
+exports[`formatter UFCS and member access preserves aligned dots in a multiline UFCS chain 1`] = `
 "module Example {
   var n: int
 
-  action step = all {
-    n >= 0,
+  action init = n' = 0
+  action step = n' = n + 1
 
-    n' = n + 1,
-  }
+  run trace =
+    init.then(step)
+        .then(step)
+        .then(all {
+          n' = n,
+          assert(n >= 0),
+        })
 }
 "
 `;
 
-exports[`formatter preserves an explicitly expanded list literal 1`] = `
+exports[`formatter UFCS and member access preserves all aligned dots in a nondet UFCS chain 1`] = `
 "module Example {
-  pure val expected = [
-    { port: "transfer", channel: "channelToA" }
-  ]
+  var selected: int
+
+  action step =
+    nondet choice =
+      Set(1, 2, 3)
+          .filter(value => value > 1)
+          .oneOf()
+    selected' = choice
 }
 "
 `;
 
-exports[`formatter preserves a fully expanded call 1`] = `
+exports[`formatter UFCS and member access preserves a single multiline UFCS continuation 1`] = `
 "module Example {
-  pure val transferSequence = List(
-      ("A", "B"),
-      ("B", "C"),
-      ("C", "A"),
-      ("A", "C"),
-      ("C", "B"),
-      ("B", "A"),
-  )
+  pure def ensure(condition: bool, message: str): str = if (condition) "" else message
+  pure def andEnsure(previous: str, condition: bool, message: str): str =
+    if (previous != "") previous else ensure(condition, message)
+
+  pure val error = ensure(true, "first message")
+      .andEnsure(false, "second message")
 }
 "
 `;
 
-exports[`formatter preserves a compact block after a nested definition 1`] = `
-"module Example {
-  pure val channelTopology = Map("A" -> "channelToA")
-
-  run simulationTest = all {
-    def show(a) = true { show(channelTopology) },
-    true,
-  }
-}
-"
-`;
-
-exports[`formatter preserves an expanded anonymous instance 1`] = `
-"module Source {
-  const possibleChannelTopologies: Set[str]
-}
-
-module Example {
-  pure val myChannelNames = Set("channelToA", "channelToB")
-
-  import Source(
-    possibleChannelTopologies = myChannelNames
-  ).*
-}
-"
-`;
-
-exports[`formatter expands a multiline definition header 1`] = `
-"module Example {
-  pure def transfer(
-    chainState: str,
-    denomination: str,
-    amount: int,
-    sender: str,
-    receiver: str,
-    sourcePort: str,
-    sourceChannel: str,
-    timeoutHeight: int,
-    timeoutTimestamp: int,
-  ): bool = {
-    true
-  }
-}
-"
-`;
-
-exports[`formatter expands a multiline definition header 2`] = `
-[
-  {
-    "column": 21,
-    "filePath": "multiline-definition-header.qnt",
-    "length": 15,
-    "line": 2,
-    "message": "expected the first parameter on an indented line",
-    "rule": "format/multiline-parameter-layout",
-    "sourceLine": "  pure def transfer(chainState: str, denomination: str, amount: int,",
-  },
-  {
-    "column": 62,
-    "filePath": "multiline-definition-header.qnt",
-    "length": 1,
-    "line": 4,
-    "message": "expected a trailing comma after the parameter",
-    "rule": "format/multiline-parameter-layout",
-    "sourceLine": "                    timeoutHeight: int, timeoutTimestamp: int): bool = {",
-  },
-]
-`;
-
-exports[`formatter preserves a blank line before a commented local definition 1`] = `
-"module Example {
-  pure def build = {
-    pure val data = { value: 1 }
-
-    // Construct the packet.
-    pure val packet = { data: data }
-    packet
-  }
-}
-"
-`;
-
-exports[`formatter preserves a block-bodied conditional beside a definition header 1`] = `
-"module Example {
-  pure val result = if (true) {
-    1
-  } else {
-    2
-  }
-}
-"
-`;
-
-exports[`formatter preserves a trailing comment on an ordinary block result 1`] = `
-"module Example {
-  pure def choose = if (true) {
-    1  // chosen result
-  } else {
-    2
-  }
-}
-"
-`;
-
-exports[`formatter normalizes an aligned multiline call while preserving argument groups 1`] = `
-"module Example {
-  pure val result = Set(
-      "source-chain-state-with-a-long-name", "denomination-with-a-long-name", "amount-with-a-long-name",
-      "sender", "receiver",
-      "transfer", "channel-topology-with-a-long-name",
-      "zero", "zero",
-  )
-}
-"
-`;
-
-exports[`formatter keeps a secondary lambda header beside the call opening 1`] = `
-"module Example {
-  var values: str -> int
-
-  action update = {
-    values' = values.setBy("one", value =>
-      value + 1
-    )
-  }
-}
-"
-`;
-
-exports[`formatter uses a four-space structural indent for UFCS continuations 1`] = `
+exports[`formatter UFCS and member access uses a four-space structural indent for UFCS continuations 1`] = `
 "module Example {
   var states: str -> int
 
@@ -1653,7 +610,7 @@ exports[`formatter uses a four-space structural indent for UFCS continuations 1`
 "
 `;
 
-exports[`formatter uses a four-space structural indent for UFCS continuations 2`] = `
+exports[`formatter UFCS and member access uses a four-space structural indent for UFCS continuations 2`] = `
 [
   {
     "column": 1,
@@ -1694,7 +651,214 @@ exports[`formatter uses a four-space structural indent for UFCS continuations 2`
 ]
 `;
 
-exports[`formatter keeps a record-returning lambda's braces attached 1`] = `
+exports[`formatter UFCS and member access formats an index expression 1`] = `
+"module Example {
+  val first = List(1, 2)[0]
+}
+"
+`;
+
+exports[`formatter UFCS and member access formats a field-access expression 1`] = `
+"module Example {
+  val answer = { value: 1 }.value
+}
+"
+`;
+
+exports[`formatter UFCS and member access preserves a comment before a field selector 1`] = `
+"module Example {
+  pure val source = { field: 1 }
+  pure val answer = source
+      // Preserve this chain comment.
+      .field
+}
+"
+`;
+
+exports[`formatter UFCS and member access aligns comments with a continued UFCS selector 1`] = `
+"module Example {
+  action init = true
+  action step = true
+
+  run execution =
+    init
+        // Explain the first transition.
+        // Keep this attached to the call.
+        .then(step)
+}
+"
+`;
+
+exports[`formatter operators formats a unary expression 1`] = `
+"module Example {
+  val negative = -42
+}
+"
+`;
+
+exports[`formatter operators formats every binary operator 1`] = `
+"module Example {
+  pure val pair = 1 -> 2
+
+  pure val implication = true implies false
+
+  temporal response = true leadsTo false
+
+  pure val equivalence = true iff false
+
+  pure val disjunction = true or false
+
+  pure val conjunction = true and false
+
+  pure val equal = 1 == 1
+
+  pure val unequal = 1 != 2
+
+  pure val less = 1 < 2
+
+  pure val lessOrEqual = 1 <= 2
+
+  pure val greater = 2 > 1
+
+  pure val greaterOrEqual = 2 >= 1
+
+  pure val sum = 1 + 2
+
+  pure val delta = 2 - 1
+
+  pure val product = 2 * 3
+
+  pure val quotient = 6 / 2
+
+  pure val remainder = 7 % 3
+
+  pure val power = 2 ^ 3
+}
+"
+`;
+
+exports[`formatter lambdas formats lambda parameter forms 1`] = `
+"module Example {
+  pure val identity = x => x
+
+  pure val add = (x, y) => x + y
+
+  pure val sumPair = ((x, y)) => x + y
+}
+"
+`;
+
+exports[`formatter lambdas uses a four-space continuation for a multiline lambda body 1`] = `
+"module Example {
+  pure val total = Set(1).fold(0, (sum, value) =>
+      sum + value)
+}
+"
+`;
+
+exports[`formatter lambdas preserves a multiline call with a lambda argument 1`] = `
+"module Example {
+  const names: Set[str]
+
+  val all_present = names.forall(name =>
+    names.contains(name)
+  )
+}
+"
+`;
+
+exports[`formatter lambdas indents a multiline lambda within a UFCS call 1`] = `
+"module Example {
+  pure def proposals(values) =
+      values
+          .map(value =>
+            { id: value }
+          )
+}
+"
+`;
+
+exports[`formatter lambdas uses a four-space leading operator continuation in a lambda 1`] = `
+"module Example {
+  pure val valid = Set(1, 2).forall(value =>
+    (value > 0)
+        implies (value >= 1)
+  )
+}
+"
+`;
+
+exports[`formatter lambdas keeps a secondary lambda header beside the call opening 1`] = `
+"module Example {
+  var values: str -> int
+
+  action update = {
+    values' = values.setBy("one", value =>
+      value + 1
+    )
+  }
+}
+"
+`;
+
+exports[`formatter lambdas keeps leading call arguments beside a multiline lambda 1`] = `
+"module Example {
+  pure val folded =
+    0.range(8)
+        .foldl(Map(),
+          (m, key) =>
+            if (key > 0) m.put(key, key) else m
+        )
+}
+"
+`;
+
+exports[`formatter lambdas propagates multiline layout through nested lambda calls 1`] = `
+"module Example {
+  type Result = Ok(int) | Err(str)
+
+  pure def bind(result: Result, callback: int => Result): Result =
+    match result {
+      | Ok(value) => callback(value)
+      | Err(_) => result
+    }
+
+  pure def combine(lhs: Result, rhs: Result): Result =
+    lhs.bind(left =>
+      rhs.bind(right =>
+        if (left == right)
+          Ok(left)
+        else
+          Err("different")
+      )
+    )
+}
+"
+`;
+
+exports[`formatter lambdas keeps a block-bodied lambda brace beside its arrow 1`] = `
+"module Example {
+  pure def app(op: (int, int) => int, lhs: int, rhs: int): int = op(lhs, rhs)
+
+  pure def absoluteDifference(lhs: int, rhs: int): int =
+    ((x, y) => {
+      val result = x - y
+      if (result < 0) -result else result
+    }).app(lhs, rhs)
+}
+"
+`;
+
+exports[`formatter lambdas preserves a compact single-expression lambda block 1`] = `
+"module Example {
+  pure def listForall(list: List[a], pred: a => bool): bool = {
+    list.foldl(true, (result, element) => { if (pred(element)) result else false })
+  }
+}
+"
+`;
+
+exports[`formatter lambdas keeps a record-returning lambda's braces attached 1`] = `
 "module Example {
   pure val records = Set("one").mapBy(name => {
     name: name,
@@ -1704,7 +868,7 @@ exports[`formatter keeps a record-returning lambda's braces attached 1`] = `
 "
 `;
 
-exports[`formatter keeps a record-returning lambda's braces attached 2`] = `
+exports[`formatter lambdas keeps a record-returning lambda's braces attached 2`] = `
 [
   {
     "column": 13,
@@ -1718,7 +882,7 @@ exports[`formatter keeps a record-returning lambda's braces attached 2`] = `
 ]
 `;
 
-exports[`formatter keeps block-combinator lambda bodies attached 1`] = `
+exports[`formatter lambdas keeps block-combinator lambda bodies attached 1`] = `
 "module Example {
   pure val values = Set(1, 2)
 
@@ -1745,94 +909,85 @@ exports[`formatter keeps block-combinator lambda bodies attached 1`] = `
 "
 `;
 
-exports[`formatter preserves a fully expanded two-argument call 1`] = `
+exports[`formatter lambdas preserves a comment before a lambda body 1`] = `
 "module Example {
-  pure def compare(left, right) = true
-
-  pure val result =
-    compare(
-        { prefix: [ 1 ], suffix: [ 4, 5, 6 ] },
-        { prefix: [ 2, 7, 8, 9 ], suffix: [] },
-    )
+  pure val increment = (value =>
+    // Preserve this lambda comment.
+    value + 1)
 }
 "
 `;
 
-exports[`formatter preserves source-line groups in block combinators 1`] = `
+exports[`formatter conditional expressions formats a conditional expression 1`] = `
 "module Example {
-  val groupedAll = all {
-    true, true, true,
-  }
-
-  val groupedAny = any {
-    true, false, true,
-  }
-
-  pure val groupedAnd = and {
-    true, true, false,
-  }
-
-  pure val groupedOr = or {
-    false, false, true,
-  }
-
-  pure val longGroup = and {
-    "first deliberately long value for width testing" == "first deliberately long value for width testing",
-    "second deliberately long value for width testing" == "second deliberately long value for width testing",
-  }
+  pure val answer = if (true) 1 else 2
 }
 "
 `;
 
-exports[`formatter keeps leading call arguments beside a multiline lambda 1`] = `
+exports[`formatter conditional expressions preserves multiline unbraced conditional branches 1`] = `
 "module Example {
-  pure val folded =
-    0.range(8)
-        .foldl(Map(),
-          (m, key) =>
-            if (key > 0) m.put(key, key) else m
-        )
+  pure def choose(condition: bool): int =
+    if (condition)
+      1
+    else
+      2
 }
 "
 `;
 
-exports[`formatter preserves aligned trailing comments on local definitions 1`] = `
+exports[`formatter conditional expressions expands inline results when else starts on a new line 1`] = `
 "module Example {
-  pure def total = {
-    val first = 1     // First value
-    val second = 22   // Second value
-    val third = 333   // Third value
-    val fourth = 4444 // Fourth value
-    first + second + third + fourth
-  }
+  pure def choose(flag: bool): int =
+      if (flag)
+        1
+      else
+        2
 }
 "
 `;
 
-exports[`formatter preserves a four-space commented definition continuation 1`] = `
+exports[`formatter conditional expressions expands result branches after a multiline condition 1`] = `
 "module Example {
-  const PERIOD: int
-
-  def withinPeriod: bool =
-      // Preserve the authored continuation depth.
-      PERIOD > 0
+  pure def classify(value: int): str =
+    if ((value == 0)
+        or value == 1)
+      "SUCCESS"
+    else
+      "NOT_ENOUGH_TRUST"
 }
 "
 `;
 
-exports[`formatter separates a braced definition from the next commented definition 1`] = `
+exports[`formatter conditional expressions uses a four-space leading operator continuation in a conditional 1`] = `
 "module Example {
-  pure def ready = and {
-    true,
-  }
-
-  // Describe the following definition.
-  pure val isReady = ready
+  pure def classify(value: int): str =
+    if ((value == 0)
+        or value == 1)
+      "SUCCESS"
+    else
+      "NOT_ENOUGH_TRUST"
 }
 "
 `;
 
-exports[`formatter joins else with an immediate nested conditional 1`] = `
+exports[`formatter conditional expressions preserves an explicit line break after else 1`] = `
+"module Example {
+  type State = { value: int }
+
+  pure def update(condition: bool, state: State): State =
+    if (condition) {
+      value: state.value,
+    } else
+      pure val nextValue = state.value + 1
+      {
+        value: nextValue,
+      }
+}
+"
+`;
+
+exports[`formatter conditional expressions joins else with an immediate nested conditional 1`] = `
 "module Example {
   pure def classify(value: int): str =
     if (value < 0)
@@ -1845,397 +1000,7 @@ exports[`formatter joins else with an immediate nested conditional 1`] = `
 "
 `;
 
-exports[`formatter expands result branches after a multiline condition 1`] = `
-"module Example {
-  pure def classify(value: int): str =
-    if ((value == 0)
-        or value == 1)
-      "SUCCESS"
-    else
-      "NOT_ENOUGH_TRUST"
-}
-"
-`;
-
-exports[`formatter separates documented declaration groups 1`] = `
-"module Example {
-  // First documented constant.
-  const FIRST: int
-
-  // Second documented constant.
-  const SECOND: int
-
-  // Third documented constant,
-  // with a multiline comment block.
-  const THIRD: int
-  var state: int
-}
-"
-`;
-
-exports[`formatter places pre-else comments inside the alternative branch 1`] = `
-"module Example {
-  pure def result(first: bool, second: bool): str =
-    if (first)
-      "FIRST"
-    else if (second)
-      "SECOND"
-    else
-      // Explain the final fallback.
-      "THIRD"
-}
-"
-`;
-
-exports[`formatter expands the first result in a conditional chain 1`] = `
-"module Example {
-  pure def classify(value: int): str =
-    if (value < 0)
-      "NEGATIVE"
-    else if (value == 0)
-      "ZERO"
-    else
-      "POSITIVE"
-}
-"
-`;
-
-exports[`formatter normalizes excess spacing before a documented declaration 1`] = `
-"module Example {
-  pure val first = 1
-
-  // Second documented value.
-  pure val second = 2
-}
-"
-`;
-
-exports[`formatter removes trailing whitespace from comments 1`] = `
-"module Example {
-  // First explanation.
-  pure val first = 1
-
-  /**
-   * Second explanation.
-   */
-  pure val second = 2
-}
-"
-`;
-
-exports[`formatter uses a four-space leading operator continuation in a conditional 1`] = `
-"module Example {
-  pure def classify(value: int): str =
-    if ((value == 0)
-        or value == 1)
-      "SUCCESS"
-    else
-      "NOT_ENOUGH_TRUST"
-}
-"
-`;
-
-exports[`formatter uses a four-space leading operator continuation in a lambda 1`] = `
-"module Example {
-  pure val valid = Set(1, 2).forall(value =>
-    (value > 0)
-        implies (value >= 1)
-  )
-}
-"
-`;
-
-exports[`formatter preserves aligned trailing comments on module instance overrides 1`] = `
-"module Library {
-  const A: int
-  const B: int
-}
-
-module Example {
-  import Library(
-    A = 1,  // first override
-    B = 2   // second override
-  ) as Lib
-}
-"
-`;
-
-exports[`formatter preserves aligned trailing comments on anonymous instance overrides 1`] = `
-"module Library {
-  const A: int
-  const B: int
-}
-
-module Example {
-  import Library(
-    A = 1,  // first override
-    B = 2   // second override
-  ).*
-}
-"
-`;
-
-exports[`formatter uses a four-space continuation indent for expanded call arguments 1`] = `
-"module Example {
-  pure def verify(first: int, second: int): bool = true
-
-  pure def valid(state: str): bool =
-      state != "working" implies verify(
-          1,
-          2,
-      )
-}
-"
-`;
-
-exports[`formatter expands the consequence when the alternative has a comment 1`] = `
-"module Example {
-  pure def choose(flag: bool): int = {
-    val selected =
-        if (flag)
-          1
-        else
-          // fallback result
-          2
-    selected
-  }
-}
-"
-`;
-
-exports[`formatter expands inline results when else starts on a new line 1`] = `
-"module Example {
-  pure def choose(flag: bool): int =
-      if (flag)
-        1
-      else
-        2
-}
-"
-`;
-
-exports[`formatter uses a four-space right-operand continuation 1`] = `
-"module Example {
-  pure def valid(flag: bool): bool =
-      flag implies
-          true
-}
-"
-`;
-
-exports[`formatter preserves a trailing comment on a block combinator opening 1`] = `
-"module Example {
-  pure val valid = or { // describes the whole choice
-    true,
-    false,
-  }
-}
-"
-`;
-
-exports[`formatter preserves a compact block combinator 1`] = `
-"module Example {
-  action first = true
-  action second = false
-  action choose = any { first, second }
-}
-"
-`;
-
-exports[`formatter preserves a multiline assumption with a four-space continuation 1`] = `
-"module Example {
-  const Values: Set[int]
-
-  assume NonEmpty =
-      Values != Set()
-}
-"
-`;
-
-exports[`formatter preserves aligned trailing comments on module definitions 1`] = `
-"module Example {
-  pure val SHORT = 1      // Short value
-  pure val LONGER = 22    // Longer value
-}
-"
-`;
-
-exports[`formatter indents a multiline lambda within a UFCS call 1`] = `
-"module Example {
-  pure def proposals(values) =
-      values
-          .map(value =>
-            { id: value }
-          )
-}
-"
-`;
-
-exports[`formatter preserves source-line groups in a multiline record literal 1`] = `
-"module Example {
-  pure val message = {
-    source: "alice", round: 1,
-    value: "ready", validRound: 0,
-  }
-}
-"
-`;
-
-exports[`formatter preserves a trailing comment after definition equals 1`] = `
-"module Example {
-  pure def choose(value: int): int = // Preserve the source-line annotation
-    if (value > 0) {
-      value
-    } else {
-      0
-    }
-}
-"
-`;
-
-exports[`formatter preserves local definitions in a multiline parenthesized expression 1`] = `
-"module Example {
-  val result = (
-      val left = 1
-      val right = 2
-      left + right
-  )
-}
-"
-`;
-
-exports[`formatter preserves local definitions in a multiline UFCS argument 1`] = `
-"module Example {
-  action init = true
-  action step(value) = true
-
-  run scenario =
-    init.then(step(0))
-        .then(
-          val value = 1
-          step(value)
-        ).then(step(2))
-}
-"
-`;
-
-exports[`formatter uses a four-space continuation for a multiline lambda body 1`] = `
-"module Example {
-  pure val total = Set(1).fold(0, (sum, value) =>
-      sum + value)
-}
-"
-`;
-
-exports[`formatter preserves a partially expanded call within the line width 1`] = `
-"module Example {
-  pure def combine(first: int, second: int, third: int, fourth: int, fifth: int): int =
-    first + second + third + fourth + fifth
-
-  pure val result = combine(
-      1, 2, 3,
-      4, 5,
-  )
-}
-"
-`;
-
-exports[`formatter preserves a hanging partially expanded call 1`] = `
-"module Example {
-  pure def combine(first: int, second: int, third: int, fourth: int, fifth: int): int =
-    first + second + third + fourth + fifth
-
-  pure val result = combine(1, 2, 3,
-      4, 5)
-}
-"
-`;
-
-exports[`formatter preserves a compact single-expression lambda block 1`] = `
-"module Example {
-  pure def listForall(list: List[a], pred: a => bool): bool = {
-    list.foldl(true, (result, element) => { if (pred(element)) result else false })
-  }
-}
-"
-`;
-
-exports[`formatter preserves a leading call argument beside the opening parenthesis 1`] = `
-"module Example {
-  pure val decreased: List[int] = [ 1, 2, 3 ].foldl([],
-      (list, value) => list.append(if (value >= 0) value else (value - 1))
-  )
-}
-"
-`;
-
-exports[`formatter preserves a trailing comma in a fully expanded call 1`] = `
-[
-  {
-    "column": 17,
-    "filePath": "input.qnt",
-    "length": 1,
-    "line": 4,
-    "message": "expected a trailing comma in a multiline call",
-    "rule": "format/missing-trailing-comma",
-    "sourceLine": "      "bob" -> 2",
-  },
-]
-`;
-
-exports[`formatter preserves a trailing comma in a fully expanded call 2`] = `
-"module Example {
-  pure val balances = Map(
-      "alice" -> 1,
-      "bob" -> 2,
-  )
-}
-"
-`;
-
-exports[`formatter removes a blank line after a block combinator opening 1`] = `
-[
-  {
-    "column": 1,
-    "filePath": "input.qnt",
-    "length": 1,
-    "line": 3,
-    "message": "expected block contents directly after the opening brace",
-    "rule": "format/block-combinator-opening-gap",
-    "sourceLine": "",
-  },
-]
-`;
-
-exports[`formatter removes a blank line after a block combinator opening 2`] = `
-"module Example {
-  action choose = any {
-    true,
-    false,
-  }
-}
-"
-`;
-
-exports[`formatter preserves match placement after a definition equals sign 1`] = `
-"module Example {
-  type Option = Some(int) | None
-
-  pure def inline(value: Option): int = match value {
-    | Some(result) => result
-    | None => 0
-  }
-
-  pure def expanded(value: Option): int =
-    match value {
-      | Some(result) => result
-      | None => 0
-    }
-}
-"
-`;
-
-exports[`formatter formats a nested conditional as an else-if chain 1`] = `
+exports[`formatter conditional expressions formats a nested conditional as an else-if chain 1`] = `
 [
   {
     "column": 19,
@@ -2276,7 +1041,7 @@ exports[`formatter formats a nested conditional as an else-if chain 1`] = `
 ]
 `;
 
-exports[`formatter formats a nested conditional as an else-if chain 2`] = `
+exports[`formatter conditional expressions formats a nested conditional as an else-if chain 2`] = `
 "module Example {
   pure def classify(value: int): str =
     if (value < 0)
@@ -2289,7 +1054,674 @@ exports[`formatter formats a nested conditional as an else-if chain 2`] = `
 "
 `;
 
-exports[`formatter keeps individually commented imports in one group 1`] = `
+exports[`formatter conditional expressions expands the first result in a conditional chain 1`] = `
+"module Example {
+  pure def classify(value: int): str =
+    if (value < 0)
+      "NEGATIVE"
+    else if (value == 0)
+      "ZERO"
+    else
+      "POSITIVE"
+}
+"
+`;
+
+exports[`formatter conditional expressions places a block-bodied conditional below a definition header 1`] = `
+"module Example {
+  var ready: bool
+  var n: int
+
+  action step =
+    if (ready) {
+      n' = n
+    } else {
+      n' = n + 1
+    }
+}
+"
+`;
+
+exports[`formatter conditional expressions preserves a block-bodied conditional beside a definition header 1`] = `
+"module Example {
+  pure val result = if (true) {
+    1
+  } else {
+    2
+  }
+}
+"
+`;
+
+exports[`formatter conditional expressions preserves a comment before a conditional alternative 1`] = `
+"module Example {
+  pure val answer = if (true)
+    1
+  else
+    // Preserve this alternative comment.
+    2
+}
+"
+`;
+
+exports[`formatter conditional expressions preserves a trailing comment on a conditional consequence 1`] = `
+"module Example {
+  const ready: bool
+
+  val result =
+    if (ready)
+      { status: 1 } // Keep this with the first branch.
+    else
+      { status: 2 }
+}
+"
+`;
+
+exports[`formatter conditional expressions preserves a trailing comment on a nested definition 1`] = `
+"module Example {
+  action step =
+    nondet selected = Set(1, 2).oneOf() // Finish this choice.
+    nondet dirty = Set(1, 2).oneOf()
+    selected != dirty
+}
+"
+`;
+
+exports[`formatter conditional expressions preserves an inline comment after else 1`] = `
+"module Example {
+  const inner: int
+
+  val result =
+    if (inner == 2)
+      1
+    else // inner is not 2
+      if (inner == 3)
+        2
+      else
+        3
+}
+"
+`;
+
+exports[`formatter conditional expressions places pre-else comments inside the alternative branch 1`] = `
+"module Example {
+  pure def result(first: bool, second: bool): str =
+    if (first)
+      "FIRST"
+    else if (second)
+      "SECOND"
+    else
+      // Explain the final fallback.
+      "THIRD"
+}
+"
+`;
+
+exports[`formatter conditional expressions expands the consequence when the alternative has a comment 1`] = `
+"module Example {
+  pure def choose(flag: bool): int = {
+    val selected =
+        if (flag)
+          1
+        else
+          // fallback result
+          2
+    selected
+  }
+}
+"
+`;
+
+exports[`formatter conditional expressions preserves a comment before a conditional consequence 1`] = `
+"module Example {
+  pure val answer = if (true)
+    // Preserve this consequence comment.
+    1 else 2
+}
+"
+`;
+
+exports[`formatter match expressions formats a match expression 1`] = `
+"module Example {
+  type Option = Some(int) | None
+
+  pure def getOrZero(value: Option): int = match value {
+    | Some(x) => x
+    | None => 0
+    | _ => 0
+  }
+}
+"
+`;
+
+exports[`formatter match expressions preserves a compact one-arm default match 1`] = `
+"module Example {
+  val expected = match 42 { _ => "default" }
+}
+"
+`;
+
+exports[`formatter match expressions places a match expression below a definition header 1`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+
+  action step =
+    match status {
+      | Ready => {
+          status' = Waiting
+        }
+      | Waiting => {
+          status' = Ready
+        }
+    }
+}
+"
+`;
+
+exports[`formatter match expressions preserves match placement after a definition equals sign 1`] = `
+"module Example {
+  type Option = Some(int) | None
+
+  pure def inline(value: Option): int = match value {
+    | Some(result) => result
+    | None => 0
+  }
+
+  pure def expanded(value: Option): int =
+    match value {
+      | Some(result) => result
+      | None => 0
+    }
+}
+"
+`;
+
+exports[`formatter match expressions preserves an inline multiline match used as a lambda body 1`] = `
+"module InlineLambdaMatch {
+  type Message = Msg(int) | Other
+
+  pure def values(messages: Set[Message]): Set[int] =
+    messages.fold(Set(), (acc, message) => match message {
+      | Msg(value) => acc.union(Set(value))
+      | _          => acc
+    })
+}
+"
+`;
+
+exports[`formatter match expressions indents multiline match-arm bodies below their arms 1`] = `
+[
+  {
+    "column": 1,
+    "filePath": "match-arm-block-indentation.qnt",
+    "length": 8,
+    "line": 9,
+    "message": "expected the nested match-arm body to be indented one level",
+    "rule": "format/match-arm-body-indentation",
+    "sourceLine": "        n' = n,",
+  },
+  {
+    "column": 1,
+    "filePath": "match-arm-block-indentation.qnt",
+    "length": 8,
+    "line": 13,
+    "message": "expected the nested match-arm body to be indented one level",
+    "rule": "format/match-arm-body-indentation",
+    "sourceLine": "        n' = n + 1,",
+  },
+]
+`;
+
+exports[`formatter match expressions indents multiline match-arm bodies below their arms 2`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+  var n: int
+
+  action step =
+    match status {
+      | Ready => all {
+          n' = n,
+          status' = Waiting,
+        }
+      | Waiting => all {
+          n' = n + 1,
+          status' = Ready,
+        }
+    }
+}
+"
+`;
+
+exports[`formatter match expressions preserves comments between match arms 1`] = `
+"module Example {
+  type Step = First | Second
+  pure def value(step) = match step {
+    // Preserve this arm comment.
+    | First => 1
+    | Second => 2
+  }
+}
+"
+`;
+
+exports[`formatter match expressions preserves a comment before a match-arm body 1`] = `
+"module Example {
+  type Step = First | Second
+  pure def value(step) = match step {
+    | First =>
+      // Preserve this arm body comment.
+      1
+    | Second => 2
+  }
+}
+"
+`;
+
+exports[`formatter match expressions preserves an aligned comment after a match-arm arrow 1`] = `
+"module Example {
+  type Mode = Ready | Waiting
+
+  const mode: Mode
+
+  val result = match mode {
+    | Ready => 1
+    | Waiting =>        // Explain this arm.
+        2
+  }
+}
+"
+`;
+
+exports[`formatter match expressions preserves a multiline match-arm body with a trailing comment 1`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+
+  val number =
+    match status {
+      | Ready =>
+          1 // Ready has a value
+      | Waiting => 0
+    }
+}
+"
+`;
+
+exports[`formatter namespace access and assignments formats namespace access 1`] = `
+"module Example {
+  pure val apply = (Scope::x) => Scope::x
+}
+"
+`;
+
+exports[`formatter namespace access and assignments formats a primed assignment 1`] = `
+"module Example {
+  var count: int
+
+  action increment = count' = count + 1
+}
+"
+`;
+
+exports[`formatter namespace access and assignments preserves an explicit line break in a primed assignment chain 1`] = `
+"module Example {
+  type State = { first: int, second: int }
+  var state: State
+
+  action update = all {
+    state' =
+      state.with("first", 1)
+          .with("second", 2),
+  }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators formats an ordinary block expression 1`] = `
+"module Example {
+  var count: int
+
+  action initialize = {
+    count' = 0
+  }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators preserves a comment inside an ordinary block 1`] = `
+"module Example {
+  action step = {
+    // Preserve this block comment.
+    true
+  }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators preserves a trailing comment on an ordinary block result 1`] = `
+"module Example {
+  pure def choose = if (true) {
+    1  // chosen result
+  } else {
+    2
+  }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators formats all block combinators 1`] = `
+"module Example {
+  var count: int
+
+  action choose = any { count' = 1, count' = 2 }
+
+  action advance = all { count >= 0, count' = count + 1 }
+
+  pure val both = and { true, false }
+
+  pure val either = or { false, true }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators preserves a compact block combinator 1`] = `
+"module Example {
+  action first = true
+  action second = false
+  action choose = any { first, second }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators preserves source-line groups in block combinators 1`] = `
+"module Example {
+  val groupedAll = all {
+    true, true, true,
+  }
+
+  val groupedAny = any {
+    true, false, true,
+  }
+
+  pure val groupedAnd = and {
+    true, true, false,
+  }
+
+  pure val groupedOr = or {
+    false, false, true,
+  }
+
+  pure val longGroup = and {
+    "first deliberately long value for width testing" == "first deliberately long value for width testing",
+    "second deliberately long value for width testing" == "second deliberately long value for width testing",
+  }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators preserves a block combinator below a definition header 1`] = `
+"module Example {
+  var n: int
+
+  action step =
+    all {
+      n' = n,
+      n >= 0,
+    }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators removes a blank line after a block combinator opening 1`] = `
+[
+  {
+    "column": 1,
+    "filePath": "input.qnt",
+    "length": 1,
+    "line": 3,
+    "message": "expected block contents directly after the opening brace",
+    "rule": "format/block-combinator-opening-gap",
+    "sourceLine": "",
+  },
+]
+`;
+
+exports[`formatter blocks and block combinators removes a blank line after a block combinator opening 2`] = `
+"module Example {
+  action choose = any {
+    true,
+    false,
+  }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators preserves a comment inside a block combinator 1`] = `
+"module Example {
+  action step = all {
+    // Preserve this conjunct comment.
+    true,
+  }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators preserves a trailing comment on a block combinator opening 1`] = `
+"module Example {
+  pure val valid = or { // describes the whole choice
+    true,
+    false,
+  }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators preserves aligned trailing comments in a block combinator 1`] = `
+"module Example {
+  var first: int
+  var second: int
+  var third: int
+  var fourth: int
+
+  action init = all {
+    first' = 1,  // First value
+    second' = 2, // Second value
+    third' = 3,  // Third value
+    fourth' = 4,  // Fourth value
+  }
+}
+"
+`;
+
+exports[`formatter blocks and block combinators preserves a blank line between block combinator entries 1`] = `
+"module Example {
+  var n: int
+
+  action step = all {
+    n >= 0,
+
+    n' = n + 1,
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism formats a nondeterministic binding 1`] = `
+"module Example {
+  var count: int
+
+  action step = {
+    nondet choice = Set(1, 2).oneOf()
+    count' = choice
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism formats nested definitions 1`] = `
+"module Example {
+  pure def calculate(value: int): int = {
+    pure val doubled: int = value * 2
+    pure def increment(number: int): int = number + 1
+    increment(doubled)
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism preserves compact nondet sequences with semicolons 1`] = `
+"module Example {
+  action use(value, amount) = true
+
+  action step = any {
+    nondet value = Set(1, 2, 3).oneOf(); use(value, value),
+    all {
+      nondet index = Set(1, 2, 3).oneOf(); nondet amount = Set(1, 2, 3).oneOf() use(index, amount),
+    },
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism preserves a compact block after a nested definition 1`] = `
+"module Example {
+  pure val channelTopology = Map("A" -> "channelToA")
+
+  run simulationTest = all {
+    def show(a) = true { show(channelTopology) },
+    true,
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism preserves a blank line before a nested definition body 1`] = `
+"module Example {
+  pure def calculate(value: int): int = {
+    pure val doubled = value * 2
+
+    doubled + 1
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism preserves a blank line after a nested operator definition 1`] = `
+"module Example {
+  pure def sort(values: List[int]): List[int] = {
+    pure def appendOne(items: List[int]): List[int] = {
+      items.append(1)
+    }
+
+    appendOne(values)
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism preserves a nested definition below an action header 1`] = `
+"module Example {
+  var n: int
+
+  action step =
+    nondet value = Set(1, 2, 3).oneOf()
+    all {
+      n' = value,
+      value > 0,
+    }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism preserves a comment after a nested definition 1`] = `
+"module Example {
+  action step = {
+    val answer = 42
+    // Preserve this comment.
+    answer
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism preserves a blank line before a commented local definition 1`] = `
+"module Example {
+  pure def build = {
+    pure val data = { value: 1 }
+
+    // Construct the packet.
+    pure val packet = { data: data }
+    packet
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism preserves a trailing comment on a local definition 1`] = `
+"module Example {
+  action step = {
+    val answer = 42 // Preserve this local comment.
+    answer
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism preserves aligned trailing comments on local definitions 1`] = `
+"module Example {
+  pure def total = {
+    val first = 1     // First value
+    val second = 22   // Second value
+    val third = 333   // Third value
+    val fourth = 4444 // Fourth value
+    first + second + third + fourth
+  }
+}
+"
+`;
+
+exports[`formatter local definitions and nondeterminism preserves a comment before a local definition body 1`] = `
+"module Example {
+  action step = {
+    val answer =
+      // Preserve this local body comment.
+      42
+    answer
+  }
+}
+"
+`;
+
+exports[`formatter imports and exports formats named and wildcard imports and exports 1`] = `
+"module Library {
+  pure val value = 1
+}
+
+module Consumer {
+  import Library
+  import Library as Lib
+  import Library.value
+  import Library.*
+  export Library
+  export Library as Public
+  export Library.value
+  export Library.*
+}
+"
+`;
+
+exports[`formatter imports and exports formats source-qualified imports 1`] = `
+"module Example {
+  import Library from "./quint-format-source-library"
+  import Library.value from "./quint-format-source-library"
+  import Library.* from "./quint-format-source-library"
+}
+"
+`;
+
+exports[`formatter imports and exports keeps individually commented imports in one group 1`] = `
 "module basics {
   pure val one = 1
 }
@@ -2307,95 +1739,444 @@ module Example {
 "
 `;
 
-exports[`formatter preserves compact nondet sequences with semicolons 1`] = `
-"module Example {
-  action use(value, amount) = true
+exports[`formatter module instances formats module instances and overrides 1`] = `
+"module Library {
+  const N: int
+  const Flag: bool
+}
 
-  action step = any {
-    nondet value = Set(1, 2, 3).oneOf(); use(value, value),
-    all {
-      nondet index = Set(1, 2, 3).oneOf(); nondet amount = Set(1, 2, 3).oneOf() use(index, amount),
-    },
+module Example {
+  import Library(N = 1, Flag = true) as Lib
+}
+"
+`;
+
+exports[`formatter module instances preserves comments among module instance overrides 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(
+    // Preserve this override comment.
+    N = 1
+  ) as Lib
+}
+"
+`;
+
+exports[`formatter module instances preserves aligned trailing comments on module instance overrides 1`] = `
+"module Library {
+  const A: int
+  const B: int
+}
+
+module Example {
+  import Library(
+    A = 1,  // first override
+    B = 2   // second override
+  ) as Lib
+}
+"
+`;
+
+exports[`formatter module instances formats anonymous instances 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(N = 1).*
+}
+"
+`;
+
+exports[`formatter module instances preserves an expanded anonymous instance 1`] = `
+"module Source {
+  const possibleChannelTopologies: Set[str]
+}
+
+module Example {
+  pure val myChannelNames = Set("channelToA", "channelToB")
+
+  import Source(
+    possibleChannelTopologies = myChannelNames
+  ).*
+}
+"
+`;
+
+exports[`formatter module instances preserves comments in anonymous instance overrides 1`] = `
+"module Library {
+  const N: int
+}
+
+module Example {
+  import Library(
+    // Preserve this anonymous override comment.
+    N = 1
+  ).*
+}
+"
+`;
+
+exports[`formatter module instances preserves aligned trailing comments on anonymous instance overrides 1`] = `
+"module Library {
+  const A: int
+  const B: int
+}
+
+module Example {
+  import Library(
+    A = 1,  // first override
+    B = 2   // second override
+  ).*
+}
+"
+`;
+
+exports[`formatter parenthesized and postfix expressions formats a parenthesized expression 1`] = `
+"module Example {
+  val total = (1 + 2)
+}
+"
+`;
+
+exports[`formatter parenthesized and postfix expressions preserves local definitions in a multiline parenthesized expression 1`] = `
+"module Example {
+  val result = (
+      val left = 1
+      val right = 2
+      left + right
+  )
+}
+"
+`;
+
+exports[`formatter parenthesized and postfix expressions preserves local definitions in a multiline UFCS argument 1`] = `
+"module Example {
+  action init = true
+  action step(value) = true
+
+  run scenario =
+    init.then(step(0))
+        .then(
+          val value = 1
+          step(value)
+        ).then(step(2))
+}
+"
+`;
+
+exports[`formatter parenthesized and postfix expressions attaches postfix access to a multiline parenthesized expression 1`] = `
+"module Example {
+  pure def app(op: (int, int) => int, lhs: int, rhs: int): int = op(lhs, rhs)
+
+  pure def multiply(lhs: int, rhs: int): int =
+    ((x, y) =>
+      val result = x * y
+      if (result > 0) result else 0
+    ).app(lhs, rhs)
+}
+"
+`;
+
+exports[`formatter parenthesized and postfix expressions attaches a parenthesized all expression to its postfix call 1`] = `
+"module ParenthesizedAllPostfix {
+  var n: int
+
+  run sequence = (all {
+    n' = 1,
+  }).then(all {
+    n' = 2,
+  })
+}
+"
+`;
+
+exports[`formatter arithmetic expressions formats an integer subtraction expression 1`] = `
+"module Example {
+  val delta = 3 - 1
+}
+"
+`;
+
+exports[`formatter source and declaration layout preserves a source hashbang 1`] = `
+"#!/usr/bin/env -S quint typecheck
+module Example {
+}
+"
+`;
+
+exports[`formatter source and declaration layout formats multiple top-level modules 1`] = `
+"module First {
+}
+
+module Second {
+}
+"
+`;
+
+exports[`formatter source and declaration layout preserves adjacent definitions 1`] = `
+"module Example {
+  var first: int
+  var second: int
+}
+"
+`;
+
+exports[`formatter source and declaration layout separates a braced definition from the next commented definition 1`] = `
+"module Example {
+  pure def ready = and {
+    true,
   }
+
+  // Describe the following definition.
+  pure val isReady = ready
 }
 "
 `;
 
-exports[`formatter preserves a compact one-arm default match 1`] = `
+exports[`formatter source and declaration layout separates documented declaration groups 1`] = `
 "module Example {
-  val expected = match 42 { _ => "default" }
+  // First documented constant.
+  const FIRST: int
+
+  // Second documented constant.
+  const SECOND: int
+
+  // Third documented constant,
+  // with a multiline comment block.
+  const THIRD: int
+  var state: int
 }
 "
 `;
 
-exports[`formatter preserves an aligned comment after a match-arm arrow 1`] = `
+exports[`formatter source and declaration layout normalizes excess spacing before a documented declaration 1`] = `
 "module Example {
-  type Mode = Ready | Waiting
+  pure val first = 1
 
-  const mode: Mode
-
-  val result = match mode {
-    | Ready => 1
-    | Waiting =>        // Explain this arm.
-        2
-  }
+  // Second documented value.
+  pure val second = 2
 }
 "
 `;
 
-exports[`formatter preserves an inline comment after else 1`] = `
+exports[`formatter source and declaration layout preserves a blank line between grouped definitions 1`] = `
 "module Example {
-  const inner: int
+  var first: int
 
-  val result =
-    if (inner == 2)
-      1
-    else // inner is not 2
-      if (inner == 3)
-        2
-      else
-        3
+  var second: int
 }
 "
 `;
 
-exports[`formatter keeps a closing-delimiter comment with the final nested record field 1`] = `
+exports[`formatter comments preserves a leading line comment 1`] = `
 "module Example {
-  val output = {
-    nested: {
-      first: 1,
-      second: 2, // Explain the second field.
-    },
-    result: 3,
-  }
+  // The answer
+  val answer = 42
 }
 "
 `;
 
-exports[`formatter preserves a trailing comment on a conditional consequence 1`] = `
+exports[`formatter comments preserves a definition documentation comment 1`] = `
 "module Example {
-  const ready: bool
-
-  val result =
-    if (ready)
-      { status: 1 } // Keep this with the first branch.
-    else
-      { status: 2 }
+  /// The answer
+  val answer = 42
 }
 "
 `;
 
-exports[`formatter preserves a trailing comment on a nested definition 1`] = `
+exports[`formatter comments removes trailing whitespace from comments 1`] = `
 "module Example {
-  action step =
-    nondet selected = Set(1, 2).oneOf() // Finish this choice.
-    nondet dirty = Set(1, 2).oneOf()
-    selected != dirty
+  // First explanation.
+  pure val first = 1
+
+  /**
+   * Second explanation.
+   */
+  pure val second = 2
 }
 "
 `;
 
-exports[`formatter preserves a leading binary continuation in a block combinator 1`] = `
+exports[`formatter comments preserves blank lines between leading comment groups 1`] = `
+"module Example {
+  val source = 1
+
+  // First disabled example
+  // val first = source
+
+  // Second disabled example
+  // val second = source
+
+  def update(value) = value
+}
+"
+`;
+
+exports[`formatter comments preserves a leading single-line block comment 1`] = `
+"module Example {
+  /* The answer */
+  val answer = 42
+}
+"
+`;
+
+exports[`formatter comments indents a leading multiline block comment 1`] = `
+"module Example {
+  /*
+   * The answer
+   */
+  val answer = 42
+}
+"
+`;
+
+exports[`formatter comments preserves a module documentation comment 1`] = `
+"/// Module documentation
+module Example {
+}
+"
+`;
+
+exports[`formatter comments preserves blank lines between top-level comment groups 1`] = `
+"/**
+ * First notice.
+ */
+
+/**
+ * Second notice.
+ */
+module Example {
+}
+"
+`;
+
+exports[`formatter comments preserves a trailing line comment 1`] = `
+"module Example {
+  val answer = 42 // The answer
+}
+"
+`;
+
+exports[`formatter comments preserves aligned trailing comments on module definitions 1`] = `
+"module Example {
+  pure val SHORT = 1      // Short value
+  pure val LONGER = 22    // Longer value
+}
+"
+`;
+
+exports[`formatter comments preserves aligned declarations with a continuation comment 1`] = `
+"module AlignedDeclarations {
+  var maxBal:   str -> int
+  var maxVBal:  str -> int // maxVBal and maxVal form the largest vote
+  var maxVal:   str -> int  // or a sentinel value when the acceptor
+                            // has not cast any vote.
+}
+"
+`;
+
+exports[`formatter comments shifts a continuation comment with its declaration 1`] = `
+"module ShiftedContinuation {
+  const Quorum: Set[Set[str]] // The set of quorums, where a quorum is a
+                              // large enough set of acceptors.
+}
+"
+`;
+
+exports[`formatter comments attaches indented comments to the preceding declaration 1`] = `
+"module IndentedPostDeclarationComments {
+  var votes: str -> Set[(int, int)]
+      // votes[a] is the set of votes cast by acceptor a
+  var maxBal: str -> int
+      // maxBal[a] is a ballot number. Acceptor a will cast
+      // further votes only in ballots numbered greater than maxBal[a]
+}
+"
+`;
+
+exports[`formatter comments preserves a trailing module-body comment 1`] = `
+"module Example {
+  pure val answer = 42
+
+  // Kept for future work
+}
+"
+`;
+
+exports[`formatter comments preserves a blank line before trailing module comments 1`] = `
+"module Example {
+  pure val answer = 42
+
+  // Run this example with the simulator.
+  // Additional command details follow here.
+}
+"
+`;
+
+exports[`formatter comments preserves trailing source comments 1`] = `
+"module Example {
+}
+
+/*! answer !*/
+
+/*! 1 + 1 !*/
+"
+`;
+
+exports[`formatter comments preserves a comment inside an otherwise empty module 1`] = `
+"module Example {
+  // Intentionally empty
+}
+"
+`;
+
+exports[`formatter comments preserves an inline block comment 1`] = `
+"module Example {
+  val total = 1 /* left */ + 2
+}
+"
+`;
+
+exports[`formatter binary expression layout preserves a comment before a binary right operand 1`] = `
+"module Example {
+  pure val answer = true and
+    // Preserve this right operand comment.
+    false
+}
+"
+`;
+
+exports[`formatter binary expression layout preserves a same-line comment after a binary operator 1`] = `
+"module Example {
+  pure val answer = true implies // Preserve this operator comment.
+    false
+}
+"
+`;
+
+exports[`formatter binary expression layout preserves a line break after a binary operator 1`] = `
+"module Example {
+  pure val answer =
+    true and
+        false
+}
+"
+`;
+
+exports[`formatter binary expression layout uses a four-space right-operand continuation 1`] = `
+"module Example {
+  pure def valid(flag: bool): bool =
+      flag implies
+          true
+}
+"
+`;
+
+exports[`formatter binary expression layout preserves a leading binary continuation in a block combinator 1`] = `
 "module Example {
   pure val holds = and {
     1.in(Set(1, 2))
@@ -2405,7 +2186,7 @@ exports[`formatter preserves a leading binary continuation in a block combinator
 "
 `;
 
-exports[`formatter preserves a binary right-operand continuation in a block combinator 1`] = `
+exports[`formatter binary expression layout preserves a binary right-operand continuation in a block combinator 1`] = `
 "module Example {
   pure val holds = and {
     1.in(Set(1, 2)) implies
@@ -2415,7 +2196,7 @@ exports[`formatter preserves a binary right-operand continuation in a block comb
 "
 `;
 
-exports[`formatter preserves a three-line binary expression in an ordinary block 1`] = `
+exports[`formatter binary expression layout preserves a three-line binary expression in an ordinary block 1`] = `
 "module Example {
   pure val holds = Set(1, 2).forall(first => {
     Set(1, 2).forall(second => {
@@ -2428,7 +2209,7 @@ exports[`formatter preserves a three-line binary expression in an ordinary block
 "
 `;
 
-exports[`formatter preserves a nested-definition right operand 1`] = `
+exports[`formatter binary expression layout preserves a nested-definition right operand 1`] = `
 "module Example {
   pure val holds = {
     val values = Set(1, 2)
@@ -2442,88 +2223,307 @@ exports[`formatter preserves a nested-definition right operand 1`] = `
 "
 `;
 
-exports[`formatter aligns comments with a continued UFCS selector 1`] = `
+exports[`formatter binary expression layout preserves a binary continuation in a lambda body 1`] = `
 "module Example {
-  action init = true
-  action step = true
+  pure val chains = Set("a")
 
-  run execution =
-    init
-        // Explain the first transition.
-        // Keep this attached to the call.
-        .then(step)
+  pure val valid =
+    chains.forall(chain =>
+      chain != "b" implies
+          chain == "a"
+    )
 }
 "
 `;
 
-exports[`formatter indents a nested multiline call inside a UFCS continuation 1`] = `
+exports[`formatter definitions formats a general assumption expression 1`] = `
 "module Example {
-  action init = true
-  action step(values: Set[int]): bool = true
+  const Flag: bool
 
-  run execution =
-    init
-        // Explain the first transition.
-        // Keep this attached to the call.
-        .then(step(Set(
-            1,
-            2,
-        )))
+  assume Holds = Flag
 }
 "
 `;
 
-exports[`formatter preserves an inline multiline match used as a lambda body 1`] = `
-"module InlineLambdaMatch {
-  type Message = Msg(int) | Other
-
-  pure def values(messages: Set[Message]): Set[int] =
-    messages.fold(Set(), (acc, message) => match message {
-      | Msg(value) => acc.union(Set(value))
-      | _          => acc
-    })
+exports[`formatter definitions formats a parameterless def definition 1`] = `
+"module Example {
+  def answer = 42
 }
 "
 `;
 
-exports[`formatter preserves aligned declarations with a continuation comment 1`] = `
-"module AlignedDeclarations {
-  var maxBal:   str -> int
-  var maxVBal:  str -> int // maxVBal and maxVal form the largest vote
-  var maxVal:   str -> int  // or a sentinel value when the acceptor
-                            // has not cast any vote.
+exports[`formatter definitions formats a def parameter 1`] = `
+"module Example {
+  def identity(value) = value
 }
 "
 `;
 
-exports[`formatter shifts a continuation comment with its declaration 1`] = `
-"module ShiftedContinuation {
-  const Quorum: Set[Set[str]] // The set of quorums, where a quorum is a
-                              // large enough set of acceptors.
+exports[`formatter definitions formats an ignored def parameter 1`] = `
+"module Example {
+  pure def ignore(_: int): int = 0
 }
 "
 `;
 
-exports[`formatter attaches indented comments to the preceding declaration 1`] = `
-"module IndentedPostDeclarationComments {
-  var votes: str -> Set[(int, int)]
-      // votes[a] is the set of votes cast by acceptor a
-  var maxBal: str -> int
-      // maxBal[a] is a ballot number. Acceptor a will cast
-      // further votes only in ballots numbered greater than maxBal[a]
+exports[`formatter definitions formats multiple def parameters 1`] = `
+"module Example {
+  def choose(left, right) = left
 }
 "
 `;
 
-exports[`formatter attaches a parenthesized all expression to its postfix call 1`] = `
-"module ParenthesizedAllPostfix {
+exports[`formatter definitions formats a typed def header 1`] = `
+"module Example {
+  def identity(value: int): int = value
+}
+"
+`;
+
+exports[`formatter definitions expands a multiline definition header 1`] = `
+"module Example {
+  pure def transfer(
+    chainState: str,
+    denomination: str,
+    amount: int,
+    sender: str,
+    receiver: str,
+    sourcePort: str,
+    sourceChannel: str,
+    timeoutHeight: int,
+    timeoutTimestamp: int,
+  ): bool = {
+    true
+  }
+}
+"
+`;
+
+exports[`formatter definitions expands a multiline definition header 2`] = `
+[
+  {
+    "column": 21,
+    "filePath": "multiline-definition-header.qnt",
+    "length": 15,
+    "line": 2,
+    "message": "expected the first parameter on an indented line",
+    "rule": "format/multiline-parameter-layout",
+    "sourceLine": "  pure def transfer(chainState: str, denomination: str, amount: int,",
+  },
+  {
+    "column": 62,
+    "filePath": "multiline-definition-header.qnt",
+    "length": 1,
+    "line": 4,
+    "message": "expected a trailing comma after the parameter",
+    "rule": "format/multiline-parameter-layout",
+    "sourceLine": "                    timeoutHeight: int, timeoutTimestamp: int): bool = {",
+  },
+]
+`;
+
+exports[`formatter definitions formats an untyped parameter with a return type 1`] = `
+"module Example {
+  def identity(value): int = value
+}
+"
+`;
+
+exports[`formatter definitions formats List types in a def header 1`] = `
+"module Example {
+  def identity(xs: List[int]): List[int] = xs
+}
+"
+`;
+
+exports[`formatter definitions removes an optional definition semicolon 1`] = `
+"module Example {
+  def answer = 42
+}
+"
+`;
+
+exports[`formatter type declarations formats a primitive type alias 1`] = `
+"module Example {
+  type Count = int
+}
+"
+`;
+
+exports[`formatter type declarations formats an uninterpreted type 1`] = `
+"module Example {
+  type DOMAIN
+}
+"
+`;
+
+exports[`formatter type declarations formats a named type alias 1`] = `
+"module Example {
+  type DOMAIN
+
+  type Copy = DOMAIN
+}
+"
+`;
+
+exports[`formatter type declarations formats a polymorphic type alias 1`] = `
+"module Example {
+  type Box[a] = List[a]
+}
+"
+`;
+
+exports[`formatter type declarations formats a polymorphic type application 1`] = `
+"module Example {
+  type Box[a] = List[a]
+
+  const boxes: Box[int]
+}
+"
+`;
+
+exports[`formatter type declarations formats an inline sum type 1`] = `
+"module Example {
+  type Elem = S(str) | I(int)
+}
+"
+`;
+
+exports[`formatter type declarations formats a multiline sum type 1`] = `
+"module Example {
+  type Option[a] =
+    | Some(a)
+    | None
+}
+"
+`;
+
+exports[`formatter type declarations preserves comments between sum-type variants 1`] = `
+"module Example {
+  type Step =
+    | First
+    // Preserve this variant comment.
+    | Second
+}
+"
+`;
+
+exports[`formatter type declarations preserves trailing comments on sum-type variants 1`] = `
+"module Example {
+  type LastDraw =
+    | Self(str) // The name of someone who drew themself
+    | Ok        // The draw was Ok
+}
+"
+`;
+
+exports[`formatter definition modes formats a pure definition 1`] = `
+"module Example {
+  pure def answer = 42
+}
+"
+`;
+
+exports[`formatter definition modes formats a pure value definition 1`] = `
+"module Example {
+  pure val answer = 42
+}
+"
+`;
+
+exports[`formatter definition modes formats a parameterless action 1`] = `
+"module Example {
+  action initialize = true
+}
+"
+`;
+
+exports[`formatter definition modes preserves a comment before a definition body 1`] = `
+"module Example {
+  action init =
+    // Preserve this body comment.
+    true
+}
+"
+`;
+
+exports[`formatter definition modes preserves a trailing comment after definition equals 1`] = `
+"module Example {
+  pure def choose(value: int): int = // Preserve the source-line annotation
+    if (value > 0) {
+      value
+    } else {
+      0
+    }
+}
+"
+`;
+
+exports[`formatter definition modes preserves a four-space commented definition continuation 1`] = `
+"module Example {
+  const PERIOD: int
+
+  def withinPeriod: bool =
+      // Preserve the authored continuation depth.
+      PERIOD > 0
+}
+"
+`;
+
+exports[`formatter definition modes formats a parameterless run 1`] = `
+"module Example {
+  run scenario = true
+}
+"
+`;
+
+exports[`formatter definition modes formats a parameterless temporal definition 1`] = `
+"module Example {
+  temporal invariant = true
+}
+"
+`;
+
+exports[`formatter definition modes preserves an explicit line break after definition equals 1`] = `
+"module Example {
+  temporal eventuallyTrue =
+    eventually(true)
+}
+"
+`;
+
+exports[`formatter definition modes formats a parameterless nondet definition 1`] = `
+"module Example {
+  nondet selection = true
+}
+"
+`;
+
+exports[`formatter definition modes formats empty parameter lists across definition modes 1`] = `
+"module Example {
+  action step(): bool = true
+  run scenario(): bool = true
+  temporal property(): bool = true
+  nondet choose(): int = 1
+}
+"
+`;
+
+exports[`formatter definition modes formats rich definitions and types across every mode 1`] = `
+"module Matrix {
+  type Pair[a, b] = (a, b)
+  type Callback[a, b] = (a) => b
   var n: int
-
-  run sequence = (all {
-    n' = 1,
-  }).then(all {
-    n' = 2,
-  })
+  pure def identity(value: List[Set[int]]): List[Set[int]] = value
+  pure def apply(value: int, callback: (int) => str): str = callback(value)
+  def stateValue(offset: int): int = n + offset
+  action advance(amount: int): bool = all {
+    amount > 0,
+    n' = n + amount,
+  }
+  run scenario(start: int): bool = (n' = start).then(n' = start + 1)
+  temporal positive(limit: int): bool = always(n >= limit)
+  nondet choose(values: Set[int]): int = values.oneOf()
 }
 "
 `;
