@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "../../analysis.js";
+import type { ExpressionAnalysis } from "../../core/analysis.js";
 import { indentBy } from "../../formatting/definition-body-formatter.js";
 import { concat, hardLine, text } from "../../formatting/document.js";
 import { isMultilineParenthesizedPostfixReceiver } from "../../parsing/syntax.js";

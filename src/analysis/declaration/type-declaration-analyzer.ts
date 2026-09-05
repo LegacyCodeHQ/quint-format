@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import type { ModuleDeclaration } from "../../analysis.js";
+import type { ModuleDeclaration } from "../../core/analysis.js";
 import { commentDocument } from "../../formatting/comments.js";
 import { concat, type Doc, hardLine, indent, text } from "../../formatting/document.js";
 import { formatExpandedRecordType } from "../../formatting/record-type-formatter.js";

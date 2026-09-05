@@ -1,6 +1,6 @@
 import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
-import type { FormatDiagnostic } from "../diagnostics.js";
+import type { FormatDiagnostic } from "../core/diagnostics.js";
 
 const parser = new Parser();
 parser.setLanguage(Quint);

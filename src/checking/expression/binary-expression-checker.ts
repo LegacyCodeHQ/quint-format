@@ -1,5 +1,5 @@
-import type { BinaryOperator } from "../../analysis.js";
-import type { FormatDiagnostic } from "../../diagnostics.js";
+import type { BinaryOperator } from "../../core/analysis.js";
+import type { FormatDiagnostic } from "../../core/diagnostics.js";
 import {
   isBlockCombinatorEntry,
   isIndentedExpressionBody,

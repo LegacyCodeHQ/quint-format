@@ -1,5 +1,5 @@
-import type { AnalyzedSource } from "../analysis.js";
-import type { FormatDiagnostic } from "../diagnostics.js";
+import type { AnalyzedSource } from "../core/analysis.js";
+import type { FormatDiagnostic } from "../core/diagnostics.js";
 import { checkDeclarationLayout } from "./declaration-checker.js";
 import { checkDefinitionBody } from "./definition-checker.js";
 import { checkAssignments } from "./expression/assignment-checker.js";

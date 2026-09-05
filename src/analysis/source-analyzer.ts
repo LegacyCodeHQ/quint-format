@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import type { AnalyzedSource } from "../analysis.js";
+import type { AnalyzedSource } from "../core/analysis.js";
 import { parseQuint } from "../parsing/parser.js";
 import { analyzeModuleNode } from "./module-analyzer.js";
 

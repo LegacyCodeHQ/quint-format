@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import type { ExpressionAnalysis } from "../../analysis.js";
+import type { ExpressionAnalysis } from "../../core/analysis.js";
 import { commentDocument } from "../../formatting/comments.js";
 import { concat, type Doc, hardLine, indent, text } from "../../formatting/document.js";
 import { isCompactDefaultMatch } from "../../parsing/syntax.js";

@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import type { FormatDiagnostic } from "../../diagnostics.js";
+import type { FormatDiagnostic } from "../../core/diagnostics.js";
 import { collectNodes, isMultilineLambdaExpression } from "../../parsing/syntax.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
 

@@ -1,9 +1,9 @@
 import { analyzeSource } from "./analysis/source-analyzer.js";
 import { checkAnalyzedSource } from "./checking/checker.js";
-import type { FormatDiagnostic } from "./diagnostics.js";
+import type { FormatDiagnostic } from "./core/diagnostics.js";
 import { renderSource } from "./formatting/source-renderer.js";
 
-export { type FormatDiagnostic, renderDiagnostic } from "./diagnostics.js";
+export { type FormatDiagnostic, renderDiagnostic } from "./core/diagnostics.js";
 export { QuintSyntaxError } from "./parsing/parser.js";
 
 export function formatQuint(source: string): string {
