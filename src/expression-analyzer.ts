@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import { analyzeAccessExpression } from "./access-expression-analyzer.js";
 import type { ExpressionAnalysis } from "./analysis.js";
+import { analyzeAssignmentExpression } from "./assignment-expression-analyzer.js";
 import { commentDocument } from "./comments.js";
 import { analyzeConditionalExpression } from "./conditional-expression-analyzer.js";
 import { indentBy } from "./definition-body-formatter.js";
@@ -10,7 +11,6 @@ import { analyzeLiteralExpression } from "./literal-expression-analyzer.js";
 import { analyzeLocalDefinition } from "./local-definition-analyzer.js";
 import { analyzeMatchExpression } from "./match-expression-analyzer.js";
 import { analyzeOperatorExpression } from "./operator-expression-analyzer.js";
-import { formatPattern } from "./pattern-formatter.js";
 import {
   compactNestedBlockExpression,
   isCompactNondetSequence,
@@ -52,27 +52,8 @@ function analyzeExpressionWithClosingComment(
   const matchAnalysis = analyzeMatchExpression(node, analyzeExpression);
   if (matchAnalysis) return matchAnalysis;
 
-  if (node.type === "assignment_expression") {
-    const target = node.childForFieldName("target");
-    const value = node.childForFieldName("value");
-    const name = target?.childForFieldName("name");
-    const equals = node.children.find((child) => child.type === "=");
-    if (!target || !name || !value || !equals) {
-      throw new Error("Unable to locate the assignment target or value");
-    }
-    const analysis = analyzeExpression(value);
-    const preservesLineBreak = value.startPosition.row > equals.endPosition.row;
-    return {
-      document: preservesLineBreak
-        ? concat([text(`${formatPattern(name)}' =`), indent(concat([hardLine, analysis.document]))])
-        : concat([text(`${formatPattern(name)}' = `), analysis.document]),
-      binaryOperators: analysis.binaryOperators,
-      unitLiterals: analysis.unitLiterals,
-      sequenceLiterals: analysis.sequenceLiterals,
-      recordLiterals: analysis.recordLiterals,
-      callExpressions: analysis.callExpressions,
-    };
-  }
+  const assignmentAnalysis = analyzeAssignmentExpression(node, analyzeExpression);
+  if (assignmentAnalysis) return assignmentAnalysis;
 
   if (node.type === "nested_definition_expression") {
     const definition = node.childForFieldName("definition");
