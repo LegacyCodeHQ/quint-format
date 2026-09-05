@@ -4,6 +4,7 @@ import { checkBinaryExpressions } from "./binary-expression-checker.js";
 import { checkBlockCombinators } from "./block-combinator-checker.js";
 import { checkBlockExpressions } from "./block-expression-checker.js";
 import { checkCallExpressions } from "./call-expression-checker.js";
+import { checkTypeDelimiterSpacing } from "./checking/type/type-checker.js";
 import { checkConditionalExpressions } from "./conditional-expression-checker.js";
 import { checkDeclarationLayout } from "./declaration-checker.js";
 import { checkDefinitionBody } from "./definition-checker.js";
@@ -29,7 +30,6 @@ import {
   checkTrailingSourceComments,
 } from "./source-comment-checker.js";
 import { checkTypeAnnotations } from "./type-annotation-checker.js";
-import { checkTypeDelimiterSpacing } from "./type-checker.js";
 import { checkTypeParameters } from "./type-parameter-checker.js";
 import { checkUnaryExpressions } from "./unary-expression-checker.js";
 import { checkUnitLiterals } from "./unit-literal-checker.js";

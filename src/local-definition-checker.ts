@@ -1,8 +1,8 @@
 import type Parser from "tree-sitter";
+import { checkTypeDelimiterSpacing } from "./checking/type/type-checker.js";
 import type { FormatDiagnostic } from "./diagnostics.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
 import { isCompactNondetSequence } from "./syntax.js";
-import { checkTypeDelimiterSpacing } from "./type-checker.js";
 
 export function checkLocalDefinition(
   node: Parser.SyntaxNode,
