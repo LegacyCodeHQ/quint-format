@@ -26,6 +26,7 @@ import { checkLocalDefinition } from "./local-definition-checker.js";
 import { checkMatchExpressions } from "./match-expression-checker.js";
 import { checkModuleLayout } from "./module-checker.js";
 import { checkModuleInstance } from "./module-instance-checker.js";
+import { checkNamespaceAccess } from "./namespace-access-checker.js";
 import { checkParameterList } from "./parameter-list-checker.js";
 import { parseQuint } from "./parser.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
@@ -2613,35 +2614,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         );
 
         diagnostics.push(...checkMatchExpressions(declaration.valueNode, source, filePath, lines));
-
-        const namespaceNodes = [
-          ...collectNodes(declaration.valueNode, "qualified_identifier"),
-          ...collectNodes(declaration.valueNode, "namespace_access_expression"),
-        ];
-        for (const namespaceNode of namespaceNodes) {
-          const names = namespaceNode.namedChildren;
-          const separators = namespaceNode.children.filter((child) => child.type === "::");
-          for (const [index, separator] of separators.entries()) {
-            const previous = names[index];
-            const next = names[index + 1];
-            if (!previous || !next) throw new Error("Unable to locate names around '::'");
-            if (
-              source.slice(previous.endIndex, separator.startIndex) !== "" ||
-              source.slice(separator.endIndex, next.startIndex) !== ""
-            ) {
-              const row = separator.startPosition.row;
-              diagnostics.push({
-                filePath,
-                line: row + 1,
-                column: separator.startPosition.column + 1,
-                length: 2,
-                rule: "format/namespace-access-spacing",
-                message: "expected no space around '::'",
-                sourceLine: lines[row] ?? "",
-              });
-            }
-          }
-        }
+        diagnostics.push(...checkNamespaceAccess(declaration.valueNode, source, filePath, lines));
 
         for (const assignment of collectNodes(declaration.valueNode, "assignment_expression")) {
           const target = assignment.childForFieldName("target");
