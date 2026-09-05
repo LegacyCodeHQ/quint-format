@@ -1,5 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { concat, group, hardLine, indent, line, renderDoc, text } from "../src/formatting/document";
+import {
+  concat,
+  group,
+  hardLine,
+  indent,
+  line,
+  renderDoc,
+  text,
+} from "../../src/formatting/document";
 
 function groupedModule() {
   return concat([
