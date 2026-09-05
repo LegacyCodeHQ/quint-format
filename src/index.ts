@@ -14,6 +14,7 @@ import { checkDeclarationLayout } from "./declaration-checker.js";
 import type { FormatDiagnostic } from "./diagnostics.js";
 import { concat, type Doc, group, hardLine, indent, line, renderDoc, text } from "./document.js";
 import { checkFinalNewline } from "./final-newline-checker.js";
+import { checkImportSpacing } from "./import-checker.js";
 import { checkLocalDefinition } from "./local-definition-checker.js";
 import { checkModuleLayout } from "./module-checker.js";
 import { parseQuint } from "./parser.js";
@@ -2543,73 +2544,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       diagnostics.push(
         ...checkDeclarationLayout(declaration, previousDeclaration, source, filePath, lines),
       );
-
-      if (declaration.dot && declaration.selectorNode) {
-        const selectorAnchor = declaration.instanceCloseParen ?? declaration.nameNode;
-        const beforeDot = source.slice(selectorAnchor.endIndex, declaration.dot.startIndex);
-        const afterDot = source.slice(
-          declaration.dot.endIndex,
-          declaration.selectorNode.startIndex,
-        );
-        if (beforeDot !== "" || afterDot !== "") {
-          const row = declaration.dot.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: declaration.dot.startPosition.column + 1,
-            length: 1,
-            rule: "format/import-selector-spacing",
-            message: "expected no space around '.'",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-      }
-
-      if (declaration.aliasNode && declaration.asKeyword) {
-        const aliasAnchor = declaration.instanceCloseParen ?? declaration.nameNode;
-        const beforeAs = source.slice(aliasAnchor.endIndex, declaration.asKeyword.startIndex);
-        const afterAs = source.slice(
-          declaration.asKeyword.endIndex,
-          declaration.aliasNode.startIndex,
-        );
-        if (beforeAs !== " " || afterAs !== " ") {
-          const row = declaration.asKeyword.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: declaration.asKeyword.startPosition.column + 1,
-            length: 2,
-            rule: "format/import-alias-spacing",
-            message: "expected one space around 'as'",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-      }
-
-      if (declaration.sourceNode && declaration.fromKeyword) {
-        const sourceAnchor =
-          declaration.aliasNode ??
-          declaration.selectorNode ??
-          declaration.instanceCloseParen ??
-          declaration.nameNode;
-        const beforeFrom = source.slice(sourceAnchor.endIndex, declaration.fromKeyword.startIndex);
-        const afterFrom = source.slice(
-          declaration.fromKeyword.endIndex,
-          declaration.sourceNode.startIndex,
-        );
-        if (beforeFrom !== " " || afterFrom !== " ") {
-          const row = declaration.fromKeyword.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: declaration.fromKeyword.startPosition.column + 1,
-            length: 4,
-            rule: "format/import-source-spacing",
-            message: "expected one space around 'from'",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-      }
+      diagnostics.push(...checkImportSpacing(declaration, source, filePath, lines));
 
       if (declaration.instanceOpenParen && declaration.instanceCloseParen) {
         const overrides = declaration.instanceOverrides ?? [];
