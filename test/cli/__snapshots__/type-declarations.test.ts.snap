@@ -1,0 +1,163 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`command-line checker type declarations reports noncanonical type-alias formatting 1`] = `
+"test/fixtures/type-alias.qnt:2:13: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   type Count=int
+  |             ^
+  |
+"
+`;
+
+exports[`command-line checker type declarations reports noncanonical uninterpreted-type formatting 1`] = `
+"test/fixtures/uninterpreted-type.qnt:2:7: error[format/declaration-keyword-spacing]: expected one space after 'type'
+  |
+2 |   type   DOMAIN
+  |       ^^^
+  |
+"
+`;
+
+exports[`command-line checker type declarations reports noncanonical named-type-alias formatting 1`] = `
+"test/fixtures/named-type-alias.qnt:4:12: error[format/equals-spacing]: expected one space around '='
+  |
+4 |   type Copy=DOMAIN
+  |            ^
+  |
+"
+`;
+
+exports[`command-line checker type declarations reports noncanonical polymorphic-type-alias formatting 1`] = `
+"test/fixtures/polymorphic-type-alias.qnt:2:12: error[format/type-parameter-list-spacing]: expected no space after '['
+  |
+2 |   type Box[ a ]=List[a]
+  |            ^
+  |
+test/fixtures/polymorphic-type-alias.qnt:2:14: error[format/type-parameter-list-spacing]: expected no space before ']'
+  |
+2 |   type Box[ a ]=List[a]
+  |              ^
+  |
+test/fixtures/polymorphic-type-alias.qnt:2:16: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   type Box[ a ]=List[a]
+  |                ^
+  |
+"
+`;
+
+exports[`command-line checker type declarations reports noncanonical type-application formatting 1`] = `
+"test/fixtures/type-application.qnt:4:15: error[format/type-colon-spacing]: expected one space after ':'
+  |
+4 |   const boxes:Box[ int ]
+  |               ^
+  |
+test/fixtures/type-application.qnt:4:19: error[format/type-delimiter-spacing]: expected no space after '['
+  |
+4 |   const boxes:Box[ int ]
+  |                   ^
+  |
+test/fixtures/type-application.qnt:4:23: error[format/type-delimiter-spacing]: expected no space before ']'
+  |
+4 |   const boxes:Box[ int ]
+  |                       ^
+  |
+"
+`;
+
+exports[`command-line checker type declarations reports noncanonical sum-type formatting 1`] = `
+"test/fixtures/sum-type.qnt:2:12: error[format/equals-spacing]: expected one space around '='
+  |
+2 |   type Elem=S( str )|I( int )
+  |            ^
+  |
+test/fixtures/sum-type.qnt:2:15: error[format/type-delimiter-spacing]: expected no space after '('
+  |
+2 |   type Elem=S( str )|I( int )
+  |               ^
+  |
+test/fixtures/sum-type.qnt:2:19: error[format/type-delimiter-spacing]: expected no space before ')'
+  |
+2 |   type Elem=S( str )|I( int )
+  |                   ^
+  |
+test/fixtures/sum-type.qnt:2:21: error[format/type-separator-spacing]: expected one space around '|'
+  |
+2 |   type Elem=S( str )|I( int )
+  |                     ^
+  |
+test/fixtures/sum-type.qnt:2:24: error[format/type-delimiter-spacing]: expected no space after '('
+  |
+2 |   type Elem=S( str )|I( int )
+  |                        ^
+  |
+test/fixtures/sum-type.qnt:2:28: error[format/type-delimiter-spacing]: expected no space before ')'
+  |
+2 |   type Elem=S( str )|I( int )
+  |                            ^
+  |
+"
+`;
+
+exports[`command-line checker type declarations reports noncanonical multiline-sum-type formatting 1`] = `
+"test/fixtures/multiline-sum-type.qnt:3:1: error[format/sum-variant-indentation]: expected 4 spaces of indentation
+  |
+3 |   | Some( a )
+  | ^^
+  |
+test/fixtures/multiline-sum-type.qnt:3:10: error[format/type-delimiter-spacing]: expected no space after '('
+  |
+3 |   | Some( a )
+  |          ^
+  |
+test/fixtures/multiline-sum-type.qnt:3:12: error[format/type-delimiter-spacing]: expected no space before ')'
+  |
+3 |   | Some( a )
+  |            ^
+  |
+test/fixtures/multiline-sum-type.qnt:4:1: error[format/sum-variant-indentation]: expected 4 spaces of indentation
+  |
+4 |    | None
+  | ^^^
+  |
+"
+`;
+
+exports[`command-line checker type declarations reports noncanonical sum-type comment formatting 1`] = `
+"test/fixtures/sum-type-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/sum-type-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | type Step=
+  | ^
+  |
+test/fixtures/sum-type-comment.qnt:2:10: error[format/equals-spacing]: expected a line break after '='
+  |
+2 | type Step=
+  |          ^
+  |
+test/fixtures/sum-type-comment.qnt:3:1: error[format/sum-variant-indentation]: expected 4 spaces of indentation
+  |
+3 | |First
+  | ^
+  |
+test/fixtures/sum-type-comment.qnt:3:1: error[format/type-separator-spacing]: expected one space after '|'
+  |
+3 | |First
+  | ^
+  |
+test/fixtures/sum-type-comment.qnt:5:1: error[format/sum-variant-indentation]: expected 4 spaces of indentation
+  |
+5 | |Second
+  | ^
+  |
+test/fixtures/sum-type-comment.qnt:5:1: error[format/type-separator-spacing]: expected one space after '|'
+  |
+5 | |Second
+  | ^
+  |
+"
+`;
