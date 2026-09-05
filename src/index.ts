@@ -24,11 +24,11 @@ import { checkFinalNewline } from "./final-newline-checker.js";
 import { checkImportSpacing } from "./import-checker.js";
 import { checkIndexExpressions } from "./index-expression-checker.js";
 import { checkLambdaExpressions } from "./lambda-expression-checker.js";
-import { checkLocalDefinition } from "./local-definition-checker.js";
 import { checkMatchExpressions } from "./match-expression-checker.js";
 import { checkModuleLayout } from "./module-checker.js";
 import { checkModuleInstance } from "./module-instance-checker.js";
 import { checkNamespaceAccess } from "./namespace-access-checker.js";
+import { checkNestedDefinitions } from "./nested-definition-checker.js";
 import { checkNondetBindings } from "./nondet-binding-checker.js";
 import { checkParameterList } from "./parameter-list-checker.js";
 import { parseQuint } from "./parser.js";
@@ -2622,44 +2622,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         diagnostics.push(...checkBlockExpressions(declaration.valueNode, filePath, lines));
         diagnostics.push(...checkNondetBindings(declaration.valueNode, source, filePath, lines));
 
-        for (const nested of collectNodes(declaration.valueNode, "nested_definition_expression")) {
-          const definition = nested.childForFieldName("definition");
-          const body = nested.childForFieldName("body");
-          if (!definition || !body)
-            throw new Error("Unable to locate the nested definition layout");
-          checkLocalDefinition(definition, source, lines, filePath, diagnostics);
-          const preservesCompactNondetSequence = isCompactNondetSequence(definition, body);
-          const hasCanonicalCompactGap =
-            preservesCompactNondetSequence &&
-            source.slice(definition.endIndex, body.startIndex) === " ";
-          if (preservesCompactNondetSequence && !hasCanonicalCompactGap) {
-            const row = body.startPosition.row;
-            diagnostics.push({
-              filePath,
-              line: row + 1,
-              column: body.startPosition.column + 1,
-              length: Math.max(1, body.text.length),
-              rule: "format/nested-definition-layout",
-              message: "expected one space after the compact nondet definition",
-              sourceLine: lines[row] ?? "",
-            });
-          } else if (
-            body.startPosition.row <= definition.endPosition.row &&
-            !compactNestedBlockExpression(definition, body) &&
-            !preservesCompactNondetSequence
-          ) {
-            const row = body.startPosition.row;
-            diagnostics.push({
-              filePath,
-              line: row + 1,
-              column: body.startPosition.column + 1,
-              length: Math.max(1, body.text.length),
-              rule: "format/nested-definition-layout",
-              message: "expected the nested definition body on a new line",
-              sourceLine: lines[row] ?? "",
-            });
-          }
-        }
+        diagnostics.push(...checkNestedDefinitions(declaration.valueNode, source, filePath, lines));
 
         const combinatorTypes = [
           ["any_expression", "choice"],
