@@ -1,61 +1,24 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker reports noncanonical match-arm formatting 1`] = `
-"test/fixtures/match-check.qnt:5:12: error[format/match-pattern-spacing]: expected no space after '('
-  |
-5 |     | Some( x )=>x
-  |            ^
-  |
-test/fixtures/match-check.qnt:5:14: error[format/match-pattern-spacing]: expected no space before ')'
-  |
-5 |     | Some( x )=>x
-  |              ^
-  |
-test/fixtures/match-check.qnt:5:16: error[format/match-arrow-spacing]: expected one space around '=>'
-  |
-5 |     | Some( x )=>x
-  |                ^^
-  |
-"
-`;
-
-exports[`command-line checker reports an inline match layout 1`] = `
-"test/fixtures/match-expression.qnt:4:56: error[format/match-layout]: expected match arms and the closing brace on separate lines
-  |
-4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
-  |                                                        ^
-  |
-test/fixtures/match-expression.qnt:4:64: error[format/match-arrow-spacing]: expected one space around '=>'
-  |
-4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
-  |                                                                ^^
-  |
-test/fixtures/match-expression.qnt:4:72: error[format/match-arrow-spacing]: expected one space around '=>'
-  |
-4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
-  |                                                                        ^^
-  |
-test/fixtures/match-expression.qnt:4:77: error[format/match-arrow-spacing]: expected one space around '=>'
-  |
-4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
-  |                                                                             ^^
-  |
-"
-`;
-
-exports[`command-line checker formats one file to standard output 1`] = `
+exports[`command-line checker command execution runs the compiled distribution with Node.js 1`] = `
 "module Example {
 }
 "
 `;
 
-exports[`command-line checker writes one file atomically 1`] = `
+exports[`command-line checker command execution formats one file to standard output 1`] = `
 "module Example {
 }
 "
 `;
 
-exports[`command-line checker does not replace a file that has invalid syntax 1`] = `
+exports[`command-line checker command execution writes one file atomically 1`] = `
+"module Example {
+}
+"
+`;
+
+exports[`command-line checker command execution does not replace a file that has invalid syntax 1`] = `
 "invalid.qnt:2:1: error[parse/missing-token]: expected '}'
   |
 2 |
@@ -64,7 +27,7 @@ exports[`command-line checker does not replace a file that has invalid syntax 1`
 "
 `;
 
-exports[`command-line checker checks multiple files 1`] = `
+exports[`command-line checker command execution checks multiple files 1`] = `
 "test/fixtures/module-keyword-spacing.qnt:1:7: error[format/module-keyword-spacing]: expected one space after 'module'
   |
 1 | module   Example {
@@ -78,7 +41,7 @@ test/fixtures/module-brace-spacing.qnt:1:15: error[format/module-brace-spacing]:
 "
 `;
 
-exports[`command-line checker discovers Quint files recursively 1`] = `
+exports[`command-line checker command execution discovers Quint files recursively 1`] = `
 "fixtures/nested/dirty.qnt:1:14: error[format/empty-module]: empty module braces must be on separate lines
   |
 1 | module Dirty {}
@@ -87,7 +50,7 @@ exports[`command-line checker discovers Quint files recursively 1`] = `
 "
 `;
 
-exports[`command-line checker reports a compact empty module 1`] = `
+exports[`command-line checker modules and parse diagnostics reports a compact empty module 1`] = `
 "test/fixtures/compact-empty-module.qnt:1:16: error[format/empty-module]: empty module braces must be on separate lines
   |
 1 | module Example {}
@@ -96,7 +59,7 @@ exports[`command-line checker reports a compact empty module 1`] = `
 "
 `;
 
-exports[`command-line checker reports a missing module brace at end of file 1`] = `
+exports[`command-line checker modules and parse diagnostics reports a missing module brace at end of file 1`] = `
 "test/fixtures/missing-module-brace.qnt:2:1: error[parse/missing-token]: expected '}'
   |
 2 |
@@ -105,7 +68,7 @@ exports[`command-line checker reports a missing module brace at end of file 1`] 
 "
 `;
 
-exports[`command-line checker reports every recoverable syntax error precisely 1`] = `
+exports[`command-line checker modules and parse diagnostics reports every recoverable syntax error precisely 1`] = `
 "test/fixtures/multiple-syntax-errors.qnt:2:15: error[parse/unexpected-token]: unexpected '@'
   |
 2 |   val first = @
@@ -119,7 +82,7 @@ test/fixtures/multiple-syntax-errors.qnt:3:16: error[parse/unexpected-token]: un
 "
 `;
 
-exports[`command-line checker reports noncanonical spacing after the module keyword 1`] = `
+exports[`command-line checker modules and parse diagnostics reports noncanonical spacing after the module keyword 1`] = `
 "test/fixtures/module-keyword-spacing.qnt:1:7: error[format/module-keyword-spacing]: expected one space after 'module'
   |
 1 | module   Example {
@@ -128,7 +91,7 @@ exports[`command-line checker reports noncanonical spacing after the module keyw
 "
 `;
 
-exports[`command-line checker reports missing spacing before the module brace 1`] = `
+exports[`command-line checker modules and parse diagnostics reports missing spacing before the module brace 1`] = `
 "test/fixtures/module-brace-spacing.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -137,7 +100,7 @@ exports[`command-line checker reports missing spacing before the module brace 1`
 "
 `;
 
-exports[`command-line checker reports an excess final newline 1`] = `
+exports[`command-line checker modules and parse diagnostics reports an excess final newline 1`] = `
 "extra-final-newline.qnt:3:1: error[format/final-newline]: expected exactly one final newline
   |
 3 |
@@ -146,7 +109,7 @@ exports[`command-line checker reports an excess final newline 1`] = `
 "
 `;
 
-exports[`command-line checker reports an unindented module declaration 1`] = `
+exports[`command-line checker declarations and type expressions reports an unindented module declaration 1`] = `
 "test/fixtures/variable-indentation.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | var n: int
@@ -155,7 +118,7 @@ exports[`command-line checker reports an unindented module declaration 1`] = `
 "
 `;
 
-exports[`command-line checker reports missing spacing after a type colon 1`] = `
+exports[`command-line checker declarations and type expressions reports missing spacing after a type colon 1`] = `
 "test/fixtures/type-colon-spacing.qnt:2:9: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   var n:int
@@ -164,7 +127,7 @@ exports[`command-line checker reports missing spacing after a type colon 1`] = `
 "
 `;
 
-exports[`command-line checker reports whitespace before a type colon 1`] = `
+exports[`command-line checker declarations and type expressions reports whitespace before a type colon 1`] = `
 "test/fixtures/before-type-colon.qnt:2:8: error[format/type-colon-spacing]: expected no space before ':'
   |
 2 |   var n : int
@@ -173,7 +136,7 @@ exports[`command-line checker reports whitespace before a type colon 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical spacing after var 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical spacing after var 1`] = `
 "test/fixtures/variable-keyword-spacing.qnt:2:6: error[format/declaration-keyword-spacing]: expected one space after 'var'
   |
 2 |   var   n: int
@@ -182,7 +145,7 @@ exports[`command-line checker reports noncanonical spacing after var 1`] = `
 "
 `;
 
-exports[`command-line checker reports an unindented constant declaration 1`] = `
+exports[`command-line checker declarations and type expressions reports an unindented constant declaration 1`] = `
 "test/fixtures/constant-declaration.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | const N: int
@@ -191,7 +154,7 @@ exports[`command-line checker reports an unindented constant declaration 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical Set-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical Set-type formatting 1`] = `
 "test/fixtures/set-type.qnt:2:16: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const Values:Set[ int ]
@@ -210,7 +173,7 @@ test/fixtures/set-type.qnt:2:24: error[format/type-delimiter-spacing]: expected 
 "
 `;
 
-exports[`command-line checker reports noncanonical tuple-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical tuple-type formatting 1`] = `
 "test/fixtures/tuple-type.qnt:2:14: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const Pair:( int ,str )
@@ -234,7 +197,7 @@ test/fixtures/tuple-type.qnt:2:24: error[format/type-delimiter-spacing]: expecte
 "
 `;
 
-exports[`command-line checker reports noncanonical record-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical record-type formatting 1`] = `
 "test/fixtures/record-type.qnt:2:14: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const User:{ name: str,active:bool }
@@ -253,7 +216,7 @@ test/fixtures/record-type.qnt:2:33: error[format/type-colon-spacing]: expected o
 "
 `;
 
-exports[`command-line checker reports noncanonical commented-record-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical commented-record-type formatting 1`] = `
 "test/fixtures/record-type-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -277,7 +240,7 @@ test/fixtures/record-type-comment.qnt:4:4: error[format/type-colon-spacing]: exp
 "
 `;
 
-exports[`command-line checker reports noncanonical empty-record-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical empty-record-type formatting 1`] = `
 "test/fixtures/empty-record-type.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 |  type Empty={  }
@@ -296,7 +259,7 @@ test/fixtures/empty-record-type.qnt:2:14: error[format/type-delimiter-spacing]: 
 "
 `;
 
-exports[`command-line checker reports noncanonical open-record-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical open-record-type formatting 1`] = `
 "test/fixtures/open-record-type.qnt:2:14: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const User:{ name: str|r }
@@ -310,7 +273,7 @@ test/fixtures/open-record-type.qnt:2:25: error[format/record-row-spacing]: expec
 "
 `;
 
-exports[`command-line checker reports noncanonical function-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical function-type formatting 1`] = `
 "test/fixtures/function-type.qnt:2:16: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const mapper:int->str
@@ -324,7 +287,7 @@ test/fixtures/function-type.qnt:2:19: error[format/type-operator-spacing]: expec
 "
 `;
 
-exports[`command-line checker reports noncanonical operator-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical operator-type formatting 1`] = `
 "test/fixtures/operator-type.qnt:2:19: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const predicate:( int ,str )=>bool
@@ -353,7 +316,7 @@ test/fixtures/operator-type.qnt:2:31: error[format/type-operator-spacing]: expec
 "
 `;
 
-exports[`command-line checker reports noncanonical zero-parameter-operator-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical zero-parameter-operator-type formatting 1`] = `
 "test/fixtures/zero-parameter-operator-type.qnt:2:17: error[format/type-delimiter-spacing]: expected no space inside '()'
   |
 2 |   const thunk: ( ) => bool
@@ -362,7 +325,7 @@ exports[`command-line checker reports noncanonical zero-parameter-operator-type 
 "
 `;
 
-exports[`command-line checker reports noncanonical direct-operator-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical direct-operator-type formatting 1`] = `
 "test/fixtures/direct-operator-type.qnt:2:19: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   const predicate:int=>bool
@@ -376,7 +339,7 @@ test/fixtures/direct-operator-type.qnt:2:22: error[format/type-operator-spacing]
 "
 `;
 
-exports[`command-line checker reports noncanonical parenthesized-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical parenthesized-type formatting 1`] = `
 "test/fixtures/parenthesized-type.qnt:2:18: error[format/type-delimiter-spacing]: expected no space after '('
   |
 2 |   const values: ( Set[ int ] )
@@ -400,7 +363,7 @@ test/fixtures/parenthesized-type.qnt:2:29: error[format/type-delimiter-spacing]:
 "
 `;
 
-exports[`command-line checker reports noncanonical unit-type formatting 1`] = `
+exports[`command-line checker declarations and type expressions reports noncanonical unit-type formatting 1`] = `
 "test/fixtures/unit-type.qnt:2:17: error[format/type-delimiter-spacing]: expected no space inside '()'
   |
 2 |   const empty: ( )
@@ -409,7 +372,7 @@ exports[`command-line checker reports noncanonical unit-type formatting 1`] = `
 "
 `;
 
-exports[`command-line checker reports adjacent declarations on the same line 1`] = `
+exports[`command-line checker declarations and type expressions reports adjacent declarations on the same line 1`] = `
 "test/fixtures/declaration-line-break.qnt:2:15: error[format/declaration-line-break]: expected each declaration on a separate line
   |
 2 |   var a: int  var b: int
@@ -418,7 +381,7 @@ exports[`command-line checker reports adjacent declarations on the same line 1`]
 "
 `;
 
-exports[`command-line checker reports an unindented assumption 1`] = `
+exports[`command-line checker assumptions reports an unindented assumption 1`] = `
 "test/fixtures/assumption-declaration.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | assume Safe = true
@@ -427,7 +390,7 @@ exports[`command-line checker reports an unindented assumption 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical spacing around assumption equals 1`] = `
+exports[`command-line checker assumptions reports noncanonical spacing around assumption equals 1`] = `
 "test/fixtures/assumption-equals-spacing.qnt:2:14: error[format/equals-spacing]: expected one space around '='
   |
 2 |   assume Safe=true
@@ -436,7 +399,7 @@ exports[`command-line checker reports noncanonical spacing around assumption equ
 "
 `;
 
-exports[`command-line checker reports an unindented integer value definition 1`] = `
+exports[`command-line checker value definitions and literals reports an unindented integer value definition 1`] = `
 "test/fixtures/value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | val answer = 42
@@ -445,7 +408,7 @@ exports[`command-line checker reports an unindented integer value definition 1`]
 "
 `;
 
-exports[`command-line checker reports an optional value semicolon 1`] = `
+exports[`command-line checker value definitions and literals reports an optional value semicolon 1`] = `
 "test/fixtures/value-semicolon.qnt:2:13: error[format/equals-spacing]: expected one space around '='
   |
 2 |   val answer=42;
@@ -459,7 +422,7 @@ test/fixtures/value-semicolon.qnt:2:16: error[format/unnecessary-semicolon]: opt
 "
 `;
 
-exports[`command-line checker reports an unindented Boolean value definition 1`] = `
+exports[`command-line checker value definitions and literals reports an unindented Boolean value definition 1`] = `
 "test/fixtures/boolean-value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | val ready = true
@@ -468,7 +431,7 @@ exports[`command-line checker reports an unindented Boolean value definition 1`]
 "
 `;
 
-exports[`command-line checker reports an unindented string value definition 1`] = `
+exports[`command-line checker value definitions and literals reports an unindented string value definition 1`] = `
 "test/fixtures/string-value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | val greeting = "hello"
@@ -477,7 +440,7 @@ exports[`command-line checker reports an unindented string value definition 1`] 
 "
 `;
 
-exports[`command-line checker reports noncanonical typed value formatting 1`] = `
+exports[`command-line checker value definitions and literals reports noncanonical typed value formatting 1`] = `
 "test/fixtures/typed-value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | val answer:int=42
@@ -496,7 +459,7 @@ test/fixtures/typed-value-definition.qnt:2:15: error[format/equals-spacing]: exp
 "
 `;
 
-exports[`command-line checker reports noncanonical addition formatting 1`] = `
+exports[`command-line checker value definitions and literals reports noncanonical addition formatting 1`] = `
 "test/fixtures/addition-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | val total=1+2
@@ -515,7 +478,7 @@ test/fixtures/addition-expression.qnt:2:12: error[format/binary-operator-spacing
 "
 `;
 
-exports[`command-line checker reports noncanonical identifier value formatting 1`] = `
+exports[`command-line checker value definitions and literals reports noncanonical identifier value formatting 1`] = `
 "test/fixtures/identifier-value-definition.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | const source: int
@@ -534,7 +497,7 @@ test/fixtures/identifier-value-definition.qnt:3:9: error[format/equals-spacing]:
 "
 `;
 
-exports[`command-line checker reports noncanonical unit-literal formatting 1`] = `
+exports[`command-line checker value definitions and literals reports noncanonical unit-literal formatting 1`] = `
 "test/fixtures/unit-literal.qnt:2:16: error[format/expression-delimiter-spacing]: expected no space inside '()'
   |
 2 |   val empty = ( )
@@ -543,7 +506,7 @@ exports[`command-line checker reports noncanonical unit-literal formatting 1`] =
 "
 `;
 
-exports[`command-line checker reports noncanonical list-literal formatting 1`] = `
+exports[`command-line checker value definitions and literals reports noncanonical list-literal formatting 1`] = `
 "test/fixtures/list-literal.qnt:2:17: error[format/expression-delimiter-spacing]: expected one space after '['
   |
 2 |   val values = [1 ,2,]
@@ -567,7 +530,7 @@ test/fixtures/list-literal.qnt:2:22: error[format/expression-delimiter-spacing]:
 "
 `;
 
-exports[`command-line checker reports noncanonical tuple-literal formatting 1`] = `
+exports[`command-line checker value definitions and literals reports noncanonical tuple-literal formatting 1`] = `
 "test/fixtures/tuple-literal.qnt:2:15: error[format/expression-delimiter-spacing]: expected no space after '('
   |
 2 |   val pair = ( 1 ,2, )
@@ -591,7 +554,7 @@ test/fixtures/tuple-literal.qnt:2:21: error[format/expression-delimiter-spacing]
 "
 `;
 
-exports[`command-line checker reports noncanonical record-literal formatting 1`] = `
+exports[`command-line checker value definitions and literals reports noncanonical record-literal formatting 1`] = `
 "test/fixtures/record-literal.qnt:2:15: error[format/expression-delimiter-spacing]: expected one space after '{'
   |
 2 |   val user = {name :"Alice" ,age:42, }
@@ -625,7 +588,7 @@ test/fixtures/record-literal.qnt:2:36: error[format/unnecessary-trailing-comma]:
 "
 `;
 
-exports[`command-line checker reports noncanonical record-spread formatting 1`] = `
+exports[`command-line checker value definitions and literals reports noncanonical record-spread formatting 1`] = `
 "test/fixtures/record-spread.qnt:2:19: error[format/expression-delimiter-spacing]: expected one space after '{'
   |
 2 |   val extended = {b:2 ,... {a:1}}
@@ -669,7 +632,7 @@ test/fixtures/record-spread.qnt:2:33: error[format/expression-delimiter-spacing]
 "
 `;
 
-exports[`command-line checker reports noncanonical commented-record formatting 1`] = `
+exports[`command-line checker value definitions and literals reports noncanonical commented-record formatting 1`] = `
 "test/fixtures/commented-record.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 |  val state={ first:1, // first value
@@ -708,7 +671,7 @@ test/fixtures/commented-record.qnt:3:9: error[format/commented-record-layout]: e
 "
 `;
 
-exports[`command-line checker reports noncanonical tuple-pattern formatting 1`] = `
+exports[`command-line checker destructuring patterns reports noncanonical tuple-pattern formatting 1`] = `
 "test/fixtures/tuple-pattern.qnt:2:13: error[format/pattern-delimiter-spacing]: expected no space after '('
   |
 2 |   pure val ( first ,_ ) = (1, 2)
@@ -727,7 +690,7 @@ test/fixtures/tuple-pattern.qnt:2:22: error[format/pattern-delimiter-spacing]: e
 "
 `;
 
-exports[`command-line checker reports noncanonical tuple-pattern comment formatting 1`] = `
+exports[`command-line checker destructuring patterns reports noncanonical tuple-pattern comment formatting 1`] = `
 "test/fixtures/tuple-pattern-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -761,7 +724,7 @@ test/fixtures/tuple-pattern-comment.qnt:5:4: error[format/lambda-arrow-spacing]:
 "
 `;
 
-exports[`command-line checker reports noncanonical record-pattern formatting 1`] = `
+exports[`command-line checker destructuring patterns reports noncanonical record-pattern formatting 1`] = `
 "test/fixtures/record-pattern.qnt:2:13: error[format/pattern-delimiter-spacing]: expected one space after '{'
   |
 2 |   pure val {first ,second} = { first: 1, second: 2 }
@@ -780,7 +743,7 @@ test/fixtures/record-pattern.qnt:2:26: error[format/pattern-delimiter-spacing]: 
 "
 `;
 
-exports[`command-line checker reports noncanonical call-expression formatting 1`] = `
+exports[`command-line checker calls and member access reports noncanonical call-expression formatting 1`] = `
 "test/fixtures/call-expression.qnt:2:20: error[format/call-delimiter-spacing]: expected no space after '('
   |
 2 |   val values = Set( 1 ,2, )
@@ -804,7 +767,7 @@ test/fixtures/call-expression.qnt:2:26: error[format/call-delimiter-spacing]: ex
 "
 `;
 
-exports[`command-line checker reports noncanonical call-argument comment formatting 1`] = `
+exports[`command-line checker calls and member access reports noncanonical call-argument comment formatting 1`] = `
 "test/fixtures/call-argument-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -823,7 +786,7 @@ test/fixtures/call-argument-comment.qnt:2:11: error[format/equals-spacing]: expe
 "
 `;
 
-exports[`command-line checker reports noncanonical UFCS-call formatting 1`] = `
+exports[`command-line checker calls and member access reports noncanonical UFCS-call formatting 1`] = `
 "test/fixtures/ufcs-call.qnt:2:27: error[format/call-delimiter-spacing]: expected no space inside '()'
   |
 2 |   val count = Set(1).size( )
@@ -832,7 +795,7 @@ exports[`command-line checker reports noncanonical UFCS-call formatting 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical index-expression formatting 1`] = `
+exports[`command-line checker calls and member access reports noncanonical index-expression formatting 1`] = `
 "test/fixtures/index-expression.qnt:2:26: error[format/index-delimiter-spacing]: expected no space after '['
   |
 2 |   val first = List(1, 2)[ 0 ]
@@ -846,7 +809,7 @@ test/fixtures/index-expression.qnt:2:28: error[format/index-delimiter-spacing]: 
 "
 `;
 
-exports[`command-line checker reports noncanonical field-access formatting 1`] = `
+exports[`command-line checker calls and member access reports noncanonical field-access formatting 1`] = `
 "test/fixtures/field-access.qnt:2:29: error[format/field-access-spacing]: expected no space around '.'
   |
 2 |   val answer = { value: 1 } . value
@@ -855,7 +818,7 @@ exports[`command-line checker reports noncanonical field-access formatting 1`] =
 "
 `;
 
-exports[`command-line checker reports noncanonical field-access comment formatting 1`] = `
+exports[`command-line checker calls and member access reports noncanonical field-access comment formatting 1`] = `
 "test/fixtures/field-access-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -909,7 +872,7 @@ test/fixtures/field-access-comment.qnt:5:1: error[format/field-access-indentatio
 "
 `;
 
-exports[`command-line checker reports noncanonical unary-expression formatting 1`] = `
+exports[`command-line checker operators reports noncanonical unary-expression formatting 1`] = `
 "test/fixtures/unary-expression.qnt:2:19: error[format/unary-operator-spacing]: expected no space after '-'
   |
 2 |   val negative = - 42
@@ -918,7 +881,7 @@ exports[`command-line checker reports noncanonical unary-expression formatting 1
 "
 `;
 
-exports[`command-line checker reports noncanonical multiplication formatting 1`] = `
+exports[`command-line checker operators reports noncanonical multiplication formatting 1`] = `
 "test/fixtures/multiplication-expression.qnt:2:23: error[format/binary-operator-spacing]: expected one space around '*'
   |
 2 |   pure val product = 2*3
@@ -927,7 +890,7 @@ exports[`command-line checker reports noncanonical multiplication formatting 1`]
 "
 `;
 
-exports[`command-line checker reports noncanonical lambda formatting 1`] = `
+exports[`command-line checker lambdas reports noncanonical lambda formatting 1`] = `
 "test/fixtures/lambda-check.qnt:2:19: error[format/lambda-parameter-list-spacing]: expected no space after '('
   |
 2 |   pure val add = ( x ,y )=>x + y
@@ -951,7 +914,7 @@ test/fixtures/lambda-check.qnt:2:26: error[format/lambda-arrow-spacing]: expecte
 "
 `;
 
-exports[`command-line checker reports noncanonical lambda-comment formatting 1`] = `
+exports[`command-line checker lambdas reports noncanonical lambda-comment formatting 1`] = `
 "test/fixtures/lambda-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -980,7 +943,7 @@ test/fixtures/lambda-comment.qnt:4:6: error[format/binary-operator-spacing]: exp
 "
 `;
 
-exports[`command-line checker reports noncanonical conditional formatting 1`] = `
+exports[`command-line checker conditional expressions reports noncanonical conditional formatting 1`] = `
 "test/fixtures/conditional-expression.qnt:2:23: error[format/conditional-keyword-spacing]: expected one space after 'if'
   |
 2 |   pure val answer = if( true )1  else  2
@@ -1009,7 +972,7 @@ test/fixtures/conditional-expression.qnt:2:34: error[format/conditional-else-spa
 "
 `;
 
-exports[`command-line checker reports noncanonical conditional-comment formatting 1`] = `
+exports[`command-line checker conditional expressions reports noncanonical conditional-comment formatting 1`] = `
 "test/fixtures/conditional-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -1043,7 +1006,7 @@ test/fixtures/conditional-comment.qnt:2:27: error[format/conditional-else-spacin
 "
 `;
 
-exports[`command-line checker reports noncanonical conditional-consequence comment formatting 1`] = `
+exports[`command-line checker conditional expressions reports noncanonical conditional-consequence comment formatting 1`] = `
 "test/fixtures/conditional-consequence-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -1072,7 +1035,26 @@ test/fixtures/conditional-consequence-comment.qnt:2:25: error[format/conditional
 "
 `;
 
-exports[`command-line checker reports noncanonical match-comment formatting 1`] = `
+exports[`command-line checker match expressions reports noncanonical match-arm formatting 1`] = `
+"test/fixtures/match-check.qnt:5:12: error[format/match-pattern-spacing]: expected no space after '('
+  |
+5 |     | Some( x )=>x
+  |            ^
+  |
+test/fixtures/match-check.qnt:5:14: error[format/match-pattern-spacing]: expected no space before ')'
+  |
+5 |     | Some( x )=>x
+  |              ^
+  |
+test/fixtures/match-check.qnt:5:16: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+5 |     | Some( x )=>x
+  |                ^^
+  |
+"
+`;
+
+exports[`command-line checker match expressions reports noncanonical match-comment formatting 1`] = `
 "test/fixtures/match-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -1116,7 +1098,7 @@ test/fixtures/match-comment.qnt:6:8: error[format/match-arrow-spacing]: expected
 "
 `;
 
-exports[`command-line checker reports noncanonical match-arm-body comment formatting 1`] = `
+exports[`command-line checker match expressions reports noncanonical match-arm-body comment formatting 1`] = `
 "test/fixtures/match-arm-body-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -1160,7 +1142,31 @@ test/fixtures/match-arm-body-comment.qnt:7:8: error[format/match-arrow-spacing]:
 "
 `;
 
-exports[`command-line checker reports noncanonical namespace-access formatting 1`] = `
+exports[`command-line checker match expressions reports an inline match layout 1`] = `
+"test/fixtures/match-expression.qnt:4:56: error[format/match-layout]: expected match arms and the closing brace on separate lines
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                        ^
+  |
+test/fixtures/match-expression.qnt:4:64: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                ^^
+  |
+test/fixtures/match-expression.qnt:4:72: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                        ^^
+  |
+test/fixtures/match-expression.qnt:4:77: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                             ^^
+  |
+"
+`;
+
+exports[`command-line checker namespace access and assignments reports noncanonical namespace-access formatting 1`] = `
 "test/fixtures/namespace-access.qnt:2:27: error[format/namespace-access-spacing]: expected no space around '::'
   |
 2 |   pure val apply = (Scope :: x)=>Scope :: x
@@ -1179,7 +1185,7 @@ test/fixtures/namespace-access.qnt:2:40: error[format/namespace-access-spacing]:
 "
 `;
 
-exports[`command-line checker reports noncanonical primed-assignment formatting 1`] = `
+exports[`command-line checker namespace access and assignments reports noncanonical primed-assignment formatting 1`] = `
 "test/fixtures/primed-assignment.qnt:4:27: error[format/prime-spacing]: expected no space before "'"
   |
 4 |   action increment = count '  =count + 1
@@ -1193,7 +1199,7 @@ test/fixtures/primed-assignment.qnt:4:31: error[format/assignment-spacing]: expe
 "
 `;
 
-exports[`command-line checker reports an inline ordinary block 1`] = `
+exports[`command-line checker blocks and local definitions reports an inline ordinary block 1`] = `
 "test/fixtures/block-expression.qnt:4:23: error[format/block-layout]: expected block contents and the closing brace on separate lines
   |
 4 |   action initialize = {count' = 0}
@@ -1202,7 +1208,7 @@ exports[`command-line checker reports an inline ordinary block 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical ordinary-block comment formatting 1`] = `
+exports[`command-line checker blocks and local definitions reports noncanonical ordinary-block comment formatting 1`] = `
 "test/fixtures/block-expression-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -1221,7 +1227,7 @@ test/fixtures/block-expression-comment.qnt:2:12: error[format/equals-spacing]: e
 "
 `;
 
-exports[`command-line checker reports noncanonical block-combinator formatting 1`] = `
+exports[`command-line checker blocks and local definitions reports noncanonical block-combinator formatting 1`] = `
 "test/fixtures/and-block.qnt:2:24: error[format/block-combinator-brace-spacing]: expected one space inside compact block-combinator braces
   |
 2 |   pure val both = and {true ,false}
@@ -1240,7 +1246,7 @@ test/fixtures/and-block.qnt:2:30: error[format/block-combinator-separator-spacin
 "
 `;
 
-exports[`command-line checker reports noncanonical block-combinator comment formatting 1`] = `
+exports[`command-line checker blocks and local definitions reports noncanonical block-combinator comment formatting 1`] = `
 "test/fixtures/combinator-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -1259,7 +1265,7 @@ test/fixtures/combinator-comment.qnt:2:12: error[format/equals-spacing]: expecte
 "
 `;
 
-exports[`command-line checker reports noncanonical nondet-binding formatting 1`] = `
+exports[`command-line checker blocks and local definitions reports noncanonical nondet-binding formatting 1`] = `
 "test/fixtures/nondet-binding.qnt:5:11: error[format/nondet-binding-spacing]: expected one space after 'nondet'
   |
 5 |     nondet  choice=Set(1, 2).oneOf()
@@ -1273,7 +1279,7 @@ test/fixtures/nondet-binding.qnt:5:19: error[format/nondet-binding-spacing]: exp
 "
 `;
 
-exports[`command-line checker reports noncanonical nested-definition formatting 1`] = `
+exports[`command-line checker blocks and local definitions reports noncanonical nested-definition formatting 1`] = `
 "test/fixtures/nested-definitions.qnt:3:9: error[format/qualifier-spacing]: expected one space after 'pure'
   |
 3 |     pure   val doubled:int=value * 2;
@@ -1312,7 +1318,7 @@ test/fixtures/nested-definitions.qnt:4:54: error[format/unnecessary-semicolon]: 
 "
 `;
 
-exports[`command-line checker reports noncanonical named and wildcard imports and exports 1`] = `
+exports[`command-line checker imports and module instances reports noncanonical named and wildcard imports and exports 1`] = `
 "test/fixtures/imports-exports.qnt:4:1: error[format/module-separation]: expected one blank line between modules
   |
 4 | module Consumer {
@@ -1401,7 +1407,7 @@ test/fixtures/imports-exports.qnt:12:17: error[format/import-selector-spacing]: 
 "
 `;
 
-exports[`command-line checker reports noncanonical source-qualified imports 1`] = `
+exports[`command-line checker imports and module instances reports noncanonical source-qualified imports 1`] = `
 "test/fixtures/source-imports.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 |  import Library   from   "./quint-format-source-library"
@@ -1445,7 +1451,7 @@ test/fixtures/source-imports.qnt:4:22: error[format/import-source-spacing]: expe
 "
 `;
 
-exports[`command-line checker reports noncanonical module instances and overrides 1`] = `
+exports[`command-line checker imports and module instances reports noncanonical module instances and overrides 1`] = `
 "test/fixtures/module-instance.qnt:5:1: error[format/module-separation]: expected one blank line between modules
   |
 5 | module Example {
@@ -1489,7 +1495,7 @@ test/fixtures/module-instance.qnt:6:38: error[format/import-alias-spacing]: expe
 "
 `;
 
-exports[`command-line checker reports noncanonical instance-override comment formatting 1`] = `
+exports[`command-line checker imports and module instances reports noncanonical instance-override comment formatting 1`] = `
 "test/fixtures/instance-override-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Library{
@@ -1538,7 +1544,7 @@ test/fixtures/instance-override-comment.qnt:8:2: error[format/import-alias-spaci
 "
 `;
 
-exports[`command-line checker reports noncanonical anonymous instances 1`] = `
+exports[`command-line checker imports and module instances reports noncanonical anonymous instances 1`] = `
 "test/fixtures/anonymous-instance.qnt:4:1: error[format/module-separation]: expected one blank line between modules
   |
 4 | module Example {
@@ -1572,7 +1578,7 @@ test/fixtures/anonymous-instance.qnt:5:26: error[format/import-selector-spacing]
 "
 `;
 
-exports[`command-line checker reports noncanonical anonymous-instance comment formatting 1`] = `
+exports[`command-line checker imports and module instances reports noncanonical anonymous-instance comment formatting 1`] = `
 "test/fixtures/anonymous-instance-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Library{
@@ -1616,7 +1622,7 @@ test/fixtures/anonymous-instance-comment.qnt:7:2: error[format/instance-override
 "
 `;
 
-exports[`command-line checker reports noncanonical parenthesized expression formatting 1`] = `
+exports[`command-line checker parenthesized and arithmetic expressions reports noncanonical parenthesized expression formatting 1`] = `
 "test/fixtures/parenthesized-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | val total=(1+2)
@@ -1635,7 +1641,7 @@ test/fixtures/parenthesized-expression.qnt:2:13: error[format/binary-operator-sp
 "
 `;
 
-exports[`command-line checker reports noncanonical subtraction formatting 1`] = `
+exports[`command-line checker parenthesized and arithmetic expressions reports noncanonical subtraction formatting 1`] = `
 "test/fixtures/subtraction-expression.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 | val delta=3-1
@@ -1654,7 +1660,7 @@ test/fixtures/subtraction-expression.qnt:2:12: error[format/binary-operator-spac
 "
 `;
 
-exports[`command-line checker reports a compact module after a hashbang 1`] = `
+exports[`command-line checker source and declaration layout reports a compact module after a hashbang 1`] = `
 "test/fixtures/hashbang.qnt:2:16: error[format/empty-module]: empty module braces must be on separate lines
   |
 2 | module Example {}
@@ -1663,7 +1669,7 @@ exports[`command-line checker reports a compact module after a hashbang 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical multiple-module layout 1`] = `
+exports[`command-line checker source and declaration layout reports noncanonical multiple-module layout 1`] = `
 "test/fixtures/multiple-modules.qnt:1:14: error[format/empty-module]: empty module braces must be on separate lines
   |
 1 | module First {} module Second {}
@@ -1682,7 +1688,7 @@ test/fixtures/multiple-modules.qnt:1:31: error[format/empty-module]: empty modul
 "
 `;
 
-exports[`command-line checker reports noncanonical leading line-comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical leading line-comment formatting 1`] = `
 "test/fixtures/leading-line-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 2 | // The answer
@@ -1701,7 +1707,7 @@ test/fixtures/leading-line-comment.qnt:3:11: error[format/equals-spacing]: expec
 "
 `;
 
-exports[`command-line checker reports noncanonical documentation-comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical documentation-comment formatting 1`] = `
 "test/fixtures/documentation-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 2 | /// The answer
@@ -1720,7 +1726,7 @@ test/fixtures/documentation-comment.qnt:3:11: error[format/equals-spacing]: expe
 "
 `;
 
-exports[`command-line checker reports noncanonical block-comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical block-comment formatting 1`] = `
 "test/fixtures/block-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 2 | /* The answer */
@@ -1739,7 +1745,7 @@ test/fixtures/block-comment.qnt:3:11: error[format/equals-spacing]: expected one
 "
 `;
 
-exports[`command-line checker reports noncanonical multiline block-comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical multiline block-comment formatting 1`] = `
 "test/fixtures/multiline-block-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 2 | /*
@@ -1758,7 +1764,7 @@ test/fixtures/multiline-block-comment.qnt:5:11: error[format/equals-spacing]: ex
 "
 `;
 
-exports[`command-line checker reports noncanonical module documentation-comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical module documentation-comment formatting 1`] = `
 "test/fixtures/module-documentation-comment.qnt:1:1: error[format/comment-indentation]: expected no indentation at the source level
   |
 1 |  /// Module documentation
@@ -1772,7 +1778,7 @@ test/fixtures/module-documentation-comment.qnt:2:16: error[format/empty-module]:
 "
 `;
 
-exports[`command-line checker reports noncanonical trailing line-comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical trailing line-comment formatting 1`] = `
 "test/fixtures/trailing-line-comment.qnt:2:18: error[format/comment-spacing]: expected one space before a trailing comment
   |
 2 |   val answer = 42// The answer
@@ -1781,7 +1787,7 @@ exports[`command-line checker reports noncanonical trailing line-comment formatt
 "
 `;
 
-exports[`command-line checker reports a misindented trailing module-body comment 1`] = `
+exports[`command-line checker comments and comment layout reports a misindented trailing module-body comment 1`] = `
 "test/fixtures/trailing-module-comment.qnt:4:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 4 | // Kept for future work
@@ -1790,7 +1796,7 @@ exports[`command-line checker reports a misindented trailing module-body comment
 "
 `;
 
-exports[`command-line checker reports noncanonical trailing source comments 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical trailing source comments 1`] = `
 "test/fixtures/trailing-source-comments.qnt:3:1: error[format/comment-indentation]: expected no indentation at the source level
   |
 3 |  /*! answer !*/
@@ -1809,7 +1815,7 @@ test/fixtures/trailing-source-comments.qnt:4:1: error[format/source-comment-sepa
 "
 `;
 
-exports[`command-line checker reports a misindented comment-only module 1`] = `
+exports[`command-line checker comments and comment layout reports a misindented comment-only module 1`] = `
 "test/fixtures/comment-only-module.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 2 | // Intentionally empty
@@ -1818,7 +1824,7 @@ exports[`command-line checker reports a misindented comment-only module 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical inline-comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical inline-comment formatting 1`] = `
 "test/fixtures/inline-comment.qnt:2:16: error[format/comment-spacing]: expected one space before an inline comment
   |
 2 |   val total = 1/* left */+2
@@ -1832,7 +1838,7 @@ test/fixtures/inline-comment.qnt:2:26: error[format/binary-operator-spacing]: ex
 "
 `;
 
-exports[`command-line checker reports noncanonical binary-right comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical binary-right comment formatting 1`] = `
 "test/fixtures/binary-right-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -1851,7 +1857,7 @@ test/fixtures/binary-right-comment.qnt:2:16: error[format/equals-spacing]: expec
 "
 `;
 
-exports[`command-line checker reports noncanonical nested-definition comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical nested-definition comment formatting 1`] = `
 "test/fixtures/nested-definition-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -1875,7 +1881,7 @@ test/fixtures/nested-definition-comment.qnt:3:11: error[format/equals-spacing]: 
 "
 `;
 
-exports[`command-line checker reports noncanonical local trailing-comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical local trailing-comment formatting 1`] = `
 "test/fixtures/local-definition-trailing-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -1904,7 +1910,7 @@ test/fixtures/local-definition-trailing-comment.qnt:4:1: error[format/nested-def
 "
 `;
 
-exports[`command-line checker reports noncanonical local definition-body comment formatting 1`] = `
+exports[`command-line checker comments and comment layout reports noncanonical local definition-body comment formatting 1`] = `
 "test/fixtures/local-definition-body-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -1933,7 +1939,7 @@ test/fixtures/local-definition-body-comment.qnt:6:1: error[format/nested-definit
 "
 `;
 
-exports[`command-line checker reports noncanonical general assumption formatting 1`] = `
+exports[`command-line checker definitions reports noncanonical general assumption formatting 1`] = `
 "test/fixtures/assumption-expression.qnt:4:15: error[format/equals-spacing]: expected one space around '='
   |
 4 |   assume Holds=Flag
@@ -1942,7 +1948,7 @@ exports[`command-line checker reports noncanonical general assumption formatting
 "
 `;
 
-exports[`command-line checker reports noncanonical parameterless def formatting 1`] = `
+exports[`command-line checker definitions reports noncanonical parameterless def formatting 1`] = `
 "test/fixtures/def-definition.qnt:2:13: error[format/equals-spacing]: expected one space around '='
   |
 2 |   def answer=42
@@ -1951,7 +1957,7 @@ exports[`command-line checker reports noncanonical parameterless def formatting 
 "
 `;
 
-exports[`command-line checker reports noncanonical def-parameter formatting 1`] = `
+exports[`command-line checker definitions reports noncanonical def-parameter formatting 1`] = `
 "test/fixtures/def-parameter.qnt:2:16: error[format/parameter-list-spacing]: expected no space after '('
   |
 2 |   def identity( value )=value
@@ -1970,7 +1976,7 @@ test/fixtures/def-parameter.qnt:2:24: error[format/equals-spacing]: expected one
 "
 `;
 
-exports[`command-line checker reports noncanonical ignored-parameter formatting 1`] = `
+exports[`command-line checker definitions reports noncanonical ignored-parameter formatting 1`] = `
 "test/fixtures/hole-parameter.qnt:2:19: error[format/parameter-list-spacing]: expected no space after '('
   |
 2 |   pure def ignore( _: int ): int = 0
@@ -1984,7 +1990,7 @@ test/fixtures/hole-parameter.qnt:2:26: error[format/parameter-list-spacing]: exp
 "
 `;
 
-exports[`command-line checker reports noncanonical multiple-def-parameter formatting 1`] = `
+exports[`command-line checker definitions reports noncanonical multiple-def-parameter formatting 1`] = `
 "test/fixtures/multiple-def-parameters.qnt:2:19: error[format/parameter-separator-spacing]: expected ', ' between parameters
   |
 2 |   def choose(left ,right)=left
@@ -1998,7 +2004,7 @@ test/fixtures/multiple-def-parameters.qnt:2:26: error[format/equals-spacing]: ex
 "
 `;
 
-exports[`command-line checker reports noncanonical typed-def-header formatting 1`] = `
+exports[`command-line checker definitions reports noncanonical typed-def-header formatting 1`] = `
 "test/fixtures/typed-def-header.qnt:2:21: error[format/type-colon-spacing]: expected no space before ':'
   |
 2 |   def identity(value :int) :int=value
@@ -2027,7 +2033,7 @@ test/fixtures/typed-def-header.qnt:2:32: error[format/equals-spacing]: expected 
 "
 `;
 
-exports[`command-line checker reports a noncanonical untyped parameter with a return type 1`] = `
+exports[`command-line checker definitions reports a noncanonical untyped parameter with a return type 1`] = `
 "test/fixtures/untyped-parameter-return.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 |  def identity( value ) : int=value
@@ -2056,7 +2062,7 @@ test/fixtures/untyped-parameter-return.qnt:2:29: error[format/equals-spacing]: e
 "
 `;
 
-exports[`command-line checker reports noncanonical List-typed-header formatting 1`] = `
+exports[`command-line checker definitions reports noncanonical List-typed-header formatting 1`] = `
 "test/fixtures/list-typed-header.qnt:2:25: error[format/type-delimiter-spacing]: expected no space after '['
   |
 2 |   def identity(xs: List[ int ]): List[ int ] = xs
@@ -2080,7 +2086,7 @@ test/fixtures/list-typed-header.qnt:2:43: error[format/type-delimiter-spacing]: 
 "
 `;
 
-exports[`command-line checker reports an optional definition semicolon 1`] = `
+exports[`command-line checker definitions reports an optional definition semicolon 1`] = `
 "test/fixtures/definition-semicolon.qnt:2:13: error[format/equals-spacing]: expected one space around '='
   |
 2 |   def answer=42;
@@ -2094,7 +2100,7 @@ test/fixtures/definition-semicolon.qnt:2:16: error[format/unnecessary-semicolon]
 "
 `;
 
-exports[`command-line checker reports noncanonical type-alias formatting 1`] = `
+exports[`command-line checker type declarations reports noncanonical type-alias formatting 1`] = `
 "test/fixtures/type-alias.qnt:2:13: error[format/equals-spacing]: expected one space around '='
   |
 2 |   type Count=int
@@ -2103,7 +2109,7 @@ exports[`command-line checker reports noncanonical type-alias formatting 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical uninterpreted-type formatting 1`] = `
+exports[`command-line checker type declarations reports noncanonical uninterpreted-type formatting 1`] = `
 "test/fixtures/uninterpreted-type.qnt:2:7: error[format/declaration-keyword-spacing]: expected one space after 'type'
   |
 2 |   type   DOMAIN
@@ -2112,7 +2118,7 @@ exports[`command-line checker reports noncanonical uninterpreted-type formatting
 "
 `;
 
-exports[`command-line checker reports noncanonical named-type-alias formatting 1`] = `
+exports[`command-line checker type declarations reports noncanonical named-type-alias formatting 1`] = `
 "test/fixtures/named-type-alias.qnt:4:12: error[format/equals-spacing]: expected one space around '='
   |
 4 |   type Copy=DOMAIN
@@ -2121,7 +2127,7 @@ exports[`command-line checker reports noncanonical named-type-alias formatting 1
 "
 `;
 
-exports[`command-line checker reports noncanonical polymorphic-type-alias formatting 1`] = `
+exports[`command-line checker type declarations reports noncanonical polymorphic-type-alias formatting 1`] = `
 "test/fixtures/polymorphic-type-alias.qnt:2:12: error[format/type-parameter-list-spacing]: expected no space after '['
   |
 2 |   type Box[ a ]=List[a]
@@ -2140,7 +2146,7 @@ test/fixtures/polymorphic-type-alias.qnt:2:16: error[format/equals-spacing]: exp
 "
 `;
 
-exports[`command-line checker reports noncanonical type-application formatting 1`] = `
+exports[`command-line checker type declarations reports noncanonical type-application formatting 1`] = `
 "test/fixtures/type-application.qnt:4:15: error[format/type-colon-spacing]: expected one space after ':'
   |
 4 |   const boxes:Box[ int ]
@@ -2159,7 +2165,7 @@ test/fixtures/type-application.qnt:4:23: error[format/type-delimiter-spacing]: e
 "
 `;
 
-exports[`command-line checker reports noncanonical sum-type formatting 1`] = `
+exports[`command-line checker type declarations reports noncanonical sum-type formatting 1`] = `
 "test/fixtures/sum-type.qnt:2:12: error[format/equals-spacing]: expected one space around '='
   |
 2 |   type Elem=S( str )|I( int )
@@ -2193,7 +2199,7 @@ test/fixtures/sum-type.qnt:2:28: error[format/type-delimiter-spacing]: expected 
 "
 `;
 
-exports[`command-line checker reports noncanonical multiline-sum-type formatting 1`] = `
+exports[`command-line checker type declarations reports noncanonical multiline-sum-type formatting 1`] = `
 "test/fixtures/multiline-sum-type.qnt:3:1: error[format/sum-variant-indentation]: expected 4 spaces of indentation
   |
 3 |   | Some( a )
@@ -2217,7 +2223,7 @@ test/fixtures/multiline-sum-type.qnt:4:1: error[format/sum-variant-indentation]:
 "
 `;
 
-exports[`command-line checker reports noncanonical sum-type comment formatting 1`] = `
+exports[`command-line checker type declarations reports noncanonical sum-type comment formatting 1`] = `
 "test/fixtures/sum-type-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -2256,7 +2262,7 @@ test/fixtures/sum-type-comment.qnt:5:1: error[format/type-separator-spacing]: ex
 "
 `;
 
-exports[`command-line checker reports noncanonical pure-definition formatting 1`] = `
+exports[`command-line checker definition modes reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |
 2 |   pure   def answer=42
@@ -2270,7 +2276,7 @@ test/fixtures/pure-definition.qnt:2:20: error[format/equals-spacing]: expected o
 "
 `;
 
-exports[`command-line checker reports noncanonical pure-value formatting 1`] = `
+exports[`command-line checker definition modes reports noncanonical pure-value formatting 1`] = `
 "test/fixtures/pure-value-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |
 2 |   pure   val answer=42
@@ -2284,7 +2290,7 @@ test/fixtures/pure-value-definition.qnt:2:20: error[format/equals-spacing]: expe
 "
 `;
 
-exports[`command-line checker reports noncanonical action formatting 1`] = `
+exports[`command-line checker definition modes reports noncanonical action formatting 1`] = `
 "test/fixtures/action-definition.qnt:2:20: error[format/equals-spacing]: expected one space around '='
   |
 2 |   action initialize=true
@@ -2293,7 +2299,7 @@ exports[`command-line checker reports noncanonical action formatting 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical definition-body comment formatting 1`] = `
+exports[`command-line checker definition modes reports noncanonical definition-body comment formatting 1`] = `
 "test/fixtures/definition-body-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -2312,7 +2318,7 @@ test/fixtures/definition-body-comment.qnt:2:12: error[format/equals-spacing]: ex
 "
 `;
 
-exports[`command-line checker reports noncanonical run formatting 1`] = `
+exports[`command-line checker definition modes reports noncanonical run formatting 1`] = `
 "test/fixtures/run-definition.qnt:2:15: error[format/equals-spacing]: expected one space around '='
   |
 2 |   run scenario=true
@@ -2321,7 +2327,7 @@ exports[`command-line checker reports noncanonical run formatting 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical temporal formatting 1`] = `
+exports[`command-line checker definition modes reports noncanonical temporal formatting 1`] = `
 "test/fixtures/temporal-definition.qnt:2:21: error[format/equals-spacing]: expected one space around '='
   |
 2 |   temporal invariant=true
@@ -2330,7 +2336,7 @@ exports[`command-line checker reports noncanonical temporal formatting 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical nondet formatting 1`] = `
+exports[`command-line checker definition modes reports noncanonical nondet formatting 1`] = `
 "test/fixtures/nondet-definition.qnt:2:19: error[format/equals-spacing]: expected one space around '='
   |
 2 |   nondet selection=true
@@ -2339,7 +2345,7 @@ exports[`command-line checker reports noncanonical nondet formatting 1`] = `
 "
 `;
 
-exports[`command-line checker reports noncanonical empty parameter lists 1`] = `
+exports[`command-line checker definition modes reports noncanonical empty parameter lists 1`] = `
 "test/fixtures/empty-parameter-lists.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 |  action step(  ) :bool=true
@@ -2433,7 +2439,7 @@ test/fixtures/empty-parameter-lists.qnt:5:23: error[format/equals-spacing]: expe
 "
 `;
 
-exports[`command-line checker reports noncanonical rich definitions across every mode 1`] = `
+exports[`command-line checker definition modes reports noncanonical rich definitions across every mode 1`] = `
 "test/fixtures/definition-matrix.qnt:1:14: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Matrix{
@@ -2684,11 +2690,5 @@ test/fixtures/definition-matrix.qnt:14:35: error[format/equals-spacing]: expecte
 14 | nondet choose(values:Set[int]):int=values.oneOf()
    |                                   ^
    |
-"
-`;
-
-exports[`command-line checker runs the compiled distribution with Node.js 1`] = `
-"module Example {
-}
 "
 `;
