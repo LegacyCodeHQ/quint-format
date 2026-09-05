@@ -11,8 +11,8 @@ import { analyzeImportExportDeclaration } from "./import-export-declaration-anal
 import { analyzeModuleInstance } from "./module-instance-analyzer.js";
 import { analyzeOperatorDefinition } from "./operator-definition-analyzer.js";
 import { analyzeTypeDeclaration } from "./type-declaration-analyzer.js";
-import { formatType } from "./type-formatter.js";
 import { analyzeValueDefinition } from "./value-definition-analyzer.js";
+import { analyzeVariableDeclaration } from "./variable-declaration-analyzer.js";
 
 export function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule {
   const nameNode = moduleNode.childForFieldName("name");
@@ -139,40 +139,13 @@ export function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule
       continue;
     }
 
-    const keywordType =
-      node.type === "variable_declaration"
-        ? "var"
-        : node.type === "constant_declaration"
-          ? "const"
-          : undefined;
-    if (!keywordType) {
-      throw new Error("Formatting this Quint syntax is not implemented yet");
+    const variableDeclaration = analyzeVariableDeclaration(node);
+    if (variableDeclaration) {
+      addDeclaration(variableDeclaration);
+      continue;
     }
 
-    const declarationName = node.childForFieldName("name");
-    const declarationType = node.childForFieldName("type");
-    const keyword = node.children.find((child) => child.type === keywordType);
-    const colon = node.children.find((child) => child.type === ":");
-    if (!declarationName || !declarationType || !keyword || !colon) {
-      throw new Error("Unable to locate the variable declaration fields");
-    }
-    const sourceTypeGap = node.text.slice(
-      colon.endIndex - node.startIndex,
-      declarationType.startIndex - node.startIndex,
-    );
-    const typeGap = /^ +$/u.test(sourceTypeGap) ? sourceTypeGap : " ";
-
-    addDeclaration({
-      node,
-      keyword,
-      nameNode: declarationName,
-      colon,
-      typeNode: declarationType,
-      typeRoots: [declarationType],
-      document: text(
-        `${keywordType} ${declarationName.text}:${typeGap}${formatType(declarationType)}`,
-      ),
-    });
+    throw new Error("Formatting this Quint syntax is not implemented yet");
   }
 
   const danglingComments = pendingComments;
