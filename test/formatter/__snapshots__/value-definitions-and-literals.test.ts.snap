@@ -87,11 +87,25 @@ exports[`value definitions and literals formats a record literal 1`] = `
 "
 `;
 
-exports[`value definitions and literals preserves a multiline record literal 1`] = `
+exports[`value definitions and literals removes a trailing comma from a multiline record literal 1`] = `
+[
+  {
+    "column": 15,
+    "filePath": "input.qnt",
+    "length": 1,
+    "line": 4,
+    "message": "trailing commas are omitted from records",
+    "rule": "format/unnecessary-trailing-comma",
+    "sourceLine": "    balance: 0,",
+  },
+]
+`;
+
+exports[`value definitions and literals removes a trailing comma from a multiline record literal 2`] = `
 "module Example {
   pure val account = {
     owner: "alice",
-    balance: 0,
+    balance: 0
   }
 }
 "
@@ -101,7 +115,7 @@ exports[`value definitions and literals preserves source-line groups in a multil
 "module Example {
   pure val message = {
     source: "alice", round: 1,
-    value: "ready", validRound: 0,
+    value: "ready", validRound: 0
   }
 }
 "
@@ -118,7 +132,7 @@ exports[`value definitions and literals preserves comments in record literals 1`
 "module Example {
   val state = {
     first: 1, // first value
-    second: 2,
+    second: 2
   }
 }
 "
@@ -129,9 +143,9 @@ exports[`value definitions and literals keeps a closing-delimiter comment with t
   val output = {
     nested: {
       first: 1,
-      second: 2, // Explain the second field.
+      second: 2 // Explain the second field.
     },
-    result: 3,
+    result: 3
   }
 }
 "

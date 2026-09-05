@@ -131,17 +131,24 @@ describe("value definitions and literals", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("preserves a multiline record literal", () => {
+  test("removes a trailing comma from a multiline record literal", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-record-literal.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
+    const expected = input.replace("    balance: 0,\n", "    balance: 0\n");
 
-    expect(output).toContain('pure val account = {\n    owner: "alice",\n    balance: 0,\n  }');
+    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
+    expect(output).toBe(expected);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
   test("preserves source-line groups in a multiline record literal", () => {
@@ -190,7 +197,7 @@ describe("value definitions and literals", () => {
     );
     const output = formatQuint(input);
 
-    expect(output).toContain("second: 2, // Explain the second field.\n    },");
+    expect(output).toContain("second: 2 // Explain the second field.\n    },");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

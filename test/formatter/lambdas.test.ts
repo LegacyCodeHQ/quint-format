@@ -178,7 +178,7 @@ describe("lambdas", () => {
       [
         '  pure val records = Set("one").mapBy(name => {',
         "    name: name,",
-        "    count: 1,",
+        "    count: 1",
         "  })",
       ].join("\n"),
     );

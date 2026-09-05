@@ -121,7 +121,7 @@ export function checkRecordLiterals(
             candidate.startIndex >= element.endIndex &&
             candidate.startIndex < (nextElement?.startIndex ?? closeBrace.startIndex),
         );
-        if (!comma || source.slice(element.endIndex, comma.startIndex) !== "") {
+        if (nextElement && (!comma || source.slice(element.endIndex, comma.startIndex) !== "")) {
           const row = element.endPosition.row;
           diagnostics.push({
             filePath,
@@ -131,7 +131,19 @@ export function checkRecordLiterals(
             rule: isCommentedRecord
               ? "format/commented-record-separator"
               : "format/multiline-record-separator",
-            message: "expected a trailing comma after each record element",
+            message: "expected a comma between record elements",
+            sourceLine: lines[row] ?? "",
+          });
+        }
+        if (!nextElement && comma) {
+          const row = comma.startPosition.row;
+          diagnostics.push({
+            filePath,
+            line: row + 1,
+            column: comma.startPosition.column + 1,
+            length: 1,
+            rule: "format/unnecessary-trailing-comma",
+            message: "trailing commas are omitted from records",
             sourceLine: lines[row] ?? "",
           });
         }
@@ -188,7 +200,7 @@ export function checkRecordLiterals(
             column: comma.startPosition.column + 1,
             length: 1,
             rule: "format/unnecessary-trailing-comma",
-            message: "trailing commas are omitted from inline records",
+            message: "trailing commas are omitted from records",
             sourceLine: lines[row] ?? "",
           });
           continue;

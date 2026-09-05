@@ -140,25 +140,13 @@ exports[`lambdas keeps a record-returning lambda's braces attached 1`] = `
 "module Example {
   pure val records = Set("one").mapBy(name => {
     name: name,
-    count: 1,
+    count: 1
   })
 }
 "
 `;
 
-exports[`lambdas keeps a record-returning lambda's braces attached 2`] = `
-[
-  {
-    "column": 13,
-    "filePath": "unformatted.qnt",
-    "length": 1,
-    "line": 4,
-    "message": "expected a trailing comma after each record element",
-    "rule": "format/multiline-record-separator",
-    "sourceLine": "    count: 1",
-  },
-]
-`;
+exports[`lambdas keeps a record-returning lambda's braces attached 2`] = `[]`;
 
 exports[`lambdas keeps block-combinator lambda bodies attached 1`] = `
 "module Example {

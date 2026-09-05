@@ -171,7 +171,7 @@ test/fixtures/record-literal.qnt:2:34: error[format/expression-colon-spacing]: e
 2 |   val user = {name :"Alice" ,age:42, }
   |                                  ^
   |
-test/fixtures/record-literal.qnt:2:36: error[format/unnecessary-trailing-comma]: trailing commas are omitted from inline records
+test/fixtures/record-literal.qnt:2:36: error[format/unnecessary-trailing-comma]: trailing commas are omitted from records
   |
 2 |   val user = {name :"Alice" ,age:42, }
   |                                    ^
@@ -248,11 +248,6 @@ test/fixtures/commented-record.qnt:3:8: error[format/expression-colon-spacing]: 
   |
 3 | second:2 }
   |        ^
-  |
-test/fixtures/commented-record.qnt:3:9: error[format/commented-record-separator]: expected a trailing comma after each record element
-  |
-3 | second:2 }
-  |         ^
   |
 test/fixtures/commented-record.qnt:3:9: error[format/commented-record-layout]: expected the closing brace on its own line
   |

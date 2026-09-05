@@ -176,6 +176,9 @@ export function analyzeLiteralExpression(
           lineDocuments.push(concat([previousDocument, text(" "), entry.document]));
           lineAnchors[lineAnchors.length - 1] = entry.node;
         } else {
+          const hasFollowingElement = directElements.some(
+            (candidate) => candidate.startIndex > entry.node.endIndex,
+          );
           const attachesClosingComment =
             !isComment &&
             Boolean(trailingClosingComment) &&
@@ -185,7 +188,7 @@ export function analyzeLiteralExpression(
               ? entry.document
               : concat([
                   entry.document,
-                  text(","),
+                  ...(hasFollowingElement ? [text(",")] : []),
                   ...(attachesClosingComment && trailingClosingComment
                     ? [text(" "), commentDocument(trailingClosingComment)]
                     : []),
