@@ -18,6 +18,7 @@ import type { FormatDiagnostic } from "./diagnostics.js";
 import { concat, type Doc, group, hardLine, indent, line, renderDoc, text } from "./document.js";
 import { checkFinalNewline } from "./final-newline-checker.js";
 import { checkImportSpacing } from "./import-checker.js";
+import { checkIndexExpressions } from "./index-expression-checker.js";
 import { checkLocalDefinition } from "./local-definition-checker.js";
 import { checkModuleLayout } from "./module-checker.js";
 import { checkModuleInstance } from "./module-instance-checker.js";
@@ -2596,40 +2597,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
       );
 
       if (declaration.valueNode) {
-        for (const indexExpression of collectNodes(declaration.valueNode, "index_expression")) {
-          const openBracket = indexExpression.children.find((child) => child.type === "[");
-          const closeBracket = indexExpression.children.find((child) => child.type === "]");
-          const index = indexExpression.childForFieldName("index");
-          if (!openBracket || !closeBracket || !index) {
-            throw new Error("Unable to locate the index expression delimiters");
-          }
-          const afterOpen = source.slice(openBracket.endIndex, index.startIndex);
-          if (afterOpen !== "") {
-            const row = openBracket.endPosition.row;
-            diagnostics.push({
-              filePath,
-              line: row + 1,
-              column: openBracket.endPosition.column + 1,
-              length: Math.max(1, afterOpen.length),
-              rule: "format/index-delimiter-spacing",
-              message: "expected no space after '['",
-              sourceLine: lines[row] ?? "",
-            });
-          }
-          const beforeClose = source.slice(index.endIndex, closeBracket.startIndex);
-          if (beforeClose !== "") {
-            const row = closeBracket.startPosition.row;
-            diagnostics.push({
-              filePath,
-              line: row + 1,
-              column: index.endPosition.column + 1,
-              length: Math.max(1, beforeClose.length),
-              rule: "format/index-delimiter-spacing",
-              message: "expected no space before ']'",
-              sourceLine: lines[row] ?? "",
-            });
-          }
-        }
+        diagnostics.push(...checkIndexExpressions(declaration.valueNode, source, filePath, lines));
 
         for (const fieldAccess of collectNodes(declaration.valueNode, "field_access_expression")) {
           const object = fieldAccess.childForFieldName("object");
