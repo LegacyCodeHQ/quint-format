@@ -1,0 +1,132 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`command-line checker match expressions reports noncanonical match-arm formatting 1`] = `
+"test/fixtures/match-check.qnt:5:12: error[format/match-pattern-spacing]: expected no space after '('
+  |
+5 |     | Some( x )=>x
+  |            ^
+  |
+test/fixtures/match-check.qnt:5:14: error[format/match-pattern-spacing]: expected no space before ')'
+  |
+5 |     | Some( x )=>x
+  |              ^
+  |
+test/fixtures/match-check.qnt:5:16: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+5 |     | Some( x )=>x
+  |                ^^
+  |
+"
+`;
+
+exports[`command-line checker match expressions reports noncanonical match-comment formatting 1`] = `
+"test/fixtures/match-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/match-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | type Step=First|Second
+  | ^
+  |
+test/fixtures/match-comment.qnt:2:10: error[format/equals-spacing]: expected one space around '='
+  |
+2 | type Step=First|Second
+  |          ^
+  |
+test/fixtures/match-comment.qnt:2:16: error[format/type-separator-spacing]: expected one space around '|'
+  |
+2 | type Step=First|Second
+  |                ^
+  |
+test/fixtures/match-comment.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+3 | pure def value(step)=match step{
+  | ^
+  |
+test/fixtures/match-comment.qnt:3:21: error[format/equals-spacing]: expected one space around '='
+  |
+3 | pure def value(step)=match step{
+  |                     ^
+  |
+test/fixtures/match-comment.qnt:5:7: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+5 | |First=>1
+  |       ^^
+  |
+test/fixtures/match-comment.qnt:6:8: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+6 | |Second=>2
+  |        ^^
+  |
+"
+`;
+
+exports[`command-line checker match expressions reports noncanonical match-arm-body comment formatting 1`] = `
+"test/fixtures/match-arm-body-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/match-arm-body-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | type Step=First|Second
+  | ^
+  |
+test/fixtures/match-arm-body-comment.qnt:2:10: error[format/equals-spacing]: expected one space around '='
+  |
+2 | type Step=First|Second
+  |          ^
+  |
+test/fixtures/match-arm-body-comment.qnt:2:16: error[format/type-separator-spacing]: expected one space around '|'
+  |
+2 | type Step=First|Second
+  |                ^
+  |
+test/fixtures/match-arm-body-comment.qnt:3:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+3 | pure def value(step)=match step{
+  | ^
+  |
+test/fixtures/match-arm-body-comment.qnt:3:21: error[format/equals-spacing]: expected one space around '='
+  |
+3 | pure def value(step)=match step{
+  |                     ^
+  |
+test/fixtures/match-arm-body-comment.qnt:4:7: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 | |First=>
+  |       ^^
+  |
+test/fixtures/match-arm-body-comment.qnt:7:8: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+7 | |Second=>2
+  |        ^^
+  |
+"
+`;
+
+exports[`command-line checker match expressions reports an inline match layout 1`] = `
+"test/fixtures/match-expression.qnt:4:56: error[format/match-layout]: expected match arms and the closing brace on separate lines
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                        ^
+  |
+test/fixtures/match-expression.qnt:4:64: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                ^^
+  |
+test/fixtures/match-expression.qnt:4:72: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                        ^^
+  |
+test/fixtures/match-expression.qnt:4:77: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
+  |                                                                             ^^
+  |
+"
+`;
