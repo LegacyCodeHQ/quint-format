@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "./diagnostics.js";
+import { checkFunctionType } from "./function-type-checker.js";
 import { checkOperatorType } from "./operator-type-checker.js";
 import { checkParenthesizedType } from "./parenthesized-type-checker.js";
 import { checkSumType } from "./sum-type-checker.js";
@@ -24,32 +25,7 @@ export function checkTypeDelimiterSpacing(
   if (checkSumType(node, context)) return;
   if (checkParenthesizedType(node, context)) return;
   if (checkOperatorType(node, context)) return;
-
-  if (node.type === "function_type") {
-    const parameter = node.childForFieldName("parameter");
-    const result = node.childForFieldName("result");
-    const arrow = node.children.find((child) => child.type === "->");
-    if (!parameter || !result || !arrow) {
-      throw new Error("Unable to locate the function type operator");
-    }
-    const beforeArrow = source.slice(parameter.endIndex, arrow.startIndex);
-    const afterArrow = source.slice(arrow.endIndex, result.startIndex);
-    if (beforeArrow !== " " || afterArrow !== " ") {
-      const row = arrow.startPosition.row;
-      diagnostics.push({
-        filePath,
-        line: row + 1,
-        column: arrow.startPosition.column + 1,
-        length: 2,
-        rule: "format/type-operator-spacing",
-        message: "expected one space around '->'",
-        sourceLine: lines[row] ?? "",
-      });
-    }
-    checkTypeDelimiterSpacing(parameter, source, lines, filePath, diagnostics);
-    checkTypeDelimiterSpacing(result, source, lines, filePath, diagnostics);
-    return;
-  }
+  if (checkFunctionType(node, context)) return;
 
   if (node.type === "record_type") {
     const openBrace = node.children.find((child) => child.type === "{");
