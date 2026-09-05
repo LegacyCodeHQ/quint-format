@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker comments and comment layout reports noncanonical leading line-comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical leading line-comment formatting 1`] = `
 "test/fixtures/leading-line-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 2 | // The answer
@@ -19,7 +19,7 @@ test/fixtures/leading-line-comment.qnt:3:11: error[format/equals-spacing]: expec
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical documentation-comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical documentation-comment formatting 1`] = `
 "test/fixtures/documentation-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 2 | /// The answer
@@ -38,7 +38,7 @@ test/fixtures/documentation-comment.qnt:3:11: error[format/equals-spacing]: expe
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical block-comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical block-comment formatting 1`] = `
 "test/fixtures/block-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 2 | /* The answer */
@@ -57,7 +57,7 @@ test/fixtures/block-comment.qnt:3:11: error[format/equals-spacing]: expected one
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical multiline block-comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical multiline block-comment formatting 1`] = `
 "test/fixtures/multiline-block-comment.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 2 | /*
@@ -76,7 +76,7 @@ test/fixtures/multiline-block-comment.qnt:5:11: error[format/equals-spacing]: ex
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical module documentation-comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical module documentation-comment formatting 1`] = `
 "test/fixtures/module-documentation-comment.qnt:1:1: error[format/comment-indentation]: expected no indentation at the source level
   |
 1 |  /// Module documentation
@@ -90,7 +90,7 @@ test/fixtures/module-documentation-comment.qnt:2:16: error[format/empty-module]:
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical trailing line-comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical trailing line-comment formatting 1`] = `
 "test/fixtures/trailing-line-comment.qnt:2:18: error[format/comment-spacing]: expected one space before a trailing comment
   |
 2 |   val answer = 42// The answer
@@ -99,7 +99,7 @@ exports[`command-line checker comments and comment layout reports noncanonical t
 "
 `;
 
-exports[`command-line checker comments and comment layout reports a misindented trailing module-body comment 1`] = `
+exports[`checker diagnostics comments and comment layout reports a misindented trailing module-body comment 1`] = `
 "test/fixtures/trailing-module-comment.qnt:4:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 4 | // Kept for future work
@@ -108,7 +108,7 @@ exports[`command-line checker comments and comment layout reports a misindented 
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical trailing source comments 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical trailing source comments 1`] = `
 "test/fixtures/trailing-source-comments.qnt:3:1: error[format/comment-indentation]: expected no indentation at the source level
   |
 3 |  /*! answer !*/
@@ -127,7 +127,7 @@ test/fixtures/trailing-source-comments.qnt:4:1: error[format/source-comment-sepa
 "
 `;
 
-exports[`command-line checker comments and comment layout reports a misindented comment-only module 1`] = `
+exports[`checker diagnostics comments and comment layout reports a misindented comment-only module 1`] = `
 "test/fixtures/comment-only-module.qnt:2:1: error[format/comment-indentation]: expected 2 spaces of indentation
   |
 2 | // Intentionally empty
@@ -136,7 +136,7 @@ exports[`command-line checker comments and comment layout reports a misindented 
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical inline-comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical inline-comment formatting 1`] = `
 "test/fixtures/inline-comment.qnt:2:16: error[format/comment-spacing]: expected one space before an inline comment
   |
 2 |   val total = 1/* left */+2
@@ -150,7 +150,7 @@ test/fixtures/inline-comment.qnt:2:26: error[format/binary-operator-spacing]: ex
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical binary-right comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical binary-right comment formatting 1`] = `
 "test/fixtures/binary-right-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -169,7 +169,7 @@ test/fixtures/binary-right-comment.qnt:2:16: error[format/equals-spacing]: expec
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical nested-definition comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical nested-definition comment formatting 1`] = `
 "test/fixtures/nested-definition-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -193,7 +193,7 @@ test/fixtures/nested-definition-comment.qnt:3:11: error[format/equals-spacing]: 
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical local trailing-comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical local trailing-comment formatting 1`] = `
 "test/fixtures/local-definition-trailing-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -222,7 +222,7 @@ test/fixtures/local-definition-trailing-comment.qnt:4:1: error[format/nested-def
 "
 `;
 
-exports[`command-line checker comments and comment layout reports noncanonical local definition-body comment formatting 1`] = `
+exports[`checker diagnostics comments and comment layout reports noncanonical local definition-body comment formatting 1`] = `
 "test/fixtures/local-definition-body-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
