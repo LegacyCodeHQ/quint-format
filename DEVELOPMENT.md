@@ -23,11 +23,15 @@ bun run check
 bun run build
 bun run format
 bun test
+bun run test:coverage
 bun run test:official -- /path/to/quint/examples
 ```
 
 The official-corpus check verifies parse-tree preservation, idempotence,
 formatter diagnostics, and acceptance by the Quint parser.
+
+The coverage command prints a source-only report, writes
+`coverage/lcov.info`, and enforces the thresholds in `bunfig.toml`.
 
 Formatter changes follow the check, reference-parser, fix, reference-parser
 workflow documented in [AGENTS.md](AGENTS.md).

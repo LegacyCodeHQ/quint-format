@@ -42,6 +42,7 @@
     "format:check": "biome format .",
     "lint": "biome lint .",
     "test": "bun test",
+    "test:coverage": "bun test --coverage",
     "prepack": "npm run build",
     "prepublishOnly": "bun test && bun run check",
     "test:official": "bun scripts/check-official-examples.ts",
