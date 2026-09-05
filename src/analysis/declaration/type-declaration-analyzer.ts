@@ -1,9 +1,9 @@
 import type Parser from "tree-sitter";
-import type { ModuleDeclaration } from "./analysis.js";
-import { commentDocument } from "./comments.js";
-import { concat, type Doc, hardLine, indent, text } from "./document.js";
-import { formatExpandedRecordType } from "./record-type-formatter.js";
-import { formatSumVariant, formatType } from "./type-formatter.js";
+import type { ModuleDeclaration } from "../../analysis.js";
+import { commentDocument } from "../../comments.js";
+import { concat, type Doc, hardLine, indent, text } from "../../document.js";
+import { formatExpandedRecordType } from "../../record-type-formatter.js";
+import { formatSumVariant, formatType } from "../../type-formatter.js";
 
 export function analyzeTypeDeclaration(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
   if (node.type === "uninterpreted_type_declaration") {

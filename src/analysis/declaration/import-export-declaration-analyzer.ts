@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
-import type { ModuleDeclaration } from "./analysis.js";
-import { text } from "./document.js";
-import { formatPattern } from "./pattern-formatter.js";
+import type { ModuleDeclaration } from "../../analysis.js";
+import { text } from "../../document.js";
+import { formatPattern } from "../../pattern-formatter.js";
 
 const importExportDeclarationTypes = new Set([
   "module_import_declaration",

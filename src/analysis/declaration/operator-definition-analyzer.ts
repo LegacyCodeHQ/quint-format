@@ -1,9 +1,9 @@
 import type Parser from "tree-sitter";
-import { analyzeExpression } from "./analysis/expression/expression-analyzer.js";
-import type { ModuleDeclaration } from "./analysis.js";
-import { definitionBodyDocument } from "./definition-body-formatter.js";
-import { concat, hardLine, indent, text } from "./document.js";
-import { canFormatType, formatType } from "./type-formatter.js";
+import type { ModuleDeclaration } from "../../analysis.js";
+import { definitionBodyDocument } from "../../definition-body-formatter.js";
+import { concat, hardLine, indent, text } from "../../document.js";
+import { canFormatType, formatType } from "../../type-formatter.js";
+import { analyzeExpression } from "../expression/expression-analyzer.js";
 
 export function analyzeOperatorDefinition(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
   if (node.type !== "operator_definition") return undefined;

@@ -1,13 +1,13 @@
 import type Parser from "tree-sitter";
+import { analyzeAssumptionDeclaration } from "./analysis/declaration/assumption-declaration-analyzer.js";
+import { analyzeImportExportDeclaration } from "./analysis/declaration/import-export-declaration-analyzer.js";
+import { analyzeModuleInstance } from "./analysis/declaration/module-instance-analyzer.js";
+import { analyzeOperatorDefinition } from "./analysis/declaration/operator-definition-analyzer.js";
+import { analyzeTypeDeclaration } from "./analysis/declaration/type-declaration-analyzer.js";
+import { analyzeValueDefinition } from "./analysis/declaration/value-definition-analyzer.js";
+import { analyzeVariableDeclaration } from "./analysis/declaration/variable-declaration-analyzer.js";
 import type { AnalyzedModule } from "./analysis.js";
-import { analyzeAssumptionDeclaration } from "./assumption-declaration-analyzer.js";
-import { analyzeImportExportDeclaration } from "./import-export-declaration-analyzer.js";
 import { ModuleDeclarationCollector } from "./module-declaration-collector.js";
-import { analyzeModuleInstance } from "./module-instance-analyzer.js";
-import { analyzeOperatorDefinition } from "./operator-definition-analyzer.js";
-import { analyzeTypeDeclaration } from "./type-declaration-analyzer.js";
-import { analyzeValueDefinition } from "./value-definition-analyzer.js";
-import { analyzeVariableDeclaration } from "./variable-declaration-analyzer.js";
 
 export function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule {
   const nameNode = moduleNode.childForFieldName("name");
