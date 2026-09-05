@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "./diagnostics.js";
+import { checkParenthesizedType } from "./parenthesized-type-checker.js";
 import { checkSumType } from "./sum-type-checker.js";
 import type { TypeCheckContext } from "./type-check-context.js";
 import { checkUnitType } from "./unit-type-checker.js";
@@ -20,43 +21,7 @@ export function checkTypeDelimiterSpacing(
   };
   if (checkUnitType(node, context)) return;
   if (checkSumType(node, context)) return;
-
-  if (node.type === "parenthesized_type") {
-    const openParen = node.children.find((child) => child.type === "(");
-    const closeParen = node.children.find((child) => child.type === ")");
-    const innerType = node.childForFieldName("type");
-    if (!openParen || !closeParen || !innerType) {
-      throw new Error("Unable to locate the parenthesized type delimiters");
-    }
-    const afterOpenParen = source.slice(openParen.endIndex, innerType.startIndex);
-    if (afterOpenParen !== "") {
-      const row = openParen.endPosition.row;
-      diagnostics.push({
-        filePath,
-        line: row + 1,
-        column: openParen.endPosition.column + 1,
-        length: Math.max(1, afterOpenParen.length),
-        rule: "format/type-delimiter-spacing",
-        message: "expected no space after '('",
-        sourceLine: lines[row] ?? "",
-      });
-    }
-    checkTypeDelimiterSpacing(innerType, source, lines, filePath, diagnostics);
-    const beforeCloseParen = source.slice(innerType.endIndex, closeParen.startIndex);
-    if (beforeCloseParen !== "") {
-      const row = closeParen.startPosition.row;
-      diagnostics.push({
-        filePath,
-        line: row + 1,
-        column: innerType.endPosition.column + 1,
-        length: Math.max(1, beforeCloseParen.length),
-        rule: "format/type-delimiter-spacing",
-        message: "expected no space before ')'",
-        sourceLine: lines[row] ?? "",
-      });
-    }
-    return;
-  }
+  if (checkParenthesizedType(node, context)) return;
 
   if (node.type === "operator_type") {
     const parameters = node.childrenForFieldName("parameter");
