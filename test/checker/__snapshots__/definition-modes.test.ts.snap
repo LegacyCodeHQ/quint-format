@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`command-line checker definition modes reports noncanonical pure-definition formatting 1`] = `
+exports[`checker diagnostics definition modes reports noncanonical pure-definition formatting 1`] = `
 "test/fixtures/pure-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |
 2 |   pure   def answer=42
@@ -14,7 +14,7 @@ test/fixtures/pure-definition.qnt:2:20: error[format/equals-spacing]: expected o
 "
 `;
 
-exports[`command-line checker definition modes reports noncanonical pure-value formatting 1`] = `
+exports[`checker diagnostics definition modes reports noncanonical pure-value formatting 1`] = `
 "test/fixtures/pure-value-definition.qnt:2:7: error[format/qualifier-spacing]: expected one space after 'pure'
   |
 2 |   pure   val answer=42
@@ -28,7 +28,7 @@ test/fixtures/pure-value-definition.qnt:2:20: error[format/equals-spacing]: expe
 "
 `;
 
-exports[`command-line checker definition modes reports noncanonical action formatting 1`] = `
+exports[`checker diagnostics definition modes reports noncanonical action formatting 1`] = `
 "test/fixtures/action-definition.qnt:2:20: error[format/equals-spacing]: expected one space around '='
   |
 2 |   action initialize=true
@@ -37,7 +37,7 @@ exports[`command-line checker definition modes reports noncanonical action forma
 "
 `;
 
-exports[`command-line checker definition modes reports noncanonical definition-body comment formatting 1`] = `
+exports[`checker diagnostics definition modes reports noncanonical definition-body comment formatting 1`] = `
 "test/fixtures/definition-body-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Example{
@@ -56,7 +56,7 @@ test/fixtures/definition-body-comment.qnt:2:12: error[format/equals-spacing]: ex
 "
 `;
 
-exports[`command-line checker definition modes reports noncanonical run formatting 1`] = `
+exports[`checker diagnostics definition modes reports noncanonical run formatting 1`] = `
 "test/fixtures/run-definition.qnt:2:15: error[format/equals-spacing]: expected one space around '='
   |
 2 |   run scenario=true
@@ -65,7 +65,7 @@ exports[`command-line checker definition modes reports noncanonical run formatti
 "
 `;
 
-exports[`command-line checker definition modes reports noncanonical temporal formatting 1`] = `
+exports[`checker diagnostics definition modes reports noncanonical temporal formatting 1`] = `
 "test/fixtures/temporal-definition.qnt:2:21: error[format/equals-spacing]: expected one space around '='
   |
 2 |   temporal invariant=true
@@ -74,7 +74,7 @@ exports[`command-line checker definition modes reports noncanonical temporal for
 "
 `;
 
-exports[`command-line checker definition modes reports noncanonical nondet formatting 1`] = `
+exports[`checker diagnostics definition modes reports noncanonical nondet formatting 1`] = `
 "test/fixtures/nondet-definition.qnt:2:19: error[format/equals-spacing]: expected one space around '='
   |
 2 |   nondet selection=true
@@ -83,7 +83,7 @@ exports[`command-line checker definition modes reports noncanonical nondet forma
 "
 `;
 
-exports[`command-line checker definition modes reports noncanonical empty parameter lists 1`] = `
+exports[`checker diagnostics definition modes reports noncanonical empty parameter lists 1`] = `
 "test/fixtures/empty-parameter-lists.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |
 2 |  action step(  ) :bool=true
@@ -177,7 +177,7 @@ test/fixtures/empty-parameter-lists.qnt:5:23: error[format/equals-spacing]: expe
 "
 `;
 
-exports[`command-line checker definition modes reports noncanonical rich definitions across every mode 1`] = `
+exports[`checker diagnostics definition modes reports noncanonical rich definitions across every mode 1`] = `
 "test/fixtures/definition-matrix.qnt:1:14: error[format/module-brace-spacing]: expected one space before '{'
   |
 1 | module Matrix{
