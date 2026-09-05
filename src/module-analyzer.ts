@@ -5,8 +5,9 @@ import {
   leadingCommentsDocument,
   preservesTrailingCommentAlignment,
 } from "./comments.js";
+import { definitionBodyDocument } from "./definition-body-formatter.js";
 import { concat, type Doc, hardLine, indent, text } from "./document.js";
-import { analyzeExpression, definitionBodyDocument } from "./expression-analyzer.js";
+import { analyzeExpression } from "./expression-analyzer.js";
 import { formatPattern } from "./pattern-formatter.js";
 import { formatExpandedRecordType } from "./record-type-formatter.js";
 import { canFormatType, formatSumVariant, formatType } from "./type-formatter.js";
