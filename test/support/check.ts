@@ -11,6 +11,10 @@ export function checkFixture(name: string): FixtureCheckResult {
   const filePath = `test/fixtures/${name}`;
   const source = readFileSync(new URL(`../fixtures/${name}`, import.meta.url), "utf8");
 
+  return checkSource(source, filePath);
+}
+
+export function checkSource(source: string, filePath: string): FixtureCheckResult {
   try {
     const diagnostics = checkQuint(source, filePath);
     return {
