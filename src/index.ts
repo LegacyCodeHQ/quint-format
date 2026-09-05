@@ -56,6 +56,7 @@ import { checkTypeAnnotations } from "./type-annotation-checker.js";
 import { checkTypeDelimiterSpacing } from "./type-checker.js";
 import { canFormatType, formatSumVariant, formatType } from "./type-formatter.js";
 import { checkTypeParameters } from "./type-parameter-checker.js";
+import { checkUnitLiterals } from "./unit-literal-checker.js";
 
 export { type FormatDiagnostic, renderDiagnostic } from "./diagnostics.js";
 export { QuintSyntaxError } from "./parser.js";
@@ -2581,26 +2582,9 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         ...checkBinaryExpressions(declaration.binaryOperators ?? [], source, filePath, lines),
       );
 
-      for (const unitLiteral of declaration.unitLiterals ?? []) {
-        const openParen = unitLiteral.children.find((child) => child.type === "(");
-        const closeParen = unitLiteral.children.find((child) => child.type === ")");
-        if (!openParen || !closeParen) {
-          throw new Error("Unable to locate the unit literal delimiters");
-        }
-        const insideParentheses = source.slice(openParen.endIndex, closeParen.startIndex);
-        if (insideParentheses !== "") {
-          const row = openParen.endPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: openParen.endPosition.column + 1,
-            length: Math.max(1, insideParentheses.length),
-            rule: "format/expression-delimiter-spacing",
-            message: "expected no space inside '()'",
-            sourceLine: lines[row] ?? "",
-          });
-        }
-      }
+      diagnostics.push(
+        ...checkUnitLiterals(declaration.unitLiterals ?? [], source, filePath, lines),
+      );
 
       diagnostics.push(
         ...checkSequenceLiterals(declaration.sequenceLiterals ?? [], source, filePath, lines),
