@@ -8,12 +8,10 @@ import { indentBy } from "./definition-body-formatter.js";
 import { concat, type Doc, group, hardLine, indent, line, renderDoc, text } from "./document.js";
 import { analyzeLambdaExpression } from "./lambda-expression-analyzer.js";
 import { analyzeLiteralExpression } from "./literal-expression-analyzer.js";
-import { analyzeLocalDefinition } from "./local-definition-analyzer.js";
 import { analyzeMatchExpression } from "./match-expression-analyzer.js";
+import { analyzeNestedDefinitionExpression } from "./nested-definition-expression-analyzer.js";
 import { analyzeOperatorExpression } from "./operator-expression-analyzer.js";
 import {
-  compactNestedBlockExpression,
-  isCompactNondetSequence,
   isMultilineLambdaExpression,
   isMultilineParenthesizedPostfixReceiver,
   isMultilineUfcsContinuation,
@@ -55,77 +53,8 @@ function analyzeExpressionWithClosingComment(
   const assignmentAnalysis = analyzeAssignmentExpression(node, analyzeExpression);
   if (assignmentAnalysis) return assignmentAnalysis;
 
-  if (node.type === "nested_definition_expression") {
-    const definition = node.childForFieldName("definition");
-    const body = node.childForFieldName("body");
-    if (!definition || !body) {
-      throw new Error("Unable to locate the nested definition or body");
-    }
-    const definitionAnalysis = analyzeLocalDefinition(definition, analyzeExpression);
-    const bodyAnalysis = analyzeExpression(body);
-    const compactBlockExpression = compactNestedBlockExpression(definition, body);
-    const compactBlockAnalysis = compactBlockExpression
-      ? analyzeExpression(compactBlockExpression)
-      : null;
-    const comments = node.namedChildren.filter(
-      (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
-        child.startIndex >= definition.endIndex &&
-        child.endIndex <= body.startIndex,
-    );
-    const definitionValue =
-      definition.childForFieldName("value") ?? definition.childForFieldName("body");
-    const trailingDefinitionComments = comments.filter(
-      (comment) => comment.startPosition.row === definitionValue?.endPosition.row,
-    );
-    const leadingBodyComments = comments.filter(
-      (comment) => comment.startPosition.row !== definitionValue?.endPosition.row,
-    );
-    const semicolon = definition.children.find((child) => child.type === ";");
-    let trailingCommentAnchor =
-      semicolon?.endIndex ?? definitionValue?.endIndex ?? definition.endIndex;
-    const definitionDocument = concat([
-      definitionAnalysis.document,
-      ...trailingDefinitionComments.flatMap((comment) => {
-        const gap = node.text.slice(
-          trailingCommentAnchor - node.startIndex,
-          comment.startIndex - node.startIndex,
-        );
-        trailingCommentAnchor = comment.endIndex;
-        return [text(gap), commentDocument(comment)];
-      }),
-    ]);
-    const firstComment = leadingBodyComments[0];
-    const preservesLeadingCommentGap = Boolean(
-      firstComment &&
-        definitionValue &&
-        firstComment.startPosition.row > definitionValue.endPosition.row + 1,
-    );
-    const preservesBodyGap =
-      leadingBodyComments.length === 0 &&
-      definitionValue !== null &&
-      body.startPosition.row > definitionValue.endPosition.row + 1;
-    const preservesCompactNondetSequence = isCompactNondetSequence(definition, body);
-    const analyses = [definitionAnalysis, bodyAnalysis];
-    return {
-      document: compactBlockAnalysis
-        ? concat([definitionDocument, text(" { "), compactBlockAnalysis.document, text(" }")])
-        : preservesCompactNondetSequence
-          ? concat([definitionDocument, text(semicolon ? "; " : " "), bodyAnalysis.document])
-          : concat([
-              definitionDocument,
-              hardLine,
-              ...(preservesBodyGap || preservesLeadingCommentGap ? [hardLine] : []),
-              ...leadingBodyComments.flatMap((comment) => [commentDocument(comment), hardLine]),
-              bodyAnalysis.document,
-            ]),
-      binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
-      unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),
-      sequenceLiterals: analyses.flatMap((analysis) => analysis.sequenceLiterals),
-      recordLiterals: analyses.flatMap((analysis) => analysis.recordLiterals),
-      callExpressions: analyses.flatMap((analysis) => analysis.callExpressions),
-    };
-  }
+  const nestedDefinitionAnalysis = analyzeNestedDefinitionExpression(node, analyzeExpression);
+  if (nestedDefinitionAnalysis) return nestedDefinitionAnalysis;
 
   if (node.type === "block_expression") {
     const bindings = node.childrenForFieldName("binding");
