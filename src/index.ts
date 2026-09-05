@@ -1,4 +1,10 @@
 import type Parser from "tree-sitter";
+import type {
+  AnalyzedModule,
+  AnalyzedSource,
+  ExpressionAnalysis,
+  ModuleDeclaration,
+} from "./analysis.js";
 import {
   commentDocument,
   leadingCommentsDocument,
@@ -42,64 +48,6 @@ function positionAtIndex(source: string, index: number) {
   const lines = source.slice(0, index).split(/\r\n|\r|\n/);
   const lastLine = lines.at(-1) ?? "";
   return { row: lines.length - 1, column: Array.from(lastLine).length };
-}
-
-interface ModuleDeclaration {
-  node: Parser.SyntaxNode;
-  leadingComments?: Parser.SyntaxNode[];
-  trailingComments?: Parser.SyntaxNode[];
-  qualifier?: Parser.SyntaxNode;
-  keyword: Parser.SyntaxNode;
-  nameNode: Parser.SyntaxNode;
-  colon?: Parser.SyntaxNode;
-  typeNode?: Parser.SyntaxNode;
-  typeAnchor?: Parser.SyntaxNode;
-  typeRoots?: Parser.SyntaxNode[];
-  openParen?: Parser.SyntaxNode;
-  closeParen?: Parser.SyntaxNode;
-  parameters?: Parser.SyntaxNode[];
-  parameterCommas?: Parser.SyntaxNode[];
-  expandedParameterList?: boolean;
-  typeOpenBracket?: Parser.SyntaxNode;
-  typeCloseBracket?: Parser.SyntaxNode;
-  typeParameters?: Parser.SyntaxNode[];
-  typeParameterCommas?: Parser.SyntaxNode[];
-  aliasNode?: Parser.SyntaxNode;
-  asKeyword?: Parser.SyntaxNode;
-  dot?: Parser.SyntaxNode;
-  selectorNode?: Parser.SyntaxNode;
-  fromKeyword?: Parser.SyntaxNode;
-  sourceNode?: Parser.SyntaxNode;
-  instanceOpenParen?: Parser.SyntaxNode;
-  instanceCloseParen?: Parser.SyntaxNode;
-  instanceOverrides?: Parser.SyntaxNode[];
-  instanceCommas?: Parser.SyntaxNode[];
-  semicolon?: Parser.SyntaxNode;
-  equals?: Parser.SyntaxNode;
-  valueNode?: Parser.SyntaxNode;
-  binaryOperators?: BinaryOperator[];
-  unitLiterals?: Parser.SyntaxNode[];
-  sequenceLiterals?: Parser.SyntaxNode[];
-  recordLiterals?: Parser.SyntaxNode[];
-  callExpressions?: Parser.SyntaxNode[];
-  document: Doc;
-}
-
-interface BinaryOperator {
-  node: Parser.SyntaxNode;
-  left: Parser.SyntaxNode;
-  right: Parser.SyntaxNode;
-  inlineComments: Parser.SyntaxNode[];
-  rightComments: Parser.SyntaxNode[];
-}
-
-interface ExpressionAnalysis {
-  document: Doc;
-  binaryOperators: BinaryOperator[];
-  unitLiterals: Parser.SyntaxNode[];
-  sequenceLiterals: Parser.SyntaxNode[];
-  recordLiterals: Parser.SyntaxNode[];
-  callExpressions: Parser.SyntaxNode[];
 }
 
 function indentBy(document: Doc, levels: number): Doc {
@@ -1731,7 +1679,7 @@ function analyzeExpressionWithClosingComment(
   throw new Error("Formatting this expression syntax is not implemented yet");
 }
 
-function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
+function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule {
   const nameNode = moduleNode.childForFieldName("name");
 
   if (moduleNode.type !== "module_definition" || nameNode?.type !== "identifier") {
@@ -2531,13 +2479,11 @@ function analyzeModuleNode(moduleNode: Parser.SyntaxNode) {
   };
 }
 
-function analyzeSource(source: string) {
+function analyzeSource(source: string): AnalyzedSource {
   const root = parseQuint(source);
   let hashbang: Parser.SyntaxNode | undefined;
   let pendingComments: Parser.SyntaxNode[] = [];
-  const modules: Array<
-    ReturnType<typeof analyzeModuleNode> & { leadingComments: Parser.SyntaxNode[] }
-  > = [];
+  const modules: AnalyzedSource["modules"] = [];
 
   for (const node of root.namedChildren) {
     if (
@@ -5072,7 +5018,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
   return diagnostics.sort((left, right) => left.line - right.line || left.column - right.column);
 }
 
-function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
+function renderModule(module: AnalyzedModule): string {
   const declarations = module.declarations.flatMap((declaration, index, allDeclarations) => {
     if (index === 0) {
       const firstContent = declaration.leadingComments?.[0] ?? declaration.node;
@@ -5114,7 +5060,7 @@ function renderModule(module: ReturnType<typeof analyzeModuleNode>): string {
   );
 }
 
-function renderSource(source: ReturnType<typeof analyzeSource>): string {
+function renderSource(source: AnalyzedSource): string {
   const hashbang = source.hashbang ? `${source.hashbang.text}\n` : "";
   const modules = source.modules.map((module) => {
     const leadingComments = renderDoc(leadingCommentsDocument(module.leadingComments, module.node));
