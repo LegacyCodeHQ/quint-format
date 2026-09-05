@@ -1,5 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "./diagnostics.js";
+import type { TypeCheckContext } from "./type-check-context.js";
+import { checkUnitType } from "./unit-type-checker.js";
 
 export function checkTypeDelimiterSpacing(
   node: Parser.SyntaxNode,
@@ -8,27 +10,14 @@ export function checkTypeDelimiterSpacing(
   filePath: string,
   diagnostics: FormatDiagnostic[],
 ) {
-  if (node.type === "unit_type") {
-    const openParen = node.children.find((child) => child.type === "(");
-    const closeParen = node.children.find((child) => child.type === ")");
-    if (!openParen || !closeParen) {
-      throw new Error("Unable to locate the unit type delimiters");
-    }
-    const insideParentheses = source.slice(openParen.endIndex, closeParen.startIndex);
-    if (insideParentheses !== "") {
-      const row = openParen.endPosition.row;
-      diagnostics.push({
-        filePath,
-        line: row + 1,
-        column: openParen.endPosition.column + 1,
-        length: Math.max(1, insideParentheses.length),
-        rule: "format/type-delimiter-spacing",
-        message: "expected no space inside '()'",
-        sourceLine: lines[row] ?? "",
-      });
-    }
-    return;
-  }
+  const context: TypeCheckContext = {
+    source,
+    lines,
+    filePath,
+    diagnostics,
+    check: (child) => checkTypeDelimiterSpacing(child, source, lines, filePath, diagnostics),
+  };
+  if (checkUnitType(node, context)) return;
 
   if (node.type === "sum_type") {
     const variants = node.namedChildren.filter((child) => child.type === "sum_type_variant");
