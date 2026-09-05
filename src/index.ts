@@ -29,6 +29,7 @@ import { checkMatchExpressions } from "./match-expression-checker.js";
 import { checkModuleLayout } from "./module-checker.js";
 import { checkModuleInstance } from "./module-instance-checker.js";
 import { checkNamespaceAccess } from "./namespace-access-checker.js";
+import { checkNondetBindings } from "./nondet-binding-checker.js";
 import { checkParameterList } from "./parameter-list-checker.js";
 import { parseQuint } from "./parser.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
@@ -2619,44 +2620,7 @@ export function checkQuint(source: string, filePath: string): FormatDiagnostic[]
         diagnostics.push(...checkNamespaceAccess(declaration.valueNode, source, filePath, lines));
         diagnostics.push(...checkAssignments(declaration.valueNode, source, filePath, lines));
         diagnostics.push(...checkBlockExpressions(declaration.valueNode, filePath, lines));
-
-        for (const binding of collectNodes(declaration.valueNode, "nondet_binding")) {
-          const keyword = binding.children.find((child) => child.type === "nondet");
-          const name = binding.childForFieldName("name");
-          const equals = binding.children.find((child) => child.type === "=");
-          const value = binding.childForFieldName("value");
-          if (!keyword || !name || !equals || !value) {
-            throw new Error("Unable to locate the nondet binding syntax");
-          }
-          const afterKeyword = source.slice(keyword.endIndex, name.startIndex);
-          if (afterKeyword !== " ") {
-            const row = keyword.endPosition.row;
-            diagnostics.push({
-              filePath,
-              line: row + 1,
-              column: keyword.endPosition.column + 1,
-              length: Math.max(1, afterKeyword.length),
-              rule: "format/nondet-binding-spacing",
-              message: "expected one space after 'nondet'",
-              sourceLine: lines[row] ?? "",
-            });
-          }
-          if (
-            source.slice(name.endIndex, equals.startIndex) !== " " ||
-            source.slice(equals.endIndex, value.startIndex) !== " "
-          ) {
-            const row = equals.startPosition.row;
-            diagnostics.push({
-              filePath,
-              line: row + 1,
-              column: equals.startPosition.column + 1,
-              length: 1,
-              rule: "format/nondet-binding-spacing",
-              message: "expected one space around '='",
-              sourceLine: lines[row] ?? "",
-            });
-          }
-        }
+        diagnostics.push(...checkNondetBindings(declaration.valueNode, source, filePath, lines));
 
         for (const nested of collectNodes(declaration.valueNode, "nested_definition_expression")) {
           const definition = nested.childForFieldName("definition");
