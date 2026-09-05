@@ -149,3 +149,13 @@ exports[`declarations and type expressions places declarations on separate lines
 }
 "
 `;
+
+exports[`declarations and type expressions adds a missing trailing comma to a multiline record type 1`] = `
+"module Example {
+  type Pair = {
+    left: int,
+    right: int,
+  }
+}
+"
+`;

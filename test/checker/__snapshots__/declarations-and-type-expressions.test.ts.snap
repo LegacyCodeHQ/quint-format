@@ -271,3 +271,12 @@ exports[`checker diagnostics declarations and type expressions reports adjacent 
   |
 "
 `;
+
+exports[`checker diagnostics declarations and type expressions reports a missing multiline record-type trailing comma 1`] = `
+"test/fixtures/multiline-record-type-missing-comma.qnt:4:15: error[format/multiline-record-separator]: expected a trailing comma after each record field
+  |
+4 |     right: int
+  |               ^
+  |
+"
+`;

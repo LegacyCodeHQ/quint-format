@@ -50,6 +50,28 @@ export function checkRecordType(node: Parser.SyntaxNode, context: TypeCheckConte
   }
 
   const commas = node.children.filter((child) => child.type === ",");
+  if (isExpanded) {
+    for (const [index, field] of fields.entries()) {
+      const nextField = fields[index + 1];
+      const boundary = nextField ?? row ?? closeBrace;
+      const comma = commas.find(
+        (candidate) =>
+          candidate.startIndex >= field.endIndex && candidate.startIndex < boundary.startIndex,
+      );
+      if (!comma || source.slice(field.endIndex, comma.startIndex) !== "") {
+        const row = field.endPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: field.endPosition.column + 1,
+          length: 1,
+          rule: "format/multiline-record-separator",
+          message: "expected a trailing comma after each record field",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
+  }
   for (const [index, comma] of commas.entries()) {
     if (isExpanded) continue;
     const previousField = fields[index];
