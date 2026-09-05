@@ -1,10 +1,10 @@
 import type Parser from "tree-sitter";
-import type { FormatDiagnostic } from "./diagnostics.js";
+import type { FormatDiagnostic } from "../../diagnostics.js";
 import {
   collectNodes,
   compactLambdaBlockExpression,
   compactNestedBlockExpression,
-} from "./syntax.js";
+} from "../../syntax.js";
 
 export function checkBlockExpressions(
   root: Parser.SyntaxNode,

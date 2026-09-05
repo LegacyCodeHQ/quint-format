@@ -1,11 +1,11 @@
 import type Parser from "tree-sitter";
-import type { FormatDiagnostic } from "./diagnostics.js";
+import type { FormatDiagnostic } from "../../diagnostics.js";
 import {
   collectNodes,
   isMultilineUfcsContinuation,
   ufcsChainRoot,
   ufcsContinuationIndentation,
-} from "./syntax.js";
+} from "../../syntax.js";
 
 export function checkFieldAccessExpressions(
   root: Parser.SyntaxNode,

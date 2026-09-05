@@ -1,6 +1,6 @@
 import type Parser from "tree-sitter";
-import type { FormatDiagnostic } from "./diagnostics.js";
-import { isMultilineLambdaExpression, isMultilineUfcsContinuation } from "./syntax.js";
+import type { FormatDiagnostic } from "../../diagnostics.js";
+import { isMultilineLambdaExpression, isMultilineUfcsContinuation } from "../../syntax.js";
 
 export function checkCallExpressions(
   callExpressions: Parser.SyntaxNode[],

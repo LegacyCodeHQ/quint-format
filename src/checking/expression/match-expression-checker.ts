@@ -1,6 +1,6 @@
 import type Parser from "tree-sitter";
-import type { FormatDiagnostic } from "./diagnostics.js";
-import { collectNodes, isCompactDefaultMatch } from "./syntax.js";
+import type { FormatDiagnostic } from "../../diagnostics.js";
+import { collectNodes, isCompactDefaultMatch } from "../../syntax.js";
 
 export function checkMatchExpressions(
   root: Parser.SyntaxNode,

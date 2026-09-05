@@ -1,7 +1,11 @@
 import type Parser from "tree-sitter";
-import type { FormatDiagnostic } from "./diagnostics.js";
+import type { FormatDiagnostic } from "../../diagnostics.js";
+import {
+  collectNodes,
+  compactNestedBlockExpression,
+  isCompactNondetSequence,
+} from "../../syntax.js";
 import { checkLocalDefinition } from "./local-definition-checker.js";
-import { collectNodes, compactNestedBlockExpression, isCompactNondetSequence } from "./syntax.js";
 
 export function checkNestedDefinitions(
   root: Parser.SyntaxNode,
