@@ -12,6 +12,7 @@ import { analyzeExpression } from "./expression-analyzer.js";
 import { formatPattern } from "./pattern-formatter.js";
 import { formatExpandedRecordType } from "./record-type-formatter.js";
 import { canFormatType, formatSumVariant, formatType } from "./type-formatter.js";
+import { analyzeValueDefinition } from "./value-definition-analyzer.js";
 
 export function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule {
   const nameNode = moduleNode.childForFieldName("name");
@@ -109,51 +110,9 @@ export function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule
       continue;
     }
 
-    if (node.type === "value_definition") {
-      const qualifier = node.childForFieldName("qualifier");
-      const keyword = node.children.find((child) => child.type === "val");
-      const declarationName = node.childForFieldName("name");
-      const declarationType = node.childForFieldName("type");
-      const value = node.childForFieldName("value");
-      const colon = node.children.find((child) => child.type === ":");
-      const equals = node.children.find((child) => child.type === "=");
-      const semicolon = node.children.find((child) => child.type === ";");
-      if (
-        !keyword ||
-        !declarationName ||
-        !equals ||
-        !value ||
-        (qualifier && qualifier.type !== "pure") ||
-        Boolean(declarationType) !== Boolean(colon)
-      ) {
-        throw new Error("Formatting this value definition syntax is not implemented yet");
-      }
-
-      const expression = analyzeExpression(value);
-      const typeAnnotation = declarationType ? `: ${formatType(declarationType)}` : "";
-      addDeclaration({
-        node,
-        qualifier: qualifier ?? undefined,
-        keyword,
-        nameNode: declarationName,
-        colon: colon ?? undefined,
-        typeNode: declarationType ?? undefined,
-        typeRoots: declarationType ? [declarationType] : undefined,
-        semicolon,
-        equals,
-        valueNode: value,
-        binaryOperators: expression.binaryOperators,
-        unitLiterals: expression.unitLiterals,
-        sequenceLiterals: expression.sequenceLiterals,
-        recordLiterals: expression.recordLiterals,
-        callExpressions: expression.callExpressions,
-        document: definitionBodyDocument(
-          `${qualifier ? "pure " : ""}val ${formatPattern(declarationName)}${typeAnnotation} =`,
-          node,
-          value,
-          expression.document,
-        ),
-      });
+    const valueDefinition = analyzeValueDefinition(node);
+    if (valueDefinition) {
+      addDeclaration(valueDefinition);
       continue;
     }
 
