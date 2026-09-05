@@ -1,12 +1,12 @@
 import type Parser from "tree-sitter";
-import { analyzeAssumptionDeclaration } from "./analysis/declaration/assumption-declaration-analyzer.js";
-import { analyzeImportExportDeclaration } from "./analysis/declaration/import-export-declaration-analyzer.js";
-import { analyzeModuleInstance } from "./analysis/declaration/module-instance-analyzer.js";
-import { analyzeOperatorDefinition } from "./analysis/declaration/operator-definition-analyzer.js";
-import { analyzeTypeDeclaration } from "./analysis/declaration/type-declaration-analyzer.js";
-import { analyzeValueDefinition } from "./analysis/declaration/value-definition-analyzer.js";
-import { analyzeVariableDeclaration } from "./analysis/declaration/variable-declaration-analyzer.js";
-import type { AnalyzedModule } from "./analysis.js";
+import type { AnalyzedModule } from "../analysis.js";
+import { analyzeAssumptionDeclaration } from "./declaration/assumption-declaration-analyzer.js";
+import { analyzeImportExportDeclaration } from "./declaration/import-export-declaration-analyzer.js";
+import { analyzeModuleInstance } from "./declaration/module-instance-analyzer.js";
+import { analyzeOperatorDefinition } from "./declaration/operator-definition-analyzer.js";
+import { analyzeTypeDeclaration } from "./declaration/type-declaration-analyzer.js";
+import { analyzeValueDefinition } from "./declaration/value-definition-analyzer.js";
+import { analyzeVariableDeclaration } from "./declaration/variable-declaration-analyzer.js";
 import { ModuleDeclarationCollector } from "./module-declaration-collector.js";
 
 export function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule {

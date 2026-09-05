@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
-import type { AnalyzedSource } from "./analysis.js";
+import type { AnalyzedSource } from "../analysis.js";
+import { parseQuint } from "../parser.js";
 import { analyzeModuleNode } from "./module-analyzer.js";
-import { parseQuint } from "./parser.js";
 
 export function analyzeSource(source: string): AnalyzedSource {
   const root = parseQuint(source);
