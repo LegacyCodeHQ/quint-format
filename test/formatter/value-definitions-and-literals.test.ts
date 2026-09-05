@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import Quint from "@legacycodehq/tree-sitter-quint";
+import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+import { namedParseTreeSignature } from "../support/parse-tree";
+
+const parser = new Parser();
+parser.setLanguage(Quint);
 
 describe("value definitions and literals", () => {
   test("formats an integer value definition", () => {
@@ -79,15 +85,22 @@ describe("value definitions and literals", () => {
     const input = "module Example {\n  val values = [ 1 ,2, ]\n}\n";
     const output = formatQuint(input);
     const compact = "module Example {\n  val values = [1, 2]\n}\n";
+    const padded = "module Example {\n  val values = [ 1, 2 ]\n}\n";
 
-    expect(output).toContain("val values = [ 1, 2 ]");
-    expect(checkQuint(compact, "input.qnt").map(({ rule }) => rule)).toEqual([
+    expect(output).toBe(compact);
+    expect(checkQuint(compact, "formatted.qnt")).toEqual([]);
+    expect(checkQuint(padded, "input.qnt").map(({ rule }) => rule)).toEqual([
       "format/expression-delimiter-spacing",
       "format/expression-delimiter-spacing",
     ]);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
   test("preserves an explicitly expanded list literal", () => {

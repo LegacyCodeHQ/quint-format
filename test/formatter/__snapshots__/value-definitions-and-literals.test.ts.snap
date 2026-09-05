@@ -59,7 +59,7 @@ exports[`value definitions and literals formats a unit literal 1`] = `
 
 exports[`value definitions and literals formats a list literal 1`] = `
 "module Example {
-  val values = [ 1, 2 ]
+  val values = [1, 2]
 }
 "
 `;

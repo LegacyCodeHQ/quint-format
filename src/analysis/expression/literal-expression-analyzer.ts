@@ -78,12 +78,12 @@ export function analyzeLiteralExpression(
             text(closeDelimiter),
           ])
         : concat([
-            text(node.type === "list_literal" && elements.length > 0 ? "[ " : openDelimiter),
+            text(openDelimiter),
             ...analyses.flatMap((analysis, index) => [
               ...(index === 0 ? [] : [text(", ")]),
               analysis.document,
             ]),
-            text(node.type === "list_literal" && elements.length > 0 ? " ]" : closeDelimiter),
+            text(closeDelimiter),
           ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
       unitLiterals: analyses.flatMap((analysis) => analysis.unitLiterals),

@@ -26,7 +26,7 @@ export function checkSequenceLiterals(
     const lastElement = elements.at(-1);
     if (firstElement && lastElement) {
       const afterOpenDelimiter = source.slice(openDelimiter.endIndex, firstElement.startIndex);
-      const expectedOpenGap = isList ? " " : "";
+      const expectedOpenGap = "";
       if (afterOpenDelimiter !== expectedOpenGap) {
         const row = openDelimiter.endPosition.row;
         diagnostics.push({
@@ -35,9 +35,7 @@ export function checkSequenceLiterals(
           column: openDelimiter.endPosition.column + 1,
           length: Math.max(1, afterOpenDelimiter.length),
           rule: "format/expression-delimiter-spacing",
-          message: isList
-            ? "expected one space after '['"
-            : `expected no space after '${openType}'`,
+          message: `expected no space after '${openType}'`,
           sourceLine: lines[row] ?? "",
         });
       }
@@ -78,7 +76,7 @@ export function checkSequenceLiterals(
       const trailingComma = commas.find((comma) => comma.startIndex >= lastElement.endIndex);
       const closeAnchor = trailingComma ?? lastElement;
       const closeGap = source.slice(closeAnchor.endIndex, closeDelimiter.startIndex);
-      const expectedCloseGap = isList ? " " : "";
+      const expectedCloseGap = "";
       if (
         (!trailingComma && beforeCloseDelimiter !== expectedCloseGap) ||
         (trailingComma && closeGap !== expectedCloseGap)
@@ -90,9 +88,7 @@ export function checkSequenceLiterals(
           column: closeAnchor.endPosition.column + 1,
           length: Math.max(1, closeGap.length),
           rule: "format/expression-delimiter-spacing",
-          message: isList
-            ? "expected one space before ']'"
-            : `expected no space before '${closeType}'`,
+          message: `expected no space before '${closeType}'`,
           sourceLine: lines[row] ?? "",
         });
       }

@@ -108,12 +108,7 @@ exports[`checker diagnostics value definitions and literals reports noncanonical
 `;
 
 exports[`checker diagnostics value definitions and literals reports noncanonical list-literal formatting 1`] = `
-"test/fixtures/list-literal.qnt:2:17: error[format/expression-delimiter-spacing]: expected one space after '['
-  |
-2 |   val values = [1 ,2,]
-  |                 ^
-  |
-test/fixtures/list-literal.qnt:2:19: error[format/expression-separator-spacing]: expected ', ' between list elements
+"test/fixtures/list-literal.qnt:2:19: error[format/expression-separator-spacing]: expected ', ' between list elements
   |
 2 |   val values = [1 ,2,]
   |                   ^
@@ -122,11 +117,6 @@ test/fixtures/list-literal.qnt:2:21: error[format/unnecessary-trailing-comma]: t
   |
 2 |   val values = [1 ,2,]
   |                     ^
-  |
-test/fixtures/list-literal.qnt:2:22: error[format/expression-delimiter-spacing]: expected one space before ']'
-  |
-2 |   val values = [1 ,2,]
-  |                      ^
   |
 "
 `;
