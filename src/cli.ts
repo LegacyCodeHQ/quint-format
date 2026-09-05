@@ -3,9 +3,18 @@
 import { randomUUID } from "node:crypto";
 import { readdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { checkQuint, formatQuint, QuintSyntaxError, renderDiagnostic } from "./index.js";
 
-const [command, ...filePaths] = process.argv.slice(2);
+export interface CliOutput {
+  writeStdout(value: string): void;
+  writeStderr(value: string): void;
+}
+
+const processOutput: CliOutput = {
+  writeStdout: (value) => process.stdout.write(value),
+  writeStderr: (value) => process.stderr.write(value),
+};
 
 async function discoverQuintFiles(path: string): Promise<string[]> {
   const metadata = await stat(path);
@@ -36,27 +45,34 @@ async function writeAtomically(filePath: string, contents: string) {
   }
 }
 
-if (command && command !== "--check" && filePaths.length === 0) {
-  try {
-    const source = await readFile(command, "utf8");
-    process.stdout.write(formatQuint(source));
-  } catch (error) {
-    if (error instanceof QuintSyntaxError) {
-      for (const diagnostic of error.diagnostics) {
-        process.stderr.write(renderDiagnostic({ filePath: command, ...diagnostic }));
+export async function runCli(args: string[], output: CliOutput = processOutput): Promise<number> {
+  const [command, ...filePaths] = args;
+
+  if (command && command !== "--check" && filePaths.length === 0) {
+    try {
+      const source = await readFile(command, "utf8");
+      output.writeStdout(formatQuint(source));
+      return 0;
+    } catch (error) {
+      if (error instanceof QuintSyntaxError) {
+        for (const diagnostic of error.diagnostics) {
+          output.writeStderr(renderDiagnostic({ filePath: command, ...diagnostic }));
+        }
+      } else {
+        const message = error instanceof Error ? error.message : String(error);
+        output.writeStderr(`${command}:1:1: error[internal]: ${message}\n`);
       }
-    } else {
-      const message = error instanceof Error ? error.message : String(error);
-      process.stderr.write(`${command}:1:1: error[internal]: ${message}\n`);
+      return 2;
     }
-    process.exitCode = 2;
   }
-} else if ((command !== "--check" && command !== "--write") || filePaths.length === 0) {
-  process.stderr.write(
-    "Usage: quintfmt <file> | quintfmt --check <path>... | quintfmt --write <path>...\n",
-  );
-  process.exitCode = 2;
-} else {
+
+  if ((command !== "--check" && command !== "--write") || filePaths.length === 0) {
+    output.writeStderr(
+      "Usage: quintfmt <file> | quintfmt --check <path>... | quintfmt --write <path>...\n",
+    );
+    return 2;
+  }
+
   let hasFormattingViolations = false;
   let hasOperationalFailure = false;
   const discoveredFilePaths: string[] = [];
@@ -67,7 +83,7 @@ if (command && command !== "--check" && filePaths.length === 0) {
     } catch (error) {
       hasOperationalFailure = true;
       const message = error instanceof Error ? error.message : String(error);
-      process.stderr.write(`${filePath}:1:1: error[internal]: ${message}\n`);
+      output.writeStderr(`${filePath}:1:1: error[internal]: ${message}\n`);
     }
   }
 
@@ -79,7 +95,7 @@ if (command && command !== "--check" && filePaths.length === 0) {
       } else {
         const diagnostics = checkQuint(source, filePath);
         for (const diagnostic of diagnostics) {
-          process.stderr.write(renderDiagnostic(diagnostic));
+          output.writeStderr(renderDiagnostic(diagnostic));
         }
         hasFormattingViolations ||= diagnostics.length > 0;
       }
@@ -87,14 +103,19 @@ if (command && command !== "--check" && filePaths.length === 0) {
       hasOperationalFailure = true;
       if (error instanceof QuintSyntaxError) {
         for (const diagnostic of error.diagnostics) {
-          process.stderr.write(renderDiagnostic({ filePath, ...diagnostic }));
+          output.writeStderr(renderDiagnostic({ filePath, ...diagnostic }));
         }
       } else {
         const message = error instanceof Error ? error.message : String(error);
-        process.stderr.write(`${filePath}:1:1: error[internal]: ${message}\n`);
+        output.writeStderr(`${filePath}:1:1: error[internal]: ${message}\n`);
       }
     }
   }
 
-  process.exitCode = hasOperationalFailure ? 2 : hasFormattingViolations ? 1 : 0;
+  return hasOperationalFailure ? 2 : hasFormattingViolations ? 1 : 0;
+}
+
+const executablePath = process.argv[1];
+if (executablePath && pathToFileURL(executablePath).href === import.meta.url) {
+  process.exitCode = await runCli(process.argv.slice(2));
 }

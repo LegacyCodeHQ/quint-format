@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { projectRoot } from "../support/cli";
+import { projectRoot, runCliInProcess } from "../support/cli";
 
 describe("command-line checker", () => {
   describe("command execution", () => {
@@ -25,75 +25,62 @@ describe("command-line checker", () => {
       expect(result.stderr.toString()).toBe("");
     });
 
-    test("formats one file to standard output", () => {
-      const result = Bun.spawnSync(
-        ["bun", "run", "src/cli.ts", "test/fixtures/compact-empty-module.qnt"],
-        { cwd: projectRoot },
-      );
+    test("formats one file to standard output", async () => {
+      const result = await runCliInProcess("test/fixtures/compact-empty-module.qnt");
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout.toString()).toMatchSnapshot();
-      expect(result.stderr.toString()).toBe("");
+      expect(result.stdout).toMatchSnapshot();
+      expect(result.stderr).toBe("");
     });
 
-    test("writes one file atomically", () => {
+    test("writes one file atomically", async () => {
       const scratch = mkdtempSync(join(tmpdir(), "quint-format-write-"));
       const filePath = join(scratch, "example.qnt");
       writeFileSync(filePath, "module Example {}\n");
 
       try {
-        const result = Bun.spawnSync(["bun", "run", "src/cli.ts", "--write", filePath], {
-          cwd: projectRoot,
-        });
+        const result = await runCliInProcess("--write", filePath);
 
         expect(result.exitCode).toBe(0);
-        expect(result.stdout.toString()).toBe("");
-        expect(result.stderr.toString()).toBe("");
+        expect(result.stdout).toBe("");
+        expect(result.stderr).toBe("");
         expect(readFileSync(filePath, "utf8")).toMatchSnapshot();
       } finally {
         rmSync(scratch, { recursive: true, force: true });
       }
     });
 
-    test("does not replace a file that has invalid syntax", () => {
+    test("does not replace a file that has invalid syntax", async () => {
       const scratch = mkdtempSync(join(tmpdir(), "quint-format-write-error-"));
       const filePath = join(scratch, "invalid.qnt");
       const source = "module Invalid {\n";
       writeFileSync(filePath, source);
 
       try {
-        const result = Bun.spawnSync(["bun", "run", "src/cli.ts", "--write", filePath], {
-          cwd: projectRoot,
-        });
+        const result = await runCliInProcess("--write", filePath);
 
         expect(result.exitCode).toBe(2);
-        expect(result.stdout.toString()).toBe("");
-        expect(result.stderr.toString().replace(filePath, "invalid.qnt")).toMatchSnapshot();
+        expect(result.stdout).toBe("");
+        expect(result.stderr.replace(filePath, "invalid.qnt")).toMatchSnapshot();
         expect(readFileSync(filePath, "utf8")).toBe(source);
       } finally {
         rmSync(scratch, { recursive: true, force: true });
       }
     });
 
-    test("checks multiple files", () => {
-      const result = Bun.spawnSync(
-        [
-          "bun",
-          "run",
-          "src/cli.ts",
-          "--check",
-          "test/fixtures/module-keyword-spacing.qnt",
-          "test/fixtures/module-brace-spacing.qnt",
-        ],
-        { cwd: projectRoot },
+    test("checks multiple files", async () => {
+      const result = await runCliInProcess(
+        "--check",
+        "test/fixtures/module-keyword-spacing.qnt",
+        "test/fixtures/module-brace-spacing.qnt",
       );
 
       expect(result.exitCode).toBe(1);
-      expect(result.stdout.toString()).toBe("");
-      expect(result.stderr.toString()).toMatchSnapshot();
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toMatchSnapshot();
     });
 
-    test("discovers Quint files recursively", () => {
+    test("discovers Quint files recursively", async () => {
       const scratch = mkdtempSync(join(tmpdir(), "quint-format-discovery-"));
       const nested = join(scratch, "nested");
       mkdirSync(nested);
@@ -102,13 +89,11 @@ describe("command-line checker", () => {
       writeFileSync(join(nested, "ignored.txt"), "module Ignored {}\n");
 
       try {
-        const result = Bun.spawnSync(["bun", "run", "src/cli.ts", "--check", scratch], {
-          cwd: projectRoot,
-        });
+        const result = await runCliInProcess("--check", scratch);
 
         expect(result.exitCode).toBe(1);
-        expect(result.stdout.toString()).toBe("");
-        expect(result.stderr.toString().replaceAll(scratch, "fixtures")).toMatchSnapshot();
+        expect(result.stdout).toBe("");
+        expect(result.stderr.replaceAll(scratch, "fixtures")).toMatchSnapshot();
       } finally {
         rmSync(scratch, { recursive: true, force: true });
       }
