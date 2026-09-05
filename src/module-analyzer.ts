@@ -7,9 +7,9 @@ import {
   preservesTrailingCommentAlignment,
 } from "./comments.js";
 import { concat, hardLine, text } from "./document.js";
+import { analyzeImportExportDeclaration } from "./import-export-declaration-analyzer.js";
 import { analyzeModuleInstance } from "./module-instance-analyzer.js";
 import { analyzeOperatorDefinition } from "./operator-definition-analyzer.js";
-import { formatPattern } from "./pattern-formatter.js";
 import { analyzeTypeDeclaration } from "./type-declaration-analyzer.js";
 import { formatType } from "./type-formatter.js";
 import { analyzeValueDefinition } from "./value-definition-analyzer.js";
@@ -133,53 +133,9 @@ export function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule
       addDeclaration(moduleInstance);
       continue;
     }
-    if (
-      node.type === "module_import_declaration" ||
-      node.type === "module_export_declaration" ||
-      node.type === "named_import_declaration" ||
-      node.type === "named_export_declaration" ||
-      node.type === "wildcard_import_declaration" ||
-      node.type === "wildcard_export_declaration"
-    ) {
-      const keywordType = node.type.includes("import") ? "import" : "export";
-      const keyword = node.children.find((child) => child.type === keywordType);
-      const importedModule = node.childForFieldName("module");
-      const alias = node.childForFieldName("alias");
-      const name = node.childForFieldName("name");
-      const asKeyword = node.children.find((child) => child.type === "as");
-      const dot = node.children.find((child) => child.type === ".");
-      const star = node.children.find((child) => child.type === "*");
-      const fromKeyword = node.children.find((child) => child.type === "from");
-      const sourceNode = node.childForFieldName("source");
-      const selector = name ?? star;
-      if (
-        !keyword ||
-        !importedModule ||
-        Boolean(alias) !== Boolean(asKeyword) ||
-        Boolean(sourceNode) !== Boolean(fromKeyword)
-      ) {
-        throw new Error("Unable to locate the import or export declaration");
-      }
-      if (node.type.startsWith("named_") && (!dot || !name)) {
-        throw new Error("Unable to locate the named import or export selector");
-      }
-      if (node.type.startsWith("wildcard_") && (!dot || !star)) {
-        throw new Error("Unable to locate the wildcard import or export selector");
-      }
-      addDeclaration({
-        node,
-        keyword,
-        nameNode: importedModule,
-        aliasNode: alias ?? undefined,
-        asKeyword,
-        dot,
-        selectorNode: selector ?? undefined,
-        fromKeyword,
-        sourceNode: sourceNode ?? undefined,
-        document: text(
-          `${keywordType} ${formatPattern(importedModule)}${dot && selector ? `.${selector.type === "*" ? "*" : formatPattern(selector)}` : ""}${alias ? ` as ${formatPattern(alias)}` : ""}${sourceNode ? ` from ${sourceNode.text}` : ""}`,
-        ),
-      });
+    const importExportDeclaration = analyzeImportExportDeclaration(node);
+    if (importExportDeclaration) {
+      addDeclaration(importExportDeclaration);
       continue;
     }
 
