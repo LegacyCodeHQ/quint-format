@@ -1,0 +1,54 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`command-line checker lambdas reports noncanonical lambda formatting 1`] = `
+"test/fixtures/lambda-check.qnt:2:19: error[format/lambda-parameter-list-spacing]: expected no space after '('
+  |
+2 |   pure val add = ( x ,y )=>x + y
+  |                   ^
+  |
+test/fixtures/lambda-check.qnt:2:22: error[format/lambda-parameter-separator-spacing]: expected ', ' between parameters
+  |
+2 |   pure val add = ( x ,y )=>x + y
+  |                      ^
+  |
+test/fixtures/lambda-check.qnt:2:24: error[format/lambda-parameter-list-spacing]: expected no space before ')'
+  |
+2 |   pure val add = ( x ,y )=>x + y
+  |                        ^
+  |
+test/fixtures/lambda-check.qnt:2:26: error[format/lambda-arrow-spacing]: expected one space around '=>'
+  |
+2 |   pure val add = ( x ,y )=>x + y
+  |                          ^^
+  |
+"
+`;
+
+exports[`command-line checker lambdas reports noncanonical lambda-comment formatting 1`] = `
+"test/fixtures/lambda-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
+  |
+1 | module Example{
+  |               ^
+  |
+test/fixtures/lambda-comment.qnt:2:1: error[format/module-body-indentation]: expected 2 spaces of indentation
+  |
+2 | pure val increment=(value=>
+  | ^
+  |
+test/fixtures/lambda-comment.qnt:2:19: error[format/equals-spacing]: expected one space around '='
+  |
+2 | pure val increment=(value=>
+  |                   ^
+  |
+test/fixtures/lambda-comment.qnt:2:26: error[format/lambda-arrow-spacing]: expected one space around '=>'
+  |
+2 | pure val increment=(value=>
+  |                          ^^
+  |
+test/fixtures/lambda-comment.qnt:4:6: error[format/binary-operator-spacing]: expected one space around '+'
+  |
+4 | value+1)
+  |      ^
+  |
+"
+`;
