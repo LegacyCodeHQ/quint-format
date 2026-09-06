@@ -2,33 +2,39 @@ import Quint from "@legacycodehq/tree-sitter-quint";
 import type Parser from "tree-sitter";
 import type { CommentAttachmentIndex } from "./comment-attachments.js";
 
-const LEGACY_BLOCK_COMBINATOR_TYPES = [
-  "all_expression",
-  "and_block_expression",
-  "any_expression",
-  "or_block_expression",
-];
-
 const blockCombinatorSupertype = Quint.nodeTypeInfo.find(
   (node) => node.type === "_block_combinator_expression" && "subtypes" in node,
 );
-const blockCombinatorTypes = new Set(
-  blockCombinatorSupertype && "subtypes" in blockCombinatorSupertype
-    ? blockCombinatorSupertype.subtypes.map((subtype) => subtype.type)
-    : LEGACY_BLOCK_COMBINATOR_TYPES,
+if (!blockCombinatorSupertype || !("subtypes" in blockCombinatorSupertype)) {
+  throw new Error("The Quint grammar does not declare its block-combinator supertype");
+}
+
+const blockCombinatorEntryFields = new Map(
+  blockCombinatorSupertype.subtypes.map((subtype) => {
+    const nodeType = Quint.nodeTypeInfo.find((candidate) => candidate.type === subtype.type);
+    if (!nodeType || !("fields" in nodeType)) {
+      throw new Error(`The Quint grammar does not describe ${subtype.type}`);
+    }
+    const entryFields = Object.entries(nodeType.fields)
+      .filter(
+        ([, field]) =>
+          field.multiple && field.types.some((childType) => childType.type === "_expression"),
+      )
+      .map(([name]) => name);
+    if (entryFields.length !== 1) {
+      throw new Error(`The Quint grammar does not identify one entry field for ${subtype.type}`);
+    }
+    return [subtype.type, entryFields[0] as string] as const;
+  }),
 );
 
 export function isBlockCombinatorExpression(node: Parser.SyntaxNode): boolean {
-  return blockCombinatorTypes.has(node.type);
+  return blockCombinatorEntryFields.has(node.type);
 }
 
 export function blockCombinatorEntries(node: Parser.SyntaxNode): Parser.SyntaxNode[] {
-  if (!isBlockCombinatorExpression(node)) return [];
-  for (const field of ["entry", "choice", "conjunct", "disjunct"]) {
-    const entries = node.childrenForFieldName(field);
-    if (entries.length > 0) return entries;
-  }
-  return [];
+  const field = blockCombinatorEntryFields.get(node.type);
+  return field ? node.childrenForFieldName(field) : [];
 }
 
 export function collectBlockCombinatorExpressions(node: Parser.SyntaxNode): Parser.SyntaxNode[] {

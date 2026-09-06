@@ -36,7 +36,7 @@ describe("syntax helpers", () => {
     ).toBeNull();
   });
 
-  test("classifies block combinators and reads their legacy entry fields", () => {
+  test("classifies block combinators and reads their grammar-declared entry fields", () => {
     const entry = { id: 2 } as Parser.SyntaxNode;
     const combinator = {
       type: "any_expression",
