@@ -126,6 +126,24 @@ describe("local definitions and nondeterminism", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves a blank line between leading comments and the nested body", () => {
+    const input = readFileSync(
+      new URL("../fixtures/separated-leading-comments-from-body.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("separates a multiline local definition from a following comment block", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-local-comment-gap.qnt", import.meta.url),
