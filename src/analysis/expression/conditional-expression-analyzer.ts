@@ -2,7 +2,7 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
-import { isElseIfBranch } from "@/parsing/syntax.js";
+import { isCompactElseIfLadder, isElseIfBranch } from "@/parsing/syntax.js";
 
 export function analyzeConditionalExpression(
   node: Parser.SyntaxNode,
@@ -65,6 +65,7 @@ export function analyzeConditionalExpression(
       closeParen.startPosition.row > condition.endPosition.row;
     const expandsConditionalChain = alternative.type === "if_expression";
     const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(node);
+    const preservesCompactLadder = isCompactElseIfLadder(node);
     const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
     const separatesCommentedElse = leadingAlternativeComments.length > 0;
     const sourceElseGap = node.text.slice(
@@ -78,9 +79,9 @@ export function analyzeConditionalExpression(
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
-      (formatsConditionalChain ||
+      ((!preservesCompactLadder && formatsConditionalChain) ||
         expandsSourceMultilineCondition ||
-        hasSourceElseBreak ||
+        (!preservesCompactLadder && hasSourceElseBreak) ||
         leadingAlternativeComments.length > 0 ||
         consequence.startPosition.row > closeParen.endPosition.row);
     const preservesElseLineBreak =
@@ -93,9 +94,9 @@ export function analyzeConditionalExpression(
       alternative.type !== "block_expression" &&
       alternative.type !== "if_expression" &&
       leadingAlternativeComments.length === 0 &&
-      (formatsConditionalChain ||
+      ((!preservesCompactLadder && formatsConditionalChain) ||
         expandsSourceMultilineCondition ||
-        hasSourceElseBreak ||
+        (!preservesCompactLadder && hasSourceElseBreak) ||
         alternative.startPosition.row > elseKeyword.endPosition.row);
     return {
       document: concat([

@@ -159,6 +159,17 @@ describe("conditional expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a compact else-if ladder with trailing comments", () => {
+    const input =
+      "module Example {\n  pure def classify(value: int): int = {\n    if (value < 0) -1  // negative\n    else if (value == 0) 0  // zero\n    else 1  // positive\n  }\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    expect(parser.parse(output).rootNode.hasError).toBe(false);
+  });
+
   test("expands the first result in a conditional chain", () => {
     const input = readFileSync(
       new URL("../fixtures/expanded-chain-first-result.qnt", import.meta.url),

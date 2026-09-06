@@ -3,6 +3,7 @@ import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
   collectNodes,
   hasInlineMultilineConditionalLambdaBody,
+  isCompactElseIfLadder,
   isElseIfBranch,
 } from "@/parsing/syntax.js";
 
@@ -115,6 +116,7 @@ export function checkConditionalExpressions(
     const expandsSourceMultilineCondition = condition.startPosition.row < condition.endPosition.row;
     const expandsConditionalChain = alternative.type === "if_expression";
     const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(conditional);
+    const preservesCompactLadder = isCompactElseIfLadder(conditional);
     const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
     const separatesCommentedElse = leadingAlternativeComments.length > 0;
     const sourceElseGap = source.slice(consequence.endIndex, elseKeyword.startIndex);
@@ -125,9 +127,9 @@ export function checkConditionalExpressions(
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
-      (formatsConditionalChain ||
+      ((!preservesCompactLadder && formatsConditionalChain) ||
         expandsSourceMultilineCondition ||
-        hasSourceElseBreak ||
+        (!preservesCompactLadder && hasSourceElseBreak) ||
         leadingAlternativeComments.length > 0 ||
         consequence.startPosition.row > closeParen.endPosition.row);
     const expectedConsequenceGap = preservesConsequenceLineBreak
@@ -157,9 +159,9 @@ export function checkConditionalExpressions(
       alternative.type !== "block_expression" &&
       alternative.type !== "if_expression" &&
       leadingAlternativeComments.length === 0 &&
-      (formatsConditionalChain ||
+      ((!preservesCompactLadder && formatsConditionalChain) ||
         expandsSourceMultilineCondition ||
-        hasSourceElseBreak ||
+        (!preservesCompactLadder && hasSourceElseBreak) ||
         alternative.startPosition.row > elseKeyword.endPosition.row);
     const consequenceCloseBrace = consequence.children.find((child) => child.type === "}");
     const expectedElseGap = preservesBlankLineBeforeElse

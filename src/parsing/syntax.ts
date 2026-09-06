@@ -255,6 +255,36 @@ export function isElseIfBranch(node: Parser.SyntaxNode): boolean {
   );
 }
 
+export function isCompactElseIfLadder(node: Parser.SyntaxNode): boolean {
+  let root = node;
+  while (isElseIfBranch(root)) root = root.parent as Parser.SyntaxNode;
+  if (root.childForFieldName("alternative")?.type !== "if_expression") return false;
+
+  let branch = root;
+  while (branch.type === "if_expression") {
+    const condition = branch.childForFieldName("condition");
+    const consequence = branch.childForFieldName("consequence");
+    const alternative = branch.childForFieldName("alternative");
+    const closeParen = branch.children.find((child) => child.type === ")");
+    const elseKeyword = branch.children.find((child) => child.type === "else");
+    if (!condition || !consequence || !alternative || !closeParen || !elseKeyword) return false;
+    if (
+      condition.startPosition.row !== condition.endPosition.row ||
+      consequence.startPosition.row !== closeParen.endPosition.row ||
+      consequence.endPosition.row !== closeParen.endPosition.row ||
+      elseKeyword.startPosition.row <= consequence.endPosition.row ||
+      alternative.startPosition.row !== elseKeyword.endPosition.row
+    ) {
+      return false;
+    }
+    if (alternative.type !== "if_expression") {
+      return alternative.startPosition.row === alternative.endPosition.row;
+    }
+    branch = alternative;
+  }
+  return false;
+}
+
 export function compactNestedBlockExpression(
   definition: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
