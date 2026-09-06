@@ -179,3 +179,18 @@ exports[`call expressions preserves aligned trailing comments on expanded call a
 }
 "
 `;
+
+exports[`call expressions preserves blank lines between commented call argument groups 1`] = `
+"module Example {
+  pure val ops = Set(
+      // First group.
+      1, // a
+      2, // b
+
+      // Second group.
+      3,
+      4
+  )
+}
+"
+`;
