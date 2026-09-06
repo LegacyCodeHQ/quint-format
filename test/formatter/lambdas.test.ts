@@ -140,20 +140,35 @@ describe("lambdas", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("places the closing parenthesis after an inline multiline lambda", () => {
+  test("preserves an attached close after an inline multiline lambda", () => {
     const input = readFileSync(
       new URL("../fixtures/inline-multiline-lambda-close.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
-    const expected = input.replace("        largest)\n", "        largest\n    )\n");
-
-    expect(output).toBe(expected);
+    expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
-    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toContain(
-      "format/call-delimiter-spacing",
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
+  test("preserves attached closes for nested multiline lambdas", () => {
+    const input = readFileSync(
+      new URL("../fixtures/attached-nested-lambda-closes.qnt", import.meta.url),
+      "utf8",
     );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
     const inputTree = parser.parse(input).rootNode;
     const outputTree = parser.parse(output).rootNode;
@@ -192,8 +207,7 @@ describe("lambdas", () => {
       "    values.foldl(0, (largest, value) => if (value > largest)",
       "        value",
       "      else",
-      "        largest",
-      "    )",
+      "        largest)",
       "}",
       "",
     ].join("\n");
@@ -240,7 +254,7 @@ describe("lambdas", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      '    lhs.bind(left =>\n      rhs.bind(right =>\n        if (left == right)\n          Ok(left)\n        else\n          Err("different")\n      )\n    )',
+      '    lhs.bind(left =>\n      rhs.bind(right =>\n        if (left == right)\n          Ok(left)\n        else\n          Err("different")))',
     );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);

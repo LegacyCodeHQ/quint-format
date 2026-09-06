@@ -3,7 +3,7 @@ import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
   callExpressionTarget,
   callTrailingCommentAlignment,
-  hasAttachedBraceDelimitedLambdaCallClose,
+  hasAttachedMultilineLambdaCallClose,
   hasMultilineLambdaBody,
   isMultilineLambdaExpression,
   isMultilineUfcsContinuation,
@@ -114,9 +114,9 @@ export function checkCallExpressions(
           const previous = index === 0 ? openParen : arguments_[index - 1];
           return argument.startPosition.row === previous.endPosition.row;
         });
-      const preservesAttachedBraceDelimitedLambdaCallClose =
+      const preservesAttachedMultilineLambdaCallClose =
         !commas.some((comma) => comma.startIndex >= last.endIndex) &&
-        hasAttachedBraceDelimitedLambdaCallClose(callExpression);
+        hasAttachedMultilineLambdaCallClose(callExpression);
       const isPartiallyExpandedCallWithClosingBreak =
         first.startPosition.row === openParen.endPosition.row &&
         hasSourceArgumentBreak &&
@@ -191,13 +191,15 @@ export function checkCallExpressions(
           : isHangingMultilineLambdaCall
             ? beforeClose === hangingCloseGap
             : isInlineMultilineLambdaCall
-              ? preservesAttachedBraceDelimitedLambdaCallClose
+              ? preservesAttachedMultilineLambdaCallClose
                 ? beforeClose === ""
                 : beforeClose === expandedCloseGap
               : isMultilineLambdaCall
-                ? isMultilineUfcsCall
-                  ? beforeClose === hangingCloseGap
-                  : /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
+                ? preservesAttachedMultilineLambdaCallClose
+                  ? beforeClose === ""
+                  : isMultilineUfcsCall
+                    ? beforeClose === hangingCloseGap
+                    : /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
                 : beforeClose === "";
       if (!hasCanonicalClose) {
         const row = closeParen.startPosition.row;
@@ -208,7 +210,8 @@ export function checkCallExpressions(
           length: Math.max(1, beforeClose.length),
           rule: "format/call-delimiter-spacing",
           message:
-            isInlineMultilineLambdaCall && !preservesAttachedBraceDelimitedLambdaCallClose
+            (isInlineMultilineLambdaCall || isMultilineLambdaCall) &&
+            !preservesAttachedMultilineLambdaCallClose
               ? "expected the closing ')' on a separate line"
               : "expected no space before ')'",
           sourceLine: lines[row] ?? "",

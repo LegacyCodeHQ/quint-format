@@ -6,7 +6,7 @@ import { concat, type Doc, hardLine, renderDoc, text } from "@/formatting/docume
 import {
   callExpressionTarget,
   callTrailingCommentAlignment,
-  hasAttachedBraceDelimitedLambdaCallClose,
+  hasAttachedMultilineLambdaCallClose,
   hasMultilineLambdaBody,
   isCallExpression,
   isMultilineLambdaExpression,
@@ -36,6 +36,8 @@ export function analyzeCallExpression(
         child.type === "," && Boolean(lastArgument && child.startIndex >= lastArgument.endIndex),
     );
     const trailingCommaDocuments = trailingComma ? [text(",")] : [];
+    const preservesAttachedMultilineLambdaCallClose =
+      !trailingComma && hasAttachedMultilineLambdaCallClose(node);
     const receiverAnalysis = receiver ? analyzeExpression(receiver) : undefined;
     const targetComments =
       receiver && method
@@ -105,7 +107,7 @@ export function analyzeCallExpression(
             text(`.${method.text}(`),
             (analyses[0] as ExpressionAnalysis).document,
             ...trailingCommaDocuments,
-            hardLine,
+            ...(preservesAttachedMultilineLambdaCallClose ? [] : [hardLine]),
             text(")"),
           ]),
           ufcsContinuationIndentation(),
@@ -120,7 +122,7 @@ export function analyzeCallExpression(
             text("("),
             (analyses[0] as ExpressionAnalysis).document,
             ...trailingCommaDocuments,
-            hardLine,
+            ...(preservesAttachedMultilineLambdaCallClose ? [] : [hardLine]),
             text(")"),
           ])
         : undefined);
@@ -211,8 +213,6 @@ export function analyzeCallExpression(
       !hasSourceArgumentBreak &&
       (hasSourceClosingBreak || hasMultilineLambdaBody(arguments_.at(-1) as Parser.SyntaxNode)) &&
       !inlineCallFirstLineExceedsWidth;
-    const preservesAttachedBraceDelimitedLambdaCallClose =
-      !trailingComma && hasAttachedBraceDelimitedLambdaCallClose(node);
     const hangingMultilineLambdaCall =
       arguments_.length > 1 &&
       isMultilineLambdaExpression(arguments_.at(-1) as Parser.SyntaxNode) &&
@@ -337,7 +337,7 @@ export function analyzeCallExpression(
                     analysis.document,
                   ]),
                   ...trailingCommaDocuments,
-                  ...(preservesAttachedBraceDelimitedLambdaCallClose ? [] : [hardLine]),
+                  ...(preservesAttachedMultilineLambdaCallClose ? [] : [hardLine]),
                   text(")"),
                 ])
               : multilineLocalDefinitionArgument

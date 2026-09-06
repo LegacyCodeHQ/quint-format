@@ -89,15 +89,38 @@ exports[`lambdas keeps leading call arguments beside a multiline lambda 1`] = `
 "
 `;
 
-exports[`lambdas places the closing parenthesis after an inline multiline lambda 1`] = `
+exports[`lambdas preserves an attached close after an inline multiline lambda 1`] = `
 "module Example {
   pure def maximum(values: List[int]): int =
     values.foldl(0, (largest, value) =>
       if (value > largest)
         value
       else
-        largest
-    )
+        largest)
+}
+"
+`;
+
+exports[`lambdas preserves attached closes for nested multiline lambdas 1`] = `
+"module Example {
+  pure def allDistinct(values: List[int]): bool =
+    values.forall(a =>
+      values.forall(b =>
+        (a != b) implies values.contains(a)))
+}
+"
+`;
+
+exports[`lambdas preserves an attached call close after a brace-delimited lambda 1`] = `
+"module Example {
+  type Node = Internal(int) | Leaf(int)
+
+  pure def sumInternals(nodes: List[Node]): int =
+    nodes.foldl(0, (total, node) =>
+      match node {
+        | Internal(value) => total + value
+        | Leaf(_) => total
+      })
 }
 "
 `;
@@ -108,8 +131,7 @@ exports[`lambdas preserves an inline conditional lambda header 1`] = `
     values.foldl(0, (largest, value) => if (value > largest)
         value
       else
-        largest
-    )
+        largest)
 }
 "
 `;
@@ -144,9 +166,7 @@ exports[`lambdas propagates multiline layout through nested lambda calls 1`] = `
         if (left == right)
           Ok(left)
         else
-          Err("different")
-      )
-    )
+          Err("different")))
 }
 "
 `;
@@ -217,20 +237,6 @@ exports[`lambdas preserves a comment before a lambda body 1`] = `
   pure val increment = (value =>
     // Preserve this lambda comment.
     value + 1)
-}
-"
-`;
-
-exports[`lambdas preserves an attached call close after a brace-delimited lambda 1`] = `
-"module Example {
-  type Node = Internal(int) | Leaf(int)
-
-  pure def sumInternals(nodes: List[Node]): int =
-    nodes.foldl(0, (total, node) =>
-      match node {
-        | Internal(value) => total + value
-        | Leaf(_) => total
-      })
 }
 "
 `;

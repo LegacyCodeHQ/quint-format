@@ -79,16 +79,15 @@ export function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   );
 }
 
-export function hasAttachedBraceDelimitedLambdaCallClose(node: Parser.SyntaxNode): boolean {
+export function hasAttachedMultilineLambdaCallClose(node: Parser.SyntaxNode): boolean {
   if (!isCallExpression(node)) return false;
   const lambda = node.childrenForFieldName("argument").at(-1);
-  const body = lambda?.type === "lambda_expression" ? lambda.childForFieldName("body") : null;
   const closeParenthesis = [...node.children].reverse().find((child) => child.type === ")");
   return Boolean(
-    body &&
-      isBraceDelimitedLambdaBody(body) &&
+    lambda?.type === "lambda_expression" &&
+      lambda.startPosition.row < lambda.endPosition.row &&
       closeParenthesis &&
-      closeParenthesis.startPosition.row === body.endPosition.row,
+      closeParenthesis.startPosition.row === lambda.endPosition.row,
   );
 }
 
