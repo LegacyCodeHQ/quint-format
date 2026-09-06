@@ -4,7 +4,11 @@ import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { formatCommentedTuplePattern, formatPattern } from "@/formatting/pattern-formatter.js";
-import { compactLambdaBlockExpression, isMultilineLambdaExpression } from "@/parsing/syntax.js";
+import {
+  compactLambdaBlockExpression,
+  hasInlineMultilineConditionalLambdaBody,
+  isMultilineLambdaExpression,
+} from "@/parsing/syntax.js";
 
 export function analyzeLambdaExpression(
   node: Parser.SyntaxNode,
@@ -41,6 +45,7 @@ export function analyzeLambdaExpression(
         child.endIndex <= body.startIndex,
     );
     const isMultilineBody = isMultilineLambdaExpression(node);
+    const preservesInlineConditionalHeader = hasInlineMultilineConditionalLambdaBody(node);
     let continuationAnchor = node;
     let ancestor = node.parent;
     while (ancestor) {
@@ -76,11 +81,13 @@ export function analyzeLambdaExpression(
         ? concat([parameterDocument, text(" => { "), analysis.document, text(" }")])
         : comments.length === 0
           ? isMultilineBody
-            ? concat([
-                parameterDocument,
-                text(" =>"),
-                indentBy(concat([hardLine, analysis.document]), continuationIndentation),
-              ])
+            ? preservesInlineConditionalHeader
+              ? concat([parameterDocument, text(" => "), indent(analysis.document)])
+              : concat([
+                  parameterDocument,
+                  text(" =>"),
+                  indentBy(concat([hardLine, analysis.document]), continuationIndentation),
+                ])
             : concat([parameterDocument, text(" => "), analysis.document])
           : concat([
               parameterDocument,

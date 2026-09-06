@@ -1,6 +1,10 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
-import { collectNodes, isElseIfBranch } from "@/parsing/syntax.js";
+import {
+  collectNodes,
+  hasInlineMultilineConditionalLambdaBody,
+  isElseIfBranch,
+} from "@/parsing/syntax.js";
 
 export function checkConditionalExpressions(
   root: Parser.SyntaxNode,
@@ -28,6 +32,12 @@ export function checkConditionalExpressions(
     ) {
       throw new Error("Unable to locate the conditional syntax");
     }
+    const parentLambda = conditional.parent;
+    const conditionalIndentation =
+      parentLambda?.type === "lambda_expression" &&
+      hasInlineMultilineConditionalLambdaBody(parentLambda)
+        ? (lines[conditional.startPosition.row] ?? "").search(/\S|$/) + 2
+        : conditional.startPosition.column;
     if (source.slice(keyword.endIndex, openParen.startIndex) !== " ") {
       const row = openParen.startPosition.row;
       diagnostics.push({
@@ -44,7 +54,7 @@ export function checkConditionalExpressions(
       condition.startPosition.row > openParen.endPosition.row ||
       closeParen.startPosition.row > condition.endPosition.row;
     const expectedAfterOpen = expandsConditionDelimiters
-      ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
+      ? `\n${" ".repeat(conditionalIndentation + 2)}`
       : "";
     const afterOpen = source.slice(openParen.endIndex, condition.startIndex);
     if (afterOpen !== expectedAfterOpen) {
@@ -62,7 +72,7 @@ export function checkConditionalExpressions(
       });
     }
     const expectedBeforeClose = expandsConditionDelimiters
-      ? `\n${" ".repeat(conditional.startPosition.column)}`
+      ? `\n${" ".repeat(conditionalIndentation)}`
       : "";
     const beforeClose = source.slice(condition.endIndex, closeParen.startIndex);
     if (beforeClose !== expectedBeforeClose) {
@@ -121,7 +131,7 @@ export function checkConditionalExpressions(
         leadingAlternativeComments.length > 0 ||
         consequence.startPosition.row > closeParen.endPosition.row);
     const expectedConsequenceGap = preservesConsequenceLineBreak
-      ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
+      ? `\n${" ".repeat(conditionalIndentation + 2)}`
       : " ";
     if (source.slice(closeParen.endIndex, consequence.startIndex) !== expectedConsequenceGap) {
       const row = closeParen.endPosition.row;
@@ -155,17 +165,17 @@ export function checkConditionalExpressions(
     const expectedElseGap = preservesBlankLineBeforeElse
       ? `\n\n${" ".repeat(consequenceCloseBrace?.startPosition.column ?? consequence.endPosition.column)}`
       : preservesElseLineBreak
-        ? `\n${" ".repeat(conditional.startPosition.column)}`
+        ? `\n${" ".repeat(conditionalIndentation)}`
         : separatesCommentedElse
-          ? `\n${" ".repeat(conditional.startPosition.column)}`
+          ? `\n${" ".repeat(conditionalIndentation)}`
           : " ";
     const expectedAlternativeGap = preservesAlternativeLineBreak
-      ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
+      ? `\n${" ".repeat(conditionalIndentation + 2)}`
       : " ";
     const hasCanonicalAlternativeGap = inlineElseComment
       ? /^[\t ]+$/.test(source.slice(elseKeyword.endIndex, inlineElseComment.startIndex)) &&
         source.slice(inlineElseComment.endIndex, alternative.startIndex) ===
-          `\n${" ".repeat(conditional.startPosition.column + 2)}`
+          `\n${" ".repeat(conditionalIndentation + 2)}`
       : source.slice(elseKeyword.endIndex, alternative.startIndex) === expectedAlternativeGap;
     let trailingConsequenceAnchor = consequence;
     for (const comment of trailingConsequenceComments) {

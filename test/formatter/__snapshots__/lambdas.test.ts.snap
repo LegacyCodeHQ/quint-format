@@ -89,6 +89,18 @@ exports[`lambdas places the closing parenthesis after an inline multiline lambda
 "
 `;
 
+exports[`lambdas preserves an inline conditional lambda header 1`] = `
+"module Example {
+  pure def maximum(values: List[int]): int =
+    values.foldl(0, (largest, value) => if (value > largest)
+        value
+      else
+        largest
+    )
+}
+"
+`;
+
 exports[`lambdas keeps a short call header inline when its lambda body has a long line 1`] = `
 "module Example {
   pure def update(values: Set[int]): Set[int] =

@@ -1,6 +1,10 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
-import { collectNodes, isMultilineLambdaExpression } from "@/parsing/syntax.js";
+import {
+  collectNodes,
+  hasInlineMultilineConditionalLambdaBody,
+  isMultilineLambdaExpression,
+} from "@/parsing/syntax.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
 
 export function checkLambdaExpressions(
@@ -74,9 +78,11 @@ export function checkLambdaExpressions(
     }
     const arrowAnchor = closeParen ?? last;
     const afterArrow = source.slice(arrow.endIndex, body.startIndex);
-    const hasCanonicalBodySeparation = isMultilineLambdaExpression(lambda)
-      ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterArrow)
-      : afterArrow === " ";
+    const hasCanonicalBodySeparation = hasInlineMultilineConditionalLambdaBody(lambda)
+      ? afterArrow === " "
+      : isMultilineLambdaExpression(lambda)
+        ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterArrow)
+        : afterArrow === " ";
     if (
       source.slice(arrowAnchor.endIndex, arrow.startIndex) !== " " ||
       !hasCanonicalBodySeparation

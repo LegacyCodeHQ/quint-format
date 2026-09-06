@@ -129,6 +129,40 @@ describe("lambdas", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves an inline conditional lambda header", () => {
+    const input = readFileSync(
+      new URL("../fixtures/inline-conditional-lambda.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected = [
+      "module Example {",
+      "  pure def maximum(values: List[int]): int =",
+      "    values.foldl(0, (largest, value) => if (value > largest)",
+      "        value",
+      "      else",
+      "        largest",
+      "    )",
+      "}",
+      "",
+    ].join("\n");
+
+    expect(output).toBe(expected);
+    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/conditional-branch-spacing",
+      "format/conditional-else-spacing",
+      "format/call-delimiter-spacing",
+    ]);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("keeps a short call header inline when its lambda body has a long line", () => {
     const input = readFileSync(
       new URL("../fixtures/fold-lambda-call-expansion.qnt", import.meta.url),

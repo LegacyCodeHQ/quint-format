@@ -39,6 +39,18 @@ export function hasMultilineLambdaBody(node: Parser.SyntaxNode): boolean {
   return Boolean(body && body.endPosition.row > body.startPosition.row);
 }
 
+export function hasInlineMultilineConditionalLambdaBody(node: Parser.SyntaxNode): boolean {
+  if (node.type !== "lambda_expression") return false;
+  const arrow = node.children.find((child) => child.type === "=>");
+  const body = node.childForFieldName("body");
+  return Boolean(
+    arrow &&
+      body?.type === "if_expression" &&
+      body.startPosition.row === arrow.endPosition.row &&
+      body.endPosition.row > body.startPosition.row,
+  );
+}
+
 export function isNestedInVerticallyExpandedCall(node: Parser.SyntaxNode): boolean {
   let ancestor = node.parent;
 
