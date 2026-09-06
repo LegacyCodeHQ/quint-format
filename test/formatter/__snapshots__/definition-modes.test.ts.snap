@@ -67,14 +67,6 @@ exports[`definition modes formats a parameterless temporal definition 1`] = `
 "
 `;
 
-exports[`definition modes preserves an explicit line break after definition equals 1`] = `
-"module Example {
-  temporal eventuallyTrue =
-    eventually(true)
-}
-"
-`;
-
 exports[`definition modes formats a parameterless nondet definition 1`] = `
 "module Example {
   nondet selection = true
@@ -109,4 +101,26 @@ exports[`definition modes formats rich definitions and types across every mode 1
   nondet choose(values: Set[int]): int = values.oneOf()
 }
 "
+`;
+
+exports[`definition modes uses a four-space continuation for a line-broken temporal body 1`] = `
+"module Example {
+  temporal eventuallyTrue =
+      eventually(true)
+}
+"
+`;
+
+exports[`definition modes uses a four-space continuation for a line-broken temporal body 2`] = `
+[
+  {
+    "column": 1,
+    "filePath": "input.qnt",
+    "length": 4,
+    "line": 3,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/definition-body-indentation",
+    "sourceLine": "    eventually(true)",
+  },
+]
 `;

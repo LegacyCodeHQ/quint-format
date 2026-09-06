@@ -129,7 +129,7 @@ exports[`definitions preserves a return type placed below the definition header 
   /// Reports whether two values are equal.
   pure def matches(left: int, right: int)
   : bool =
-    left == right
+      left == right
 }
 "
 `;

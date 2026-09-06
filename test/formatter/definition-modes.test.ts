@@ -87,15 +87,17 @@ describe("definition modes", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("preserves an explicit line break after definition equals", () => {
+  test("uses a four-space continuation for a line-broken temporal body", () => {
     const input = readFileSync(
       new URL("../fixtures/explicit-definition-break.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
+    const expected = "module Example {\n  temporal eventuallyTrue =\n      eventually(true)\n}\n";
 
-    expect(output).toContain("temporal eventuallyTrue =\n    eventually(true)");
+    expect(output).toBe(expected);
     expect(output).toMatchSnapshot();
+    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });

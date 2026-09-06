@@ -42,11 +42,16 @@ export function checkDefinitionBody(
     !hasRecordComments &&
     !isMultilineRecord &&
     !isExpandedTypeApplication;
-  const usesUfcsBodyContinuation =
+  const usesOperatorBodyContinuation =
     declaration.node.type === "operator_definition" &&
-    declaration.valueNode.type === "ufcs_call_expression" &&
-    declaration.valueNode.startPosition.row > declaration.equals.endPosition.row &&
-    isMultilineUfcsContinuation(declaration.valueNode);
+    ((declaration.valueNode.startPosition.row === declaration.valueNode.endPosition.row &&
+      preservesDefinitionBodyLineBreak(
+        declaration.node,
+        declaration.valueNode,
+        commentAttachments,
+      )) ||
+      (declaration.valueNode.type === "ufcs_call_expression" &&
+        isMultilineUfcsContinuation(declaration.valueNode)));
   const requiresLineBreakAfterEquals =
     isMultilineSum ||
     preservesTypeContinuation ||
@@ -71,7 +76,7 @@ export function checkDefinitionBody(
   if (
     (declaration.node.type === "assumption_declaration" ||
       preservesTypeContinuation ||
-      usesUfcsBodyContinuation) &&
+      usesOperatorBodyContinuation) &&
     declaration.valueNode.startPosition.row > declaration.equals.endPosition.row &&
     declaration.valueNode.startPosition.column !== declaration.node.startPosition.column + 4
   ) {

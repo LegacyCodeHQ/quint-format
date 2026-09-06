@@ -1,7 +1,10 @@
 import type Parser from "tree-sitter";
 import { analyzeExpression } from "@/analysis/expression/expression-analyzer.js";
 import type { ModuleDeclaration } from "@/core/analysis.js";
-import { definitionBodyDocument } from "@/formatting/definition-body-formatter.js";
+import {
+  definitionBodyDocument,
+  preservesDefinitionBodyLineBreak,
+} from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { canFormatType, formatType } from "@/formatting/type-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
@@ -125,10 +128,12 @@ export function analyzeOperatorDefinition(
         ...returnTypeDocuments,
         text(" ="),
       ]);
-  const usesUfcsBodyContinuation =
-    body.type === "ufcs_call_expression" &&
-    body.startPosition.row > equals.endPosition.row &&
-    isMultilineUfcsContinuation(body);
+  const usesContinuationIndentation =
+    (body.startPosition.row === body.endPosition.row &&
+      preservesDefinitionBodyLineBreak(node, body, commentAttachments)) ||
+    (body.type === "ufcs_call_expression" &&
+      body.startPosition.row > equals.endPosition.row &&
+      isMultilineUfcsContinuation(body));
   return {
     node,
     qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
@@ -160,7 +165,7 @@ export function analyzeOperatorDefinition(
       node,
       body,
       expression.document,
-      usesUfcsBodyContinuation ? 2 : 1,
+      usesContinuationIndentation ? 2 : 1,
       commentAttachments,
     ),
   };

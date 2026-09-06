@@ -21,7 +21,7 @@ exports[`call expressions preserves argument groups in a multiline call 1`] = `
 exports[`call expressions preserves a partially expanded call within the line width 1`] = `
 "module Example {
   pure def combine(first: int, second: int, third: int, fourth: int, fifth: int): int =
-    first + second + third + fourth + fifth
+      first + second + third + fourth + fifth
 
   pure val result = combine(
       1, 2, 3,
@@ -34,7 +34,7 @@ exports[`call expressions preserves a partially expanded call within the line wi
 exports[`call expressions preserves a hanging partially expanded call 1`] = `
 "module Example {
   pure def combine(first: int, second: int, third: int, fourth: int, fifth: int): int =
-    first + second + third + fourth + fifth
+      first + second + third + fourth + fifth
 
   pure val result = combine(1, 2, 3,
       4, 5)
