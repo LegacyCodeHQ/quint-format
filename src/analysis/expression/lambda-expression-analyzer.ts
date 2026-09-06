@@ -4,6 +4,7 @@ import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { formatCommentedTuplePattern, formatPattern } from "@/formatting/pattern-formatter.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import {
   callExpressionTarget,
   compactLambdaBlockExpression,
@@ -16,6 +17,7 @@ import {
 export function analyzeLambdaExpression(
   node: Parser.SyntaxNode,
   analyzeExpression: (node: Parser.SyntaxNode) => ExpressionAnalysis,
+  commentAttachments: CommentAttachmentIndex,
 ): ExpressionAnalysis | undefined {
   if (node.type === "lambda_expression") {
     const parameters = node.childrenForFieldName("parameter");
@@ -40,7 +42,7 @@ export function analyzeLambdaExpression(
           text(")"),
         ])
       : text(formatPattern(parameters[0] as Parser.SyntaxNode));
-    const compactBlockExpression = compactLambdaBlockExpression(node, body);
+    const compactBlockExpression = compactLambdaBlockExpression(node, body, commentAttachments);
     const analysis = analyzeExpression(compactBlockExpression ?? body);
     const comments = node.namedChildren.filter(
       (child) =>

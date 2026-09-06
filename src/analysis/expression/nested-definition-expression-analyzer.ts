@@ -27,7 +27,11 @@ export function analyzeNestedDefinitionExpression(
       commentAttachments,
     );
     const bodyAnalysis = analyzeExpression(body);
-    const compactBlockExpression = compactNestedBlockExpression(definition, body);
+    const compactBlockExpression = compactNestedBlockExpression(
+      definition,
+      body,
+      commentAttachments,
+    );
     const compactBlockAnalysis = compactBlockExpression
       ? analyzeExpression(compactBlockExpression)
       : null;

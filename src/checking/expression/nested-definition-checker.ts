@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import {
   collectNodes,
   compactNestedBlockExpression,
@@ -13,6 +14,7 @@ export function checkNestedDefinitions(
   source: string,
   filePath: string,
   lines: string[],
+  commentAttachments: CommentAttachmentIndex,
 ): FormatDiagnostic[] {
   const diagnostics: FormatDiagnostic[] = [];
   for (const nested of collectNodes(root, "nested_definition_expression")) {
@@ -63,7 +65,7 @@ export function checkNestedDefinitions(
       });
     } else if (
       body.startPosition.row <= definition.endPosition.row &&
-      !compactNestedBlockExpression(definition, body) &&
+      !compactNestedBlockExpression(definition, body, commentAttachments) &&
       !preservesCompactNondetSequence
     ) {
       const row = body.startPosition.row;

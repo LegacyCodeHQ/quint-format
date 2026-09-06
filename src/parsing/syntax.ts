@@ -1,5 +1,6 @@
 import Quint from "@legacycodehq/tree-sitter-quint";
 import type Parser from "tree-sitter";
+import type { CommentAttachmentIndex } from "./comment-attachments.js";
 
 const LEGACY_BLOCK_COMBINATOR_TYPES = [
   "all_expression",
@@ -223,6 +224,7 @@ export function isElseIfBranch(node: Parser.SyntaxNode): boolean {
 export function compactNestedBlockExpression(
   definition: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
+  commentAttachments: CommentAttachmentIndex,
 ): Parser.SyntaxNode | null {
   if (
     body.type !== "block_expression" ||
@@ -230,9 +232,7 @@ export function compactNestedBlockExpression(
     body.startPosition.row !== body.endPosition.row ||
     body.endPosition.column > 120 ||
     body.childrenForFieldName("binding").length > 0 ||
-    body.namedChildren.some(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
-    )
+    commentAttachments.commentsFor(body).length > 0
   ) {
     return null;
   }
@@ -243,6 +243,7 @@ export function compactNestedBlockExpression(
 export function compactLambdaBlockExpression(
   lambda: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
+  commentAttachments: CommentAttachmentIndex,
 ): Parser.SyntaxNode | null {
   if (
     body.type !== "block_expression" ||
@@ -250,9 +251,7 @@ export function compactLambdaBlockExpression(
     body.startPosition.row !== body.endPosition.row ||
     lambda.endPosition.column > 120 ||
     body.childrenForFieldName("binding").length > 0 ||
-    body.namedChildren.some(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
-    )
+    commentAttachments.commentsFor(body).length > 0
   ) {
     return null;
   }

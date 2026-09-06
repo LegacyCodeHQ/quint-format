@@ -43,7 +43,7 @@ function analyzeExpressionWithClosingComment(
   const operatorAnalysis = analyzeOperatorExpression(node, analyzeChild);
   if (operatorAnalysis) return operatorAnalysis;
 
-  const lambdaAnalysis = analyzeLambdaExpression(node, analyzeChild);
+  const lambdaAnalysis = analyzeLambdaExpression(node, analyzeChild, commentAttachments);
   if (lambdaAnalysis) return lambdaAnalysis;
 
   const conditionalAnalysis = analyzeConditionalExpression(node, analyzeChild);

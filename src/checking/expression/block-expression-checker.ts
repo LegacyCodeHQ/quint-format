@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import {
   collectNodes,
   compactLambdaBlockExpression,
@@ -11,6 +12,7 @@ export function checkBlockExpressions(
   source: string,
   filePath: string,
   lines: string[],
+  commentAttachments: CommentAttachmentIndex,
 ): FormatDiagnostic[] {
   const diagnostics: FormatDiagnostic[] = [];
   for (const block of collectNodes(root, "block_expression")) {
@@ -30,11 +32,11 @@ export function checkBlockExpressions(
         ? nested.childForFieldName("definition")
         : null;
     const isCompactNestedBlock = Boolean(
-      nestedDefinition && compactNestedBlockExpression(nestedDefinition, block),
+      nestedDefinition && compactNestedBlockExpression(nestedDefinition, block, commentAttachments),
     );
     const parentLambda = block.parent?.type === "lambda_expression" ? block.parent : null;
     const isCompactLambdaBlock = Boolean(
-      parentLambda && compactLambdaBlockExpression(parentLambda, block),
+      parentLambda && compactLambdaBlockExpression(parentLambda, block, commentAttachments),
     );
     const hasCanonicalLines =
       isCompactNestedBlock ||
