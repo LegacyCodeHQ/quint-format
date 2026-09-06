@@ -25,11 +25,38 @@ export function checkCallExpressions(
     if (!functionNode || !openParen || !closeParen) {
       throw new Error("Unable to locate the call delimiters");
     }
-    if (
-      callExpression.namedChildren.some(
-        (child) => child.type === "comment" || child.type === "documentation_comment",
-      )
-    ) {
+    const directComments = callExpression.namedChildren.filter(
+      (child) => child.type === "comment" || child.type === "documentation_comment",
+    );
+    for (const comment of directComments) {
+      const trailingArgument = [...arguments_]
+        .reverse()
+        .find(
+          (argument) =>
+            argument.endIndex <= comment.startIndex &&
+            argument.endPosition.row === comment.startPosition.row,
+        );
+      if (!trailingArgument) continue;
+      const trailingComma = commas.find(
+        (comma) =>
+          comma.startIndex >= trailingArgument.endIndex && comma.endIndex <= comment.startIndex,
+      );
+      const anchor = trailingComma ?? trailingArgument;
+      const gap = source.slice(anchor.endIndex, comment.startIndex);
+      if (gap !== " ") {
+        const row = comment.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: anchor.endPosition.column + 1,
+          length: Math.max(1, gap.length),
+          rule: "format/call-trailing-comment-spacing",
+          message: "expected one space before a trailing call argument comment",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
+    if (directComments.length > 0) {
       continue;
     }
     const first = arguments_[0];

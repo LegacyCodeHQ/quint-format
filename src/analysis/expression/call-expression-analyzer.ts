@@ -187,25 +187,47 @@ export function analyzeCallExpression(
         analysis.document,
       ];
     });
-    const contentDocuments = hasComments
-      ? node.namedChildren.flatMap((child) => {
-          if (child.id === functionNode.id) return [];
-          if (child.type === "comment" || child.type === "documentation_comment") {
-            return [commentDocument(child)];
+    const contentDocuments: Doc[] = [];
+    if (hasComments) {
+      const argumentDocumentIndexes = new Map<number, number>();
+      for (const child of node.namedChildren) {
+        if (child.id === functionNode.id) continue;
+        if (child.type === "comment" || child.type === "documentation_comment") {
+          const trailingArgument = [...arguments_]
+            .reverse()
+            .find(
+              (argument) =>
+                argument.endIndex <= child.startIndex &&
+                argument.endPosition.row === child.startPosition.row,
+            );
+          const documentIndex = trailingArgument
+            ? argumentDocumentIndexes.get(trailingArgument.id)
+            : undefined;
+          if (documentIndex !== undefined) {
+            contentDocuments[documentIndex] = concat([
+              contentDocuments[documentIndex] as Doc,
+              text(" "),
+              commentDocument(child),
+            ]);
+          } else {
+            contentDocuments.push(commentDocument(child));
           }
-          const argumentIndex = arguments_.findIndex((argument) => argument.id === child.id);
-          const analysis = analyses[argumentIndex];
-          if (!analysis) {
-            throw new Error("Formatting this commented call content is not implemented yet");
-          }
-          return [
-            concat([
-              analysis.document,
-              ...(argumentIndex < arguments_.length - 1 || trailingComma ? [text(",")] : []),
-            ]),
-          ];
-        })
-      : [];
+          continue;
+        }
+        const argumentIndex = arguments_.findIndex((argument) => argument.id === child.id);
+        const analysis = analyses[argumentIndex];
+        if (!analysis) {
+          throw new Error("Formatting this commented call content is not implemented yet");
+        }
+        argumentDocumentIndexes.set(child.id, contentDocuments.length);
+        contentDocuments.push(
+          concat([
+            analysis.document,
+            ...(argumentIndex < arguments_.length - 1 || trailingComma ? [text(",")] : []),
+          ]),
+        );
+      }
+    }
     return {
       document: hasComments
         ? concat([

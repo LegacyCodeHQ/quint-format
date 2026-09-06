@@ -159,3 +159,13 @@ exports[`call expressions preserves a comment before a call argument 1`] = `
 }
 "
 `;
+
+exports[`call expressions preserves trailing comments on expanded call arguments 1`] = `
+"module Example {
+  pure val values = Set(
+      1, // a
+      2 // b
+  )
+}
+"
+`;

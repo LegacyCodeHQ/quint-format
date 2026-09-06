@@ -208,4 +208,28 @@ describe("call expressions", () => {
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
+
+  test("preserves trailing comments on expanded call arguments", () => {
+    const input = readFileSync(
+      new URL("../fixtures/call-trailing-comments.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const extraSpace = input.replace("1, // a", "1,  // a");
+
+    expect(output).toBe(input);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(checkQuint(extraSpace, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/call-trailing-comment-spacing",
+    ]);
+    expect(formatQuint(extraSpace)).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
 });
