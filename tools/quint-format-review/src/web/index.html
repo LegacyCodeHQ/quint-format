@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quint Format Review</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand"><span class="logo">Q</span><div><strong>Quint <span class="brand-subtitle">Format Review</span></strong><small>LOCAL DEVELOPER TOOL</small></div></div>
+      <span class="read-only"><span class="dot"></span> Read-only workspace</span>
+    </header>
+    <div class="workspace">
+      <aside>
+        <div class="sidebar-heading"><strong>Explorer</strong><button type="button" id="refresh" title="Refresh files and the current comparison">Refresh</button></div>
+        <div id="directory" class="directory"></div>
+        <label class="search"><span>⌕</span><input id="filter" type="search" placeholder="Find a .qnt file…" aria-label="Filter files" /></label>
+        <div id="file-count" class="caption"></div>
+        <nav id="tree" aria-label="Quint files"></nav>
+        <div class="sidebar-footer">.qnt files · Git ignore rules respected<br />Working files stay untouched.</div>
+      </aside>
+      <main>
+        <section class="toolbar">
+          <div class="file-heading"><div class="caption">FORMAT COMPARISON</div><h1 id="filename">Choose a Quint file</h1></div>
+          <div class="actions"><button type="button" id="clear" disabled>Clear selection</button><button type="button" id="copy" class="primary" disabled>Copy before &amp; after</button></div>
+        </section>
+        <div class="review-meta"><span id="file-state">Ready to explore</span><label><input id="sync" type="checkbox" checked /> Sync scrolling</label></div>
+        <div id="notice" role="status" aria-live="polite">Select a file to compare its original source with the formatter’s output.</div>
+        <section class="editors" aria-label="Source comparison">
+          <article class="editor"><div class="editor-heading"><strong><span class="before-dot"></span> Before</strong><span>Original source</span></div><div id="before-scroll" class="code-scroll"><pre id="before-lines" class="numbers" aria-hidden="true"></pre><pre id="before" class="source"></pre></div></article>
+          <article class="editor"><div class="editor-heading"><strong><span class="after-dot"></span> After</strong><span>Formatted preview</span></div><div id="after-scroll" class="code-scroll"><pre id="after-lines" class="numbers" aria-hidden="true"></pre><pre id="after" class="source"></pre></div></article>
+        </section>
+        <footer><span id="selection-info">Click a token or select code to trace it across both panels.</span><span id="copy-state" role="status" aria-live="polite">Markdown export</span></footer>
+      </main>
+    </div>
+  </body>
+</html>

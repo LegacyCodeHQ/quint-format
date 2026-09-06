@@ -1,0 +1,14 @@
+{
+  "name": "quint-format-review",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "quint-format-review": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "bun run build.ts",
+    "start": "bun dist/cli.js",
+    "check": "tsc --project tsconfig.json --noEmit",
+    "test": "bun test ./test"
+  }
+}
