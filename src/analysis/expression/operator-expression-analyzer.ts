@@ -4,7 +4,7 @@ import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import {
-  hasLineBrokenMultilineMapValue,
+  hasLineBrokenMultilinePairValue,
   hasPeerMatchOperands,
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
@@ -73,14 +73,14 @@ export function analyzeOperatorExpression(
     const leftAnalysis = analyzeExpression(left);
     const rightAnalysis = analyzeExpression(right);
     const comments = inlineComments.flatMap((comment) => [text(" "), commentDocument(comment)]);
-    const preservesMultilineMapValue = hasLineBrokenMultilineMapValue(node);
+    const preservesMultilinePairValue = hasLineBrokenMultilinePairValue(node);
     const hasSourceRightBreak =
       right.startPosition.row > operator.endPosition.row &&
       (isIndentedExpressionBody(node) ||
         isBlockCombinatorEntry(node) ||
         isOrdinaryBlockResult(node) ||
         isNestedDefinitionBody(node) ||
-        preservesMultilineMapValue);
+        preservesMultilinePairValue);
     const hasSourceOperatorBreak =
       inlineComments.length === 0 &&
       rightComments.length === 0 &&
@@ -122,7 +122,7 @@ export function analyzeOperatorExpression(
                   text(` ${operator.text}`),
                   indentBy(
                     concat([hardLine, rightAnalysis.document]),
-                    alignsMatchOperands ? 0 : preservesMultilineMapValue ? 1 : 2,
+                    alignsMatchOperands ? 0 : preservesMultilinePairValue ? 1 : 2,
                   ),
                 ])
               : concat([

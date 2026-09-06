@@ -1,7 +1,7 @@
 import type { BinaryOperator } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
-  hasLineBrokenMultilineMapValue,
+  hasLineBrokenMultilinePairValue,
   hasPeerMatchOperands,
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
@@ -42,7 +42,7 @@ export function checkBinaryExpressions(
 
     const beforeOperator = source.slice(commentAnchor.endIndex, operator.node.startIndex);
     const afterOperator = source.slice(operator.node.endIndex, operator.right.startIndex);
-    const preservesMultilineMapValue = hasLineBrokenMultilineMapValue(
+    const preservesMultilinePairValue = hasLineBrokenMultilinePairValue(
       operator.node.parent ?? operator.node,
     );
     const preservesLeadingOperatorBreak =
@@ -64,7 +64,7 @@ export function checkBinaryExpressions(
         isBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
         isOrdinaryBlockResult(operator.node.parent ?? operator.node) ||
         isNestedDefinitionBody(operator.node.parent ?? operator.node) ||
-        preservesMultilineMapValue);
+        preservesMultilinePairValue);
     const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
       ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
       : beforeOperator === " ";
@@ -125,7 +125,7 @@ export function checkBinaryExpressions(
           ? 0
           : preservesLeadingOperatorBreak
             ? 8
-            : preservesMultilineMapValue
+            : preservesMultilinePairValue
               ? 2
               : 4);
       if (operator.right.startPosition.column !== expectedColumn) {
@@ -140,7 +140,7 @@ export function checkBinaryExpressions(
             ? "expected alignment with the left match operand"
             : preservesLeadingOperatorBreak
               ? "expected the right operand four spaces beyond the continued operator"
-              : preservesMultilineMapValue
+              : preservesMultilinePairValue
                 ? "expected a two-space map value continuation"
                 : "expected a four-space continuation indent",
           sourceLine: lines[row] ?? "",

@@ -88,17 +88,14 @@ export function hasInlineMultilineConditionalLambdaBody(node: Parser.SyntaxNode)
   );
 }
 
-export function hasLineBrokenMultilineMapValue(node: Parser.SyntaxNode): boolean {
-  if (node.type !== "binary_expression" && node.type !== "pair_expression") return false;
-  const operator =
-    node.type === "pair_expression"
-      ? node.children.find((child) => child.type === "->")
-      : node.childForFieldName("operator");
+export function hasLineBrokenMultilinePairValue(node: Parser.SyntaxNode): boolean {
+  if (node.type !== "pair_expression") return false;
+  const arrow = node.children.find((child) => child.type === "->");
   const right = node.childForFieldName("right");
   return Boolean(
-    operator?.text === "->" &&
+    arrow &&
       right &&
-      right.startPosition.row > operator.endPosition.row &&
+      right.startPosition.row > arrow.endPosition.row &&
       right.endPosition.row > right.startPosition.row,
   );
 }
