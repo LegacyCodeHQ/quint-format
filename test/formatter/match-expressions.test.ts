@@ -158,6 +158,34 @@ describe("match expressions", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves line-broken match arm baselines at every nesting level", () => {
+    const input = readFileSync(
+      new URL("../fixtures/deep-line-broken-matches.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const overIndented = input
+      .replace("\n        match second {", "\n          match second {")
+      .replace("\n            match third {", "\n              match third {");
+
+    expect(checkQuint(input, "deep-line-broken-matches.qnt")).toEqual([]);
+    expect(
+      checkQuint(overIndented, "over-indented-matches.qnt").filter(
+        ({ rule }) => rule === "format/match-arm-body-indentation",
+      ),
+    ).toHaveLength(2);
+    expect(formatQuint(overIndented)).toBe(input);
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves record literal match-arm body indentation", () => {
     const input = readFileSync(
       new URL("../fixtures/record-match-arm-body.qnt", import.meta.url),
@@ -226,7 +254,7 @@ describe("match expressions", () => {
     );
     const output = formatQuint(input);
 
-    expect(output).toBe(input);
+    expect(output).toContain("    | Waiting =>        // Explain this arm.\n      2");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
@@ -239,7 +267,7 @@ describe("match expressions", () => {
     );
     const output = formatQuint(input);
 
-    expect(output).toContain("| Ready =>\n          1 // Ready has a value");
+    expect(output).toContain("| Ready =>\n        1 // Ready has a value");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

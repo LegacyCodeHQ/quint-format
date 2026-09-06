@@ -19,6 +19,15 @@ test/fixtures/match-check.qnt:5:16: error[format/match-arrow-spacing]: expected 
 "
 `;
 
+exports[`checker diagnostics match expressions reports a match arrow on a separate line 1`] = `
+"test/fixtures/match-arrow-line-break.qnt:7:10: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+7 |          => number
+  |          ^^
+  |
+"
+`;
+
 exports[`checker diagnostics match expressions reports noncanonical match-comment formatting 1`] = `
 "test/fixtures/match-comment.qnt:1:15: error[format/module-brace-spacing]: expected one space before '{'
   |
@@ -99,6 +108,11 @@ test/fixtures/match-arm-body-comment.qnt:4:7: error[format/match-arrow-spacing]:
 4 | |First=>
   |       ^^
   |
+test/fixtures/match-arm-body-comment.qnt:6:1: error[format/match-arm-body-indentation]: expected one indentation level for the line-broken match arm body
+  |
+6 | 1
+  | ^
+  |
 test/fixtures/match-arm-body-comment.qnt:7:8: error[format/match-arrow-spacing]: expected one space around '=>'
   |
 7 | |Second=>2
@@ -127,15 +141,6 @@ test/fixtures/match-expression.qnt:4:77: error[format/match-arrow-spacing]: expe
   |
 4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
   |                                                                             ^^
-  |
-"
-`;
-
-exports[`checker diagnostics match expressions reports a match arrow on a separate line 1`] = `
-"test/fixtures/match-arrow-line-break.qnt:7:10: error[format/match-arrow-spacing]: expected one space around '=>'
-  |
-7 |          => number
-  |          ^^
   |
 "
 `;

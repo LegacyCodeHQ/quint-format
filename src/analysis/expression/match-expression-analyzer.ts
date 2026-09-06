@@ -58,12 +58,9 @@ export function analyzeMatchExpression(
               commentDocument(inlineArrowComment),
               indent(
                 concat([
-                  ...leadingBodyComments.flatMap((comment) => [
-                    hardLine,
-                    indent(commentDocument(comment)),
-                  ]),
+                  ...leadingBodyComments.flatMap((comment) => [hardLine, commentDocument(comment)]),
                   hardLine,
-                  indent(bodyAnalysis.document),
+                  bodyAnalysis.document,
                 ]),
               ),
             ])
@@ -71,7 +68,7 @@ export function analyzeMatchExpression(
             ? isMultilineBody
               ? concat([
                   text(`| ${pattern}${arrowGap}=>`),
-                  indent(concat([hardLine, indent(bodyAnalysis.document)])),
+                  indent(concat([hardLine, bodyAnalysis.document])),
                 ])
               : concat([
                   text(`| ${pattern}${arrowGap}=> `),

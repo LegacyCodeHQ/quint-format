@@ -132,56 +132,44 @@ exports[`match expressions aligns an ordinary block body with the match case 2`]
 ]
 `;
 
-exports[`match expressions preserves comments between match arms 1`] = `
+exports[`match expressions preserves a nested match arm body baseline 1`] = `
 "module Example {
-  type Step = First | Second
-  pure def value(step) = match step {
-    // Preserve this arm comment.
-    | First => 1
-    | Second => 2
+  type Inner = Leaf(int) | Internal(int)
+  type Outer = Some(Inner) | None
+
+  pure def evaluate(value: Outer): int = {
+    match value {
+      | Some(node) => match node {
+          | Leaf(number) => number
+          | Internal(number) => number + 1
+        }
+      | None => {
+          0
+        }
+    }
   }
 }
 "
 `;
 
-exports[`match expressions preserves a comment before a match-arm body 1`] = `
+exports[`match expressions preserves line-broken match arm baselines at every nesting level 1`] = `
 "module Example {
-  type Step = First | Second
-  pure def value(step) = match step {
-    | First =>
-      // Preserve this arm body comment.
-      1
-    | Second => 2
-  }
-}
-"
-`;
+  type Third = Value(int) | NoThird
+  type Second = More(Third) | NoSecond
+  type First = Next(Second) | NoFirst
 
-exports[`match expressions preserves an aligned comment after a match-arm arrow 1`] = `
-"module Example {
-  type Mode = Ready | Waiting
-
-  const mode: Mode
-
-  val result = match mode {
-    | Ready => 1
-    | Waiting =>        // Explain this arm.
-        2
-  }
-}
-"
-`;
-
-exports[`match expressions preserves a multiline match-arm body with a trailing comment 1`] = `
-"module Example {
-  type Status = Ready | Waiting
-  var status: Status
-
-  val number =
-    match status {
-      | Ready =>
-          1 // Ready has a value
-      | Waiting => 0
+  pure def evaluate(first: First): int =
+    match first {
+      | Next(second) =>
+        match second {
+          | More(third) =>
+            match third {
+              | Value(number) => number
+              | NoThird => 0
+            }
+          | NoSecond => 0
+        }
+      | NoFirst => 0
     }
 }
 "
@@ -232,22 +220,57 @@ exports[`match expressions preserves nested record literal match-arm body indent
 "
 `;
 
-exports[`match expressions preserves a nested match arm body baseline 1`] = `
+exports[`match expressions preserves comments between match arms 1`] = `
 "module Example {
-  type Inner = Leaf(int) | Internal(int)
-  type Outer = Some(Inner) | None
-
-  pure def evaluate(value: Outer): int = {
-    match value {
-      | Some(node) => match node {
-          | Leaf(number) => number
-          | Internal(number) => number + 1
-        }
-      | None => {
-          0
-        }
-    }
+  type Step = First | Second
+  pure def value(step) = match step {
+    // Preserve this arm comment.
+    | First => 1
+    | Second => 2
   }
+}
+"
+`;
+
+exports[`match expressions preserves a comment before a match-arm body 1`] = `
+"module Example {
+  type Step = First | Second
+  pure def value(step) = match step {
+    | First =>
+      // Preserve this arm body comment.
+      1
+    | Second => 2
+  }
+}
+"
+`;
+
+exports[`match expressions preserves an aligned comment after a match-arm arrow 1`] = `
+"module Example {
+  type Mode = Ready | Waiting
+
+  const mode: Mode
+
+  val result = match mode {
+    | Ready => 1
+    | Waiting =>        // Explain this arm.
+      2
+  }
+}
+"
+`;
+
+exports[`match expressions preserves a multiline match-arm body with a trailing comment 1`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+
+  val number =
+    match status {
+      | Ready =>
+        1 // Ready has a value
+      | Waiting => 0
+    }
 }
 "
 `;

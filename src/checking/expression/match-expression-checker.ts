@@ -138,14 +138,30 @@ export function checkMatchExpressions(
                   body.childForFieldName("expression"),
                 ].filter((entry): entry is Parser.SyntaxNode => entry !== null)
               : undefined;
-      if (structuralEntries && body.startPosition.row === arrow.endPosition.row) {
-        const indentationColumn = (candidate: Parser.SyntaxNode) =>
-          lines[candidate.startPosition.row]?.search(/\S|$/u) ?? candidate.startPosition.column;
-        const armColumn = indentationColumn(arm);
+      const indentationColumn = (candidate: Parser.SyntaxNode) =>
+        lines[candidate.startPosition.row]?.search(/\S|$/u) ?? candidate.startPosition.column;
+      const armColumn = indentationColumn(arm);
+      const lineBrokenBody = body.startPosition.row > arrow.endPosition.row;
+      const expectedLineBrokenBodyColumn = armColumn + 2;
+      if (lineBrokenBody && indentationColumn(body) !== expectedLineBrokenBodyColumn) {
+        const row = body.startPosition.row;
+        const bodyIndentation = indentationColumn(body);
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: 1,
+          length: Math.max(1, bodyIndentation),
+          rule: "format/match-arm-body-indentation",
+          message: "expected one indentation level for the line-broken match arm body",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+      if (structuralEntries) {
         const closeBrace = body.children.find((child) => child.type === "}");
         const bodyColumn =
           armColumn +
-          (body.type === "block_expression" ||
+          (lineBrokenBody ||
+          body.type === "block_expression" ||
           body.type === "match_expression" ||
           body.type === "record_literal"
             ? 2
