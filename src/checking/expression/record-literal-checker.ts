@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { hasLineBrokenMultilineRecordFieldValue } from "@/parsing/syntax.js";
 
 export function checkRecordLiterals(
   recordLiterals: Parser.SyntaxNode[],
@@ -78,7 +79,11 @@ export function checkRecordLiterals(
         });
       }
       const afterColon = source.slice(colon.endIndex, value.startIndex);
-      if (afterColon !== " ") {
+      const preservesMultilineValueBreak = hasLineBrokenMultilineRecordFieldValue(field);
+      const hasCanonicalAfterColon = preservesMultilineValueBreak
+        ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterColon)
+        : afterColon === " ";
+      if (!hasCanonicalAfterColon) {
         const row = colon.endPosition.row;
         diagnostics.push({
           filePath,
@@ -86,7 +91,24 @@ export function checkRecordLiterals(
           column: colon.endPosition.column + 1,
           length: Math.max(1, afterColon.length),
           rule: "format/expression-colon-spacing",
-          message: "expected one space after ':'",
+          message: preservesMultilineValueBreak
+            ? "expected a line break after ':'"
+            : "expected one space after ':'",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+      if (
+        preservesMultilineValueBreak &&
+        value.startPosition.column !== name.startPosition.column + 2
+      ) {
+        const row = value.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: 1,
+          length: Math.max(1, value.startPosition.column),
+          rule: "format/record-field-value-indentation",
+          message: "expected the multiline field value two spaces inside the field",
           sourceLine: lines[row] ?? "",
         });
       }

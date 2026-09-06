@@ -97,6 +97,21 @@ exports[`value definitions and literals preserves a trailing comma in a multilin
 "
 `;
 
+exports[`value definitions and literals preserves line breaks before multiline record field values 1`] = `
+"module Example {
+  pure val result = {
+    left:
+      {
+        hash:
+          {
+            value: 1
+          }
+      }
+  }
+}
+"
+`;
+
 exports[`value definitions and literals preserves source-line groups in a multiline record literal 1`] = `
 "module Example {
   pure val message = {

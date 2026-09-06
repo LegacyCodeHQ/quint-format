@@ -63,6 +63,18 @@ export function hasLineBrokenMultilineMapValue(node: Parser.SyntaxNode): boolean
   );
 }
 
+export function hasLineBrokenMultilineRecordFieldValue(node: Parser.SyntaxNode): boolean {
+  if (node.type !== "record_literal_field") return false;
+  const colon = node.children.find((child) => child.type === ":");
+  const value = node.childForFieldName("value");
+  return Boolean(
+    colon &&
+      value &&
+      value.startPosition.row > colon.endPosition.row &&
+      value.endPosition.row > value.startPosition.row,
+  );
+}
+
 export function isNestedInVerticallyExpandedCall(node: Parser.SyntaxNode): boolean {
   let ancestor = node.parent;
 

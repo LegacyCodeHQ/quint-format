@@ -150,6 +150,30 @@ describe("value definitions and literals", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves line breaks before multiline record field values", () => {
+    const input = readFileSync(
+      new URL("../fixtures/multiline-record-field-values.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const overIndented = input.replace("left:\n      {", "left:\n        {");
+
+    expect(output).toBe(input);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(checkQuint(overIndented, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/record-field-value-indentation",
+    ]);
+    expect(formatQuint(overIndented)).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves source-line groups in a multiline record literal", () => {
     const input = readFileSync(
       new URL("../fixtures/grouped-record-literal.qnt", import.meta.url),
