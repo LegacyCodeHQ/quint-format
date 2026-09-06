@@ -268,12 +268,17 @@ export function isCompactElseIfLadder(node: Parser.SyntaxNode): boolean {
     const closeParen = branch.children.find((child) => child.type === ")");
     const elseKeyword = branch.children.find((child) => child.type === "else");
     if (!condition || !consequence || !alternative || !closeParen || !elseKeyword) return false;
+    const breaksBeforeElse =
+      elseKeyword.startPosition.row > consequence.endPosition.row &&
+      alternative.startPosition.row === elseKeyword.endPosition.row;
+    const breaksAfterElse =
+      elseKeyword.startPosition.row === consequence.endPosition.row &&
+      alternative.startPosition.row > elseKeyword.endPosition.row;
     if (
       condition.startPosition.row !== condition.endPosition.row ||
       consequence.startPosition.row !== closeParen.endPosition.row ||
       consequence.endPosition.row !== closeParen.endPosition.row ||
-      elseKeyword.startPosition.row <= consequence.endPosition.row ||
-      alternative.startPosition.row !== elseKeyword.endPosition.row
+      (!breaksBeforeElse && !breaksAfterElse)
     ) {
       return false;
     }

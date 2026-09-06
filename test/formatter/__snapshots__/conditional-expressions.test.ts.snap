@@ -130,15 +130,6 @@ exports[`conditional expressions preserves one blank line between block conditio
 exports[`conditional expressions formats a nested conditional as an else-if chain 1`] = `
 [
   {
-    "column": 19,
-    "filePath": "input.qnt",
-    "length": 1,
-    "line": 3,
-    "message": "expected a line break and two-space indentation after ')'",
-    "rule": "format/conditional-branch-spacing",
-    "sourceLine": "    if (value < 0) "negative" else",
-  },
-  {
     "column": 31,
     "filePath": "input.qnt",
     "length": 4,
@@ -146,15 +137,6 @@ exports[`conditional expressions formats a nested conditional as an else-if chai
     "message": "expected preserved line breaks and indentation around 'else'",
     "rule": "format/conditional-else-spacing",
     "sourceLine": "    if (value < 0) "negative" else",
-  },
-  {
-    "column": 20,
-    "filePath": "input.qnt",
-    "length": 1,
-    "line": 4,
-    "message": "expected a line break and two-space indentation after ')'",
-    "rule": "format/conditional-branch-spacing",
-    "sourceLine": "    if (value == 0) "zero" else",
   },
   {
     "column": 28,
@@ -171,12 +153,9 @@ exports[`conditional expressions formats a nested conditional as an else-if chai
 exports[`conditional expressions formats a nested conditional as an else-if chain 2`] = `
 "module Example {
   pure def classify(value: int): str =
-    if (value < 0)
-      "negative"
-    else if (value == 0)
-      "zero"
-    else
-      "positive"
+    if (value < 0) "negative"
+    else if (value == 0) "zero"
+    else "positive"
 }
 "
 `;
@@ -304,6 +283,40 @@ exports[`conditional expressions preserves a comment before a conditional conseq
   pure val answer = if (true)
     // Preserve this consequence comment.
     1 else 2
+}
+"
+`;
+
+exports[`conditional expressions joins trailing else lines in a compact conditional ladder 1`] = `
+"module Example {
+  action StartInCorner = true
+  action Win = true
+  action Block = true
+  action TakeCenter = true
+  action SetupWin = true
+  action MoveToEmpty(player) = true
+
+  val boardEmpty = true
+  val canWin = true
+  val canBlock = true
+  val canTakeCenter = true
+  val canSetupWin = true
+  val X = 1
+  val O = 2
+  var nextTurn: int
+  val gameOver = false
+
+  action MoveX = all {
+    nextTurn == X,
+    not(gameOver),
+    if (boardEmpty) StartInCorner
+    else if (canWin) Win
+    else if (canBlock) Block
+    else if (canTakeCenter) TakeCenter
+    else if (canSetupWin) SetupWin
+    else MoveToEmpty(X),
+    nextTurn' = O,
+  }
 }
 "
 `;

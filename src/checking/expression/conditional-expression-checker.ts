@@ -162,7 +162,7 @@ export function checkConditionalExpressions(
       ((!preservesCompactLadder && formatsConditionalChain) ||
         expandsSourceMultilineCondition ||
         (!preservesCompactLadder && hasSourceElseBreak) ||
-        alternative.startPosition.row > elseKeyword.endPosition.row);
+        (!preservesCompactLadder && alternative.startPosition.row > elseKeyword.endPosition.row));
     const consequenceCloseBrace = consequence.children.find((child) => child.type === "}");
     const expectedElseGap = preservesBlankLineBeforeElse
       ? `\n\n${" ".repeat(consequenceCloseBrace?.startPosition.column ?? consequence.endPosition.column)}`

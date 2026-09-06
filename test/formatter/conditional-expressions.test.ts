@@ -151,7 +151,7 @@ describe("conditional expressions", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      '    if (value < 0)\n      "negative"\n    else if (value == 0)\n      "zero"\n    else\n      "positive"',
+      '    if (value < 0) "negative"\n    else if (value == 0) "zero"\n    else "positive"',
     );
     expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
     expect(output).toMatchSnapshot();
@@ -165,6 +165,29 @@ describe("conditional expressions", () => {
     const output = formatQuint(input);
 
     expect(output).toBe(input);
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    expect(parser.parse(output).rootNode.hasError).toBe(false);
+  });
+
+  test("joins trailing else lines in a compact conditional ladder", () => {
+    const input = readFileSync(
+      new URL("../fixtures/trailing-else-compact-ladder.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      [
+        "    if (boardEmpty) StartInCorner",
+        "    else if (canWin) Win",
+        "    else if (canBlock) Block",
+        "    else if (canTakeCenter) TakeCenter",
+        "    else if (canSetupWin) SetupWin",
+        "    else MoveToEmpty(X),",
+      ].join("\n"),
+    );
+    expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
     expect(parser.parse(output).rootNode.hasError).toBe(false);

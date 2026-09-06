@@ -97,7 +97,7 @@ export function analyzeConditionalExpression(
       ((!preservesCompactLadder && formatsConditionalChain) ||
         expandsSourceMultilineCondition ||
         (!preservesCompactLadder && hasSourceElseBreak) ||
-        alternative.startPosition.row > elseKeyword.endPosition.row);
+        (!preservesCompactLadder && alternative.startPosition.row > elseKeyword.endPosition.row));
     return {
       document: concat([
         text("if ("),
