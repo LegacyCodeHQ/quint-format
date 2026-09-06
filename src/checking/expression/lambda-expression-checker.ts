@@ -1,8 +1,10 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
+  callExpressionTarget,
   collectNodes,
   hasInlineMultilineConditionalLambdaBody,
+  isCallExpression,
   isMultilineLambdaExpression,
   isMultilineUfcsContinuation,
   ufcsChainRoot,
@@ -101,13 +103,13 @@ export function checkLambdaExpressions(
         sourceLine: lines[row] ?? "",
       });
     }
-    const parentCall = lambda.parent?.type === "call_expression" ? lambda.parent : undefined;
-    const parentFunction = parentCall?.childForFieldName("function");
-    const functionObject = parentFunction?.childForFieldName("object");
-    const functionDot = parentFunction?.children.find((child) => child.type === ".");
+    const parentCall = lambda.parent && isCallExpression(lambda.parent) ? lambda.parent : undefined;
+    const parentTarget = parentCall ? callExpressionTarget(parentCall) : null;
+    const parentFunction = parentTarget?.functionNode;
+    const functionObject = parentTarget?.receiver;
+    const functionDot = parentTarget?.dot;
     const isMultilineUfcsLambda = Boolean(
-      parentFunction?.type === "field_access_expression" &&
-        functionObject &&
+      functionObject &&
         functionDot &&
         functionDot.startPosition.row > functionObject.endPosition.row &&
         body.startPosition.row > arrow.endPosition.row,
@@ -115,15 +117,17 @@ export function checkLambdaExpressions(
     const callArguments = parentCall?.childrenForFieldName("argument") ?? [];
     const argumentIndex = callArguments.findIndex((argument) => argument.id === lambda.id);
     const previousArgument = callArguments[argumentIndex - 1];
+    const ufcsNode = parentCall?.type === "ufcs_call_expression" ? parentCall : parentFunction;
     const isInlineSecondaryArgumentInContinuedUfcsCall = Boolean(
       argumentIndex > 0 &&
         previousArgument?.endPosition.row === lambda.startPosition.row &&
         parentFunction &&
-        isMultilineUfcsContinuation(parentFunction),
+        ufcsNode &&
+        isMultilineUfcsContinuation(ufcsNode),
     );
     const expectedBodyColumn =
-      isInlineSecondaryArgumentInContinuedUfcsCall && parentFunction
-        ? (lines[ufcsChainRoot(parentFunction).startPosition.row]?.search(/\S|$/) ?? 0) +
+      isInlineSecondaryArgumentInContinuedUfcsCall && ufcsNode
+        ? (lines[ufcsChainRoot(ufcsNode).startPosition.row]?.search(/\S|$/) ?? 0) +
           ufcsContinuationIndentation() * 2
         : (functionDot?.startPosition.column ?? 0) + 2;
     if (isMultilineUfcsLambda && functionDot && body.startPosition.column !== expectedBodyColumn) {

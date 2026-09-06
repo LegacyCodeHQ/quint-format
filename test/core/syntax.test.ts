@@ -2,8 +2,11 @@ import { describe, expect, test } from "bun:test";
 import type Parser from "tree-sitter";
 import {
   blockCombinatorEntries,
+  callExpressionTarget,
   definitionBody,
   isBlockCombinatorExpression,
+  isCallExpression,
+  isMultilineUfcsContinuation,
 } from "@/parsing/syntax.js";
 
 function definitionNode(
@@ -36,5 +39,22 @@ describe("syntax helpers", () => {
     expect(isBlockCombinatorExpression(combinator)).toBe(true);
     expect(blockCombinatorEntries(combinator)).toEqual([entry]);
     expect(isBlockCombinatorExpression(definitionNode("block_expression", {}))).toBe(false);
+  });
+
+  test("reads named UFCS targets without conflating field access", () => {
+    const receiver = { id: 3, endPosition: { row: 0, column: 5 } } as Parser.SyntaxNode;
+    const method = { id: 4 } as Parser.SyntaxNode;
+    const dot = { type: ".", startPosition: { row: 1, column: 4 } } as Parser.SyntaxNode;
+    const fields: Record<string, Parser.SyntaxNode> = { receiver, method };
+    const ufcs = {
+      type: "ufcs_call_expression",
+      children: [receiver, dot, method],
+      childForFieldName: (name: string) => fields[name] ?? null,
+    } as unknown as Parser.SyntaxNode;
+
+    expect(isCallExpression(ufcs)).toBe(true);
+    expect(callExpressionTarget(ufcs)).toEqual({ functionNode: method, receiver, method, dot });
+    expect(isMultilineUfcsContinuation(ufcs)).toBe(true);
+    expect(isCallExpression(definitionNode("field_access_expression", {}))).toBe(false);
   });
 });

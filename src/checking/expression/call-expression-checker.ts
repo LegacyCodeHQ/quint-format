@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
+  callExpressionTarget,
   callTrailingCommentAlignment,
   hasMultilineLambdaBody,
   isMultilineLambdaExpression,
@@ -16,7 +17,8 @@ export function checkCallExpressions(
   const diagnostics: FormatDiagnostic[] = [];
 
   for (const callExpression of callExpressions) {
-    const functionNode = callExpression.childForFieldName("function");
+    const target = callExpressionTarget(callExpression);
+    const functionNode = target?.functionNode;
     const openParen = callExpression.children.find((child) => child.type === "(");
     const closeParen = callExpression.children.find((child) => child.type === ")");
     const arguments_ = callExpression.childrenForFieldName("argument");
@@ -27,7 +29,10 @@ export function checkCallExpressions(
       throw new Error("Unable to locate the call delimiters");
     }
     const directComments = callExpression.namedChildren.filter(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
+      (child) =>
+        (child.type === "comment" || child.type === "documentation_comment") &&
+        child.startIndex >= openParen.endIndex &&
+        child.endIndex <= closeParen.startIndex,
     );
     const trailingCommentAlignment = callTrailingCommentAlignment(callExpression);
     for (const comment of directComments) {
@@ -80,13 +85,15 @@ export function checkCallExpressions(
           return argument.startPosition.row === previous.endPosition.row;
         }) &&
         closeParen.startPosition.row > last.endPosition.row;
-      const functionDot =
-        functionNode.type === "field_access_expression"
-          ? functionNode.children.find((child) => child.type === ".")
-          : undefined;
+      const functionDot = target?.dot;
       const callIndentation =
         functionDot?.startPosition.column ?? callExpression.startPosition.column;
-      const isMultilineUfcsCall = Boolean(functionDot && isMultilineUfcsContinuation(functionNode));
+      const isMultilineUfcsCall = Boolean(
+        functionDot &&
+          isMultilineUfcsContinuation(
+            callExpression.type === "ufcs_call_expression" ? callExpression : functionNode,
+          ),
+      );
       const hangingArgumentGap = `\n${" ".repeat(callIndentation + 2)}`;
       const hangingCloseGap = `\n${" ".repeat(callIndentation)}`;
       const expressionLineIndentation = (lines[callExpression.startPosition.row] ?? "").search(

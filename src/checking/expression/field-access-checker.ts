@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
+  callExpressionTarget,
   collectNodes,
   isMultilineUfcsContinuation,
   ufcsChainRoot,
@@ -15,10 +16,16 @@ export function checkFieldAccessExpressions(
 ): FormatDiagnostic[] {
   const diagnostics: FormatDiagnostic[] = [];
 
-  for (const fieldAccess of collectNodes(root, "field_access_expression")) {
-    const object = fieldAccess.childForFieldName("object");
-    const field = fieldAccess.childForFieldName("field");
-    const dot = fieldAccess.children.find((child) => child.type === ".");
+  const accesses = [
+    ...collectNodes(root, "field_access_expression"),
+    ...collectNodes(root, "ufcs_call_expression"),
+  ];
+  for (const fieldAccess of accesses) {
+    const target =
+      fieldAccess.type === "ufcs_call_expression" ? callExpressionTarget(fieldAccess) : null;
+    const object = target?.receiver ?? fieldAccess.childForFieldName("object");
+    const field = target?.method ?? fieldAccess.childForFieldName("field");
+    const dot = target?.dot ?? fieldAccess.children.find((child) => child.type === ".");
     if (!object || !field || !dot) {
       throw new Error("Unable to locate the field access operator");
     }
@@ -29,7 +36,10 @@ export function checkFieldAccessExpressions(
       ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeDot)
       : beforeDot === "";
     const comments = fieldAccess.namedChildren.filter(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
+      (child) =>
+        (child.type === "comment" || child.type === "documentation_comment") &&
+        child.startIndex >= object.endIndex &&
+        child.endIndex <= field.startIndex,
     );
     const hasComments = comments.length > 0;
     if ((!hasComments && !hasCanonicalBeforeDot) || afterDot !== "") {

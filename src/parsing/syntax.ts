@@ -117,7 +117,7 @@ export function isNestedInVerticallyExpandedCall(node: Parser.SyntaxNode): boole
   let ancestor = node.parent;
 
   while (ancestor) {
-    if (ancestor.type === "call_expression") {
+    if (isCallExpression(ancestor)) {
       const openParenthesis = ancestor.children.find((child) => child.type === "(");
       const arguments_ = ancestor.childrenForFieldName("argument");
       const containsNodeAsArgument = arguments_.some(
@@ -267,8 +267,10 @@ export function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode)
   return Boolean(
     expression &&
       expression.startPosition.row < expression.endPosition.row &&
-      parent?.type === "field_access_expression" &&
-      parent.childForFieldName("object")?.id === node.id,
+      ((parent?.type === "field_access_expression" &&
+        parent.childForFieldName("object")?.id === node.id) ||
+        (parent?.type === "ufcs_call_expression" &&
+          parent.childForFieldName("receiver")?.id === node.id)),
   );
 }
 
@@ -281,6 +283,36 @@ export function isBraceDelimitedExpression(node: Parser.SyntaxNode): boolean {
   );
 }
 
+export interface CallExpressionTarget {
+  functionNode: Parser.SyntaxNode;
+  receiver?: Parser.SyntaxNode;
+  method?: Parser.SyntaxNode;
+  dot?: Parser.SyntaxNode;
+}
+
+export function isCallExpression(node: Parser.SyntaxNode): boolean {
+  return node.type === "call_expression" || node.type === "ufcs_call_expression";
+}
+
+export function callExpressionTarget(node: Parser.SyntaxNode): CallExpressionTarget | null {
+  if (node.type === "ufcs_call_expression") {
+    const receiver = node.childForFieldName("receiver");
+    const method = node.childForFieldName("method");
+    const dot = node.children.find((child) => child.type === ".");
+    return receiver && method ? { functionNode: method, receiver, method, dot } : null;
+  }
+  if (node.type !== "call_expression") return null;
+  const functionNode = node.childForFieldName("function");
+  if (!functionNode) return null;
+  if (functionNode.type !== "field_access_expression") return { functionNode };
+  return {
+    functionNode,
+    receiver: functionNode.childForFieldName("object") ?? undefined,
+    method: functionNode.childForFieldName("field") ?? undefined,
+    dot: functionNode.children.find((child) => child.type === "."),
+  };
+}
+
 export function ufcsChainRoot(node: Parser.SyntaxNode): Parser.SyntaxNode {
   let current = node;
   while (current.parent) {
@@ -290,15 +322,20 @@ export function ufcsChainRoot(node: Parser.SyntaxNode): Parser.SyntaxNode {
     const continuesThroughField =
       parent.type === "field_access_expression" &&
       parent.childForFieldName("object")?.id === current.id;
-    if (!continuesThroughCall && !continuesThroughField) break;
+    const continuesThroughNamedUfcs =
+      parent.type === "ufcs_call_expression" &&
+      parent.childForFieldName("receiver")?.id === current.id;
+    if (!continuesThroughCall && !continuesThroughField && !continuesThroughNamedUfcs) break;
     current = parent;
   }
   return current;
 }
 
 export function isMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
-  if (node.type !== "field_access_expression") return false;
-  const object = node.childForFieldName("object");
+  if (node.type !== "field_access_expression" && node.type !== "ufcs_call_expression") return false;
+  const object = node.childForFieldName(
+    node.type === "ufcs_call_expression" ? "receiver" : "object",
+  );
   const dot = node.children.find((child) => child.type === ".");
   return Boolean(object && dot && dot.startPosition.row > object.endPosition.row);
 }

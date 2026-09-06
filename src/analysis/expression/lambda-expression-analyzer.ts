@@ -5,8 +5,10 @@ import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { formatCommentedTuplePattern, formatPattern } from "@/formatting/pattern-formatter.js";
 import {
+  callExpressionTarget,
   compactLambdaBlockExpression,
   hasInlineMultilineConditionalLambdaBody,
+  isCallExpression,
   isMultilineLambdaExpression,
   isMultilineUfcsContinuation,
 } from "@/parsing/syntax.js";
@@ -65,18 +67,23 @@ export function analyzeLambdaExpression(
       body.startPosition.column - continuationAnchor.startPosition.column >= 4
         ? 2
         : 1;
-    const enclosingCall = node.parent?.type === "call_expression" ? node.parent : undefined;
+    const enclosingCall = node.parent && isCallExpression(node.parent) ? node.parent : undefined;
     const callArguments = enclosingCall?.childrenForFieldName("argument") ?? [];
     const argumentIndex = callArguments.findIndex((argument) => argument.id === node.id);
     const previousArgument = callArguments[argumentIndex - 1];
     const isInlineSecondaryArgument = Boolean(
       previousArgument && previousArgument.endPosition.row === node.startPosition.row,
     );
-    const enclosingFunction = enclosingCall?.childForFieldName("function");
+    const enclosingFunction = enclosingCall
+      ? callExpressionTarget(enclosingCall)?.functionNode
+      : undefined;
     const isInlineSecondaryArgumentInContinuedUfcsCall = Boolean(
       isInlineSecondaryArgument &&
         enclosingFunction &&
-        isMultilineUfcsContinuation(enclosingFunction),
+        enclosingCall &&
+        isMultilineUfcsContinuation(
+          enclosingCall.type === "ufcs_call_expression" ? enclosingCall : enclosingFunction,
+        ),
     );
     const inlineCallHeaderExceedsLineWidth = arrow.endPosition.column > 120;
     const continuationIndentation = isInlineSecondaryArgumentInContinuedUfcsCall
