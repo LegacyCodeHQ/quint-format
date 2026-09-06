@@ -11,6 +11,7 @@ import {
   isNestedDefinitionBody,
   isNestedInVerticallyExpandedCall,
   isOrdinaryBlockResult,
+  isWithinBlockCombinatorEntry,
   isWithinConditionalCondition,
   isWithinExpandedConditionalCondition,
 } from "@/parsing/syntax.js";
@@ -87,6 +88,7 @@ export function analyzeOperatorExpression(
       (isWithinConditionalCondition(node) ||
         isIndentedExpressionBody(node) ||
         isBlockCombinatorEntry(node) ||
+        isWithinBlockCombinatorEntry(node) ||
         isOrdinaryBlockResult(node) ||
         isNestedDefinitionBody(node) ||
         isNestedInVerticallyExpandedCall(node));

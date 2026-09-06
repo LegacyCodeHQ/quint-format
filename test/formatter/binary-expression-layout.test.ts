@@ -125,6 +125,30 @@ describe("binary expression layout", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a leading binary continuation inside a block entry call", () => {
+    const input = readFileSync(
+      new URL("../fixtures/block-call-binary-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const shallowOperator = input.replace("\n          == 3", "\n        == 3");
+
+    expect(output).toBe(input);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(checkQuint(shallowOperator, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/binary-operator-indentation",
+    );
+    expect(formatQuint(shallowOperator)).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves a binary right-operand continuation in a block combinator", () => {
     const input = readFileSync(
       new URL("../fixtures/block-binary-right-continuation.qnt", import.meta.url),

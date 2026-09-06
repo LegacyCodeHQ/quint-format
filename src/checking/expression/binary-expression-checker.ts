@@ -8,6 +8,7 @@ import {
   isNestedDefinitionBody,
   isNestedInVerticallyExpandedCall,
   isOrdinaryBlockResult,
+  isWithinBlockCombinatorEntry,
   isWithinConditionalCondition,
   isWithinExpandedConditionalCondition,
 } from "@/parsing/syntax.js";
@@ -51,6 +52,7 @@ export function checkBinaryExpressions(
       (isWithinConditionalCondition(operator.node.parent ?? operator.node) ||
         isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
         isBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
+        isWithinBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
         isOrdinaryBlockResult(operator.node.parent ?? operator.node) ||
         isNestedDefinitionBody(operator.node.parent ?? operator.node) ||
         isNestedInVerticallyExpandedCall(operator.node.parent ?? operator.node));

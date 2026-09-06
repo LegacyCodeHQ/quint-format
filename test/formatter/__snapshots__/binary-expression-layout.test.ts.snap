@@ -137,3 +137,15 @@ exports[`binary expression layout preserves a binary continuation in a lambda bo
 }
 "
 `;
+
+exports[`binary expression layout preserves a leading binary continuation inside a block entry call 1`] = `
+"module Example {
+  run check =
+    all {
+      assert(Set(1, 2, 3).size()
+          == 3),
+      true
+    }
+}
+"
+`;

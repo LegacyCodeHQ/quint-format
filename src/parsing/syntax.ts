@@ -161,6 +161,20 @@ export function isBlockCombinatorEntry(node: Parser.SyntaxNode): boolean {
   return Boolean(node.parent && isBlockCombinatorExpression(node.parent));
 }
 
+export function isWithinBlockCombinatorEntry(node: Parser.SyntaxNode): boolean {
+  let current = node;
+  while (current.parent) {
+    if (
+      isBlockCombinatorExpression(current.parent) &&
+      blockCombinatorEntries(current.parent).some((entry) => entry.id === current.id)
+    ) {
+      return true;
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
 export function isOrdinaryBlockResult(node: Parser.SyntaxNode): boolean {
   return node.parent?.type === "block_expression";
 }
