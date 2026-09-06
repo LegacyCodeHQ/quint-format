@@ -47,6 +47,18 @@ exports[`binary expression layout preserves a multiline map value after the arro
 "
 `;
 
+exports[`binary expression layout preserves a leading binary continuation in an expanded call argument 1`] = `
+"module Example {
+  run example = {
+    assert(
+        1
+            == 1
+    )
+  }
+}
+"
+`;
+
 exports[`binary expression layout preserves a leading binary continuation in a block combinator 1`] = `
 "module Example {
   pure val holds = and {

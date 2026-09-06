@@ -84,6 +84,30 @@ describe("binary expression layout", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves a leading binary continuation in an expanded call argument", () => {
+    const input = readFileSync(
+      new URL("../fixtures/expanded-call-binary-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const shallowOperator = input.replace("\n            == 1", "\n          == 1");
+
+    expect(output).toBe(input);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(checkQuint(shallowOperator, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/binary-operator-indentation",
+    ]);
+    expect(formatQuint(shallowOperator)).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves a leading binary continuation in a block combinator", () => {
     const input = readFileSync(
       new URL("../fixtures/block-leading-binary-continuation.qnt", import.meta.url),

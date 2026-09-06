@@ -6,6 +6,7 @@ import {
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
   isNestedDefinitionBody,
+  isNestedInVerticallyExpandedCall,
   isOrdinaryBlockResult,
   isWithinConditionalCondition,
   isWithinExpandedConditionalCondition,
@@ -51,7 +52,8 @@ export function checkBinaryExpressions(
         isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
         isBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
         isOrdinaryBlockResult(operator.node.parent ?? operator.node) ||
-        isNestedDefinitionBody(operator.node.parent ?? operator.node));
+        isNestedDefinitionBody(operator.node.parent ?? operator.node) ||
+        isNestedInVerticallyExpandedCall(operator.node.parent ?? operator.node));
     const preservesRightOperandBreak =
       operator.inlineComments.length === 0 &&
       operator.rightComments.length === 0 &&

@@ -9,6 +9,7 @@ import {
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
   isNestedDefinitionBody,
+  isNestedInVerticallyExpandedCall,
   isOrdinaryBlockResult,
   isWithinConditionalCondition,
   isWithinExpandedConditionalCondition,
@@ -84,7 +85,8 @@ export function analyzeOperatorExpression(
         isIndentedExpressionBody(node) ||
         isBlockCombinatorEntry(node) ||
         isOrdinaryBlockResult(node) ||
-        isNestedDefinitionBody(node));
+        isNestedDefinitionBody(node) ||
+        isNestedInVerticallyExpandedCall(node));
     const alignsMatchOperands = hasPeerMatchOperands(node);
     const operatorContinuationIndentation =
       isWithinExpandedConditionalCondition(node) || alignsMatchOperands ? 0 : 2;
