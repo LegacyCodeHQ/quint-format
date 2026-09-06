@@ -139,13 +139,13 @@ exports[`call expressions indents a nested multiline call inside a UFCS continua
   action step(values: Set[int]): bool = true
 
   run execution =
-    init
-        // Explain the first transition.
-        // Keep this attached to the call.
-        .then(step(Set(
-            1,
-            2
-        )))
+      init
+          // Explain the first transition.
+          // Keep this attached to the call.
+          .then(step(Set(
+              1,
+              2
+          )))
 }
 "
 `;

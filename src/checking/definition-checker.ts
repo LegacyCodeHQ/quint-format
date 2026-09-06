@@ -2,6 +2,7 @@ import type { ModuleDeclaration } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { preservesDefinitionBodyLineBreak } from "@/formatting/definition-body-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import { isMultilineUfcsContinuation } from "@/parsing/syntax.js";
 
 export function checkDefinitionBody(
   declaration: ModuleDeclaration,
@@ -41,6 +42,11 @@ export function checkDefinitionBody(
     !hasRecordComments &&
     !isMultilineRecord &&
     !isExpandedTypeApplication;
+  const usesUfcsBodyContinuation =
+    declaration.node.type === "operator_definition" &&
+    declaration.valueNode.type === "ufcs_call_expression" &&
+    declaration.valueNode.startPosition.row > declaration.equals.endPosition.row &&
+    isMultilineUfcsContinuation(declaration.valueNode);
   const requiresLineBreakAfterEquals =
     isMultilineSum ||
     preservesTypeContinuation ||
@@ -63,7 +69,9 @@ export function checkDefinitionBody(
     });
   }
   if (
-    (declaration.node.type === "assumption_declaration" || preservesTypeContinuation) &&
+    (declaration.node.type === "assumption_declaration" ||
+      preservesTypeContinuation ||
+      usesUfcsBodyContinuation) &&
     declaration.valueNode.startPosition.row > declaration.equals.endPosition.row &&
     declaration.valueNode.startPosition.column !== declaration.node.startPosition.column + 4
   ) {

@@ -52,7 +52,7 @@ describe("parenthesized and postfix expressions", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      "    ((x, y) =>\n      val result = x * y\n      if (result > 0) result else 0\n    ).app(lhs, rhs)",
+      "      ((x, y) =>\n        val result = x * y\n        if (result > 0) result else 0\n      ).app(lhs, rhs)",
     );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);

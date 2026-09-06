@@ -5,7 +5,7 @@ import { definitionBodyDocument } from "@/formatting/definition-body-formatter.j
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { canFormatType, formatType } from "@/formatting/type-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
-import { definitionBody } from "@/parsing/syntax.js";
+import { definitionBody, isMultilineUfcsContinuation } from "@/parsing/syntax.js";
 
 export function analyzeOperatorDefinition(
   node: Parser.SyntaxNode,
@@ -125,6 +125,10 @@ export function analyzeOperatorDefinition(
         ...returnTypeDocuments,
         text(" ="),
       ]);
+  const usesUfcsBodyContinuation =
+    body.type === "ufcs_call_expression" &&
+    body.startPosition.row > equals.endPosition.row &&
+    isMultilineUfcsContinuation(body);
   return {
     node,
     qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
@@ -156,7 +160,7 @@ export function analyzeOperatorDefinition(
       node,
       body,
       expression.document,
-      1,
+      usesUfcsBodyContinuation ? 2 : 1,
       commentAttachments,
     ),
   };

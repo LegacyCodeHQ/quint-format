@@ -25,9 +25,41 @@ describe("UFCS and member access", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      "run trace =\n    init.then(step)\n        .then(step)\n        .then(all {",
+      "run trace =\n      init.then(step)\n          .then(step)\n          .then(all {",
     );
     expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("uses continuation indentation for a line-broken UFCS definition body", () => {
+    const input = [
+      "module Example {",
+      "  pure def buyableVia1Swap(someCoins: Set[int]): Set[int] = someCoins",
+      "",
+      "  pure def buyableVia2Swaps(someCoins: Set[int]): Set[int] =",
+      "    someCoins",
+      "      .buyableVia1Swap()",
+      "      .buyableVia1Swap()",
+      "}",
+      "",
+    ].join("\n");
+    const expected = [
+      "module Example {",
+      "  pure def buyableVia1Swap(someCoins: Set[int]): Set[int] = someCoins",
+      "",
+      "  pure def buyableVia2Swaps(someCoins: Set[int]): Set[int] =",
+      "      someCoins",
+      "          .buyableVia1Swap()",
+      "          .buyableVia1Swap()",
+      "}",
+      "",
+    ].join("\n");
+    const output = formatQuint(input);
+
+    expect(output).toBe(expected);
+    expect(output).toMatchSnapshot();
+    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
@@ -138,8 +170,11 @@ describe("UFCS and member access", () => {
     );
     const output = formatQuint(input);
     const shallowContinuation = input.replaceAll("\n        ", "\n      ");
+    const expected = input
+      .replace("\n    init", "\n      init")
+      .replaceAll("\n        ", "\n          ");
 
-    expect(output).toBe(input);
+    expect(output).toBe(expected);
     expect(checkQuint(shallowContinuation, "input.qnt").map(({ rule }) => rule)).toContain(
       "format/field-access-indentation",
     );

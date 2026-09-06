@@ -15,14 +15,58 @@ exports[`UFCS and member access preserves aligned dots in a multiline UFCS chain
   action step = n' = n + 1
 
   run trace =
-    init.then(step)
-        .then(step)
-        .then(all {
-          n' = n,
-          assert(n >= 0),
-        })
+      init.then(step)
+          .then(step)
+          .then(all {
+            n' = n,
+            assert(n >= 0),
+          })
 }
 "
+`;
+
+exports[`UFCS and member access uses continuation indentation for a line-broken UFCS definition body 1`] = `
+"module Example {
+  pure def buyableVia1Swap(someCoins: Set[int]): Set[int] = someCoins
+
+  pure def buyableVia2Swaps(someCoins: Set[int]): Set[int] =
+      someCoins
+          .buyableVia1Swap()
+          .buyableVia1Swap()
+}
+"
+`;
+
+exports[`UFCS and member access uses continuation indentation for a line-broken UFCS definition body 2`] = `
+[
+  {
+    "column": 1,
+    "filePath": "input.qnt",
+    "length": 4,
+    "line": 5,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/definition-body-indentation",
+    "sourceLine": "    someCoins",
+  },
+  {
+    "column": 1,
+    "filePath": "input.qnt",
+    "length": 6,
+    "line": 6,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/field-access-indentation",
+    "sourceLine": "      .buyableVia1Swap()",
+  },
+  {
+    "column": 1,
+    "filePath": "input.qnt",
+    "length": 6,
+    "line": 7,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/field-access-indentation",
+    "sourceLine": "      .buyableVia1Swap()",
+  },
+]
 `;
 
 exports[`UFCS and member access preserves all aligned dots in a nondet UFCS chain 1`] = `
@@ -152,10 +196,10 @@ exports[`UFCS and member access aligns comments with a continued UFCS selector 1
   action step = true
 
   run execution =
-    init
-        // Explain the first transition.
-        // Keep this attached to the call.
-        .then(step)
+      init
+          // Explain the first transition.
+          // Keep this attached to the call.
+          .then(step)
 }
 "
 `;
