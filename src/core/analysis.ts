@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { Doc } from "@/formatting/document.js";
+import type { BreakReason } from "@/parsing/break-authority.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 
 export interface ModuleDeclaration {
@@ -44,12 +45,21 @@ export interface ModuleDeclaration {
   document: Doc;
 }
 
+export interface OperatorBreakPlan {
+  operatorBreak: boolean;
+  rightBreak: boolean;
+  operatorReason: BreakReason | null;
+  rightReason: BreakReason | null;
+  pairValue: boolean;
+}
+
 export interface BinaryOperator {
   node: Parser.SyntaxNode;
   left: Parser.SyntaxNode;
   right: Parser.SyntaxNode;
   inlineComments: Parser.SyntaxNode[];
   rightComments: Parser.SyntaxNode[];
+  plan: OperatorBreakPlan;
 }
 
 export interface ExpressionAnalysis {

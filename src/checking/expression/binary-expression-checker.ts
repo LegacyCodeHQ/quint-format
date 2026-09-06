@@ -1,17 +1,6 @@
 import type { BinaryOperator } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
-import {
-  hasLineBrokenMultilinePairValue,
-  hasPeerMatchOperands,
-  isBlockCombinatorEntry,
-  isIndentedExpressionBody,
-  isNestedDefinitionBody,
-  isNestedInVerticallyExpandedCall,
-  isOrdinaryBlockResult,
-  isWithinBlockCombinatorEntry,
-  isWithinConditionalCondition,
-  isWithinExpandedConditionalCondition,
-} from "@/parsing/syntax.js";
+import { hasPeerMatchOperands, isWithinExpandedConditionalCondition } from "@/parsing/syntax.js";
 
 export function checkBinaryExpressions(
   operators: BinaryOperator[],
@@ -42,29 +31,11 @@ export function checkBinaryExpressions(
 
     const beforeOperator = source.slice(commentAnchor.endIndex, operator.node.startIndex);
     const afterOperator = source.slice(operator.node.endIndex, operator.right.startIndex);
-    const preservesMultilinePairValue = hasLineBrokenMultilinePairValue(
-      operator.node.parent ?? operator.node,
-    );
-    const preservesLeadingOperatorBreak =
-      operator.inlineComments.length === 0 &&
-      operator.rightComments.length === 0 &&
-      operator.node.startPosition.row > operator.left.endPosition.row &&
-      (isWithinConditionalCondition(operator.node.parent ?? operator.node) ||
-        isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
-        isBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
-        isWithinBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
-        isOrdinaryBlockResult(operator.node.parent ?? operator.node) ||
-        isNestedDefinitionBody(operator.node.parent ?? operator.node) ||
-        isNestedInVerticallyExpandedCall(operator.node.parent ?? operator.node));
-    const preservesRightOperandBreak =
-      operator.inlineComments.length === 0 &&
-      operator.rightComments.length === 0 &&
-      operator.right.startPosition.row > operator.node.endPosition.row &&
-      (isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
-        isBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
-        isOrdinaryBlockResult(operator.node.parent ?? operator.node) ||
-        isNestedDefinitionBody(operator.node.parent ?? operator.node) ||
-        preservesMultilinePairValue);
+    const hasOperatorComments =
+      operator.inlineComments.length > 0 || operator.rightComments.length > 0;
+    const preservesMultilinePairValue = operator.plan.pairValue;
+    const preservesLeadingOperatorBreak = operator.plan.operatorBreak;
+    const preservesRightOperandBreak = !hasOperatorComments && operator.plan.rightBreak;
     const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
       ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
       : beforeOperator === " ";

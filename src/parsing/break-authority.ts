@@ -1,4 +1,5 @@
 import type Parser from "tree-sitter";
+import type { OperatorBreakPlan } from "@/core/analysis.js";
 import {
   hasLineBrokenMultilinePairValue,
   isBlockCombinatorEntry,
@@ -53,4 +54,28 @@ export function operatorBreakReason(node: Parser.SyntaxNode): BreakReason | null
 
 export function rightBreakReason(node: Parser.SyntaxNode): BreakReason | null {
   return firstReason(rightBreakAuthorities, node);
+}
+
+export interface OperatorBreakSites {
+  left: Parser.SyntaxNode;
+  operator: Parser.SyntaxNode;
+  right: Parser.SyntaxNode;
+  hasComments: boolean;
+}
+
+export function planOperatorBreaks(
+  node: Parser.SyntaxNode,
+  sites: OperatorBreakSites,
+): OperatorBreakPlan {
+  const operatorReason = operatorBreakReason(node);
+  const rightReason = rightBreakReason(node);
+  const brokeBeforeOperator = sites.operator.startPosition.row > sites.left.endPosition.row;
+  const brokeBeforeRight = sites.right.startPosition.row > sites.operator.endPosition.row;
+  return {
+    operatorBreak: !sites.hasComments && brokeBeforeOperator && operatorReason !== null,
+    rightBreak: brokeBeforeRight && rightReason !== null,
+    operatorReason,
+    rightReason,
+    pairValue: hasLineBrokenMultilinePairValue(node),
+  };
 }

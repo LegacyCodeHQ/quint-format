@@ -3,12 +3,8 @@ import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
-import { operatorBreakReason, rightBreakReason } from "@/parsing/break-authority.js";
-import {
-  hasLineBrokenMultilinePairValue,
-  hasPeerMatchOperands,
-  isWithinExpandedConditionalCondition,
-} from "@/parsing/syntax.js";
+import { planOperatorBreaks } from "@/parsing/break-authority.js";
+import { hasPeerMatchOperands, isWithinExpandedConditionalCondition } from "@/parsing/syntax.js";
 
 export function analyzeOperatorExpression(
   node: Parser.SyntaxNode,
@@ -67,14 +63,15 @@ export function analyzeOperatorExpression(
     const leftAnalysis = analyzeExpression(left);
     const rightAnalysis = analyzeExpression(right);
     const comments = inlineComments.flatMap((comment) => [text(" "), commentDocument(comment)]);
-    const preservesMultilinePairValue = hasLineBrokenMultilinePairValue(node);
-    const hasSourceRightBreak =
-      right.startPosition.row > operator.endPosition.row && rightBreakReason(node) !== null;
-    const hasSourceOperatorBreak =
-      inlineComments.length === 0 &&
-      rightComments.length === 0 &&
-      operator.startPosition.row > left.endPosition.row &&
-      operatorBreakReason(node) !== null;
+    const plan = planOperatorBreaks(node, {
+      left,
+      operator,
+      right,
+      hasComments: inlineComments.length > 0 || rightComments.length > 0,
+    });
+    const preservesMultilinePairValue = plan.pairValue;
+    const hasSourceRightBreak = plan.rightBreak;
+    const hasSourceOperatorBreak = plan.operatorBreak;
     const alignsMatchOperands = hasPeerMatchOperands(node);
     const operatorContinuationIndentation =
       isWithinExpandedConditionalCondition(node) || alignsMatchOperands ? 0 : 2;
@@ -135,7 +132,7 @@ export function analyzeOperatorExpression(
             ]),
       binaryOperators: [
         ...leftAnalysis.binaryOperators,
-        { node: operator, left, right, inlineComments, rightComments },
+        { node: operator, left, right, inlineComments, rightComments, plan },
         ...rightAnalysis.binaryOperators,
       ],
       unitLiterals: [...leftAnalysis.unitLiterals, ...rightAnalysis.unitLiterals],
