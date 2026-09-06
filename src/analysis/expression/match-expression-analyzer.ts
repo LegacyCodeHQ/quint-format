@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
+import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { isBlockCombinatorExpression, isCompactDefaultMatch } from "@/parsing/syntax.js";
 
@@ -43,6 +44,11 @@ export function analyzeMatchExpression(
           : " ";
       const isMultilineBody = body.startPosition.row > arrow.endPosition.row;
       const isSelfIndentingBody = isBlockCombinatorExpression(body);
+      const isStructuralBody =
+        isSelfIndentingBody ||
+        body.type === "match_expression" ||
+        body.type === "record_literal" ||
+        body.type === "block_expression";
       return {
         node: arm,
         body: bodyAnalysis,
@@ -68,7 +74,7 @@ export function analyzeMatchExpression(
             ? isMultilineBody
               ? concat([
                   text(`| ${pattern}${arrowGap}=>`),
-                  indent(concat([hardLine, bodyAnalysis.document])),
+                  indentBy(concat([hardLine, bodyAnalysis.document]), isStructuralBody ? 1 : 2),
                 ])
               : concat([
                   text(`| ${pattern}${arrowGap}=> `),

@@ -186,6 +186,24 @@ describe("match expressions", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("uses a four-space continuation for a line-broken match arm expression", () => {
+    const input = readFileSync(
+      new URL("../fixtures/match-arm-expression-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves record literal match-arm body indentation", () => {
     const input = readFileSync(
       new URL("../fixtures/record-match-arm-body.qnt", import.meta.url),
@@ -267,7 +285,7 @@ describe("match expressions", () => {
     );
     const output = formatQuint(input);
 
-    expect(output).toContain("| Ready =>\n        1 // Ready has a value");
+    expect(output).toContain("| Ready =>\n          1 // Ready has a value");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

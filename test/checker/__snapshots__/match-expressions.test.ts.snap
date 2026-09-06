@@ -108,7 +108,7 @@ test/fixtures/match-arm-body-comment.qnt:4:7: error[format/match-arrow-spacing]:
 4 | |First=>
   |       ^^
   |
-test/fixtures/match-arm-body-comment.qnt:6:1: error[format/match-arm-body-indentation]: expected one indentation level for the line-broken match arm body
+test/fixtures/match-arm-body-comment.qnt:6:1: error[format/match-arm-body-indentation]: expected a four-space continuation indent for the line-broken match arm body
   |
 6 | 1
   | ^

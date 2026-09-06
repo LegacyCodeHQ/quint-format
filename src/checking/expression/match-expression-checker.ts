@@ -142,7 +142,8 @@ export function checkMatchExpressions(
         lines[candidate.startPosition.row]?.search(/\S|$/u) ?? candidate.startPosition.column;
       const armColumn = indentationColumn(arm);
       const lineBrokenBody = body.startPosition.row > arrow.endPosition.row;
-      const expectedLineBrokenBodyColumn = armColumn + 2;
+      const isStructuralBody = structuralEntries !== undefined;
+      const expectedLineBrokenBodyColumn = armColumn + (isStructuralBody ? 2 : 4);
       if (lineBrokenBody && indentationColumn(body) !== expectedLineBrokenBodyColumn) {
         const row = body.startPosition.row;
         const bodyIndentation = indentationColumn(body);
@@ -152,7 +153,9 @@ export function checkMatchExpressions(
           column: 1,
           length: Math.max(1, bodyIndentation),
           rule: "format/match-arm-body-indentation",
-          message: "expected one indentation level for the line-broken match arm body",
+          message: isStructuralBody
+            ? "expected one indentation level for the line-broken match arm body"
+            : "expected a four-space continuation indent for the line-broken match arm body",
           sourceLine: lines[row] ?? "",
         });
       }
