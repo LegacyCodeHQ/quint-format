@@ -108,26 +108,20 @@ export function hasInlineMultilineConditionalLambdaBody(node: Parser.SyntaxNode)
   );
 }
 
-export function hasLineBrokenMultilinePairValue(node: Parser.SyntaxNode): boolean {
-  if (node.type !== "pair_expression") return false;
-  const arrow = node.children.find((child) => child.type === "->");
-  const right = node.childForFieldName("right");
-  return Boolean(
-    arrow &&
-      right &&
-      right.startPosition.row > arrow.endPosition.row &&
-      right.endPosition.row > right.startPosition.row,
-  );
-}
+const separatedValueShapes = new Map<string, { separator: string; value: string }>([
+  ["pair_expression", { separator: "->", value: "right" }],
+  ["record_literal_field", { separator: ":", value: "value" }],
+]);
 
-export function hasLineBrokenMultilineRecordFieldValue(node: Parser.SyntaxNode): boolean {
-  if (node.type !== "record_literal_field") return false;
-  const colon = node.children.find((child) => child.type === ":");
-  const value = node.childForFieldName("value");
+export function hasLineBrokenMultilineValue(node: Parser.SyntaxNode): boolean {
+  const shape = separatedValueShapes.get(node.type);
+  if (!shape) return false;
+  const separator = node.children.find((child) => child.type === shape.separator);
+  const value = node.childForFieldName(shape.value);
   return Boolean(
-    colon &&
+    separator &&
       value &&
-      value.startPosition.row > colon.endPosition.row &&
+      value.startPosition.row > separator.endPosition.row &&
       value.endPosition.row > value.startPosition.row,
   );
 }

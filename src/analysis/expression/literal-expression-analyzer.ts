@@ -2,7 +2,7 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { concat, type Doc, group, hardLine, indent, line, text } from "@/formatting/document.js";
-import { hasLineBrokenMultilineRecordFieldValue } from "@/parsing/syntax.js";
+import { hasLineBrokenMultilineValue } from "@/parsing/syntax.js";
 
 export function analyzeLiteralExpression(
   node: Parser.SyntaxNode,
@@ -154,7 +154,7 @@ export function analyzeLiteralExpression(
       return [
         {
           node: element,
-          document: hasLineBrokenMultilineRecordFieldValue(element)
+          document: hasLineBrokenMultilineValue(element)
             ? concat([text(`${name.text}:`), indent(concat([hardLine, analysis.document]))])
             : concat([text(`${name.text}: `), analysis.document]),
           analysis,

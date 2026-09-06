@@ -1,6 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
-import { hasLineBrokenMultilineRecordFieldValue } from "@/parsing/syntax.js";
+import { hasLineBrokenMultilineValue } from "@/parsing/syntax.js";
 
 export function checkRecordLiterals(
   recordLiterals: Parser.SyntaxNode[],
@@ -87,7 +87,7 @@ export function checkRecordLiterals(
         });
       }
       const afterColon = source.slice(colon.endIndex, value.startIndex);
-      const preservesMultilineValueBreak = hasLineBrokenMultilineRecordFieldValue(field);
+      const preservesMultilineValueBreak = hasLineBrokenMultilineValue(field);
       const hasCanonicalAfterColon = preservesMultilineValueBreak
         ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterColon)
         : afterColon === " ";
