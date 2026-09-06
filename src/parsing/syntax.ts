@@ -60,20 +60,35 @@ export function isCompactNondetSequence(
   );
 }
 
+function isBraceDelimitedLambdaBody(node: Parser.SyntaxNode): boolean {
+  return (
+    isBlockCombinatorExpression(node) ||
+    ["block_expression", "record_literal", "match_expression"].includes(node.type)
+  );
+}
+
 export function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   if (node.type !== "lambda_expression") return false;
   const arrow = node.children.find((child) => child.type === "=>");
   const body = node.childForFieldName("body");
-  const hasBraceDelimitedBody = Boolean(
-    body &&
-      (isBlockCombinatorExpression(body) ||
-        ["block_expression", "record_literal", "match_expression"].includes(body.type)),
-  );
   return Boolean(
     arrow &&
       body &&
       (body.startPosition.row > arrow.endPosition.row ||
-        (!hasBraceDelimitedBody && body.endPosition.row > arrow.endPosition.row)),
+        (!isBraceDelimitedLambdaBody(body) && body.endPosition.row > arrow.endPosition.row)),
+  );
+}
+
+export function hasAttachedBraceDelimitedLambdaCallClose(node: Parser.SyntaxNode): boolean {
+  if (!isCallExpression(node)) return false;
+  const lambda = node.childrenForFieldName("argument").at(-1);
+  const body = lambda?.type === "lambda_expression" ? lambda.childForFieldName("body") : null;
+  const closeParenthesis = [...node.children].reverse().find((child) => child.type === ")");
+  return Boolean(
+    body &&
+      isBraceDelimitedLambdaBody(body) &&
+      closeParenthesis &&
+      closeParenthesis.startPosition.row === body.endPosition.row,
   );
 }
 

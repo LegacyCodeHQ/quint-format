@@ -6,6 +6,7 @@ import { concat, type Doc, hardLine, renderDoc, text } from "@/formatting/docume
 import {
   callExpressionTarget,
   callTrailingCommentAlignment,
+  hasAttachedBraceDelimitedLambdaCallClose,
   hasMultilineLambdaBody,
   isCallExpression,
   isMultilineLambdaExpression,
@@ -210,6 +211,8 @@ export function analyzeCallExpression(
       !hasSourceArgumentBreak &&
       (hasSourceClosingBreak || hasMultilineLambdaBody(arguments_.at(-1) as Parser.SyntaxNode)) &&
       !inlineCallFirstLineExceedsWidth;
+    const preservesAttachedBraceDelimitedLambdaCallClose =
+      !trailingComma && hasAttachedBraceDelimitedLambdaCallClose(node);
     const hangingMultilineLambdaCall =
       arguments_.length > 1 &&
       isMultilineLambdaExpression(arguments_.at(-1) as Parser.SyntaxNode) &&
@@ -334,7 +337,7 @@ export function analyzeCallExpression(
                     analysis.document,
                   ]),
                   ...trailingCommaDocuments,
-                  hardLine,
+                  ...(preservesAttachedBraceDelimitedLambdaCallClose ? [] : [hardLine]),
                   text(")"),
                 ])
               : multilineLocalDefinitionArgument

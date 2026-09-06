@@ -162,6 +162,24 @@ describe("lambdas", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves an attached call close after a brace-delimited lambda", () => {
+    const input = readFileSync(
+      new URL("../fixtures/attached-brace-lambda-call-close.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves an inline conditional lambda header", () => {
     const input = readFileSync(
       new URL("../fixtures/inline-conditional-lambda.qnt", import.meta.url),

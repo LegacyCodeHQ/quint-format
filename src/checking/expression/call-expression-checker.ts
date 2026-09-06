@@ -3,6 +3,7 @@ import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
   callExpressionTarget,
   callTrailingCommentAlignment,
+  hasAttachedBraceDelimitedLambdaCallClose,
   hasMultilineLambdaBody,
   isMultilineLambdaExpression,
   isMultilineUfcsContinuation,
@@ -113,6 +114,9 @@ export function checkCallExpressions(
           const previous = index === 0 ? openParen : arguments_[index - 1];
           return argument.startPosition.row === previous.endPosition.row;
         });
+      const preservesAttachedBraceDelimitedLambdaCallClose =
+        !commas.some((comma) => comma.startIndex >= last.endIndex) &&
+        hasAttachedBraceDelimitedLambdaCallClose(callExpression);
       const isPartiallyExpandedCallWithClosingBreak =
         first.startPosition.row === openParen.endPosition.row &&
         hasSourceArgumentBreak &&
@@ -187,7 +191,9 @@ export function checkCallExpressions(
           : isHangingMultilineLambdaCall
             ? beforeClose === hangingCloseGap
             : isInlineMultilineLambdaCall
-              ? beforeClose === expandedCloseGap
+              ? preservesAttachedBraceDelimitedLambdaCallClose
+                ? beforeClose === ""
+                : beforeClose === expandedCloseGap
               : isMultilineLambdaCall
                 ? isMultilineUfcsCall
                   ? beforeClose === hangingCloseGap
@@ -201,9 +207,10 @@ export function checkCallExpressions(
           column: anchor.endPosition.column + 1,
           length: Math.max(1, beforeClose.length),
           rule: "format/call-delimiter-spacing",
-          message: isInlineMultilineLambdaCall
-            ? "expected the closing ')' on a separate line"
-            : "expected no space before ')'",
+          message:
+            isInlineMultilineLambdaCall && !preservesAttachedBraceDelimitedLambdaCallClose
+              ? "expected the closing ')' on a separate line"
+              : "expected no space before ')'",
           sourceLine: lines[row] ?? "",
         });
       }
