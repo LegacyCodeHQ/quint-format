@@ -33,9 +33,10 @@ describe("command-line checker", () => {
       try {
         expect(build.exitCode).toBe(0);
         symlinkSync(join(projectRoot, "dist/cli.js"), binaryPath);
-        const result = Bun.spawnSync([binaryPath, "test/fixtures/compact-empty-module.qnt"], {
-          cwd: projectRoot,
-        });
+        const result = Bun.spawnSync(
+          ["node", binaryPath, "test/fixtures/compact-empty-module.qnt"],
+          { cwd: projectRoot },
+        );
 
         expect(result.exitCode).toBe(0);
         expect(result.stdout.toString()).toBe("module Example {\n}\n");
