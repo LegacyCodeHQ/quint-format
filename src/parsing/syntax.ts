@@ -57,8 +57,11 @@ export function hasInlineMultilineConditionalLambdaBody(node: Parser.SyntaxNode)
 }
 
 export function hasLineBrokenMultilineMapValue(node: Parser.SyntaxNode): boolean {
-  if (node.type !== "binary_expression") return false;
-  const operator = node.childForFieldName("operator");
+  if (node.type !== "binary_expression" && node.type !== "pair_expression") return false;
+  const operator =
+    node.type === "pair_expression"
+      ? node.children.find((child) => child.type === "->")
+      : node.childForFieldName("operator");
   const right = node.childForFieldName("right");
   return Boolean(
     operator?.text === "->" &&

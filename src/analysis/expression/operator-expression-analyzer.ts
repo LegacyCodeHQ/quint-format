@@ -36,10 +36,13 @@ export function analyzeOperatorExpression(
     };
   }
 
-  if (node.type === "binary_expression") {
+  if (node.type === "binary_expression" || node.type === "pair_expression") {
     const left = node.childForFieldName("left");
     const right = node.childForFieldName("right");
-    const operator = node.childForFieldName("operator");
+    const operator =
+      node.type === "pair_expression"
+        ? node.children.find((child) => child.type === "->")
+        : node.childForFieldName("operator");
     if (!left || !right || !operator) {
       throw new Error("Formatting this binary expression syntax is not implemented yet");
     }
