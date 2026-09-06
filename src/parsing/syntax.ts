@@ -363,3 +363,45 @@ export function isAlignedLocalTrailingComment(
     commentColumns[index + 1] === comment.startPosition.column
   );
 }
+
+export function callTrailingCommentAlignment(
+  callExpression: Parser.SyntaxNode,
+): Map<number, number> {
+  const arguments_ = callExpression.childrenForFieldName("argument");
+  const commas = callExpression.children.filter((child) => child.type === ",");
+  const comments = callExpression.namedChildren.filter(
+    (child) => child.type === "comment" || child.type === "documentation_comment",
+  );
+  const entries = comments.flatMap((comment) => {
+    const argument = [...arguments_]
+      .reverse()
+      .find(
+        (candidate) =>
+          candidate.endIndex <= comment.startIndex &&
+          candidate.endPosition.row === comment.startPosition.row,
+      );
+    if (!argument) return [];
+    const comma = commas.find(
+      (candidate) =>
+        candidate.startIndex >= argument.endIndex && candidate.endIndex <= comment.startIndex,
+    );
+    return [{ comment, anchor: comma ?? argument }];
+  });
+  const expressesAlignment =
+    entries.length >= 2 &&
+    entries.every(
+      ({ comment }) => comment.startPosition.column === entries[0]?.comment.startPosition.column,
+    ) &&
+    entries.some(
+      ({ comment, anchor }) => comment.startPosition.column - anchor.endPosition.column >= 2,
+    );
+  if (!expressesAlignment) return new Map();
+
+  const targetColumn = Math.max(...entries.map(({ anchor }) => anchor.endPosition.column)) + 1;
+  return new Map(
+    entries.map(({ comment, anchor }) => [
+      comment.id,
+      Math.max(1, targetColumn - anchor.endPosition.column),
+    ]),
+  );
+}

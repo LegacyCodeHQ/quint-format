@@ -232,4 +232,23 @@ describe("call expressions", () => {
     expect(outputTree.hasError).toBe(false);
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
+
+  test("preserves aligned trailing comments on expanded call arguments", () => {
+    const input = readFileSync(
+      new URL("../fixtures/aligned-call-trailing-comments.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
 });

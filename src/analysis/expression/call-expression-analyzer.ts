@@ -4,6 +4,7 @@ import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, renderDoc, text } from "@/formatting/document.js";
 import {
+  callTrailingCommentAlignment,
   hasMultilineLambdaBody,
   isMultilineLambdaExpression,
   isMultilineUfcsContinuation,
@@ -32,6 +33,7 @@ export function analyzeCallExpression(
     const hasComments = node.namedChildren.some(
       (child) => child.type === "comment" || child.type === "documentation_comment",
     );
+    const trailingCommentAlignment = callTrailingCommentAlignment(node);
     const multilineLambdaArgument =
       arguments_.length === 1 && isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
     const multilineUfcsCall = isMultilineUfcsContinuation(functionNode);
@@ -206,7 +208,7 @@ export function analyzeCallExpression(
           if (documentIndex !== undefined) {
             contentDocuments[documentIndex] = concat([
               contentDocuments[documentIndex] as Doc,
-              text(" "),
+              text(" ".repeat(trailingCommentAlignment.get(child.id) ?? 1)),
               commentDocument(child),
             ]);
           } else {

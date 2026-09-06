@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
+  callTrailingCommentAlignment,
   hasMultilineLambdaBody,
   isMultilineLambdaExpression,
   isMultilineUfcsContinuation,
@@ -28,6 +29,7 @@ export function checkCallExpressions(
     const directComments = callExpression.namedChildren.filter(
       (child) => child.type === "comment" || child.type === "documentation_comment",
     );
+    const trailingCommentAlignment = callTrailingCommentAlignment(callExpression);
     for (const comment of directComments) {
       const trailingArgument = [...arguments_]
         .reverse()
@@ -43,15 +45,21 @@ export function checkCallExpressions(
       );
       const anchor = trailingComma ?? trailingArgument;
       const gap = source.slice(anchor.endIndex, comment.startIndex);
-      if (gap !== " ") {
+      const expectedGap = " ".repeat(trailingCommentAlignment.get(comment.id) ?? 1);
+      if (gap !== expectedGap) {
         const row = comment.startPosition.row;
+        const preservesAlignment = trailingCommentAlignment.has(comment.id);
         diagnostics.push({
           filePath,
           line: row + 1,
           column: anchor.endPosition.column + 1,
           length: Math.max(1, gap.length),
-          rule: "format/call-trailing-comment-spacing",
-          message: "expected one space before a trailing call argument comment",
+          rule: preservesAlignment
+            ? "format/call-trailing-comment-alignment"
+            : "format/call-trailing-comment-spacing",
+          message: preservesAlignment
+            ? "expected trailing call argument comments to align"
+            : "expected one space before a trailing call argument comment",
           sourceLine: lines[row] ?? "",
         });
       }

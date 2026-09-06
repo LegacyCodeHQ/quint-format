@@ -169,3 +169,13 @@ exports[`call expressions preserves trailing comments on expanded call arguments
 }
 "
 `;
+
+exports[`call expressions preserves aligned trailing comments on expanded call arguments 1`] = `
+"module Example {
+  pure val ops = Set(
+      { key: 1 }, // m
+      { key: 2 }  // L
+  )
+}
+"
+`;
