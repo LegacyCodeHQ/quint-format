@@ -228,3 +228,16 @@ exports[`match expressions preserves a multiline match-arm body with a trailing 
 }
 "
 `;
+
+exports[`match expressions joins a line-broken match arrow with one space 1`] = `
+"module Example {
+  type Node = Internal(int) | Leaf
+
+  pure def value(node: Node): int =
+    match node {
+      | Internal(number) => number
+      | Leaf => 0
+    }
+}
+"
+`;

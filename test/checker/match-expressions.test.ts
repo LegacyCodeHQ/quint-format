@@ -10,6 +10,13 @@ describe("checker diagnostics", () => {
       expect(result.rendered).toMatchSnapshot();
     });
 
+    test("reports a match arrow on a separate line", () => {
+      const result = checkFixture("match-arrow-line-break.qnt");
+
+      expect(result.kind).toBe("format");
+      expect(result.rendered).toMatchSnapshot();
+    });
+
     test("reports noncanonical match-comment formatting", () => {
       const result = checkFixture("match-comment.qnt");
 

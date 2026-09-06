@@ -46,7 +46,11 @@ export function analyzeMatchExpression(
       const pattern = `${variant.text}${parameter ? `(${parameter.text})` : ""}`;
       const rawArrowGap =
         arm.text.slice(0, arrow.startIndex - arm.startIndex).match(/[\t ]*$/u)?.[0] ?? "";
-      const arrowGap = /^ +$/u.test(rawArrowGap) ? rawArrowGap : " ";
+      const patternEnd = parameter ?? variant;
+      const arrowGap =
+        arrow.startPosition.row === patternEnd.endPosition.row && /^ +$/u.test(rawArrowGap)
+          ? rawArrowGap
+          : " ";
       const isMultilineBody = body.startPosition.row > arrow.endPosition.row;
       const isSelfIndentingBody = SELF_INDENTING_ARM_BODY_TYPES.has(body.type);
       return {

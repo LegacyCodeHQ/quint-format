@@ -130,3 +130,12 @@ test/fixtures/match-expression.qnt:4:77: error[format/match-arrow-spacing]: expe
   |
 "
 `;
+
+exports[`checker diagnostics match expressions reports a match arrow on a separate line 1`] = `
+"test/fixtures/match-arrow-line-break.qnt:7:10: error[format/match-arrow-spacing]: expected one space around '=>'
+  |
+7 |          => number
+  |          ^^
+  |
+"
+`;

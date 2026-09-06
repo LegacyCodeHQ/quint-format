@@ -21,6 +21,24 @@ describe("match expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("joins a line-broken match arrow with one space", () => {
+    const input = readFileSync(
+      new URL("../fixtures/match-arrow-line-break.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("      | Internal(number) => number");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves a compact one-arm default match", () => {
     const input = readFileSync(
       new URL("../fixtures/compact-default-match.qnt", import.meta.url),
