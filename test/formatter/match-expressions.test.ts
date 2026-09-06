@@ -105,6 +105,40 @@ describe("match expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("aligns an ordinary block body with the match case", () => {
+    const input = readFileSync(
+      new URL("../fixtures/match-arm-block-baseline.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const pipeAligned = [
+      "module Example {",
+      "  type Proof = Found(int) | Missing",
+      "",
+      "  pure def verify(proof: Proof): bool =",
+      "    match proof {",
+      "      | Found(value) => {",
+      "        value > 0",
+      "      }",
+      "      | Missing => false",
+      "    }",
+      "}",
+      "",
+    ].join("\n");
+    expect(formatQuint(pipeAligned)).toBe(input);
+    expect(checkQuint(pipeAligned, "pipe-aligned-block.qnt")).toMatchSnapshot();
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("formats over-indented nested match-arm bodies", () => {
     const input = readFileSync(
       new URL("../fixtures/structural-match-arm-bodies.qnt", import.meta.url),

@@ -13,6 +13,19 @@ exports[`match expressions formats a match expression 1`] = `
 "
 `;
 
+exports[`match expressions joins a line-broken match arrow with one space 1`] = `
+"module Example {
+  type Node = Internal(int) | Leaf
+
+  pure def value(node: Node): int =
+    match node {
+      | Internal(number) => number
+      | Leaf => 0
+    }
+}
+"
+`;
+
 exports[`match expressions preserves a compact one-arm default match 1`] = `
 "module Example {
   val expected = match 42 { _ => "default" }
@@ -28,11 +41,11 @@ exports[`match expressions places a match expression below a definition header 1
   action step =
     match status {
       | Ready => {
-        status' = Waiting
-      }
+          status' = Waiting
+        }
       | Waiting => {
-        status' = Ready
-      }
+          status' = Ready
+        }
     }
 }
 "
@@ -90,24 +103,33 @@ exports[`match expressions preserves one structural indentation level for block-
 "
 `;
 
-exports[`match expressions formats over-indented nested match-arm bodies 2`] = `
+exports[`match expressions aligns an ordinary block body with the match case 1`] = `
 "module Example {
-  type Inner = Leaf(int) | Internal(int)
-  type Outer = Some(Inner) | None
+  type Proof = Found(int) | Missing
 
-  pure def evaluate(value: Outer): int = {
-    match value {
-      | Some(node) => match node {
-        | Leaf(number) => number
-        | Internal(number) => number + 1
-      }
-      | None => {
-        0
-      }
+  pure def verify(proof: Proof): bool =
+    match proof {
+      | Found(value) => {
+          value > 0
+        }
+      | Missing => false
     }
-  }
 }
 "
+`;
+
+exports[`match expressions aligns an ordinary block body with the match case 2`] = `
+[
+  {
+    "column": 1,
+    "filePath": "pipe-aligned-block.qnt",
+    "length": 8,
+    "line": 7,
+    "message": "expected block body aligned with the match case",
+    "rule": "format/match-arm-body-indentation",
+    "sourceLine": "        value > 0",
+  },
+]
 `;
 
 exports[`match expressions formats over-indented nested match-arm bodies 1`] = `
@@ -121,16 +143,27 @@ exports[`match expressions formats over-indented nested match-arm bodies 1`] = `
     "rule": "format/match-arm-body-indentation",
     "sourceLine": "          | Leaf(number) => number",
   },
-  {
-    "column": 1,
-    "filePath": "structural-match-arm-bodies.qnt",
-    "length": 10,
-    "line": 12,
-    "message": "expected one structural indentation level inside the match arm",
-    "rule": "format/match-arm-body-indentation",
-    "sourceLine": "          0",
-  },
 ]
+`;
+
+exports[`match expressions formats over-indented nested match-arm bodies 2`] = `
+"module Example {
+  type Inner = Leaf(int) | Internal(int)
+  type Outer = Some(Inner) | None
+
+  pure def evaluate(value: Outer): int = {
+    match value {
+      | Some(node) => match node {
+        | Leaf(number) => number
+        | Internal(number) => number + 1
+      }
+      | None => {
+          0
+        }
+    }
+  }
+}
+"
 `;
 
 exports[`match expressions formats over-indented record literal match-arm bodies 1`] = `
@@ -224,19 +257,6 @@ exports[`match expressions preserves a multiline match-arm body with a trailing 
       | Ready =>
           1 // Ready has a value
       | Waiting => 0
-    }
-}
-"
-`;
-
-exports[`match expressions joins a line-broken match arrow with one space 1`] = `
-"module Example {
-  type Node = Internal(int) | Leaf
-
-  pure def value(node: Node): int =
-    match node {
-      | Internal(number) => number
-      | Leaf => 0
     }
 }
 "

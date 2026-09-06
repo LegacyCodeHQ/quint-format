@@ -143,8 +143,9 @@ export function checkMatchExpressions(
           lines[candidate.startPosition.row]?.search(/\S|$/u) ?? candidate.startPosition.column;
         const armColumn = indentationColumn(arm);
         const closeBrace = body.children.find((child) => child.type === "}");
-        const expectedEntryColumn = armColumn + 2;
-        const expectedCloseColumn = armColumn;
+        const bodyColumn = armColumn + (body.type === "block_expression" ? 2 : 0);
+        const expectedEntryColumn = bodyColumn + 2;
+        const expectedCloseColumn = bodyColumn;
         const misindentedEntry = structuralEntries.find(
           (entry) => indentationColumn(entry) !== expectedEntryColumn,
         );
@@ -160,7 +161,10 @@ export function checkMatchExpressions(
             column: 1,
             length: Math.max(1, nodeColumn),
             rule: "format/match-arm-body-indentation",
-            message: "expected one structural indentation level inside the match arm",
+            message:
+              body.type === "block_expression"
+                ? "expected block body aligned with the match case"
+                : "expected one structural indentation level inside the match arm",
             sourceLine: lines[row] ?? "",
           });
         }
