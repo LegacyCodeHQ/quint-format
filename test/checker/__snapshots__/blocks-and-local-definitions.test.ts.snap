@@ -118,12 +118,3 @@ test/fixtures/nested-definitions.qnt:4:54: error[format/unnecessary-semicolon]: 
   |
 "
 `;
-
-exports[`checker diagnostics blocks and local definitions reports a missing gap after a multiline local definition 1`] = `
-"test/fixtures/multiline-local-comment-gap.qnt:5:5: error[format/nested-definition-comment-separation]: expected one blank line after the multiline local definition
-  |
-5 |     // Continue with the collected values.
-  |     ^^
-  |
-"
-`;

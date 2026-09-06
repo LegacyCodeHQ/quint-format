@@ -98,12 +98,42 @@ exports[`local definitions and nondeterminism preserves a comment after a nested
 "
 `;
 
-exports[`local definitions and nondeterminism separates a multiline local definition from a following comment block 1`] = `
+exports[`local definitions and nondeterminism preserves a blank line between leading body comment groups 1`] = `
+"module Example {
+  run check = {
+    pure val result = true
+
+    // First explanation.
+    // Continue the explanation.
+
+    // Introduce the final check.
+    assert(result)
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism preserves a blank line between leading comments and the nested body 1`] = `
+"module Example {
+  run check = {
+    pure val result = true
+
+    // Explain the result.
+    // Continue the explanation.
+
+    all {
+      assert(result)
+    }
+  }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism keeps an explanatory comment block attached after a multiline local definition 1`] = `
 "module Example {
   pure def build = {
     val values = Set(1).fold(Set(), (acc, value) =>
       acc.union(Set(value)))
-
     // Continue with the collected values.
     // Preserve the complete explanatory block.
     values
@@ -167,37 +197,6 @@ exports[`local definitions and nondeterminism preserves a comment before a local
       // Preserve this local body comment.
       42
     answer
-  }
-}
-"
-`;
-
-exports[`local definitions and nondeterminism preserves a blank line between leading body comment groups 1`] = `
-"module Example {
-  run check = {
-    pure val result = true
-
-    // First explanation.
-    // Continue the explanation.
-
-    // Introduce the final check.
-    assert(result)
-  }
-}
-"
-`;
-
-exports[`local definitions and nondeterminism preserves a blank line between leading comments and the nested body 1`] = `
-"module Example {
-  run check = {
-    pure val result = true
-
-    // Explain the result.
-    // Continue the explanation.
-
-    all {
-      assert(result)
-    }
   }
 }
 "
