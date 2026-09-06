@@ -4,7 +4,7 @@ import { commentDocument } from "@/formatting/comments.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { isBlockCombinatorExpression, isCompactDefaultMatch } from "@/parsing/syntax.js";
 
-const SELF_INDENTING_ARM_BODY_TYPES = new Set(["match_expression", "record_literal"]);
+const SELF_INDENTING_ARM_BODY_TYPES = new Set(["match_expression"]);
 
 export function analyzeMatchExpression(
   node: Parser.SyntaxNode,

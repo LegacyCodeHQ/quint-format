@@ -166,47 +166,6 @@ exports[`match expressions formats over-indented nested match-arm bodies 2`] = `
 "
 `;
 
-exports[`match expressions formats over-indented record literal match-arm bodies 1`] = `
-[
-  {
-    "column": 1,
-    "filePath": "record-match-arm-body.qnt",
-    "length": 8,
-    "line": 6,
-    "message": "expected one structural indentation level inside the match arm",
-    "rule": "format/match-arm-body-indentation",
-    "sourceLine": "        child: number,",
-  },
-  {
-    "column": 1,
-    "filePath": "record-match-arm-body.qnt",
-    "length": 8,
-    "line": 10,
-    "message": "expected one structural indentation level inside the match arm",
-    "rule": "format/match-arm-body-indentation",
-    "sourceLine": "        child: 0,",
-  },
-]
-`;
-
-exports[`match expressions formats over-indented record literal match-arm bodies 2`] = `
-"module Example {
-  type Outcome = Updated(int) | Deleted
-
-  pure def evaluate(outcome) = match outcome {
-    | Updated(number) => {
-      child: number,
-      changed: true,
-    }
-    | Deleted => {
-      child: 0,
-      changed: false,
-    }
-  }
-}
-"
-`;
-
 exports[`match expressions preserves comments between match arms 1`] = `
 "module Example {
   type Step = First | Second
@@ -258,6 +217,51 @@ exports[`match expressions preserves a multiline match-arm body with a trailing 
           1 // Ready has a value
       | Waiting => 0
     }
+}
+"
+`;
+
+exports[`match expressions preserves record literal match-arm body indentation 1`] = `
+"module Example {
+  type Outcome = Updated(int) | Deleted
+
+  pure def evaluate(outcome) = match outcome {
+    | Updated(number) => {
+        child: number,
+        changed: true,
+      }
+    | Deleted => {
+        child: 0,
+        changed: false,
+      }
+  }
+}
+"
+`;
+
+exports[`match expressions preserves nested record literal match-arm body indentation 1`] = `
+"module Example {
+  type Optional = Some(int) | None
+  type Outcome = Updated(int) | Unchanged(Optional)
+
+  pure def evaluate(outcome, new_tree) = {
+    match outcome {
+      | Updated(number) => {
+          ...new_tree,
+          value: number,
+        }
+      | Unchanged(optional) => {
+          match optional {
+            | Some(number) => {
+                ...new_tree,
+                value: number,
+              }
+            | None => new_tree
+          }
+        }
+      | _ => new_tree
+    }
+  }
 }
 "
 `;

@@ -157,14 +157,34 @@ describe("match expressions", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
-  test("formats over-indented record literal match-arm bodies", () => {
+  test("preserves record literal match-arm body indentation", () => {
     const input = readFileSync(
       new URL("../fixtures/record-match-arm-body.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
 
-    expect(checkQuint(input, "record-match-arm-body.qnt")).toMatchSnapshot();
+    expect(checkQuint(input, "record-match-arm-body.qnt")).toEqual([]);
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
+  test("preserves nested record literal match-arm body indentation", () => {
+    const input = readFileSync(
+      new URL("../fixtures/nested-record-match-arms.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(checkQuint(input, "nested-record-match-arms.qnt")).toEqual([]);
+    expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
