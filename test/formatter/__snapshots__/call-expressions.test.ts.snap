@@ -194,3 +194,13 @@ exports[`call expressions preserves blank lines between commented call argument 
 }
 "
 `;
+
+exports[`call expressions preserves leading argument breaks when the closing parenthesis is attached 1`] = `
+"module Example {
+  pure def listContains(__list: List[a], __elem: a): bool =
+    __list.foldl(
+        false,
+        (__acc, __i) => __acc or __i == __elem)
+}
+"
+`;

@@ -57,6 +57,33 @@ describe("call expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves leading argument breaks when the closing parenthesis is attached", () => {
+    const input = readFileSync(
+      new URL("../fixtures/leading-expanded-call-with-attached-close.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected = [
+      "module Example {",
+      "  pure def listContains(__list: List[a], __elem: a): bool =",
+      "    __list.foldl(",
+      "        false,",
+      "        (__acc, __i) => __acc or __i == __elem)",
+      "}",
+      "",
+    ].join("\n");
+
+    expect(output).toBe(expected);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves a leading call argument beside the opening parenthesis", () => {
     const input = readFileSync(
       new URL("../fixtures/inline-leading-call-argument.qnt", import.meta.url),

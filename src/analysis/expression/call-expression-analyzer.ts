@@ -174,6 +174,12 @@ export function analyzeCallExpression(
         closeParenthesis.startPosition.row >
           (arguments_.at(-1) as Parser.SyntaxNode).endPosition.row,
     );
+    const hasFullyExpandedArguments =
+      arguments_.length >= 2 &&
+      arguments_.every((argument, index) => {
+        const previous = index === 0 ? openParenthesis : arguments_[index - 1];
+        return Boolean(previous && argument.startPosition.row > previous.endPosition.row);
+      });
     const hangingGroupedCall = Boolean(
       arguments_.length >= 2 &&
         openParenthesis &&
@@ -182,6 +188,8 @@ export function analyzeCallExpression(
         !hasSourceClosingBreak &&
         !hangingFirstLineExceedsWidth,
     );
+    const leadingExpandedCallWithAttachedClose =
+      hasFullyExpandedArguments && !hasSourceClosingBreak;
     const partiallyExpandedCallWithClosingBreak = Boolean(
       arguments_.length >= 2 &&
         openParenthesis &&
@@ -215,13 +223,7 @@ export function analyzeCallExpression(
         return Boolean(previous && argument.startPosition.row === previous.endPosition.row);
       }) &&
       hasSourceClosingBreak;
-    const isFullyExpandedCall =
-      arguments_.length >= 2 &&
-      hasSourceClosingBreak &&
-      arguments_.every((argument, index) => {
-        const previous = index === 0 ? openParenthesis : arguments_[index - 1];
-        return Boolean(previous && argument.startPosition.row > previous.endPosition.row);
-      });
+    const isFullyExpandedCall = hasFullyExpandedArguments && hasSourceClosingBreak;
     const sourceMultilineCall =
       arguments_.length > 0 &&
       (exceedsLineWidth ||
@@ -370,32 +372,43 @@ export function analyzeCallExpression(
                         ...trailingCommaDocuments,
                         text(")"),
                       ])
-                    : multilineUfcsCall
+                    : leadingExpandedCallWithAttachedClose
                       ? concat([
                           functionAnalysis.document,
+                          text("("),
                           indentBy(
-                            concat([
-                              text("("),
-                              ...analyses.flatMap((analysis, index) => [
-                                ...(index === 0 ? [] : [text(", ")]),
-                                analysis.document,
-                              ]),
-                              ...trailingCommaDocuments,
-                              text(")"),
-                            ]),
-                            ufcsContinuationIndentation(),
+                            concat([hardLine, ...sourceArgumentDocuments]),
+                            multilineUfcsCall ? ufcsContinuationIndentation() + 2 : 2,
                           ),
+                          ...trailingCommaDocuments,
+                          text(")"),
                         ])
-                      : sourceMultilineCall
+                      : multilineUfcsCall
                         ? concat([
                             functionAnalysis.document,
-                            text("("),
-                            indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
-                            ...trailingCommaDocuments,
-                            hardLine,
-                            text(")"),
+                            indentBy(
+                              concat([
+                                text("("),
+                                ...analyses.flatMap((analysis, index) => [
+                                  ...(index === 0 ? [] : [text(", ")]),
+                                  analysis.document,
+                                ]),
+                                ...trailingCommaDocuments,
+                                text(")"),
+                              ]),
+                              ufcsContinuationIndentation(),
+                            ),
                           ])
-                        : inlineCallDocument,
+                        : sourceMultilineCall
+                          ? concat([
+                              functionAnalysis.document,
+                              text("("),
+                              indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
+                              ...trailingCommaDocuments,
+                              hardLine,
+                              text(")"),
+                            ])
+                          : inlineCallDocument,
       binaryOperators: [
         ...functionAnalysis.binaryOperators,
         ...analyses.flatMap((analysis) => analysis.binaryOperators),
