@@ -11,6 +11,18 @@ exports[`blocks and block combinators formats an ordinary block expression 1`] =
 "
 `;
 
+exports[`blocks and block combinators preserves a blank line between ordinary block bindings 1`] = `
+"module Example {
+  run choose = {
+    nondet value = Set(1).oneOf()
+
+    val result = value + 1
+    result == 2
+  }
+}
+"
+`;
+
 exports[`blocks and block combinators preserves a comment inside an ordinary block 1`] = `
 "module Example {
   action step = {

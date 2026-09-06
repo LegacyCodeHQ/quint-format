@@ -30,6 +30,7 @@ export function analyzeBlockExpression(
     const analysis = analyzeExpression(expression);
     const analyses = [...bindingAnalyses.map(({ value }) => value), analysis];
     const contentDocuments: Doc[] = [];
+    const contentAnchors: Parser.SyntaxNode[] = [];
     let previousContent: Parser.SyntaxNode | undefined;
     for (const child of node.namedChildren) {
       if (child.type === "comment" || child.type === "documentation_comment") {
@@ -47,14 +48,17 @@ export function analyzeBlockExpression(
           contentDocuments.push(
             concat([contentDocument, text(commentGap), commentDocument(child)]),
           );
+          contentAnchors[contentAnchors.length - 1] = child;
         } else {
           contentDocuments.push(commentDocument(child));
+          contentAnchors.push(child);
         }
         previousContent = undefined;
         continue;
       }
       if (child.id === expression.id) {
         contentDocuments.push(analysis.document);
+        contentAnchors.push(child);
         previousContent = child;
         continue;
       }
@@ -64,6 +68,7 @@ export function analyzeBlockExpression(
         contentDocuments.push(
           concat([text(`nondet ${binding.name.text} = `), binding.value.document]),
         );
+        contentAnchors.push(child);
         previousContent = child;
         continue;
       }
@@ -73,10 +78,17 @@ export function analyzeBlockExpression(
     const preservesClosingBlankLine = Boolean(
       finalContent && closeBrace.startPosition.row > finalContent.endPosition.row + 1,
     );
+    const spacedContentDocuments = contentDocuments.flatMap((document, index) => {
+      const current = contentAnchors[index] as Parser.SyntaxNode;
+      const previous = index > 0 ? contentAnchors[index - 1] : undefined;
+      const lineBreaks =
+        previous && current.startPosition.row > previous.endPosition.row + 1 ? 2 : 1;
+      return [...Array.from({ length: lineBreaks }, () => hardLine), document];
+    });
     return {
       document: concat([
         text("{"),
-        indent(concat(contentDocuments.flatMap((document) => [hardLine, document]))),
+        indent(concat(spacedContentDocuments)),
         ...(preservesClosingBlankLine ? [hardLine] : []),
         hardLine,
         text("}"),
