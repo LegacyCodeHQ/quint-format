@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import Quint from "@legacycodehq/tree-sitter-quint";
+import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+
+const parser = new Parser();
+parser.setLanguage(Quint);
 
 describe("UFCS and member access", () => {
   test("formats a UFCS call expression", () => {
@@ -40,6 +45,21 @@ describe("UFCS and member access", () => {
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("preserves blank lines between UFCS chain groups", () => {
+    const input = readFileSync(
+      new URL("../fixtures/grouped-ufcs-chain.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    expect(parser.parse(input).rootNode.hasError).toBe(false);
+    expect(parser.parse(output).rootNode.hasError).toBe(false);
   });
 
   test("preserves a single multiline UFCS continuation", () => {

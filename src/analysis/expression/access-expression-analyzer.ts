@@ -1,8 +1,8 @@
 import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
-import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
-import { concat, hardLine, text } from "@/formatting/document.js";
+import { concat, text } from "@/formatting/document.js";
+import { preservedContinuationPrefix } from "@/formatting/source-spacing.js";
 import {
   isMultilineParenthesizedPostfixReceiver,
   isMultilineUfcsContinuation,
@@ -29,25 +29,22 @@ export function analyzeAccessExpression(
     );
     const isMultilineContinuation =
       isMultilineUfcsContinuation(node) && !isMultilineParenthesizedPostfixReceiver(object);
+    const continuationDocument = concat([
+      ...preservedContinuationPrefix(object, comments, dot),
+      text(`.${field.text}`),
+    ]);
     return {
       document:
         comments.length === 0
           ? isMultilineContinuation
             ? concat([
                 analysis.document,
-                indentBy(concat([hardLine, text(`.${field.text}`)]), ufcsContinuationIndentation()),
+                indentBy(continuationDocument, ufcsContinuationIndentation()),
               ])
             : concat([analysis.document, text(`.${field.text}`)])
           : concat([
               analysis.document,
-              indentBy(
-                concat([
-                  ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
-                  hardLine,
-                  text(`.${field.text}`),
-                ]),
-                ufcsContinuationIndentation(),
-              ),
+              indentBy(continuationDocument, ufcsContinuationIndentation()),
             ]),
       binaryOperators: analysis.binaryOperators,
       unitLiterals: analysis.unitLiterals,

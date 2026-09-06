@@ -24,6 +24,14 @@ describe("checker diagnostics", () => {
       expect(result.rendered).toMatchSnapshot();
     });
 
+    test("accepts blank lines between UFCS chain groups", () => {
+      const result = checkFixture("grouped-ufcs-chain.qnt");
+
+      expect(result.kind).toBe("clean");
+      expect(result.diagnostics).toEqual([]);
+      expect(result.rendered).toBe("");
+    });
+
     test("reports noncanonical index-expression formatting", () => {
       const result = checkFixture("index-expression.qnt");
 

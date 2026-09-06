@@ -30,7 +30,7 @@ export function checkFieldAccessExpressions(
     const afterDot = source.slice(dot.endIndex, field.startIndex);
     const isMultilineContinuation = isMultilineUfcsContinuation(fieldAccess);
     const hasCanonicalBeforeDot = isMultilineContinuation
-      ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeDot)
+      ? /^(?:(?:\r\n|\r|\n)[\t ]*){1,2}$/.test(beforeDot)
       : beforeDot === "";
     const comments = fieldAccess.namedChildren.filter(
       (child) =>

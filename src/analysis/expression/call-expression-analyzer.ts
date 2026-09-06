@@ -3,6 +3,7 @@ import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, renderDoc, text } from "@/formatting/document.js";
+import { preservedContinuationPrefix } from "@/formatting/source-spacing.js";
 import {
   callExpressionTarget,
   callTrailingCommentAlignment,
@@ -48,6 +49,8 @@ export function analyzeCallExpression(
               child.endIndex <= method.startIndex,
           )
         : [];
+    const targetContinuationPrefix =
+      receiver && dot ? preservedContinuationPrefix(receiver, targetComments, dot) : [];
     const functionAnalysis =
       receiver && receiverAnalysis && method && dot
         ? {
@@ -59,7 +62,7 @@ export function analyzeCallExpression(
                   ? concat([
                       receiverAnalysis.document,
                       indentBy(
-                        concat([hardLine, text(`.${method.text}`)]),
+                        concat([...targetContinuationPrefix, text(`.${method.text}`)]),
                         ufcsContinuationIndentation(),
                       ),
                     ])
@@ -67,14 +70,7 @@ export function analyzeCallExpression(
                 : concat([
                     receiverAnalysis.document,
                     indentBy(
-                      concat([
-                        ...targetComments.flatMap((comment) => [
-                          hardLine,
-                          commentDocument(comment),
-                        ]),
-                        hardLine,
-                        text(`.${method.text}`),
-                      ]),
+                      concat([...targetContinuationPrefix, text(`.${method.text}`)]),
                       ufcsContinuationIndentation(),
                     ),
                   ]),
@@ -103,7 +99,7 @@ export function analyzeCallExpression(
         objectAnalysis.document,
         indentBy(
           concat([
-            hardLine,
+            ...targetContinuationPrefix,
             text(`.${method.text}(`),
             (analyses[0] as ExpressionAnalysis).document,
             ...trailingCommaDocuments,
