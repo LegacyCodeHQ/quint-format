@@ -1,6 +1,10 @@
 import type Parser from "tree-sitter";
 import type { Doc } from "@/formatting/document.js";
-import type { BreakReason } from "@/parsing/break-authority.js";
+import type {
+  BreakReason,
+  OperatorIndentKind,
+  RightIndentKind,
+} from "@/parsing/break-authority.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 
 export interface ModuleDeclaration {
@@ -55,6 +59,8 @@ export interface OperatorBreakPlan {
   expandedCondition: boolean;
   operatorIndent: number;
   rightIndent: number;
+  operatorIndentKind: OperatorIndentKind;
+  rightIndentKind: RightIndentKind;
 }
 
 export interface BinaryOperator {

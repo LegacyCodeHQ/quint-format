@@ -1,6 +1,20 @@
 import type { BinaryOperator } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { indentWidth } from "@/formatting/document.js";
+import type { OperatorIndentKind, RightIndentKind } from "@/parsing/break-authority.js";
+
+const operatorIndentMessages: Record<OperatorIndentKind, string> = {
+  "match-peers": "expected alignment with the match operands",
+  "expanded-condition": "expected alignment within the expanded conditional condition",
+  continuation: "expected a four-space continuation indent",
+};
+
+const rightIndentMessages: Record<RightIndentKind, string> = {
+  "match-peers": "expected alignment with the left match operand",
+  "continued-operator": "expected the right operand four spaces beyond the continued operator",
+  "pair-value": "expected a two-space map value continuation",
+  continuation: "expected a four-space continuation indent",
+};
 
 export function checkBinaryExpressions(
   operators: BinaryOperator[],
@@ -33,7 +47,6 @@ export function checkBinaryExpressions(
     const afterOperator = source.slice(operator.node.endIndex, operator.right.startIndex);
     const hasOperatorComments =
       operator.inlineComments.length > 0 || operator.rightComments.length > 0;
-    const preservesMultilinePairValue = operator.plan.pairValue;
     const preservesLeadingOperatorBreak = operator.plan.operatorBreak;
     const preservesRightOperandBreak = !hasOperatorComments && operator.plan.rightBreak;
     const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
@@ -63,8 +76,6 @@ export function checkBinaryExpressions(
     }
     if (preservesLeadingOperatorBreak) {
       const expressionLine = lines[operator.left.startPosition.row] ?? "";
-      const isExpandedConditionalCondition = operator.plan.expandedCondition;
-      const alignsMatchOperands = operator.plan.matchPeers;
       const expectedColumn =
         expressionLine.search(/\S|$/) + operator.plan.operatorIndent * indentWidth;
       if (operator.node.startPosition.column !== expectedColumn) {
@@ -75,18 +86,13 @@ export function checkBinaryExpressions(
           column: 1,
           length: Math.max(1, operator.node.startPosition.column),
           rule: "format/binary-operator-indentation",
-          message: alignsMatchOperands
-            ? "expected alignment with the match operands"
-            : isExpandedConditionalCondition
-              ? "expected alignment within the expanded conditional condition"
-              : "expected a four-space continuation indent",
+          message: operatorIndentMessages[operator.plan.operatorIndentKind],
           sourceLine: lines[row] ?? "",
         });
       }
     }
     if (preservesRightOperandBreak) {
       const expressionLine = lines[operator.left.startPosition.row] ?? "";
-      const alignsMatchOperands = operator.plan.matchPeers;
       const expectedColumn =
         expressionLine.search(/\S|$/) + operator.plan.rightIndent * indentWidth;
       if (operator.right.startPosition.column !== expectedColumn) {
@@ -97,13 +103,7 @@ export function checkBinaryExpressions(
           column: 1,
           length: Math.max(1, operator.right.startPosition.column),
           rule: "format/binary-operator-indentation",
-          message: alignsMatchOperands
-            ? "expected alignment with the left match operand"
-            : preservesLeadingOperatorBreak
-              ? "expected the right operand four spaces beyond the continued operator"
-              : preservesMultilinePairValue
-                ? "expected a two-space map value continuation"
-                : "expected a four-space continuation indent",
+          message: rightIndentMessages[operator.plan.rightIndentKind],
           sourceLine: lines[row] ?? "",
         });
       }

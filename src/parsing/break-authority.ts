@@ -23,6 +23,10 @@ export type BreakReason =
   | "expanded-call"
   | "pair-value";
 
+export type OperatorIndentKind = "match-peers" | "expanded-condition" | "continuation";
+
+export type RightIndentKind = "match-peers" | "continued-operator" | "pair-value" | "continuation";
+
 type BreakAuthority = readonly [BreakReason, (node: Parser.SyntaxNode) => boolean];
 
 const operatorBreakAuthorities: readonly BreakAuthority[] = [
@@ -87,5 +91,17 @@ export function planOperatorBreaks(
     expandedCondition,
     operatorIndent: expandedCondition || matchPeers ? 0 : 2,
     rightIndent: matchPeers ? 0 : operatorBreak ? 4 : pairValue ? 1 : 2,
+    operatorIndentKind: matchPeers
+      ? "match-peers"
+      : expandedCondition
+        ? "expanded-condition"
+        : "continuation",
+    rightIndentKind: matchPeers
+      ? "match-peers"
+      : operatorBreak
+        ? "continued-operator"
+        : pairValue
+          ? "pair-value"
+          : "continuation",
   };
 }
