@@ -3,16 +3,10 @@ import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
+import { operatorBreakReason, rightBreakReason } from "@/parsing/break-authority.js";
 import {
   hasLineBrokenMultilinePairValue,
   hasPeerMatchOperands,
-  isBlockCombinatorEntry,
-  isIndentedExpressionBody,
-  isNestedDefinitionBody,
-  isNestedInVerticallyExpandedCall,
-  isOrdinaryBlockResult,
-  isWithinBlockCombinatorEntry,
-  isWithinConditionalCondition,
   isWithinExpandedConditionalCondition,
 } from "@/parsing/syntax.js";
 
@@ -75,23 +69,12 @@ export function analyzeOperatorExpression(
     const comments = inlineComments.flatMap((comment) => [text(" "), commentDocument(comment)]);
     const preservesMultilinePairValue = hasLineBrokenMultilinePairValue(node);
     const hasSourceRightBreak =
-      right.startPosition.row > operator.endPosition.row &&
-      (isIndentedExpressionBody(node) ||
-        isBlockCombinatorEntry(node) ||
-        isOrdinaryBlockResult(node) ||
-        isNestedDefinitionBody(node) ||
-        preservesMultilinePairValue);
+      right.startPosition.row > operator.endPosition.row && rightBreakReason(node) !== null;
     const hasSourceOperatorBreak =
       inlineComments.length === 0 &&
       rightComments.length === 0 &&
       operator.startPosition.row > left.endPosition.row &&
-      (isWithinConditionalCondition(node) ||
-        isIndentedExpressionBody(node) ||
-        isBlockCombinatorEntry(node) ||
-        isWithinBlockCombinatorEntry(node) ||
-        isOrdinaryBlockResult(node) ||
-        isNestedDefinitionBody(node) ||
-        isNestedInVerticallyExpandedCall(node));
+      operatorBreakReason(node) !== null;
     const alignsMatchOperands = hasPeerMatchOperands(node);
     const operatorContinuationIndentation =
       isWithinExpandedConditionalCondition(node) || alignsMatchOperands ? 0 : 2;
