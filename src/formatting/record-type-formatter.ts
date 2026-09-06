@@ -50,14 +50,13 @@ export function formatExpandedRecordType(node: Parser.SyntaxNode): Doc {
       const name = child.childForFieldName("name");
       const fieldType = child.childForFieldName("type");
       if (!name || !fieldType) throw new Error("Unable to locate a commented record field type");
-      const hasFollowingFieldOrRow = node.namedChildren.some(
+      const hasFollowingField = node.namedChildren.some(
         (candidate) =>
-          candidate.startIndex > child.endIndex &&
-          (candidate.type === "record_type_field" || (row && candidate.id === row.id)),
+          candidate.startIndex > child.endIndex && candidate.type === "record_type_field",
       );
       entries.push(
         text(
-          `${name.text}: ${formatType(fieldType)}${hasFollowingFieldOrRow || (child.id === lastField?.id && hasTrailingComma) ? "," : ""}`,
+          `${name.text}: ${formatType(fieldType)}${hasFollowingField || (child.id === lastField?.id && hasTrailingComma) ? "," : ""}`,
         ),
       );
       previousField = child;

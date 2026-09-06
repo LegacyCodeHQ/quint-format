@@ -166,6 +166,16 @@ describe("declarations and type expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves an expanded open record type", () => {
+    const input =
+      "module Example {\n  type LocalState[p, ext] = {\n    process_id: p\n    | ext\n  }\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a function type", () => {
     const input = "module Example {\n  const mapper:int->str\n}\n";
     const output = formatQuint(input);
