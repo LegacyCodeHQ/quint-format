@@ -30,6 +30,14 @@ exports[`type declarations formats a polymorphic type alias 1`] = `
 "
 `;
 
+exports[`type declarations preserves a function type alias continuation 1`] = `
+"module Example {
+  type Listener[p] =
+      (List[p]) => Set[p]
+}
+"
+`;
+
 exports[`type declarations formats a polymorphic type application 1`] = `
 "module Example {
   type Box[a] = List[a]
@@ -87,4 +95,18 @@ exports[`type declarations preserves trailing comments on sum-type variants 1`] 
     | Ok        // The draw was Ok
 }
 "
+`;
+
+exports[`type declarations preserves a function type alias continuation 2`] = `
+[
+  {
+    "column": 1,
+    "filePath": "input.qnt",
+    "length": 4,
+    "line": 3,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/definition-body-indentation",
+    "sourceLine": "    (List[p]) => Set[p]",
+  },
+]
 `;

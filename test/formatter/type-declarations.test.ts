@@ -39,6 +39,18 @@ describe("type declarations", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a function type alias continuation", () => {
+    const input = "module Example {\n  type Listener[p] =\n    (List[p]) => Set[p]\n}\n";
+    const expected = "module Example {\n  type Listener[p] =\n      (List[p]) => Set[p]\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toBe(expected);
+    expect(output).toMatchSnapshot();
+    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("formats a polymorphic type application", () => {
     const input = "module Example {\n  type Box[a] = List[a]\n\n  const boxes:Box[ int ]\n}\n";
     const output = formatQuint(input);

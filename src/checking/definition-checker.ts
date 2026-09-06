@@ -23,8 +23,27 @@ export function checkDefinitionBody(
   const isMultilineSum =
     declaration.valueNode.type === "sum_type" &&
     declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
+  const hasRecordComments =
+    declaration.valueNode.type === "record_type" &&
+    declaration.valueNode.namedChildren.some(
+      (child) => child.type === "comment" || child.type === "documentation_comment",
+    );
+  const isMultilineRecord =
+    declaration.valueNode.type === "record_type" &&
+    declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
+  const isExpandedTypeApplication =
+    declaration.valueNode.type === "type_application" &&
+    declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
+  const preservesTypeContinuation =
+    declaration.node.type === "type_alias_declaration" &&
+    declaration.valueNode.startPosition.row > declaration.equals.endPosition.row &&
+    !isMultilineSum &&
+    !hasRecordComments &&
+    !isMultilineRecord &&
+    !isExpandedTypeApplication;
   const requiresLineBreakAfterEquals =
     isMultilineSum ||
+    preservesTypeContinuation ||
     preservesDefinitionBodyLineBreak(declaration.node, declaration.valueNode, commentAttachments);
   const hasCanonicalAfterEquals = requiresLineBreakAfterEquals
     ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterEquals)
@@ -44,7 +63,7 @@ export function checkDefinitionBody(
     });
   }
   if (
-    declaration.node.type === "assumption_declaration" &&
+    (declaration.node.type === "assumption_declaration" || preservesTypeContinuation) &&
     declaration.valueNode.startPosition.row > declaration.equals.endPosition.row &&
     declaration.valueNode.startPosition.column !== declaration.node.startPosition.column + 4
   ) {
