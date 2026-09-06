@@ -258,11 +258,6 @@ test/fixtures/definition-matrix.qnt:6:1: error[format/module-body-indentation]: 
 6 | pure def apply(value:int,callback:(int)=>str):str=callback(value)
   | ^
   |
-test/fixtures/definition-matrix.qnt:6:6: error[format/definition-separation]: expected exactly one blank line between definitions
-  |
-6 | pure def apply(value:int,callback:(int)=>str):str=callback(value)
-  |      ^^^
-  |
 test/fixtures/definition-matrix.qnt:6:22: error[format/type-colon-spacing]: expected one space after ':'
   |
 6 | pure def apply(value:int,callback:(int)=>str):str=callback(value)
@@ -292,11 +287,6 @@ test/fixtures/definition-matrix.qnt:6:50: error[format/equals-spacing]: expected
   |
 6 | pure def apply(value:int,callback:(int)=>str):str=callback(value)
   |                                                  ^
-  |
-test/fixtures/definition-matrix.qnt:7:1: error[format/definition-separation]: expected exactly one blank line between definitions
-  |
-7 | def stateValue(offset:int):int=n+offset
-  | ^^^
   |
 test/fixtures/definition-matrix.qnt:7:1: error[format/module-body-indentation]: expected 2 spaces of indentation
   |

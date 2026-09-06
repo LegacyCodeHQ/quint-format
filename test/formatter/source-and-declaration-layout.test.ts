@@ -36,16 +36,18 @@ describe("source and declaration layout", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("separates adjacent def declarations", () => {
+  test("preserves adjacent def declarations when the latter is undocumented", () => {
     const input = readFileSync(
       new URL("../fixtures/adjacent-definitions.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
 
-    expect(output).toContain("  pure def first(): int = 1\n\n  pure def second(): int = 2");
+    expect(output).toBe(input);
+    expect(output).toContain("  pure def first(): int = 1\n  pure def second(): int = 2");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
     expect(parser.parse(input).rootNode.hasError).toBe(false);
     expect(parser.parse(output).rootNode.hasError).toBe(false);

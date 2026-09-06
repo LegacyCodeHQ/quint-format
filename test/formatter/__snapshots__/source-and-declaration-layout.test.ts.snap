@@ -24,10 +24,10 @@ exports[`source and declaration layout preserves adjacent variable declarations 
 "
 `;
 
-exports[`source and declaration layout separates adjacent def declarations 1`] = `
+exports[`source and declaration layout preserves adjacent def declarations when the latter is undocumented 1`] = `
 "module Example {
+  /// Returns the first value.
   pure def first(): int = 1
-
   pure def second(): int = 2
 }
 "

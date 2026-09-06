@@ -15,6 +15,5 @@ export function separatesDefinitions(
 ): boolean {
   if (!isDefinition(previous) || !isDefinition(current)) return false;
 
-  const adjacentDefs = previous.keyword.text === "def" && current.keyword.text === "def";
-  return adjacentDefs || (isMultiline(previous) && isMultiline(current));
+  return isMultiline(previous) && isMultiline(current);
 }

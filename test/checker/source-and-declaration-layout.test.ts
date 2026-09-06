@@ -25,11 +25,12 @@ describe("checker diagnostics", () => {
       expect(result.rendered).toBe("");
     });
 
-    test("reports adjacent def declarations without a blank line", () => {
+    test("accepts adjacent def declarations when the latter is undocumented", () => {
       const result = checkFixture("adjacent-definitions.qnt");
 
-      expect(result.kind).toBe("format");
-      expect(result.rendered).toMatchSnapshot();
+      expect(result.kind).toBe("clean");
+      expect(result.diagnostics).toEqual([]);
+      expect(result.rendered).toBe("");
     });
 
     test("reports adjacent multiline value definitions without blank lines", () => {
