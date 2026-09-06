@@ -26,11 +26,11 @@
           <div class="file-heading"><div class="caption">FORMAT COMPARISON</div><h1 id="filename">Choose a Quint file</h1></div>
           <div class="actions"><button type="button" id="clear" disabled>Clear selection</button><button type="button" id="copy" class="primary" disabled>Copy before &amp; after</button></div>
         </section>
-        <div class="review-meta"><span id="file-state">Ready to explore</span><label><input id="sync" type="checkbox" checked /> Sync scrolling</label></div>
+        <div class="review-meta"><span id="file-state">Ready to explore</span><div class="change-navigation"><button type="button" id="previous-change" aria-label="Previous changed block" disabled>↑</button><span id="change-count">No changes</span><button type="button" id="next-change" aria-label="Next changed block" disabled>↓</button></div><label><input id="sync" type="checkbox" checked /> Sync scrolling</label></div>
         <div id="notice" role="status" aria-live="polite">Select a file to compare its original source with the formatter’s output.</div>
         <section class="editors" aria-label="Source comparison">
-          <article class="editor"><div class="editor-heading"><strong><span class="before-dot"></span> Before</strong><span>Original source</span></div><div id="before-scroll" class="code-scroll"><pre id="before-lines" class="numbers" aria-hidden="true"></pre><pre id="before" class="source"></pre></div></article>
-          <article class="editor"><div class="editor-heading"><strong><span class="after-dot"></span> After</strong><span>Formatted preview</span></div><div id="after-scroll" class="code-scroll"><pre id="after-lines" class="numbers" aria-hidden="true"></pre><pre id="after" class="source"></pre></div></article>
+          <article class="editor"><div class="editor-heading"><strong><span class="before-dot"></span> Before</strong><span>Original · amber = changed</span></div><div id="before-scroll" class="code-scroll"><pre id="before-lines" class="numbers" aria-hidden="true"></pre><pre id="before" class="source"></pre></div></article>
+          <article class="editor"><div class="editor-heading"><strong><span class="after-dot"></span> After</strong><span>Formatted · green = changed</span></div><div id="after-scroll" class="code-scroll"><pre id="after-lines" class="numbers" aria-hidden="true"></pre><pre id="after" class="source"></pre></div></article>
         </section>
         <footer><span id="selection-info">Click a token or select code to trace it across both panels.</span><span id="copy-state" role="status" aria-live="polite">Markdown export</span></footer>
       </main>

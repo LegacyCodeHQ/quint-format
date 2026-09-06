@@ -3,6 +3,7 @@ import { commentDocument } from "../../../src/formatting/comments.js";
 import { renderDoc } from "../../../src/formatting/document.js";
 import { formatQuint } from "../../../src/index.js";
 import { parseQuint } from "../../../src/parsing/parser.js";
+import { type ChangeBlock, changedBlocks } from "./changes.js";
 
 export interface SourceRange {
   start: number;
@@ -19,6 +20,7 @@ export interface Comparison {
   after: string | null;
   nodes: NodePair[];
   changed: boolean;
+  changes: ChangeBlock[];
   error?: string;
   mappingWarning?: string;
 }
@@ -87,7 +89,13 @@ export function compareSource(before: string): Comparison {
     const input = parseQuint(before);
     const after = formatQuint(before);
     const output = parseQuint(after);
-    const result: Comparison = { before, after, nodes: [], changed: before !== after };
+    const result: Comparison = {
+      before,
+      after,
+      nodes: [],
+      changed: before !== after,
+      changes: changedBlocks(before, after),
+    };
     try {
       result.nodes = mapNodes(input, output);
     } catch (error) {
@@ -100,6 +108,7 @@ export function compareSource(before: string): Comparison {
       after: null,
       nodes: [],
       changed: false,
+      changes: [],
       error: error instanceof Error ? error.message : String(error),
     };
   }

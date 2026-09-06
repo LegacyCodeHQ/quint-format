@@ -1,3 +1,4 @@
+import { type ChangeBlock, sourceLines } from "../changes.js";
 import type { Comparison, NodePair, SourceRange } from "../comparison.js";
 import { markdownComparison, selectionRanges } from "../selection.js";
 
@@ -19,6 +20,7 @@ let files: string[] = [];
 let currentPath = "";
 let comparison: Comparison | undefined;
 let selected: NodePair | undefined;
+let currentChange = -1;
 let requestId = 0;
 
 async function api<T>(path: string): Promise<T> {
@@ -104,31 +106,85 @@ function syntaxClass(type: string) {
   return "";
 }
 
-function renderSource(side: "before" | "after", source: string, nodes: NodePair[]) {
+function renderSource(
+  side: "before" | "after",
+  source: string,
+  nodes: NodePair[],
+  changes: ChangeBlock[] = [],
+) {
   const target = panes[side];
   const fragment = document.createDocumentFragment();
-  let offset = 0;
-  for (const node of nodes
-    .filter((node) => node.token)
-    .sort((a, b) => a[side].start - b[side].start)) {
-    const { start, end } = node[side];
-    if (start < offset) continue;
-    fragment.append(document.createTextNode(source.slice(offset, start)));
-    const span = document.createElement("span");
-    span.className = syntaxClass(node.type);
-    span.dataset.start = String(start);
-    span.dataset.end = String(end);
-    span.textContent = source.slice(start, end);
-    fragment.append(span);
-    offset = end;
+  const numbers = document.createDocumentFragment();
+  const tokens = nodes.filter((node) => node.token).sort((a, b) => a[side].start - b[side].start);
+  const lines = sourceLines(source);
+  const changedLines = new Set<number>();
+  const boundaries = new Set<number>();
+  for (const block of changes) {
+    const { start, end } = block[side];
+    for (let line = start; line < end; line++) changedLines.add(line);
+    if (start === end) boundaries.add(Math.min(start, Math.max(0, lines.length - 1)));
   }
-  fragment.append(document.createTextNode(source.slice(offset)));
+  let offset = 0;
+  let tokenIndex = 0;
+  for (const [index, text] of lines.entries()) {
+    const line = document.createElement("span");
+    const number = document.createElement("span");
+    line.className =
+      number.className = `source-line${changedLines.has(index) ? " changed-line" : ""}${boundaries.has(index) ? " change-boundary" : ""}`;
+    line.dataset.line = String(index);
+    number.textContent = `${index + 1}\n`;
+    const end = offset + text.length;
+    while (offset < end) {
+      while (tokens[tokenIndex] && tokens[tokenIndex][side].end <= offset) tokenIndex++;
+      const node = tokens[tokenIndex];
+      if (!node || node[side].start > offset) {
+        const until = Math.min(end, node?.[side].start ?? end);
+        line.append(document.createTextNode(source.slice(offset, until)));
+        offset = until;
+      } else {
+        const until = Math.min(end, node[side].end);
+        const span = document.createElement("span");
+        span.className = syntaxClass(node.type);
+        span.dataset.start = String(offset);
+        span.dataset.end = String(until);
+        span.textContent = source.slice(offset, until);
+        line.append(span);
+        offset = until;
+      }
+    }
+    fragment.append(line);
+    numbers.append(number);
+  }
   target.replaceChildren(fragment);
-  element(`${side}-lines`).textContent = source
-    ? Array.from({ length: source.split("\n").length }, (_, index) => index + 1).join("\n")
-    : "";
+  element(`${side}-lines`).replaceChildren(numbers);
   scrolls[side].scrollTo(0, 0);
 }
+
+function updateChangeControls() {
+  const count = comparison?.changes.length ?? 0;
+  element<HTMLButtonElement>("previous-change").disabled = !count;
+  element<HTMLButtonElement>("next-change").disabled = !count;
+  element("change-count").textContent = count
+    ? currentChange < 0
+      ? `${count} changed ${count === 1 ? "block" : "blocks"}`
+      : `Change ${currentChange + 1} of ${count}`
+    : "No changes";
+}
+
+function jumpToChange(direction: number) {
+  if (!comparison?.changes.length) return;
+  currentChange =
+    (currentChange + direction + comparison.changes.length) % comparison.changes.length;
+  scrollOwner = undefined;
+  for (const side of ["before", "after"] as const) {
+    scrolls[side].scrollTop = Math.max(0, comparison.changes[currentChange][side].start * 23 - 46);
+  }
+  updateChangeControls();
+}
+element("previous-change").addEventListener("click", () =>
+  jumpToChange(currentChange < 0 ? 0 : -1),
+);
+element("next-change").addEventListener("click", () => jumpToChange(1));
 
 function domRange(target: HTMLElement, sourceRange: SourceRange): Range {
   const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
@@ -189,6 +245,8 @@ async function loadFile(path: string) {
   const id = ++requestId;
   currentPath = path;
   comparison = undefined;
+  currentChange = -1;
+  updateChangeControls();
   selected = undefined;
   drawSelection();
   copy.disabled = true;
@@ -204,8 +262,9 @@ async function loadFile(path: string) {
     const data = await api<Comparison>(`api/compare?path=${encodeURIComponent(path)}`);
     if (id !== requestId) return;
     comparison = data;
-    renderSource("before", data.before, data.nodes);
-    renderSource("after", data.after ?? "", data.nodes);
+    renderSource("before", data.before, data.nodes, data.changes);
+    renderSource("after", data.after ?? "", data.nodes, data.changes);
+    updateChangeControls();
     copy.disabled = data.after === null;
     element("file-state").textContent = data.error
       ? "Formatting unavailable"
@@ -334,6 +393,8 @@ async function refresh() {
       ++requestId;
       currentPath = "";
       comparison = undefined;
+      currentChange = -1;
+      updateChangeControls();
       selected = undefined;
       copy.disabled = true;
       drawSelection();

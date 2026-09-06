@@ -54,6 +54,12 @@ alias quint-review='bun /absolute/path/to/quint-format/tools/quint-format-review
   across code to highlight matching nodes; partial tokens expand to their full
   token boundaries. Selection works in either panel. Scrolling is synchronized
   using token locations and can be switched off.
+- Changed line blocks stay highlighted in amber before formatting and green
+  after formatting; unchanged lines keep their normal background. The arrows
+  beside the changed-block count jump both panels to the previous or next edit.
+  Whitespace and final-newline changes are included. A boundary marker identifies
+  the corresponding position when a block only inserts or removes lines. Linked
+  selections use blue so they remain distinct from the change highlights.
 - **Copy before & after** copies labeled Markdown code blocks. With a selection,
   it copies the highlighted ranges; otherwise it copies both complete files.
   **Clear selection** or Escape returns to whole-file copying.
