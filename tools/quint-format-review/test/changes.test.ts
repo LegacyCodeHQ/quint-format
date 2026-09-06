@@ -29,6 +29,11 @@ test("handles inserted/deleted lines and final newline changes", () => {
   expect(changedBlocks("same\n", "same\n")).toEqual([]);
 });
 
+test("exposes a final newline as an empty row in the viewer", () => {
+  expect(sourceLines("first\nlast\n")).toEqual(["first\n", "last\n", ""]);
+  expect(sourceLines("first\nlast")).toEqual(["first\n", "last"]);
+});
+
 test("unchanged gaps are exact matches, including repeated lines and Unicode", () => {
   let seed = 42;
   const random = () => {

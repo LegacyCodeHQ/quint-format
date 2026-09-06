@@ -3,16 +3,22 @@ export interface ChangeBlock {
   after: { start: number; end: number };
 }
 
-// Preserve line terminators so final-newline and CRLF changes remain visible.
-export function sourceLines(source: string): string[] {
+function comparisonLines(source: string): string[] {
   return source.match(/[^\n]*\n|[^\n]+$/g) ?? [];
+}
+
+// Preserve line terminators and expose the empty row created by a final newline.
+export function sourceLines(source: string): string[] {
+  const lines = comparisonLines(source);
+  if (source.endsWith("\n")) lines.push("");
+  return lines;
 }
 
 // Patience anchors keep large files cheap. Within small unanchored regions, an
 // exact LCS separates unchanged lines from edits. Ranges are zero-based, half-open.
 export function changedBlocks(before: string, after: string): ChangeBlock[] {
-  const a = sourceLines(before);
-  const b = sourceLines(after);
+  const a = comparisonLines(before);
+  const b = comparisonLines(after);
   const matches: [number, number][] = [];
   function visit(a0: number, a1: number, b0: number, b1: number) {
     while (a0 < a1 && b0 < b1 && a[a0] === b[b0]) matches.push([a0++, b0++]);
