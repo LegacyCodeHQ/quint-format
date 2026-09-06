@@ -3,7 +3,7 @@ import { checkFixture } from "../support/check";
 
 describe("checker diagnostics", () => {
   describe("blocks and local definitions", () => {
-    test("reports an inline ordinary block", () => {
+    test("reports noncanonical compact ordinary-block spacing", () => {
       const result = checkFixture("block-expression.qnt");
 
       expect(result.kind).toBe("format");

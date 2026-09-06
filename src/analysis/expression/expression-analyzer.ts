@@ -62,7 +62,7 @@ function analyzeExpressionWithClosingComment(
   );
   if (nestedDefinitionAnalysis) return nestedDefinitionAnalysis;
 
-  const blockAnalysis = analyzeBlockExpression(node, analyzeChild);
+  const blockAnalysis = analyzeBlockExpression(node, analyzeChild, commentAttachments);
   if (blockAnalysis) return blockAnalysis;
 
   const callAnalysis = analyzeCallExpression(node, analyzeChild);

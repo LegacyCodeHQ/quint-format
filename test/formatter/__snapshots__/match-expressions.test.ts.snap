@@ -40,12 +40,8 @@ exports[`match expressions places a match expression below a definition header 1
 
   action step =
     match status {
-      | Ready => {
-          status' = Waiting
-        }
-      | Waiting => {
-          status' = Ready
-        }
+      | Ready => { status' = Waiting }
+      | Waiting => { status' = Ready }
     }
 }
 "

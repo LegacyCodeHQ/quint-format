@@ -1,11 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
-import {
-  collectNodes,
-  compactLambdaBlockExpression,
-  compactNestedBlockExpression,
-} from "@/parsing/syntax.js";
+import { collectNodes, compactBlockExpression } from "@/parsing/syntax.js";
 
 export function checkBlockExpressions(
   root: Parser.SyntaxNode,
@@ -26,21 +22,25 @@ export function checkBlockExpressions(
     }
     const contentNodes = [...bindings, expression];
     const rows = contentNodes.map((content) => content.startPosition.row);
-    const nested = block.parent;
-    const nestedDefinition =
-      nested?.type === "nested_definition_expression"
-        ? nested.childForFieldName("definition")
-        : null;
-    const isCompactNestedBlock = Boolean(
-      nestedDefinition && compactNestedBlockExpression(nestedDefinition, block, commentAttachments),
-    );
-    const parentLambda = block.parent?.type === "lambda_expression" ? block.parent : null;
-    const isCompactLambdaBlock = Boolean(
-      parentLambda && compactLambdaBlockExpression(parentLambda, block, commentAttachments),
-    );
+    const isCompactBlock = Boolean(compactBlockExpression(block, commentAttachments));
+    if (isCompactBlock) {
+      const afterOpenBrace = source.slice(openBrace.endIndex, expression.startIndex);
+      const beforeCloseBrace = source.slice(expression.endIndex, closeBrace.startIndex);
+      if (afterOpenBrace !== " " || beforeCloseBrace !== " ") {
+        const row = openBrace.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: openBrace.startPosition.column + 1,
+          length: 1,
+          rule: "format/block-brace-spacing",
+          message: "expected one space inside compact block braces",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
     const hasCanonicalLines =
-      isCompactNestedBlock ||
-      isCompactLambdaBlock ||
+      isCompactBlock ||
       (rows[0] !== openBrace.startPosition.row &&
         rows.every((row, index) => index === 0 || row > (rows[index - 1] as number)) &&
         closeBrace.startPosition.row > (rows.at(-1) as number));

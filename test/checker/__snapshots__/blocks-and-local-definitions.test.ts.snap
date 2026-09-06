@@ -1,7 +1,7 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`checker diagnostics blocks and local definitions reports an inline ordinary block 1`] = `
-"test/fixtures/block-expression.qnt:4:23: error[format/block-layout]: expected block contents and the closing brace on separate lines
+exports[`checker diagnostics blocks and local definitions reports noncanonical compact ordinary-block spacing 1`] = `
+"test/fixtures/block-expression.qnt:4:23: error[format/block-brace-spacing]: expected one space inside compact block braces
   |
 4 |   action initialize = {count' = 0}
   |                       ^

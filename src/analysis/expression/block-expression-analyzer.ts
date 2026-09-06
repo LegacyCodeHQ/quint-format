@@ -11,11 +11,17 @@ import {
   renderDoc,
   text,
 } from "@/formatting/document.js";
-import { blockCombinatorEntries, isBlockCombinatorExpression } from "@/parsing/syntax.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import {
+  blockCombinatorEntries,
+  compactBlockExpression,
+  isBlockCombinatorExpression,
+} from "@/parsing/syntax.js";
 
 export function analyzeBlockExpression(
   node: Parser.SyntaxNode,
   analyzeExpression: (node: Parser.SyntaxNode) => ExpressionAnalysis,
+  commentAttachments: CommentAttachmentIndex,
 ): ExpressionAnalysis | undefined {
   if (node.type === "block_expression") {
     const bindings = node.childrenForFieldName("binding");
@@ -30,6 +36,20 @@ export function analyzeBlockExpression(
     });
     const analysis = analyzeExpression(expression);
     const analyses = [...bindingAnalyses.map(({ value }) => value), analysis];
+    if (compactBlockExpression(node, commentAttachments)) {
+      const compactDocument = concat([text("{ "), analysis.document, text(" }")]);
+      const compactText = renderDoc(compactDocument);
+      if (!compactText.includes("\n") && node.startPosition.column + compactText.length <= 120) {
+        return {
+          document: compactDocument,
+          binaryOperators: analysis.binaryOperators,
+          unitLiterals: analysis.unitLiterals,
+          sequenceLiterals: analysis.sequenceLiterals,
+          recordLiterals: analysis.recordLiterals,
+          callExpressions: analysis.callExpressions,
+        };
+      }
+    }
     const contentDocuments: Doc[] = [];
     const contentAnchors: Parser.SyntaxNode[] = [];
     let previousContent: Parser.SyntaxNode | undefined;

@@ -11,9 +11,13 @@ parser.setLanguage(Quint);
 describe("blocks and block combinators", () => {
   test("formats an ordinary block expression", () => {
     const input = "module Example {\n  var count: int\n\n  action initialize = {count' = 0}\n}\n";
+    const expected =
+      "module Example {\n  var count: int\n\n  action initialize = { count' = 0 }\n}\n";
     const output = formatQuint(input);
 
+    expect(output).toBe(expected);
     expect(output).toMatchSnapshot();
+    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });

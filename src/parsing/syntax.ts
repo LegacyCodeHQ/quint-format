@@ -285,14 +285,12 @@ export function isCompactElseIfLadder(node: Parser.SyntaxNode): boolean {
   return false;
 }
 
-export function compactNestedBlockExpression(
-  definition: Parser.SyntaxNode,
+export function compactBlockExpression(
   body: Parser.SyntaxNode,
   commentAttachments: CommentAttachmentIndex,
 ): Parser.SyntaxNode | null {
   if (
     body.type !== "block_expression" ||
-    definition.endPosition.row !== body.startPosition.row ||
     body.startPosition.row !== body.endPosition.row ||
     body.endPosition.column > 120 ||
     body.childrenForFieldName("binding").length > 0 ||
@@ -304,23 +302,24 @@ export function compactNestedBlockExpression(
   return body.childForFieldName("expression");
 }
 
+export function compactNestedBlockExpression(
+  definition: Parser.SyntaxNode,
+  body: Parser.SyntaxNode,
+  commentAttachments: CommentAttachmentIndex,
+): Parser.SyntaxNode | null {
+  return definition.endPosition.row === body.startPosition.row
+    ? compactBlockExpression(body, commentAttachments)
+    : null;
+}
+
 export function compactLambdaBlockExpression(
   lambda: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
   commentAttachments: CommentAttachmentIndex,
 ): Parser.SyntaxNode | null {
-  if (
-    body.type !== "block_expression" ||
-    lambda.startPosition.row !== body.startPosition.row ||
-    body.startPosition.row !== body.endPosition.row ||
-    lambda.endPosition.column > 120 ||
-    body.childrenForFieldName("binding").length > 0 ||
-    commentAttachments.commentsFor(body).length > 0
-  ) {
-    return null;
-  }
-
-  return body.childForFieldName("expression");
+  return lambda.startPosition.row === body.startPosition.row && lambda.endPosition.column <= 120
+    ? compactBlockExpression(body, commentAttachments)
+    : null;
 }
 
 export function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode): boolean {
