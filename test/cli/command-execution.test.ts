@@ -51,11 +51,15 @@ describe("command-line checker", () => {
 
       const version = Bun.spawnSync(["node", "dist/cli.js", "--version"], { cwd: projectRoot });
       expect(version.exitCode).toBe(0);
-      expect(version.stdout.toString()).toMatch(
-        new RegExp(
-          `^quintfmt ${packageVersion.replaceAll(".", "\\.")} \\(dev [0-9a-f]{12}(?:-dirty)?\\)\\n$`,
-        ),
-      );
+      if (process.env.QUINT_FORMAT_BUILD_CHANNEL === "npm") {
+        expect(version.stdout.toString()).toBe(`quintfmt ${packageVersion}\n`);
+      } else {
+        expect(version.stdout.toString()).toMatch(
+          new RegExp(
+            `^quintfmt ${packageVersion.replaceAll(".", "\\.")} \\(dev [0-9a-f]{12}(?:-dirty)?\\)\\n$`,
+          ),
+        );
+      }
       expect(version.stderr.toString()).toBe("");
     });
 
