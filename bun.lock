@@ -5,7 +5,7 @@
     "": {
       "name": "@legacycodehq/quint-format",
       "dependencies": {
-        "@legacycodehq/tree-sitter-quint": "0.32.0-rc.3",
+        "@legacycodehq/tree-sitter-quint": "0.32.0-rc.4",
         "tree-sitter": "0.25.1",
       },
       "devDependencies": {
@@ -39,7 +39,7 @@
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.5.11", "", { "os": "win32", "cpu": "x64" }, "sha512-QSQr/KjOgXA7OzXJUWS+oguKyAZ3Q0l/lnlDGbu397eKo83atuWUjBPJrsqbKNF6CARGw8XXJLGzpHC8Ryhd4Q=="],
 
-    "@legacycodehq/tree-sitter-quint": ["@legacycodehq/tree-sitter-quint@0.32.0-rc.3", "", { "dependencies": { "node-addon-api": "^8.3.1", "node-gyp-build": "^4.8.4" }, "peerDependencies": { "tree-sitter": "^0.25.0" }, "optionalPeers": ["tree-sitter"] }, "sha512-Tm1n5pf6PP5b3W54b/7ljd8fRwagOMPTWTKfjInWMjUhp7a//uqFPizuP48RtsN9iz1Q22j3FXB2t/v09y38fg=="],
+    "@legacycodehq/tree-sitter-quint": ["@legacycodehq/tree-sitter-quint@0.32.0-rc.4", "", { "dependencies": { "node-addon-api": "^8.3.1", "node-gyp-build": "^4.8.4" }, "peerDependencies": { "tree-sitter": "^0.25.0" }, "optionalPeers": ["tree-sitter"] }, "sha512-wv6i4ZwzqzbWt9Qp9+6jQfvV3wxLCO6gHogPSDmSXYZm8VKAwEuljNYxCoQoFzcnzK9r1bseQVpdAIGqA/H/2g=="],
 
     "@nodelib/fs.scandir": ["@nodelib/fs.scandir@2.1.5", "", { "dependencies": { "@nodelib/fs.stat": "2.0.5", "run-parallel": "^1.1.9" } }, "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g=="],
 

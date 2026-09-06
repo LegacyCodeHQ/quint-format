@@ -54,7 +54,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@legacycodehq/tree-sitter-quint": "0.32.0-rc.3",
+    "@legacycodehq/tree-sitter-quint": "0.32.0-rc.4",
     "tree-sitter": "0.25.1"
   },
   "trustedDependencies": [

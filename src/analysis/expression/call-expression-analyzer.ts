@@ -9,6 +9,7 @@ import {
   hasMultilineLambdaBody,
   isCallExpression,
   isMultilineLambdaExpression,
+  isMultilineParenthesizedPostfixReceiver,
   isMultilineUfcsContinuation,
   isNestedInVerticallyExpandedCall,
   ufcsContinuationIndentation,
@@ -43,12 +44,13 @@ export function analyzeCallExpression(
           )
         : [];
     const functionAnalysis =
-      receiverAnalysis && method && dot
+      receiver && receiverAnalysis && method && dot
         ? {
             ...receiverAnalysis,
             document:
               targetComments.length === 0
-                ? isMultilineUfcsContinuation(node)
+                ? isMultilineUfcsContinuation(node) &&
+                  !isMultilineParenthesizedPostfixReceiver(receiver)
                   ? concat([
                       receiverAnalysis.document,
                       indentBy(
