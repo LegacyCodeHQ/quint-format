@@ -63,6 +63,14 @@ export function analyzeConditionalExpression(
     const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(node);
     const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
     const separatesCommentedElse = leadingAlternativeComments.length > 0;
+    const sourceElseGap = node.text.slice(
+      consequence.endIndex - node.startIndex,
+      elseKeyword.startIndex - node.startIndex,
+    );
+    const preservesBlankLineBeforeElse =
+      consequence.type === "block_expression" &&
+      leadingAlternativeComments.length === 0 &&
+      /(?:\r\n|\r|\n)[\t ]*(?:\r\n|\r|\n)/u.test(sourceElseGap);
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
@@ -118,7 +126,11 @@ export function analyzeConditionalExpression(
             ]
           : leadingAlternativeComments.length === 0
             ? [
-                ...(preservesElseLineBreak ? [hardLine, text("else")] : [text(" else")]),
+                ...(preservesBlankLineBeforeElse
+                  ? [hardLine, hardLine, text("else")]
+                  : preservesElseLineBreak
+                    ? [hardLine, text("else")]
+                    : [text(" else")]),
                 ...(preservesAlternativeLineBreak
                   ? [indent(concat([hardLine, alternativeAnalysis.document]))]
                   : [text(" "), alternativeAnalysis.document]),

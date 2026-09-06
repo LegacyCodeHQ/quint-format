@@ -82,6 +82,37 @@ exports[`conditional expressions joins else with an immediate nested conditional
 "
 `;
 
+exports[`conditional expressions preserves one blank line between block conditional branches 1`] = `
+"module Example {
+  pure def choose(value) = if (value == 0) {
+    0
+  }
+
+  else if (value == 1) {
+    1
+  }
+
+  else {
+    2
+  }
+}
+"
+`;
+
+exports[`conditional expressions preserves one blank line between block conditional branches 2`] = `
+[
+  {
+    "column": 3,
+    "filePath": "conditional-branch-gaps.qnt",
+    "length": 4,
+    "line": 11,
+    "message": "expected one blank line before 'else'",
+    "rule": "format/conditional-else-spacing",
+    "sourceLine": "  else {",
+  },
+]
+`;
+
 exports[`conditional expressions formats a nested conditional as an else-if chain 1`] = `
 [
   {

@@ -94,6 +94,11 @@ export function checkConditionalExpressions(
     const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(conditional);
     const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
     const separatesCommentedElse = leadingAlternativeComments.length > 0;
+    const sourceElseGap = source.slice(consequence.endIndex, elseKeyword.startIndex);
+    const preservesBlankLineBeforeElse =
+      consequence.type === "block_expression" &&
+      leadingAlternativeComments.length === 0 &&
+      /(?:\r\n|\r|\n)[\t ]*(?:\r\n|\r|\n)/u.test(sourceElseGap);
     const preservesConsequenceLineBreak =
       consequence.type !== "block_expression" &&
       consequenceComments.length === 0 &&
@@ -133,11 +138,14 @@ export function checkConditionalExpressions(
         expandsSourceMultilineCondition ||
         hasSourceElseBreak ||
         alternative.startPosition.row > elseKeyword.endPosition.row);
-    const expectedElseGap = preservesElseLineBreak
-      ? `\n${" ".repeat(conditional.startPosition.column)}`
-      : separatesCommentedElse
+    const consequenceCloseBrace = consequence.children.find((child) => child.type === "}");
+    const expectedElseGap = preservesBlankLineBeforeElse
+      ? `\n\n${" ".repeat(consequenceCloseBrace?.startPosition.column ?? consequence.endPosition.column)}`
+      : preservesElseLineBreak
         ? `\n${" ".repeat(conditional.startPosition.column)}`
-        : " ";
+        : separatesCommentedElse
+          ? `\n${" ".repeat(conditional.startPosition.column)}`
+          : " ";
     const expectedAlternativeGap = preservesAlternativeLineBreak
       ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
       : " ";
@@ -175,8 +183,9 @@ export function checkConditionalExpressions(
         column: elseKeyword.startPosition.column + 1,
         length: 4,
         rule: "format/conditional-else-spacing",
-        message:
-          preservesElseLineBreak || separatesCommentedElse || preservesAlternativeLineBreak
+        message: preservesBlankLineBeforeElse
+          ? "expected one blank line before 'else'"
+          : preservesElseLineBreak || separatesCommentedElse || preservesAlternativeLineBreak
             ? "expected preserved line breaks and indentation around 'else'"
             : "expected one space around 'else'",
         sourceLine: lines[row] ?? "",
