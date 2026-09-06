@@ -1,6 +1,6 @@
 {
   "name": "@legacycodehq/quint-format",
-  "version": "0.1.0-alpha.6",
+  "version": "0.1.0-alpha.7",
   "description": "A developer-friendly formatter for Quint that respects intentional layout while applying consistent conventions.",
   "license": "Apache-2.0",
   "type": "module",
