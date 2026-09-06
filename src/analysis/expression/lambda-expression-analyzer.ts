@@ -2,7 +2,7 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
-import { concat, hardLine, indent, renderDoc, text } from "@/formatting/document.js";
+import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { formatCommentedTuplePattern, formatPattern } from "@/formatting/pattern-formatter.js";
 import { compactLambdaBlockExpression, isMultilineLambdaExpression } from "@/parsing/syntax.js";
 
@@ -66,13 +66,9 @@ export function analyzeLambdaExpression(
     const isInlineSecondaryArgument = Boolean(
       previousArgument && previousArgument.endPosition.row === node.startPosition.row,
     );
-    const preservedBodyExceedsLineWidth = renderDoc(
-      indentBy(concat([hardLine, analysis.document]), sourceContinuationIndentation),
-    )
-      .split("\n")
-      .some((line) => line.length > 120);
+    const inlineCallHeaderExceedsLineWidth = arrow.endPosition.column > 120;
     const continuationIndentation =
-      isInlineSecondaryArgument && preservedBodyExceedsLineWidth
+      isInlineSecondaryArgument && inlineCallHeaderExceedsLineWidth
         ? 1
         : sourceContinuationIndentation;
     return {

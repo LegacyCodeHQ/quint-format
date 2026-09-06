@@ -107,13 +107,14 @@ describe("lambdas", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("stabilizes lambda indentation when its call expands", () => {
+  test("keeps a short call header inline when its lambda body has a long line", () => {
     const input = readFileSync(
       new URL("../fixtures/fold-lambda-call-expansion.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
 
+    expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

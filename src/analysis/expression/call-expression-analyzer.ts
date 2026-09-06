@@ -79,6 +79,8 @@ export function analyzeCallExpression(
     ]);
     const inlineCallLines = renderDoc(inlineCallDocument).split("\n");
     const hasMultilineArgumentDocument = inlineCallLines.length > 1;
+    const inlineCallFirstLineExceedsWidth =
+      (inlineCallLines[0]?.length ?? 0) + node.startPosition.column > 120;
     const hasInlineMultilineLambdaArgument = arguments_.some((argument, index) => {
       const previous = index === 0 ? openParenthesis : arguments_[index - 1];
       return (
@@ -143,7 +145,7 @@ export function analyzeCallExpression(
       hasInlineMultilineLambdaArgument &&
       !hasSourceArgumentBreak &&
       hasSourceClosingBreak &&
-      !exceedsLineWidth;
+      !inlineCallFirstLineExceedsWidth;
     const hangingMultilineLambdaCall =
       arguments_.length > 1 &&
       isMultilineLambdaExpression(arguments_.at(-1) as Parser.SyntaxNode) &&
