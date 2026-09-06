@@ -17,12 +17,19 @@ describe("checker diagnostics", () => {
       expect(result.rendered).toMatchSnapshot();
     });
 
-    test("accepts adjacent definitions without a blank line", () => {
+    test("accepts adjacent variable declarations without a blank line", () => {
       const result = checkFixture("definition-spacing.qnt");
 
       expect(result.kind).toBe("clean");
       expect(result.diagnostics).toEqual([]);
       expect(result.rendered).toBe("");
+    });
+
+    test("reports adjacent def declarations without a blank line", () => {
+      const result = checkFixture("adjacent-definitions.qnt");
+
+      expect(result.kind).toBe("format");
+      expect(result.rendered).toMatchSnapshot();
     });
   });
 });

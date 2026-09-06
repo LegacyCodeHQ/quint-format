@@ -98,7 +98,9 @@ exports[`definition modes formats rich definitions and types across every mode 1
   type Callback[a, b] = (a) => b
   var n: int
   pure def identity(value: List[Set[int]]): List[Set[int]] = value
+
   pure def apply(value: int, callback: (int) => str): str = callback(value)
+
   def stateValue(offset: int): int = n + offset
   action advance(amount: int): bool = all {
     amount > 0,

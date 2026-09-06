@@ -16,10 +16,19 @@ module Second {
 "
 `;
 
-exports[`source and declaration layout preserves adjacent definitions 1`] = `
+exports[`source and declaration layout preserves adjacent variable declarations 1`] = `
 "module Example {
   var first: int
   var second: int
+}
+"
+`;
+
+exports[`source and declaration layout separates adjacent def declarations 1`] = `
+"module Example {
+  pure def first(): int = 1
+
+  pure def second(): int = 2
 }
 "
 `;

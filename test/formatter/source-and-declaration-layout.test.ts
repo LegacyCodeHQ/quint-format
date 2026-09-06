@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import Quint from "@legacycodehq/tree-sitter-quint";
+import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+
+const parser = new Parser();
+parser.setLanguage(Quint);
 
 describe("source and declaration layout", () => {
   test("preserves a source hashbang", () => {
@@ -21,7 +26,7 @@ describe("source and declaration layout", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("preserves adjacent definitions", () => {
+  test("preserves adjacent variable declarations", () => {
     const input = "module Example {\n  var first: int\n  var second: int\n}\n";
     const output = formatQuint(input);
 
@@ -29,6 +34,21 @@ describe("source and declaration layout", () => {
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("separates adjacent def declarations", () => {
+    const input = readFileSync(
+      new URL("../fixtures/adjacent-definitions.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("  pure def first(): int = 1\n\n  pure def second(): int = 2");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    expect(parser.parse(input).rootNode.hasError).toBe(false);
+    expect(parser.parse(output).rootNode.hasError).toBe(false);
   });
 
   test("separates a braced definition from the next commented definition", () => {

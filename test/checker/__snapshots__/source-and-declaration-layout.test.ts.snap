@@ -27,3 +27,12 @@ test/fixtures/multiple-modules.qnt:1:31: error[format/empty-module]: empty modul
   |
 "
 `;
+
+exports[`checker diagnostics source and declaration layout reports adjacent def declarations without a blank line 1`] = `
+"test/fixtures/adjacent-definitions.qnt:3:8: error[format/definition-separation]: expected exactly one blank line between definitions
+  |
+3 |   pure def second(): int = 2
+  |        ^^^
+  |
+"
+`;

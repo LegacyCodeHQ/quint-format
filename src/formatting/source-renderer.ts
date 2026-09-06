@@ -21,9 +21,15 @@ function renderModule(module: AnalyzedModule): string {
     const separatesCommentedDeclaration = Boolean(
       declaration.leadingComments?.length && !groupsCommentedImports,
     );
-    const lineBreaks = separatesCommentedDeclaration
-      ? 2
-      : Math.max(1, declarationStart.startPosition.row - previousEnd.endPosition.row);
+    const separatesDefinitions =
+      previous.node.type === "operator_definition" &&
+      declaration.node.type === "operator_definition" &&
+      previous.keyword.text === "def" &&
+      declaration.keyword.text === "def";
+    const lineBreaks =
+      separatesCommentedDeclaration || separatesDefinitions
+        ? 2
+        : Math.max(1, declarationStart.startPosition.row - previousEnd.endPosition.row);
     return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
   });
   const danglingComments = module.danglingComments.flatMap((comment, index, allComments) => {

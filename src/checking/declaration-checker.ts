@@ -21,6 +21,13 @@ export function checkDeclarationLayout(
   const requiresCommentedDeclarationSeparation = Boolean(
     previousDeclaration && declaration.leadingComments?.length && !groupsCommentedImports,
   );
+  const requiresDefinitionSeparation = Boolean(
+    previousDeclaration?.node.type === "operator_definition" &&
+      declaration.node.type === "operator_definition" &&
+      previousDeclaration.keyword.text === "def" &&
+      declaration.keyword.text === "def" &&
+      !declaration.leadingComments?.length,
+  );
 
   if (
     requiresCommentedDeclarationSeparation &&
@@ -35,6 +42,23 @@ export function checkDeclarationLayout(
       length: Math.max(1, declarationStart.text.length),
       rule: "format/commented-declaration-separation",
       message: "expected exactly one blank line before a leading comment block",
+      sourceLine: lines[row] ?? "",
+    });
+  }
+
+  if (
+    requiresDefinitionSeparation &&
+    previousDeclarationEnd &&
+    declarationStart.startPosition.row - previousDeclarationEnd.endPosition.row !== 2
+  ) {
+    const row = declarationStart.startPosition.row;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: declaration.keyword.startPosition.column + 1,
+      length: declaration.keyword.text.length,
+      rule: "format/definition-separation",
+      message: "expected exactly one blank line between definitions",
       sourceLine: lines[row] ?? "",
     });
   }
