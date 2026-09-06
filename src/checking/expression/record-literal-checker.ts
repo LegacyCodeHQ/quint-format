@@ -34,8 +34,14 @@ export function checkRecordLiterals(
     const isCommentedRecord = comments.length > 0;
     const isExpandedRecord =
       isCommentedRecord || recordLiteral.startPosition.row < recordLiteral.endPosition.row;
+    const preservesInlineOpening =
+      isExpandedRecord &&
+      !isCommentedRecord &&
+      firstElement.startPosition.row === openBrace.endPosition.row;
     const hasCanonicalOpening = isExpandedRecord
-      ? firstElement.startPosition.row > openBrace.startPosition.row
+      ? preservesInlineOpening
+        ? afterOpenBrace === " "
+        : firstElement.startPosition.row > openBrace.startPosition.row
       : afterOpenBrace === " ";
     if (!hasCanonicalOpening) {
       const row = openBrace.endPosition.row;
@@ -50,9 +56,11 @@ export function checkRecordLiterals(
             : "format/multiline-record-layout"
           : "format/expression-delimiter-spacing",
         message: isExpandedRecord
-          ? isCommentedRecord
-            ? "expected commented record contents on separate lines"
-            : "expected record contents on separate lines"
+          ? preservesInlineOpening
+            ? "expected one space after '{' before the grouped record field"
+            : isCommentedRecord
+              ? "expected commented record contents on separate lines"
+              : "expected record contents on separate lines"
           : "expected one space after '{'",
         sourceLine: lines[row] ?? "",
       });
@@ -251,8 +259,14 @@ export function checkRecordLiterals(
     const trailingComma = commas.find((comma) => comma.startIndex >= lastElement.endIndex);
     const closeAnchor = trailingComma ?? lastElement;
     const beforeCloseBrace = source.slice(closeAnchor.endIndex, closeBrace.startIndex);
+    const preservesInlineClosing =
+      isExpandedRecord &&
+      !isCommentedRecord &&
+      closeBrace.startPosition.row === closeAnchor.endPosition.row;
     const hasCanonicalClosing = isExpandedRecord
-      ? closeBrace.startPosition.row > closeAnchor.endPosition.row
+      ? preservesInlineClosing
+        ? beforeCloseBrace === " "
+        : closeBrace.startPosition.row > closeAnchor.endPosition.row
       : beforeCloseBrace === " ";
     if (!hasCanonicalClosing) {
       const row = closeBrace.startPosition.row;
@@ -267,7 +281,9 @@ export function checkRecordLiterals(
             : "format/multiline-record-layout"
           : "format/expression-delimiter-spacing",
         message: isExpandedRecord
-          ? "expected the closing brace on its own line"
+          ? preservesInlineClosing
+            ? "expected one space before the grouped record closing brace"
+            : "expected the closing brace on its own line"
           : "expected one space before '}'",
         sourceLine: lines[row] ?? "",
       });

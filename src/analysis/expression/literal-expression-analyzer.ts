@@ -174,6 +174,12 @@ export function analyzeLiteralExpression(
         ({ node: entry }) => entry.type === "comment" || entry.type === "documentation_comment",
       );
     const isExpanded = hasComments || node.startPosition.row < node.endPosition.row;
+    const preservesInlineOpening = Boolean(
+      isExpanded && !hasComments && entries[0]?.node.startPosition.row === node.startPosition.row,
+    );
+    const preservesInlineClosing = Boolean(
+      isExpanded && !hasComments && lastDirectElement?.endPosition.row === node.endPosition.row,
+    );
     const lineDocuments: Doc[] = [];
     const lineAnchors: Parser.SyntaxNode[] = [];
     if (isExpanded) {
@@ -234,17 +240,39 @@ export function analyzeLiteralExpression(
     }
     const groupedLineDocuments = sourceLineGroups.map(({ documents }) =>
       group(
-        concat(documents.flatMap((document, index) => [...(index === 0 ? [] : [line]), document])),
+        concat(
+          documents.flatMap((document, index) => [
+            ...(index === 0 ? [] : [preservesInlineOpening ? text(" ") : line]),
+            document,
+          ]),
+        ),
       ),
     );
+    const firstGroupedLineDocument = groupedLineDocuments[0];
+    const remainingGroupedLineDocuments = groupedLineDocuments.slice(1);
     return {
       document: isExpanded
-        ? concat([
-            text("{"),
-            indent(concat(groupedLineDocuments.flatMap((document) => [hardLine, document]))),
-            hardLine,
-            text("}"),
-          ])
+        ? preservesInlineOpening && firstGroupedLineDocument
+          ? concat([
+              text("{ "),
+              firstGroupedLineDocument,
+              ...(remainingGroupedLineDocuments.length > 0
+                ? [
+                    indent(
+                      concat(
+                        remainingGroupedLineDocuments.flatMap((document) => [hardLine, document]),
+                      ),
+                    ),
+                  ]
+                : []),
+              preservesInlineClosing ? text(" }") : concat([hardLine, text("}")]),
+            ])
+          : concat([
+              text("{"),
+              indent(concat(groupedLineDocuments.flatMap((document) => [hardLine, document]))),
+              hardLine,
+              text("}"),
+            ])
         : concat([
             text("{ "),
             ...entries.flatMap(({ document }, index) => [

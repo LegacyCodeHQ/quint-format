@@ -174,6 +174,30 @@ describe("value definitions and literals", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves a partially expanded record literal", () => {
+    const input = readFileSync(
+      new URL("../fixtures/partially-expanded-record.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const extraOpeningSpace = input.replace("{ nodes:", "{  nodes:");
+
+    expect(output).toBe(input);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(checkQuint(extraOpeningSpace, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/multiline-record-layout",
+    ]);
+    expect(formatQuint(extraOpeningSpace)).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves source-line groups in a multiline record literal", () => {
     const input = readFileSync(
       new URL("../fixtures/grouped-record-literal.qnt", import.meta.url),

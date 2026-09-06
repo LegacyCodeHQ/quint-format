@@ -112,6 +112,16 @@ exports[`value definitions and literals preserves line breaks before multiline r
 "
 `;
 
+exports[`value definitions and literals preserves a partially expanded record literal 1`] = `
+"module Example {
+  pure val actual = { nodes: Map(
+      "a" -> 1,
+      "b" -> 2
+  ), empty: Set() }
+}
+"
+`;
+
 exports[`value definitions and literals preserves source-line groups in a multiline record literal 1`] = `
 "module Example {
   pure val message = {
