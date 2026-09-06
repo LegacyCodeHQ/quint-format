@@ -35,6 +35,18 @@ exports[`binary expression layout uses a four-space right-operand continuation 1
 "
 `;
 
+exports[`binary expression layout preserves a multiline map value after the arrow 1`] = `
+"module Example {
+  pure val result = Map(
+      "root" ->
+        Map(
+            "child" -> 1
+        )
+  )
+}
+"
+`;
+
 exports[`binary expression layout preserves a leading binary continuation in a block combinator 1`] = `
 "module Example {
   pure val holds = and {

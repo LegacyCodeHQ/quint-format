@@ -1,6 +1,7 @@
 import type { BinaryOperator } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
+  hasLineBrokenMultilineMapValue,
   hasPeerMatchOperands,
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
@@ -39,6 +40,9 @@ export function checkBinaryExpressions(
 
     const beforeOperator = source.slice(commentAnchor.endIndex, operator.node.startIndex);
     const afterOperator = source.slice(operator.node.endIndex, operator.right.startIndex);
+    const preservesMultilineMapValue = hasLineBrokenMultilineMapValue(
+      operator.node.parent ?? operator.node,
+    );
     const preservesLeadingOperatorBreak =
       operator.inlineComments.length === 0 &&
       operator.rightComments.length === 0 &&
@@ -55,7 +59,8 @@ export function checkBinaryExpressions(
       (isIndentedExpressionBody(operator.node.parent ?? operator.node) ||
         isBlockCombinatorEntry(operator.node.parent ?? operator.node) ||
         isOrdinaryBlockResult(operator.node.parent ?? operator.node) ||
-        isNestedDefinitionBody(operator.node.parent ?? operator.node));
+        isNestedDefinitionBody(operator.node.parent ?? operator.node) ||
+        preservesMultilineMapValue);
     const hasCanonicalBeforeOperator = preservesLeadingOperatorBreak
       ? /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeOperator)
       : beforeOperator === " ";
@@ -112,7 +117,13 @@ export function checkBinaryExpressions(
       const alignsMatchOperands = hasPeerMatchOperands(operator.node.parent ?? operator.node);
       const expectedColumn =
         expressionLine.search(/\S|$/) +
-        (alignsMatchOperands ? 0 : preservesLeadingOperatorBreak ? 8 : 4);
+        (alignsMatchOperands
+          ? 0
+          : preservesLeadingOperatorBreak
+            ? 8
+            : preservesMultilineMapValue
+              ? 2
+              : 4);
       if (operator.right.startPosition.column !== expectedColumn) {
         const row = operator.right.startPosition.row;
         diagnostics.push({
@@ -125,7 +136,9 @@ export function checkBinaryExpressions(
             ? "expected alignment with the left match operand"
             : preservesLeadingOperatorBreak
               ? "expected the right operand four spaces beyond the continued operator"
-              : "expected a four-space continuation indent",
+              : preservesMultilineMapValue
+                ? "expected a two-space map value continuation"
+                : "expected a four-space continuation indent",
           sourceLine: lines[row] ?? "",
         });
       }

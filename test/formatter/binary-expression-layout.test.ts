@@ -65,6 +65,25 @@ describe("binary expression layout", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a multiline map value after the arrow", () => {
+    const input = readFileSync(
+      new URL("../fixtures/multiline-map-value.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves a leading binary continuation in a block combinator", () => {
     const input = readFileSync(
       new URL("../fixtures/block-leading-binary-continuation.qnt", import.meta.url),
