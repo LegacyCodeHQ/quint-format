@@ -88,6 +88,18 @@ exports[`blocks and block combinators preserves a compact block combinator 1`] =
 "
 `;
 
+exports[`blocks and block combinators preserves an expanded block combinator without a trailing comma 1`] = `
+"module Example {
+  var count: int
+
+  action step = any {
+    count' = 1,
+    count' = 2
+  }
+}
+"
+`;
+
 exports[`blocks and block combinators preserves source-line groups in block combinators 1`] = `
 "module Example {
   val groupedAll = all {
@@ -182,7 +194,7 @@ exports[`blocks and block combinators preserves aligned trailing comments in a b
     first' = 1,  // First value
     second' = 2, // Second value
     third' = 3,  // Third value
-    fourth' = 4,  // Fourth value
+    fourth' = 4  // Fourth value
   }
 }
 "

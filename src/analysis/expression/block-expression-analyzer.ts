@@ -114,6 +114,13 @@ export function analyzeBlockExpression(
         child.startPosition.row === openBrace.endPosition.row,
     );
     const analyses = entries.map(analyzeExpression);
+    const finalEntry = entries.at(-1) as Parser.SyntaxNode;
+    const preservesTrailingComma = node.children.some(
+      (child) =>
+        child.type === "," &&
+        child.startIndex >= finalEntry.endIndex &&
+        child.endIndex <= closeBrace.startIndex,
+    );
     const hasComments = node.namedChildren.some(
       (child) => child.type === "comment" || child.type === "documentation_comment",
     );
@@ -179,7 +186,8 @@ export function analyzeBlockExpression(
       const entry = analyses[entryIndex];
       if (!entry)
         throw new Error("Formatting this block combinator content is not implemented yet");
-      contentDocuments.push(concat([entry.document, text(",")]));
+      const hasComma = entryIndex < entries.length - 1 || preservesTrailingComma;
+      contentDocuments.push(concat([entry.document, ...(hasComma ? [text(",")] : [])]));
       contentAnchors.push(child);
       previousEntry = child;
     }

@@ -111,7 +111,8 @@ export function checkBlockCombinators(
       }
       for (const [index, entry] of entries.entries()) {
         const comma = commas[index];
-        if (preservesCompactLayout && index === entries.length - 1) {
+        const isFinalEntry = index === entries.length - 1;
+        if (preservesCompactLayout && isFinalEntry) {
           if (comma) {
             const row = comma.startPosition.row;
             diagnostics.push({
@@ -126,6 +127,7 @@ export function checkBlockCombinators(
           }
           continue;
         }
+        if (!comma && isFinalEntry) continue;
         if (!comma) {
           const row = entry.endPosition.row;
           diagnostics.push({
@@ -134,7 +136,7 @@ export function checkBlockCombinators(
             column: entry.endPosition.column + 1,
             length: 1,
             rule: "format/block-combinator-separator-spacing",
-            message: "expected a trailing comma after each block entry",
+            message: "expected a comma between block entries",
             sourceLine: lines[row] ?? "",
           });
           continue;

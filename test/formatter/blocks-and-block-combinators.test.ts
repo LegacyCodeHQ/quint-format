@@ -94,6 +94,24 @@ describe("blocks and block combinators", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves an expanded block combinator without a trailing comma", () => {
+    const input = readFileSync(
+      new URL("../fixtures/block-combinator-without-trailing-comma.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves source-line groups in block combinators", () => {
     const input = readFileSync(
       new URL("../fixtures/grouped-combinator-entries.qnt", import.meta.url),
@@ -184,7 +202,7 @@ describe("blocks and block combinators", () => {
     expect(output).toContain("first' = 1,  // First value");
     expect(output).toContain("second' = 2, // Second value");
     expect(output).toContain("third' = 3,  // Third value");
-    expect(output).toContain("fourth' = 4,  // Fourth value");
+    expect(output).toContain("fourth' = 4  // Fourth value");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
