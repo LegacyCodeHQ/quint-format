@@ -79,11 +79,16 @@ export function checkDeclarationLayout(
 
   for (const [commentIndex, comment] of (declaration.trailingComments ?? []).entries()) {
     const previousTrailingComment = declaration.trailingComments?.[commentIndex - 1];
+    const isBoundaryBlockComment =
+      comment.text.startsWith("/*") &&
+      comment.startPosition.row === declaration.node.endPosition.row + 1 &&
+      comment.startPosition.column === declaration.node.startPosition.column;
     const startsIndentedTrailingComment =
       commentIndex === 0 &&
       comment.startPosition.row === declaration.node.endPosition.row + 1 &&
       comment.startPosition.column > declaration.node.startPosition.column;
     if (
+      isBoundaryBlockComment ||
       startsIndentedTrailingComment ||
       (previousTrailingComment &&
         comment.startPosition.row === previousTrailingComment.endPosition.row + 1 &&

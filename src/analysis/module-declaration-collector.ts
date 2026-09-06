@@ -33,11 +33,37 @@ export class ModuleDeclarationCollector {
   consumeComment(node: Parser.SyntaxNode): boolean {
     if (node.type !== "documentation_comment" && node.type !== "comment") return false;
 
+    if (node.type === "comment" && node.text.startsWith("/*") && this.attachBoundaryComment(node)) {
+      return true;
+    }
+
     if (node.type === "comment" && node.text.startsWith("//") && this.attachTrailingComment(node)) {
       return true;
     }
 
     this.pendingComments.push(node);
+    return true;
+  }
+
+  private attachBoundaryComment(node: Parser.SyntaxNode): boolean {
+    const previousDeclaration = this.declarations.at(-1);
+    const nextContent = node.nextNamedSibling;
+    const closesPreviousGroup = Boolean(
+      previousDeclaration &&
+        this.pendingComments.length === 0 &&
+        node.startPosition.row === previousDeclaration.node.endPosition.row + 1 &&
+        node.startPosition.column === previousDeclaration.node.startPosition.column &&
+        nextContent &&
+        nextContent.startPosition.row >= node.endPosition.row + 2,
+    );
+    if (!previousDeclaration || !closesPreviousGroup) return false;
+
+    previousDeclaration.trailingComments = [...(previousDeclaration.trailingComments ?? []), node];
+    previousDeclaration.document = concat([
+      previousDeclaration.document,
+      hardLine,
+      commentDocument(node),
+    ]);
     return true;
   }
 

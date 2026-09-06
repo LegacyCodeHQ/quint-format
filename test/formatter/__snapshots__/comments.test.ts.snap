@@ -135,6 +135,21 @@ exports[`comments preserves a trailing module-body comment 1`] = `
 "
 `;
 
+exports[`comments preserves a trailing boundary block comment 1`] = `
+"module Example {
+  type Applied[a, b] = (a, b)
+
+  type Context = Applied[
+    int,
+    bool
+  ]
+  /* End of boilerplate */
+
+  pure def shouldProceed = true
+}
+"
+`;
+
 exports[`comments preserves a blank line before trailing module comments 1`] = `
 "module Example {
   pure val answer = 42

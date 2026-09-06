@@ -192,6 +192,19 @@ describe("comments", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a trailing boundary block comment", () => {
+    const input = readFileSync(
+      new URL("../fixtures/trailing-boundary-block-comment.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(output).toBe(input);
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("preserves a blank line before trailing module comments", () => {
     const input = readFileSync(
       new URL("../fixtures/module-trailing-comment-gap.qnt", import.meta.url),
