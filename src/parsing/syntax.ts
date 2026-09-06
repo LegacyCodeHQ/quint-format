@@ -39,8 +39,9 @@ export function collectBlockCombinatorExpressions(node: Parser.SyntaxNode): Pars
 }
 
 export function definitionBody(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
-  if (node.type !== "value_definition" && node.type !== "operator_definition") return null;
-  return node.childForFieldName("body") ?? node.childForFieldName("value");
+  if (node.type === "value_definition") return node.childForFieldName("value");
+  if (node.type === "operator_definition") return node.childForFieldName("body");
+  return null;
 }
 
 export function isCompactNondetSequence(

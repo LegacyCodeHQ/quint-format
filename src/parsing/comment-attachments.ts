@@ -91,7 +91,9 @@ function visitTree(owner: Parser.SyntaxNode, index: CommentAttachmentIndex): voi
 }
 
 function definitionBody(definition: Parser.SyntaxNode): Parser.SyntaxNode | null {
-  return definition.childForFieldName("body") ?? definition.childForFieldName("value");
+  if (definition.type === "value_definition") return definition.childForFieldName("value");
+  if (definition.type === "operator_definition") return definition.childForFieldName("body");
+  return null;
 }
 
 function markAlignedLocalDefinitionComments(

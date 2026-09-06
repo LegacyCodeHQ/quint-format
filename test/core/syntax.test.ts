@@ -20,13 +20,20 @@ function definitionNode(
 }
 
 describe("syntax helpers", () => {
-  test("reads unified and legacy definition body fields", () => {
-    const body = { id: 1 } as Parser.SyntaxNode;
+  test("reads semantic value and operator body fields", () => {
+    const expression = { id: 1 } as Parser.SyntaxNode;
 
-    expect(definitionBody(definitionNode("value_definition", { body }))).toBe(body);
-    expect(definitionBody(definitionNode("value_definition", { value: body }))).toBe(body);
-    expect(definitionBody(definitionNode("operator_definition", { body }))).toBe(body);
-    expect(definitionBody(definitionNode("record_literal_field", { value: body }))).toBeNull();
+    expect(definitionBody(definitionNode("value_definition", { value: expression }))).toBe(
+      expression,
+    );
+    expect(definitionBody(definitionNode("value_definition", { body: expression }))).toBeNull();
+    expect(definitionBody(definitionNode("operator_definition", { body: expression }))).toBe(
+      expression,
+    );
+    expect(definitionBody(definitionNode("operator_definition", { value: expression }))).toBeNull();
+    expect(
+      definitionBody(definitionNode("record_literal_field", { value: expression })),
+    ).toBeNull();
   });
 
   test("classifies block combinators and reads their legacy entry fields", () => {
