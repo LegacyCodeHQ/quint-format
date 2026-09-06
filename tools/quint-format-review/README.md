@@ -56,7 +56,9 @@ alias quint-review='bun /absolute/path/to/quint-format/tools/quint-format-review
   Submodules are separate repositories; launch inside one to review it.
 - Filter by filename or path, expand folders, and click a file to compare its
   current disk contents with the formatter output. Refresh rescans the tree and
-  reloads the selected file. Files are loaded on demand, never written.
+  reloads the selected file. The selected path is encoded in the URL, so browser
+  refresh, history navigation, and copied links retain the current file. Files
+  are loaded on demand, never written.
 - Click a token to highlight its corresponding syntax node on both sides. Drag
   across code to highlight matching nodes; partial tokens expand to their full
   token boundaries. Selection works in either panel. Scrolling is synchronized

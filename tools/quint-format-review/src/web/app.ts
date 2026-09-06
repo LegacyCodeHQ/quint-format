@@ -1,6 +1,7 @@
 import { type ChangeBlock, sourceLines } from "../changes.js";
 import type { Comparison, NodePair, SourceRange } from "../comparison.js";
 import { markdownComparison, selectionRanges } from "../selection.js";
+import { filePathFromUrl, urlForFile } from "../url-state.js";
 
 function element<T extends HTMLElement>(id: string): T {
   const result = document.getElementById(id);
@@ -17,7 +18,7 @@ const notice = element("notice");
 const panes = { before, after };
 const scrolls = { before: element("before-scroll"), after: element("after-scroll") };
 let files: string[] = [];
-let currentPath = "";
+let currentPath = filePathFromUrl(new URL(window.location.href));
 let comparison: Comparison | undefined;
 let selected: NodePair | undefined;
 let currentChange = -1;
@@ -251,8 +252,14 @@ function locationText(source: string, range: SourceRange) {
   return `${lines.length}:${lines[lines.length - 1].length + 1}`;
 }
 
-async function loadFile(path: string) {
+type NavigationMode = "push" | "replace" | "none";
+
+async function loadFile(path: string, navigation: NavigationMode = "push") {
   const id = ++requestId;
+  if (navigation !== "none") {
+    const method = navigation === "push" ? "pushState" : "replaceState";
+    window.history[method](null, "", urlForFile(new URL(window.location.href), path));
+  }
   currentPath = path;
   comparison = undefined;
   currentChange = -1;
@@ -399,11 +406,12 @@ async function refresh() {
     element("formatter").textContent = `Formatter: ${data.formatter}`;
     element("formatter").title = `Resolved from PATH: ${data.formatter}`;
     renderTree();
-    if (currentPath && files.includes(currentPath)) await loadFile(currentPath);
-    else if (files.length) await loadFile(files[0]);
+    if (currentPath && files.includes(currentPath)) await loadFile(currentPath, "replace");
+    else if (files.length) await loadFile(files[0], "replace");
     else {
       ++requestId;
       currentPath = "";
+      window.history.replaceState(null, "", urlForFile(new URL(window.location.href), ""));
       comparison = undefined;
       currentChange = -1;
       updateChangeControls();
@@ -425,4 +433,9 @@ async function refresh() {
   }
 }
 element("refresh").addEventListener("click", () => void refresh());
+window.addEventListener("popstate", () => {
+  const path = filePathFromUrl(new URL(window.location.href));
+  if (path && files.includes(path)) void loadFile(path, "none");
+  else if (files.length) void loadFile(files[0], "replace");
+});
 void refresh();
