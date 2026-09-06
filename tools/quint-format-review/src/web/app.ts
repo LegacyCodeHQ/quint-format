@@ -1,3 +1,4 @@
+import type { ApprovalStatus } from "../approvals.js";
 import { type ChangeBlock, sourceLines } from "../changes.js";
 import type { Comparison, NodePair, SourceRange } from "../comparison.js";
 import { markdownComparison, selectionRanges } from "../selection.js";
@@ -11,6 +12,7 @@ function element<T extends HTMLElement>(id: string): T {
 const before = element<HTMLPreElement>("before");
 const after = element<HTMLPreElement>("after");
 const copy = element<HTMLButtonElement>("copy");
+const approve = element<HTMLButtonElement>("approve");
 const clear = element<HTMLButtonElement>("clear");
 const filter = element<HTMLInputElement>("filter");
 const tree = element("tree");
@@ -18,14 +20,19 @@ const notice = element("notice");
 const panes = { before, after };
 const scrolls = { before: element("before-scroll"), after: element("after-scroll") };
 let files: string[] = [];
+let approvalStatuses: Record<string, ApprovalStatus> = {};
 let currentPath = filePathFromUrl(new URL(window.location.href));
 let comparison: Comparison | undefined;
 let selected: NodePair | undefined;
 let currentChange = -1;
 let requestId = 0;
 
-async function api<T>(path: string): Promise<T> {
-  const response = await fetch(new URL(path, window.location.href));
+interface ReviewComparison extends Comparison {
+  approval: ApprovalStatus;
+}
+
+async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(new URL(path, window.location.href), init);
   const data = await response.json();
   if (!response.ok) throw new Error(data.error ?? `Request failed: ${response.status}`);
   return data;
@@ -40,7 +47,11 @@ function showNotice(message: string, error = false) {
 function renderTree() {
   tree.replaceChildren();
   const visible = files.filter((path) => path.toLowerCase().includes(filter.value.toLowerCase()));
-  element("file-count").textContent = `${visible.length} OF ${files.length} QUINT FILES`;
+  const approvedCount = files.filter((path) => approvalStatuses[path] === "approved").length;
+  const changedCount = files.filter((path) => approvalStatuses[path] === "changed").length;
+  element("file-count").textContent =
+    `${visible.length} OF ${files.length} QUINT FILES · ${approvedCount} APPROVED` +
+    (changedCount ? ` · ${changedCount} CHANGED` : "");
   const directories = new Map<string, HTMLElement>([["", tree]]);
   for (const path of visible) {
     const segments = path.split("/");
@@ -62,9 +73,23 @@ function renderTree() {
       parent = directory;
     }
     const button = document.createElement("button");
-    button.className = "file";
-    button.textContent = segments[segments.length - 1];
+    const approval = approvalStatuses[path] ?? "unreviewed";
+    button.className = `file ${approval}`;
+    const name = document.createElement("span");
+    name.className = "file-name";
+    name.textContent = segments[segments.length - 1];
+    const status = document.createElement("span");
+    status.className = "file-approval";
+    status.textContent = approval === "approved" ? "✓" : approval === "changed" ? "!" : "";
+    status.title =
+      approval === "approved"
+        ? "Approved"
+        : approval === "changed"
+          ? "Changed since approval"
+          : "Not reviewed";
+    button.append(name, status);
     button.title = path;
+    button.setAttribute("aria-label", path);
     button.setAttribute("aria-current", String(path === currentPath));
     button.addEventListener("click", () => void loadFile(path));
     parent.append(button);
@@ -254,6 +279,36 @@ function locationText(source: string, range: SourceRange) {
 
 type NavigationMode = "push" | "replace" | "none";
 
+function showComparison(data: ReviewComparison) {
+  comparison = data;
+  approvalStatuses[currentPath] = data.approval;
+  renderTree();
+  renderSource("before", data.before, data.nodes, data.changes, data.spacing.before);
+  renderSource("after", data.after ?? "", data.nodes, data.changes, data.spacing.after);
+  updateChangeControls();
+  copy.disabled = data.after === null;
+  approve.disabled = data.after === null || data.approval === "approved";
+  approve.textContent =
+    data.approval === "approved"
+      ? "Approved ✓"
+      : data.approval === "changed"
+        ? "Approve changes"
+        : "Approve file";
+  approve.classList.toggle("approved", data.approval === "approved");
+  element("file-state").textContent = data.error
+    ? "Formatting unavailable"
+    : data.approval === "changed"
+      ? "Changed since approval"
+      : data.approval === "approved"
+        ? data.changed
+          ? "Approved · Formatting changes"
+          : "Approved · Already formatted"
+        : data.changed
+          ? "Formatting changes · Preview only"
+          : "Already formatted · No changes";
+  showNotice(data.error ?? data.mappingWarning ?? "", !!data.error);
+}
+
 async function loadFile(path: string, navigation: NavigationMode = "push") {
   const id = ++requestId;
   if (navigation !== "none") {
@@ -267,6 +322,9 @@ async function loadFile(path: string, navigation: NavigationMode = "push") {
   selected = undefined;
   drawSelection();
   copy.disabled = true;
+  approve.disabled = true;
+  approve.textContent = "Approve file";
+  approve.classList.remove("approved");
   element("copy-state").textContent = "Markdown export";
   renderTree();
   element("filename").textContent = path;
@@ -276,19 +334,9 @@ async function loadFile(path: string, navigation: NavigationMode = "push") {
   renderSource("before", "", []);
   renderSource("after", "", []);
   try {
-    const data = await api<Comparison>(`api/compare?path=${encodeURIComponent(path)}`);
+    const data = await api<ReviewComparison>(`api/compare?path=${encodeURIComponent(path)}`);
     if (id !== requestId) return;
-    comparison = data;
-    renderSource("before", data.before, data.nodes, data.changes, data.spacing.before);
-    renderSource("after", data.after ?? "", data.nodes, data.changes, data.spacing.after);
-    updateChangeControls();
-    copy.disabled = data.after === null;
-    element("file-state").textContent = data.error
-      ? "Formatting unavailable"
-      : data.changed
-        ? "Formatting changes · Preview only"
-        : "Already formatted · No changes";
-    showNotice(data.error ?? data.mappingWarning ?? "", !!data.error);
+    showComparison(data);
   } catch (error) {
     if (id !== requestId) return;
     element("file-state").textContent = "Unable to load file";
@@ -393,6 +441,22 @@ copy.addEventListener("click", async () => {
     );
   }
 });
+approve.addEventListener("click", async () => {
+  if (!currentPath || !comparison || comparison.after === null) return;
+  approve.disabled = true;
+  approve.textContent = "Approving…";
+  try {
+    const data = await api<ReviewComparison>(
+      `api/approve?path=${encodeURIComponent(currentPath)}`,
+      { method: "POST" },
+    );
+    showComparison(data);
+  } catch (error) {
+    approve.disabled = false;
+    approve.textContent = "Approve file";
+    showNotice(String(error instanceof Error ? error.message : error), true);
+  }
+});
 filter.addEventListener("input", renderTree);
 
 async function refresh() {
@@ -400,12 +464,21 @@ async function refresh() {
   button.disabled = true;
   button.textContent = "Refreshing…";
   try {
-    const data = await api<{ directory: string; formatter: string; files: string[] }>("api/files");
+    const data = await api<{
+      directory: string;
+      formatter: string;
+      approvalFile: string;
+      approvals: Record<string, ApprovalStatus>;
+      files: string[];
+    }>("api/files");
     files = data.files;
+    approvalStatuses = data.approvals;
     element("directory").textContent = data.directory;
     element("directory").title = data.directory;
     element("formatter").textContent = `Formatter: ${data.formatter}`;
     element("formatter").title = `Resolved from PATH: ${data.formatter}`;
+    element("approval-store").textContent = `Approvals: ${data.approvalFile}`;
+    element("approval-store").title = data.approvalFile;
     renderTree();
     if (currentPath && files.includes(currentPath)) await loadFile(currentPath, "replace");
     else if (files.length) await loadFile(files[0], "replace");
@@ -418,6 +491,7 @@ async function refresh() {
       updateChangeControls();
       selected = undefined;
       copy.disabled = true;
+      approve.disabled = true;
       drawSelection();
       renderSource("before", "", []);
       renderSource("after", "", []);

@@ -1,8 +1,10 @@
 # Quint Format Review
 
-A local, read-only browser tool for reviewing the `quintfmt` executable found in
+A local browser tool for reviewing the `quintfmt` executable found in
 `PATH` against any Git working directory. Built separately from the published
 formatter. Requires Bun, Git, and `quintfmt`; no frontend dependencies or CDN.
+Reviewed source files remain read-only. Approval metadata is stored beneath the
+current user's home directory.
 
 ## Build
 
@@ -77,14 +79,25 @@ alias quint-review='bun /absolute/path/to/quint-format/tools/quint-format-review
 - **Copy before & after** copies labeled Markdown code blocks. With a selection,
   it copies the highlighted ranges; otherwise it copies both complete files.
   **Clear selection** or Escape returns to whole-file copying.
+- **Approve file** records the current source, formatted output, and comparison
+  status. Approved files stay approved across browser and server restarts. A
+  source edit or formatter change that affects a file marks it as changed on the
+  next refresh. Refresh reruns `quintfmt` for previously approved files so only
+  affected approvals are invalidated.
 - Parser or formatter errors appear above the original source. If token
   correspondence cannot be established, a warning explains why linked selection
   is unavailable; the formatted preview and whole-file copy still work.
 
-The server binds only to `127.0.0.1`, rejects foreign origins and non-GET
-requests, and serves all assets locally. Files larger than 2 MiB show an explicit
-error. This is a local developer tool, not a hosted service. Clipboard copying
-requires browser clipboard permission.
+Approval state is stored in
+`~/.quint-format-review/approvals/<repository-id>.json`. The repository ID is
+derived from the canonical Git repository root, so different repositories have
+isolated approvals and launching from a subdirectory reuses the same store. No
+approval files are written into either repository.
+
+The server binds only to `127.0.0.1`, rejects foreign origins, permits state
+changes only through its approval endpoint, and serves all assets locally. Files
+larger than 2 MiB show an explicit error. This is a local developer tool, not a
+hosted service. Clipboard copying requires browser clipboard permission.
 
 ## Development checks
 
@@ -98,6 +111,7 @@ git diff --check
 ```
 
 Tests cover concrete syntax mapping, Unicode offsets, multi-node selection,
-Markdown fences, invalid input, Git discovery, directory confinement, and the
-HTTP server's read-only behavior. The server integration test needs permission
-to listen on localhost.
+Markdown fences, invalid input, Git discovery, directory confinement,
+repository-scoped approval persistence, invalidation, and the HTTP server's
+workspace safety. The server integration test needs permission to listen on
+localhost.

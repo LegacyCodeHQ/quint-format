@@ -116,13 +116,17 @@ aside {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.formatter {
-  margin: 0 0 20px;
+.formatter,
+.approval-store {
+  margin: 0 0 5px;
   color: #6f8198;
   font-size: 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.approval-store {
+  margin-bottom: 20px;
 }
 .search {
   display: flex;
@@ -171,7 +175,8 @@ aside {
   white-space: nowrap;
 }
 .file {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
   padding: 9px 10px;
   text-align: left;
@@ -182,6 +187,22 @@ aside {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 12px;
+}
+.file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-approval {
+  margin-left: auto;
+  padding-left: 8px;
+  font-weight: 700;
+}
+.file.approved .file-approval {
+  color: #71d2b3;
+}
+.file.changed .file-approval {
+  color: #e7b36d;
 }
 .file::before {
   content: "Q";
@@ -239,6 +260,14 @@ h1 {
 }
 .primary:hover:not(:disabled) {
   background: #adeeda;
+}
+.approve {
+  border-color: #44786d;
+}
+.approve.approved {
+  color: #8ae2ce;
+  border-color: #44786d;
+  opacity: 1;
 }
 .review-meta {
   margin: 24px 0 14px;

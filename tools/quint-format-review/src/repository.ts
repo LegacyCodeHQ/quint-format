@@ -14,14 +14,23 @@ export interface RepositoryFile {
 export class Repository {
   private files = new Set<string>();
 
-  private constructor(readonly directory: string) {}
+  private constructor(
+    readonly directory: string,
+    readonly repositoryRoot: string,
+  ) {}
 
   static async open(directory: string): Promise<Repository> {
     const canonical = await realpath(directory);
-    await exec("git", ["-C", canonical, "rev-parse", "--show-toplevel"]);
-    const repository = new Repository(canonical);
+    const { stdout } = await exec("git", ["-C", canonical, "rev-parse", "--show-toplevel"]);
+    const repositoryRoot = await realpath(stdout.trim());
+    const repository = new Repository(canonical, repositoryRoot);
     await repository.refresh();
     return repository;
+  }
+
+  approvalPath(name: string): string {
+    if (!this.files.has(name)) throw new Error("Unknown .qnt file; refresh the file list");
+    return relative(this.repositoryRoot, resolve(this.directory, name)).split(sep).join("/");
   }
 
   async refresh(): Promise<string[]> {

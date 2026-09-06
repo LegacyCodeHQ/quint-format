@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkQuint, formatQuint } from "../../../src/index.js";
 import { parseQuint } from "../../../src/parsing/parser.js";
+import { ApprovalStore, comparisonFingerprint } from "../src/approvals.js";
 import { compareSource, mapNodes } from "../src/comparison.js";
 import type { Formatter } from "../src/formatter.js";
 import { PathFormatter } from "../src/formatter.js";
@@ -20,6 +21,34 @@ afterEach(async () => {
 const input = 'module Demo{val x=1+2 val greeting="héllo 🌍"}\n';
 const expected = 'module Demo {\n  val x = 1 + 2\n  val greeting = "héllo 🌍"\n}\n';
 const compare = (source: string) => compareSource(source, formatQuint(source));
+
+test("approvals persist beneath the home directory, stay repository-scoped, and invalidate on changes", async () => {
+  const home = await mkdtemp(join(tmpdir(), "quint-review-home-"));
+  const firstRepository = await mkdtemp(join(tmpdir(), "quint-review-first-"));
+  const secondRepository = await mkdtemp(join(tmpdir(), "quint-review-second-"));
+  temporary.push(home, firstRepository, secondRepository);
+  const initial = compare(input);
+  const fingerprint = comparisonFingerprint(initial);
+  const first = await ApprovalStore.open(firstRepository, home);
+
+  expect(first.filePath.startsWith(join(home, ".quint-format-review", "approvals"))).toBe(true);
+  expect(first.status("demo.qnt", fingerprint)).toBe("unreviewed");
+  await first.approve("demo.qnt", fingerprint);
+  expect(first.status("demo.qnt", fingerprint)).toBe("approved");
+  expect(first.status("demo.qnt", comparisonFingerprint(compare(`${input}\n`)))).toBe("changed");
+  expect(
+    first.status(
+      "demo.qnt",
+      comparisonFingerprint(compareSource(input, expected.replace("1 + 2", "1+2"))),
+    ),
+  ).toBe("changed");
+
+  const reopened = await ApprovalStore.open(firstRepository, home);
+  const other = await ApprovalStore.open(secondRepository, home);
+  expect(reopened.status("demo.qnt", fingerprint)).toBe("approved");
+  expect(other.status("demo.qnt", fingerprint)).toBe("unreviewed");
+  expect(other.filePath).not.toBe(reopened.filePath);
+});
 
 test("comparison preserves exact source, validates both trees, and yields idempotent output", () => {
   const result = compare(input);
@@ -166,14 +195,19 @@ test("Git discovery includes tracked and untracked .qnt files, excludes ignored/
   expect((await repository.read("nested/space ü.qnt")).source).toBe(input);
   await expect(repository.read("../outside.qnt")).rejects.toThrow("Unknown");
   await expect(repository.read("ignored.qnt")).rejects.toThrow("Unknown");
-  expect(await (await Repository.open(join(path, "nested"))).refresh()).toEqual(["space ü.qnt"]);
+  const nestedRepository = await Repository.open(join(path, "nested"));
+  expect(await nestedRepository.refresh()).toEqual(["space ü.qnt"]);
+  expect(nestedRepository.repositoryRoot).toBe(repository.repositoryRoot);
   await writeFile(join(path, "new.qnt"), input);
   expect(await repository.refresh()).toContain("new.qnt");
 });
 
-test("server serves embedded assets and read-only comparisons, rejects cross-origin requests and unknown paths", async () => {
+test("server serves assets and repository-scoped approvals without modifying reviewed files", async () => {
   const path = await fixture();
   const repository = await Repository.open(path);
+  const approvalHome = await mkdtemp(join(tmpdir(), "quint-review-server-home-"));
+  temporary.push(approvalHome);
+  const approvals = await ApprovalStore.open(repository.repositoryRoot, approvalHome);
   const formatter: Formatter = {
     displayPath: "/test/bin/quintfmt",
     async format(filePath) {
@@ -183,6 +217,7 @@ test("server serves embedded assets and read-only comparisons, rejects cross-ori
   const { server, url } = startServer(
     repository,
     formatter,
+    approvals,
     {
       html: "<html>review</html>",
       css: "body{}",
@@ -196,6 +231,11 @@ test("server serves embedded assets and read-only comparisons, rejects cross-ori
     expect(await (await fetch(url)).text()).toBe("<html>review</html>");
     expect(await (await fetch(`${url}api/files`)).json()).toMatchObject({
       formatter: "/test/bin/quintfmt",
+      approvalFile: approvals.filePath,
+      approvals: {
+        "nested/space ü.qnt": "unreviewed",
+        "tracked.qnt": "unreviewed",
+      },
     });
     expect((await fetch(`${url}style.css`)).headers.get("content-type")).toBe(
       "text/css; charset=utf-8",
@@ -204,9 +244,42 @@ test("server serves embedded assets and read-only comparisons, rejects cross-ori
       await fetch(`${url}api/compare?path=${encodeURIComponent("nested/space ü.qnt")}`)
     ).json();
     expect(result.after).toBe(expected);
+    expect(result.approval).toBe("unreviewed");
+    const approved = await (
+      await fetch(`${url}api/approve?path=${encodeURIComponent("nested/space ü.qnt")}`, {
+        method: "POST",
+      })
+    ).json();
+    expect(approved.approval).toBe("approved");
+    expect(
+      (
+        await (
+          await fetch(`${url}api/compare?path=${encodeURIComponent("nested/space ü.qnt")}`)
+        ).json()
+      ).approval,
+    ).toBe("approved");
+    await writeFile(join(path, "nested", "space ü.qnt"), `${input}\n`);
+    expect(
+      (
+        await (
+          await fetch(`${url}api/compare?path=${encodeURIComponent("nested/space ü.qnt")}`)
+        ).json()
+      ).approval,
+    ).toBe("changed");
+    expect((await (await fetch(`${url}api/files`)).json()).approvals).toMatchObject({
+      "nested/space ü.qnt": "changed",
+    });
     expect((await fetch(`${url}api/compare?path=..%2Foutside.qnt`)).status).toBe(400);
     expect((await fetch(url, { method: "POST" })).status).toBe(405);
     expect((await fetch(url, { headers: { Origin: "https://example.com" } })).status).toBe(403);
+    expect(
+      (
+        await fetch(`${url}api/approve?path=${encodeURIComponent("tracked.qnt")}`, {
+          method: "POST",
+          headers: { Origin: "https://example.com" },
+        })
+      ).status,
+    ).toBe(403);
     expect((await fetch(new URL("/unknown", url))).status).toBe(404);
     expect(await readFile(join(path, "tracked.qnt"), "utf8")).toBe(input);
     expect(execFileSync("git", ["-C", path, "status", "--porcelain=v1", "-z"])).toEqual(

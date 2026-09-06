@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { spawn } from "node:child_process";
 import { resolve } from "node:path";
+import { ApprovalStore } from "./approvals.js";
 import { PathFormatter } from "./formatter.js";
 import { Repository } from "./repository.js";
 import { startServer } from "./server.js";
@@ -49,15 +50,17 @@ try {
       }
     }
     const repository = await Repository.open(directory);
+    const approvals = await ApprovalStore.open(repository.repositoryRoot);
     const formatter = PathFormatter.discover();
     const { server, url } = startServer(
       repository,
       formatter,
+      approvals,
       { html: REVIEW_HTML, css: REVIEW_CSS, js: REVIEW_JS },
       port,
     );
     console.log(
-      `Quint Format Review\nDirectory: ${repository.directory}\nFormatter: ${formatter.displayPath}\n${url}\nRead-only preview. Press Ctrl+C to stop.`,
+      `Quint Format Review\nDirectory: ${repository.directory}\nFormatter: ${formatter.displayPath}\nApprovals: ${approvals.filePath}\n${url}\nRead-only preview. Press Ctrl+C to stop.`,
     );
     const stop = () => {
       server.stop(true);
