@@ -4,8 +4,9 @@
 [![License](https://img.shields.io/github/license/LegacyCodeHQ/quint-format)](LICENSE)
 [![npm version](https://img.shields.io/npm/v/@legacycodehq/quint-format/next?label=npm)](https://www.npmjs.com/package/@legacycodehq/quint-format)
 
-An opinionated formatter for the
-[Quint specification language](https://quint-lang.org/), powered by
+A developer-friendly formatter for the
+[Quint specification language](https://quint-lang.org/) that respects intentional
+layout while applying consistent conventions. Powered by
 [tree-sitter-quint](https://github.com/LegacyCodeHQ/tree-sitter-quint).
 
 > This release is an early public preview targeting Quint 0.32.x.

@@ -1,7 +1,7 @@
 {
   "name": "@legacycodehq/quint-format",
   "version": "0.1.0-alpha.5",
-  "description": "An opinionated formatter for the Quint specification language, powered by tree-sitter-quint.",
+  "description": "A developer-friendly formatter for Quint that respects intentional layout while applying consistent conventions.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
