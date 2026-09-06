@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import Quint from "@legacycodehq/tree-sitter-quint";
+import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+import { namedParseTreeSignature } from "../support/parse-tree";
+
+const parser = new Parser();
+parser.setLanguage(Quint);
 
 describe("parenthesized and postfix expressions", () => {
   test("formats a parenthesized expression", () => {
@@ -64,5 +70,27 @@ describe("parenthesized and postfix expressions", () => {
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("attaches a parenthesized ordinary block to its postfix call", () => {
+    const input = readFileSync(
+      new URL("../fixtures/parenthesized-block-postfix.qnt", import.meta.url),
+      "utf8",
+    );
+    const separated = input.replace("  }).then", "  }\n  ).then");
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(checkQuint(separated, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/parenthesized-postfix-delimiter",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 });

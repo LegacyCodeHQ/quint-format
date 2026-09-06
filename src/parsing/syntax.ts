@@ -203,6 +203,20 @@ export function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode)
   );
 }
 
+export function isBraceDelimitedExpression(node: Parser.SyntaxNode): boolean {
+  return (
+    [
+      "block_expression",
+      "all_expression",
+      "any_expression",
+      "and_block_expression",
+      "or_block_expression",
+    ].includes(node.type) ||
+    (node.type === "lambda_expression" &&
+      node.childForFieldName("body")?.type === "block_expression")
+  );
+}
+
 export function ufcsChainRoot(node: Parser.SyntaxNode): Parser.SyntaxNode {
   let current = node;
   while (current.parent) {

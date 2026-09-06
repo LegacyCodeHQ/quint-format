@@ -58,3 +58,16 @@ exports[`parenthesized and postfix expressions attaches a parenthesized all expr
 }
 "
 `;
+
+exports[`parenthesized and postfix expressions attaches a parenthesized ordinary block to its postfix call 1`] = `
+"module Example {
+  var n: int
+
+  run sequence = ({
+    n' = 1
+  }).then({
+    n' = 2
+  })
+}
+"
+`;

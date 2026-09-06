@@ -15,6 +15,7 @@ import { checkMatchExpressions } from "./expression/match-expression-checker.js"
 import { checkNamespaceAccess } from "./expression/namespace-access-checker.js";
 import { checkNestedDefinitions } from "./expression/nested-definition-checker.js";
 import { checkNondetBindings } from "./expression/nondet-binding-checker.js";
+import { checkParenthesizedExpressions } from "./expression/parenthesized-expression-checker.js";
 import { checkPatternSpacing } from "./expression/pattern-checker.js";
 import { checkRecordLiterals } from "./expression/record-literal-checker.js";
 import { checkSequenceLiterals } from "./expression/sequence-literal-checker.js";
@@ -95,6 +96,9 @@ export function checkAnalyzedSource(
         diagnostics.push(...checkAssignments(declaration.valueNode, source, filePath, lines));
         diagnostics.push(...checkBlockExpressions(declaration.valueNode, source, filePath, lines));
         diagnostics.push(...checkNondetBindings(declaration.valueNode, source, filePath, lines));
+        diagnostics.push(
+          ...checkParenthesizedExpressions(declaration.valueNode, source, filePath, lines),
+        );
         diagnostics.push(...checkNestedDefinitions(declaration.valueNode, source, filePath, lines));
         diagnostics.push(...checkBlockCombinators(declaration.valueNode, source, filePath, lines));
       }
