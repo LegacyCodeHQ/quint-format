@@ -7,7 +7,7 @@ module Example {
       | Some(node) => match node {
           | Leaf(number) => number
           | Internal(number) => number + 1
-      }
+        }
       | None => {
           0
         }

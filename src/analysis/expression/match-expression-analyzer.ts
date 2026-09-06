@@ -4,8 +4,6 @@ import { commentDocument } from "@/formatting/comments.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { isBlockCombinatorExpression, isCompactDefaultMatch } from "@/parsing/syntax.js";
 
-const SELF_INDENTING_ARM_BODY_TYPES = new Set(["match_expression"]);
-
 export function analyzeMatchExpression(
   node: Parser.SyntaxNode,
   analyzeExpression: (node: Parser.SyntaxNode) => ExpressionAnalysis,
@@ -44,8 +42,7 @@ export function analyzeMatchExpression(
           ? rawArrowGap
           : " ";
       const isMultilineBody = body.startPosition.row > arrow.endPosition.row;
-      const isSelfIndentingBody =
-        SELF_INDENTING_ARM_BODY_TYPES.has(body.type) || isBlockCombinatorExpression(body);
+      const isSelfIndentingBody = isBlockCombinatorExpression(body);
       return {
         node: arm,
         body: bodyAnalysis,

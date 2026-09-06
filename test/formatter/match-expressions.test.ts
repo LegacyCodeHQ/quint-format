@@ -139,14 +139,15 @@ describe("match expressions", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
-  test("formats over-indented nested match-arm bodies", () => {
+  test("preserves a nested match arm body baseline", () => {
     const input = readFileSync(
       new URL("../fixtures/structural-match-arm-bodies.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
 
-    expect(checkQuint(input, "structural-match-arm-bodies.qnt")).toMatchSnapshot();
+    expect(checkQuint(input, "structural-match-arm-bodies.qnt")).toEqual([]);
+    expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

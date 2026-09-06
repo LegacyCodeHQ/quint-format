@@ -132,40 +132,6 @@ exports[`match expressions aligns an ordinary block body with the match case 2`]
 ]
 `;
 
-exports[`match expressions formats over-indented nested match-arm bodies 1`] = `
-[
-  {
-    "column": 1,
-    "filePath": "structural-match-arm-bodies.qnt",
-    "length": 10,
-    "line": 8,
-    "message": "expected one structural indentation level inside the match arm",
-    "rule": "format/match-arm-body-indentation",
-    "sourceLine": "          | Leaf(number) => number",
-  },
-]
-`;
-
-exports[`match expressions formats over-indented nested match-arm bodies 2`] = `
-"module Example {
-  type Inner = Leaf(int) | Internal(int)
-  type Outer = Some(Inner) | None
-
-  pure def evaluate(value: Outer): int = {
-    match value {
-      | Some(node) => match node {
-        | Leaf(number) => number
-        | Internal(number) => number + 1
-      }
-      | None => {
-          0
-        }
-    }
-  }
-}
-"
-`;
-
 exports[`match expressions preserves comments between match arms 1`] = `
 "module Example {
   type Step = First | Second
@@ -260,6 +226,26 @@ exports[`match expressions preserves nested record literal match-arm body indent
           }
         }
       | _ => new_tree
+    }
+  }
+}
+"
+`;
+
+exports[`match expressions preserves a nested match arm body baseline 1`] = `
+"module Example {
+  type Inner = Leaf(int) | Internal(int)
+  type Outer = Some(Inner) | None
+
+  pure def evaluate(value: Outer): int = {
+    match value {
+      | Some(node) => match node {
+          | Leaf(number) => number
+          | Internal(number) => number + 1
+        }
+      | None => {
+          0
+        }
     }
   }
 }
