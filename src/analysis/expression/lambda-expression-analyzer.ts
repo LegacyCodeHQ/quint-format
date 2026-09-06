@@ -8,6 +8,7 @@ import {
   compactLambdaBlockExpression,
   hasInlineMultilineConditionalLambdaBody,
   isMultilineLambdaExpression,
+  isMultilineUfcsContinuation,
 } from "@/parsing/syntax.js";
 
 export function analyzeLambdaExpression(
@@ -71,9 +72,16 @@ export function analyzeLambdaExpression(
     const isInlineSecondaryArgument = Boolean(
       previousArgument && previousArgument.endPosition.row === node.startPosition.row,
     );
+    const enclosingFunction = enclosingCall?.childForFieldName("function");
+    const isInlineSecondaryArgumentInContinuedUfcsCall = Boolean(
+      isInlineSecondaryArgument &&
+        enclosingFunction &&
+        isMultilineUfcsContinuation(enclosingFunction),
+    );
     const inlineCallHeaderExceedsLineWidth = arrow.endPosition.column > 120;
-    const continuationIndentation =
-      isInlineSecondaryArgument && inlineCallHeaderExceedsLineWidth
+    const continuationIndentation = isInlineSecondaryArgumentInContinuedUfcsCall
+      ? 0
+      : isInlineSecondaryArgument && inlineCallHeaderExceedsLineWidth
         ? 1
         : sourceContinuationIndentation;
     return {

@@ -63,6 +63,39 @@ describe("lambdas", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("does not stack a secondary lambda continuation on a continued UFCS call", () => {
+    const input = readFileSync(
+      new URL("../fixtures/continued-ufcs-secondary-lambda.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected = [
+      "module Example {",
+      "  pure def maximum(values: List[int]): int = {",
+      "    val result = values",
+      "        .fold(0, (largest, value) =>",
+      "        if (value > largest) value else largest)",
+      "",
+      "    result",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+
+    expect(output).toBe(expected);
+    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/field-access-indentation",
+    ]);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("uses a four-space leading operator continuation in a lambda", () => {
     const input = readFileSync(
       new URL("../fixtures/preserved-lambda-implies.qnt", import.meta.url),

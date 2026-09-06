@@ -4,6 +4,9 @@ import {
   collectNodes,
   hasInlineMultilineConditionalLambdaBody,
   isMultilineLambdaExpression,
+  isMultilineUfcsContinuation,
+  ufcsChainRoot,
+  ufcsContinuationIndentation,
 } from "@/parsing/syntax.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
 
@@ -109,11 +112,21 @@ export function checkLambdaExpressions(
         functionDot.startPosition.row > functionObject.endPosition.row &&
         body.startPosition.row > arrow.endPosition.row,
     );
-    if (
-      isMultilineUfcsLambda &&
-      functionDot &&
-      body.startPosition.column !== functionDot.startPosition.column + 2
-    ) {
+    const callArguments = parentCall?.childrenForFieldName("argument") ?? [];
+    const argumentIndex = callArguments.findIndex((argument) => argument.id === lambda.id);
+    const previousArgument = callArguments[argumentIndex - 1];
+    const isInlineSecondaryArgumentInContinuedUfcsCall = Boolean(
+      argumentIndex > 0 &&
+        previousArgument?.endPosition.row === lambda.startPosition.row &&
+        parentFunction &&
+        isMultilineUfcsContinuation(parentFunction),
+    );
+    const expectedBodyColumn =
+      isInlineSecondaryArgumentInContinuedUfcsCall && parentFunction
+        ? (lines[ufcsChainRoot(parentFunction).startPosition.row]?.search(/\S|$/) ?? 0) +
+          ufcsContinuationIndentation() * 2
+        : (functionDot?.startPosition.column ?? 0) + 2;
+    if (isMultilineUfcsLambda && functionDot && body.startPosition.column !== expectedBodyColumn) {
       const row = body.startPosition.row;
       diagnostics.push({
         filePath,
@@ -121,7 +134,9 @@ export function checkLambdaExpressions(
         column: 1,
         length: Math.max(1, body.startPosition.column),
         rule: "format/lambda-body-indentation",
-        message: "expected the lambda body two spaces inside the UFCS call",
+        message: isInlineSecondaryArgumentInContinuedUfcsCall
+          ? "expected the secondary lambda body to align with the UFCS continuation"
+          : "expected the lambda body two spaces inside the UFCS call",
         sourceLine: lines[row] ?? "",
       });
     }

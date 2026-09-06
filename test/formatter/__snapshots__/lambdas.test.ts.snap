@@ -41,6 +41,19 @@ exports[`lambdas indents a multiline lambda within a UFCS call 1`] = `
 "
 `;
 
+exports[`lambdas does not stack a secondary lambda continuation on a continued UFCS call 1`] = `
+"module Example {
+  pure def maximum(values: List[int]): int = {
+    val result = values
+        .fold(0, (largest, value) =>
+        if (value > largest) value else largest)
+
+    result
+  }
+}
+"
+`;
+
 exports[`lambdas uses a four-space leading operator continuation in a lambda 1`] = `
 "module Example {
   pure val valid = Set(1, 2).forall(value =>
