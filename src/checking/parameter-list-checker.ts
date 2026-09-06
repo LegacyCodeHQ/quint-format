@@ -82,6 +82,21 @@ export function checkParameterList(
       const comma = commas[index];
       const next = declaration.parameters[index + 1] ?? declaration.closeParen;
       if (!comma || comma.startIndex < parameter.endIndex || comma.endIndex > next.startIndex) {
+        if (index === declaration.parameters.length - 1) {
+          if (!hasCanonicalBreak(parameter, declaration.closeParen)) {
+            const row = declaration.closeParen.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: declaration.closeParen.startPosition.column + 1,
+              length: 1,
+              rule: "format/multiline-parameter-layout",
+              message: "expected the closing parenthesis on its own line",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+          continue;
+        }
         const row = parameter.endPosition.row;
         diagnostics.push({
           filePath,
@@ -130,7 +145,10 @@ export function checkParameterList(
     });
   }
 
-  for (const [index, comma] of (declaration.parameterCommas ?? []).entries()) {
+  const commas = declaration.parameterCommas ?? [];
+  const trailingComma = commas.find((comma) => comma.startIndex >= lastParameter.endIndex);
+  const separatorCommas = commas.filter((comma) => comma.startIndex < lastParameter.endIndex);
+  for (const [index, comma] of separatorCommas.entries()) {
     const previousParameter = declaration.parameters[index];
     const nextParameter = declaration.parameters[index + 1];
     if (!previousParameter || !nextParameter) {
@@ -152,13 +170,27 @@ export function checkParameterList(
     }
   }
 
-  const beforeCloseParen = source.slice(lastParameter.endIndex, declaration.closeParen.startIndex);
+  if (trailingComma && source.slice(lastParameter.endIndex, trailingComma.startIndex) !== "") {
+    const row = trailingComma.startPosition.row;
+    diagnostics.push({
+      filePath,
+      line: row + 1,
+      column: trailingComma.startPosition.column + 1,
+      length: 1,
+      rule: "format/parameter-list-spacing",
+      message: "expected the trailing comma immediately after the final parameter",
+      sourceLine: lines[row] ?? "",
+    });
+  }
+
+  const closeAnchor = trailingComma ?? lastParameter;
+  const beforeCloseParen = source.slice(closeAnchor.endIndex, declaration.closeParen.startIndex);
   if (beforeCloseParen !== "") {
     const row = declaration.closeParen.startPosition.row;
     diagnostics.push({
       filePath,
       line: row + 1,
-      column: lastParameter.endPosition.column + 1,
+      column: closeAnchor.endPosition.column + 1,
       length: Math.max(1, beforeCloseParen.length),
       rule: "format/parameter-list-spacing",
       message: "expected no space before ')'",

@@ -37,6 +37,23 @@ exports[`definitions formats multiple def parameters 1`] = `
 "
 `;
 
+exports[`definitions preserves a trailing comma in a compact pure def parameter list 1`] = `
+"module Example {
+  pure def choose(left: int, right: int,): int = left
+}
+"
+`;
+
+exports[`definitions preserves an expanded pure def parameter list without a trailing comma 1`] = `
+"module Example {
+  pure def choose(
+    left: int,
+    right: int
+  ): int = left
+}
+"
+`;
+
 exports[`definitions formats a typed def header 1`] = `
 "module Example {
   def identity(value: int): int = value
@@ -55,7 +72,7 @@ exports[`definitions expands a multiline definition header 1`] = `
     sourcePort: str,
     sourceChannel: str,
     timeoutHeight: int,
-    timeoutTimestamp: int,
+    timeoutTimestamp: int
   ): bool = {
     true
   }
@@ -79,7 +96,7 @@ exports[`definitions expands a multiline definition header 2`] = `
     "filePath": "multiline-definition-header.qnt",
     "length": 1,
     "line": 4,
-    "message": "expected a trailing comma after the parameter",
+    "message": "expected the closing parenthesis on its own line",
     "rule": "format/multiline-parameter-layout",
     "sourceLine": "                    timeoutHeight: int, timeoutTimestamp: int): bool = {",
   },

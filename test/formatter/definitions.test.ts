@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import Quint from "@legacycodehq/tree-sitter-quint";
+import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+import { namedParseTreeSignature } from "../support/parse-tree";
+
+const parser = new Parser();
+parser.setLanguage(Quint);
 
 describe("definitions", () => {
   test("formats a general assumption expression", () => {
@@ -48,6 +54,42 @@ describe("definitions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a trailing comma in a compact pure def parameter list", () => {
+    const input = "module Example {\n  pure def choose(left :int ,right :int,):int=left\n}\n";
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
+  test("preserves an expanded pure def parameter list without a trailing comma", () => {
+    const input = [
+      "module Example {",
+      "  pure def choose(",
+      "    left: int,",
+      "    right: int",
+      "  ): int = left",
+      "}",
+      "",
+    ].join("\n");
+    const output = formatQuint(input);
+
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("formats a typed def header", () => {
     const input = "module Example {\n  def identity(value :int) :int=value\n}\n";
     const output = formatQuint(input);
@@ -75,7 +117,7 @@ describe("definitions", () => {
         "    sourcePort: str,",
         "    sourceChannel: str,",
         "    timeoutHeight: int,",
-        "    timeoutTimestamp: int,",
+        "    timeoutTimestamp: int",
         "  ): bool = {",
       ].join("\n"),
     );

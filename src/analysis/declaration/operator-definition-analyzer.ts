@@ -76,7 +76,14 @@ export function analyzeOperatorDefinition(node: Parser.SyntaxNode): ModuleDeclar
     const parameterType = parameterTypes[index];
     return `${parameterName?.text}${parameterType ? `: ${formatType(parameterType)}` : ""}`;
   });
-  const parameterList = openParen && closeParen ? `(${formattedParameters.join(", ")})` : "";
+  const lastParameter = parameters.at(-1);
+  const hasTrailingParameterComma = Boolean(
+    lastParameter && parameterCommas.some((comma) => comma.startIndex >= lastParameter.endIndex),
+  );
+  const parameterList =
+    openParen && closeParen
+      ? `(${formattedParameters.join(", ")}${hasTrailingParameterComma ? "," : ""})`
+      : "";
   const returnTypeAnnotation = returnType ? `: ${formatType(returnType)}` : "";
   const inlineDefinitionHead = `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} =`;
   const usesExpandedParameterList = Boolean(
@@ -90,7 +97,14 @@ export function analyzeOperatorDefinition(node: Parser.SyntaxNode): ModuleDeclar
     ? concat([
         text(`${definitionHead} ${declarationName.text}(`),
         indent(
-          concat(formattedParameters.flatMap((parameter) => [hardLine, text(`${parameter},`)])),
+          concat(
+            formattedParameters.flatMap((parameter, index) => [
+              hardLine,
+              text(
+                `${parameter}${index < formattedParameters.length - 1 || hasTrailingParameterComma ? "," : ""}`,
+              ),
+            ]),
+          ),
         ),
         hardLine,
         text(`)${returnTypeAnnotation} =`),
