@@ -398,6 +398,7 @@ filter.addEventListener("input", renderTree);
 async function refresh() {
   const button = element<HTMLButtonElement>("refresh");
   button.disabled = true;
+  button.textContent = "Refreshing…";
   try {
     const data = await api<{ directory: string; formatter: string; files: string[] }>("api/files");
     files = data.files;
@@ -430,6 +431,7 @@ async function refresh() {
     showNotice(String(error instanceof Error ? error.message : error), true);
   } finally {
     button.disabled = false;
+    button.textContent = "Refresh & rerun";
   }
 }
 element("refresh").addEventListener("click", () => void refresh());

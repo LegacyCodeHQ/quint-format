@@ -55,10 +55,12 @@ alias quint-review='bun /absolute/path/to/quint-format/tools/quint-format-review
   excluded. Tracked files remain visible even if an ignore rule matches them.
   Submodules are separate repositories; launch inside one to review it.
 - Filter by filename or path, expand folders, and click a file to compare its
-  current disk contents with the formatter output. Refresh rescans the tree and
-  reloads the selected file. The selected path is encoded in the URL, so browser
-  refresh, history navigation, and copied links retain the current file. Files
-  are loaded on demand, never written.
+  current disk contents with the formatter output. **Refresh & rerun** rescans
+  the tree, reloads the selected file, and invokes the currently installed
+  `quintfmt` binary again, so binary replacements take effect without restarting
+  the dashboard. The selected path is encoded in the URL, so browser refresh,
+  history navigation, and copied links retain the current file. Files are loaded
+  on demand, never written.
 - Click a token to highlight its corresponding syntax node on both sides. Drag
   across code to highlight matching nodes; partial tokens expand to their full
   token boundaries. Selection works in either panel. Scrolling is synchronized
