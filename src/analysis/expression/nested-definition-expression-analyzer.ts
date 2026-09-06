@@ -2,7 +2,11 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { concat, hardLine, text } from "@/formatting/document.js";
-import { compactNestedBlockExpression, isCompactNondetSequence } from "@/parsing/syntax.js";
+import {
+  compactNestedBlockExpression,
+  definitionBody,
+  isCompactNondetSequence,
+} from "@/parsing/syntax.js";
 import { analyzeLocalDefinition } from "./local-definition-analyzer.js";
 
 export function analyzeNestedDefinitionExpression(
@@ -27,8 +31,7 @@ export function analyzeNestedDefinitionExpression(
         child.startIndex >= definition.endIndex &&
         child.endIndex <= body.startIndex,
     );
-    const definitionValue =
-      definition.childForFieldName("value") ?? definition.childForFieldName("body");
+    const definitionValue = definitionBody(definition);
     const trailingDefinitionComments = comments.filter(
       (comment) => comment.startPosition.row === definitionValue?.endPosition.row,
     );

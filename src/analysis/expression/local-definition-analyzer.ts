@@ -5,7 +5,7 @@ import { definitionBodyDocument } from "@/formatting/definition-body-formatter.j
 import { concat, type Doc, text } from "@/formatting/document.js";
 import { formatPattern } from "@/formatting/pattern-formatter.js";
 import { formatType } from "@/formatting/type-formatter.js";
-import { isAlignedLocalTrailingComment } from "@/parsing/syntax.js";
+import { definitionBody, isAlignedLocalTrailingComment } from "@/parsing/syntax.js";
 
 function localTrailingCommentDocuments(
   definition: Parser.SyntaxNode,
@@ -31,7 +31,7 @@ export function analyzeLocalDefinition(
     const qualifier = node.childForFieldName("qualifier");
     const name = node.childForFieldName("name");
     const typeNode = node.childForFieldName("type");
-    const value = node.childForFieldName("value");
+    const value = definitionBody(node);
     if (!name || (qualifier && qualifier.type !== "pure")) {
       throw new Error("Unable to locate the local value definition");
     }
@@ -71,7 +71,7 @@ export function analyzeLocalDefinition(
     const name = node.childForFieldName("name");
     const parameters = node.childrenForFieldName("parameter");
     const returnType = node.childForFieldName("return_type");
-    const body = node.childForFieldName("body");
+    const body = definitionBody(node);
     if (!name || (!defKeyword && !qualifier)) {
       throw new Error("Unable to locate the local operator definition");
     }

@@ -3,6 +3,7 @@ import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
   collectNodes,
   compactNestedBlockExpression,
+  definitionBody,
   isCompactNondetSequence,
 } from "@/parsing/syntax.js";
 import { checkLocalDefinition } from "./local-definition-checker.js";
@@ -19,8 +20,7 @@ export function checkNestedDefinitions(
     const body = nested.childForFieldName("body");
     if (!definition || !body) throw new Error("Unable to locate the nested definition layout");
     checkLocalDefinition(definition, source, lines, filePath, diagnostics);
-    const definitionValue =
-      definition.childForFieldName("value") ?? definition.childForFieldName("body");
+    const definitionValue = definitionBody(definition);
     const leadingBodyComments = nested.namedChildren.filter(
       (child) =>
         (child.type === "comment" || child.type === "documentation_comment") &&

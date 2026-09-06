@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
 import { checkTypeDelimiterSpacing } from "@/checking/type/type-checker.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
-import { isCompactNondetSequence } from "@/parsing/syntax.js";
+import { definitionBody, isCompactNondetSequence } from "@/parsing/syntax.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
 
 export function checkLocalDefinition(
@@ -150,7 +150,7 @@ export function checkLocalDefinition(
     });
   }
 
-  const value = node.childForFieldName(node.type === "operator_definition" ? "body" : "value");
+  const value = definitionBody(node);
   const equals = node.children.find((child) => child.type === "=");
   if (value && equals) {
     const anchor = typeNode ?? closeParen ?? name;

@@ -4,6 +4,7 @@ import type { ModuleDeclaration } from "@/core/analysis.js";
 import { definitionBodyDocument } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { canFormatType, formatType } from "@/formatting/type-formatter.js";
+import { definitionBody } from "@/parsing/syntax.js";
 
 export function analyzeOperatorDefinition(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
   if (node.type !== "operator_definition") return undefined;
@@ -26,7 +27,7 @@ export function analyzeOperatorDefinition(node: Parser.SyntaxNode): ModuleDeclar
   const returnType = node.childForFieldName("return_type");
   const returnColon = node.children.find((child) => child.type === ":");
   const semicolon = node.children.find((child) => child.type === ";");
-  const body = node.childForFieldName("body");
+  const body = definitionBody(node);
   const equals = node.children.find((child) => child.type === "=");
   const parameterNames = parameters.map((parameter) => parameter.childForFieldName("name"));
   const parameterTypes = parameters.map((parameter) => parameter.childForFieldName("type"));

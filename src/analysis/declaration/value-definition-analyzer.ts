@@ -4,6 +4,7 @@ import type { ModuleDeclaration } from "@/core/analysis.js";
 import { definitionBodyDocument } from "@/formatting/definition-body-formatter.js";
 import { formatPattern } from "@/formatting/pattern-formatter.js";
 import { formatType } from "@/formatting/type-formatter.js";
+import { definitionBody } from "@/parsing/syntax.js";
 
 export function analyzeValueDefinition(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
   if (node.type !== "value_definition") return undefined;
@@ -12,7 +13,7 @@ export function analyzeValueDefinition(node: Parser.SyntaxNode): ModuleDeclarati
   const keyword = node.children.find((child) => child.type === "val");
   const declarationName = node.childForFieldName("name");
   const declarationType = node.childForFieldName("type");
-  const value = node.childForFieldName("value");
+  const value = definitionBody(node);
   const colon = node.children.find((child) => child.type === ":");
   const equals = node.children.find((child) => child.type === "=");
   const semicolon = node.children.find((child) => child.type === ";");

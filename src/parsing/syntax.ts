@@ -1,5 +1,10 @@
 import type Parser from "tree-sitter";
 
+export function definitionBody(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
+  if (node.type !== "value_definition" && node.type !== "operator_definition") return null;
+  return node.childForFieldName("body") ?? node.childForFieldName("value");
+}
+
 export function isCompactNondetSequence(
   definition: Parser.SyntaxNode,
   body: Parser.SyntaxNode,
@@ -108,7 +113,7 @@ export function isIndentedExpressionBody(node: Parser.SyntaxNode): boolean {
       return ancestor.childForFieldName("body")?.id === node.id;
     }
     if (ancestor.type === "operator_definition" || ancestor.type === "value_definition") {
-      const body = ancestor.childForFieldName("body") ?? ancestor.childForFieldName("value");
+      const body = definitionBody(ancestor);
       return body?.id === node.id && node.startPosition.column > ancestor.startPosition.column;
     }
     ancestor = ancestor.parent;
@@ -337,8 +342,7 @@ export function isAlignedLocalTrailingComment(
   while (current?.type === "nested_definition_expression") {
     const currentDefinition = current.childForFieldName("definition");
     if (!currentDefinition) break;
-    const value =
-      currentDefinition.childForFieldName("value") ?? currentDefinition.childForFieldName("body");
+    const value = definitionBody(currentDefinition);
     const trailingComment = value
       ? currentDefinition.namedChildren.find(
           (child) =>
