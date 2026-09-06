@@ -27,10 +27,7 @@
     "access": "public"
   },
   "files": [
-    "dist/cli.js",
-    "dist/document.js",
-    "dist/index.d.ts",
-    "dist/index.js"
+    "dist"
   ],
   "engines": {
     "node": ">=22"
