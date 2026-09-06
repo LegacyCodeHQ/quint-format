@@ -127,23 +127,39 @@ export function checkMatchExpressions(
             : body.type === "all_expression" || body.type === "and_block_expression"
               ? "conjunct"
               : undefined;
-      if (combinatorField) {
-        const entries = body.childrenForFieldName(combinatorField);
+      const structuralEntries = combinatorField
+        ? body.childrenForFieldName(combinatorField)
+        : body.type === "match_expression"
+          ? body.childrenForFieldName("arm")
+          : body.type === "block_expression"
+            ? [
+                ...body.childrenForFieldName("binding"),
+                body.childForFieldName("expression"),
+              ].filter((entry): entry is Parser.SyntaxNode => entry !== null)
+            : undefined;
+      if (structuralEntries && body.startPosition.row === arrow.endPosition.row) {
+        const indentationColumn = (candidate: Parser.SyntaxNode) =>
+          lines[candidate.startPosition.row]?.search(/\S|$/u) ?? candidate.startPosition.column;
+        const armColumn = indentationColumn(arm);
         const closeBrace = body.children.find((child) => child.type === "}");
-        const expectedEntryColumn = arm.startPosition.column + 4;
-        const expectedCloseColumn = arm.startPosition.column + 2;
+        const expectedEntryColumn = armColumn + 2;
+        const expectedCloseColumn = armColumn;
+        const misindentedEntry = structuralEntries.find(
+          (entry) => indentationColumn(entry) !== expectedEntryColumn,
+        );
         const misindentedNode =
-          entries.find((entry) => entry.startPosition.column !== expectedEntryColumn) ??
+          misindentedEntry ??
           (closeBrace?.startPosition.column !== expectedCloseColumn ? closeBrace : undefined);
         if (misindentedNode) {
           const row = misindentedNode.startPosition.row;
+          const nodeColumn = indentationColumn(misindentedNode);
           diagnostics.push({
             filePath,
             line: row + 1,
             column: 1,
-            length: Math.max(1, misindentedNode.startPosition.column),
+            length: Math.max(1, nodeColumn),
             rule: "format/match-arm-body-indentation",
-            message: "expected the nested match-arm body to be indented one level",
+            message: "expected one structural indentation level inside the match arm",
             sourceLine: lines[row] ?? "",
           });
         }

@@ -28,11 +28,11 @@ exports[`match expressions places a match expression below a definition header 1
   action step =
     match status {
       | Ready => {
-          status' = Waiting
-        }
+        status' = Waiting
+      }
       | Waiting => {
-          status' = Ready
-        }
+        status' = Ready
+      }
     }
 }
 "
@@ -69,30 +69,7 @@ exports[`match expressions preserves an inline multiline match used as a lambda 
 "
 `;
 
-exports[`match expressions indents multiline match-arm bodies below their arms 1`] = `
-[
-  {
-    "column": 1,
-    "filePath": "match-arm-block-indentation.qnt",
-    "length": 8,
-    "line": 9,
-    "message": "expected the nested match-arm body to be indented one level",
-    "rule": "format/match-arm-body-indentation",
-    "sourceLine": "        n' = n,",
-  },
-  {
-    "column": 1,
-    "filePath": "match-arm-block-indentation.qnt",
-    "length": 8,
-    "line": 13,
-    "message": "expected the nested match-arm body to be indented one level",
-    "rule": "format/match-arm-body-indentation",
-    "sourceLine": "        n' = n + 1,",
-  },
-]
-`;
-
-exports[`match expressions indents multiline match-arm bodies below their arms 2`] = `
+exports[`match expressions preserves one structural indentation level for block-combinator arm bodies 1`] = `
 "module Example {
   type Status = Ready | Waiting
   var status: Status
@@ -101,16 +78,59 @@ exports[`match expressions indents multiline match-arm bodies below their arms 2
   action step =
     match status {
       | Ready => all {
-          n' = n,
-          status' = Waiting,
-        }
+        n' = n,
+        status' = Waiting,
+      }
       | Waiting => all {
-          n' = n + 1,
-          status' = Ready,
-        }
+        n' = n + 1,
+        status' = Ready,
+      }
     }
 }
 "
+`;
+
+exports[`match expressions formats over-indented nested match-arm bodies 2`] = `
+"module Example {
+  type Inner = Leaf(int) | Internal(int)
+  type Outer = Some(Inner) | None
+
+  pure def evaluate(value: Outer): int = {
+    match value {
+      | Some(node) => match node {
+        | Leaf(number) => number
+        | Internal(number) => number + 1
+      }
+      | None => {
+        0
+      }
+    }
+  }
+}
+"
+`;
+
+exports[`match expressions formats over-indented nested match-arm bodies 1`] = `
+[
+  {
+    "column": 1,
+    "filePath": "structural-match-arm-bodies.qnt",
+    "length": 10,
+    "line": 8,
+    "message": "expected one structural indentation level inside the match arm",
+    "rule": "format/match-arm-body-indentation",
+    "sourceLine": "          | Leaf(number) => number",
+  },
+  {
+    "column": 1,
+    "filePath": "structural-match-arm-bodies.qnt",
+    "length": 10,
+    "line": 12,
+    "message": "expected one structural indentation level inside the match arm",
+    "rule": "format/match-arm-body-indentation",
+    "sourceLine": "          0",
+  },
+]
 `;
 
 exports[`match expressions preserves comments between match arms 1`] = `

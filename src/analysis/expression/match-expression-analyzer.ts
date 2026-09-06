@@ -4,6 +4,15 @@ import { commentDocument } from "@/formatting/comments.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { isCompactDefaultMatch } from "@/parsing/syntax.js";
 
+const SELF_INDENTING_ARM_BODY_TYPES = new Set([
+  "all_expression",
+  "and_block_expression",
+  "any_expression",
+  "block_expression",
+  "match_expression",
+  "or_block_expression",
+]);
+
 export function analyzeMatchExpression(
   node: Parser.SyntaxNode,
   analyzeExpression: (node: Parser.SyntaxNode) => ExpressionAnalysis,
@@ -38,6 +47,7 @@ export function analyzeMatchExpression(
         arm.text.slice(0, arrow.startIndex - arm.startIndex).match(/[\t ]*$/u)?.[0] ?? "";
       const arrowGap = /^ +$/u.test(rawArrowGap) ? rawArrowGap : " ";
       const isMultilineBody = body.startPosition.row > arrow.endPosition.row;
+      const isSelfIndentingBody = SELF_INDENTING_ARM_BODY_TYPES.has(body.type);
       return {
         node: arm,
         body: bodyAnalysis,
@@ -68,7 +78,10 @@ export function analyzeMatchExpression(
                   text(`| ${pattern}${arrowGap}=>`),
                   indent(concat([hardLine, indent(bodyAnalysis.document)])),
                 ])
-              : concat([text(`| ${pattern}${arrowGap}=> `), indent(bodyAnalysis.document)])
+              : concat([
+                  text(`| ${pattern}${arrowGap}=> `),
+                  isSelfIndentingBody ? bodyAnalysis.document : indent(bodyAnalysis.document),
+                ])
             : concat([
                 text(`| ${pattern}${arrowGap}=>`),
                 indent(
