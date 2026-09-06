@@ -1,4 +1,3 @@
-import { randomBytes } from "node:crypto";
 import { compareSource, failedComparison } from "./comparison.js";
 import type { Formatter } from "./formatter.js";
 import type { Repository } from "./repository.js";
@@ -13,10 +12,8 @@ export function startServer(
   repository: Repository,
   formatter: Formatter,
   assets: Assets,
-  port = 0,
+  port = 4310,
 ) {
-  const token = randomBytes(24).toString("hex");
-  const base = `/${token}/`;
   const server = Bun.serve({
     hostname: "127.0.0.1",
     port,
@@ -38,8 +35,7 @@ export function startServer(
         return json({ error: "Forbidden origin" }, 403);
       }
       if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
-      if (!url.pathname.startsWith(base)) return json({ error: "Not found" }, 404);
-      const route = url.pathname.slice(base.length);
+      const route = url.pathname.slice(1);
       try {
         if (route === "api/files")
           return json({
@@ -76,5 +72,5 @@ export function startServer(
       }
     },
   });
-  return { server, url: `http://127.0.0.1:${server.port}${base}` };
+  return { server, url: `http://127.0.0.1:${server.port}/` };
 }

@@ -26,11 +26,11 @@ try {
   let directory = process.cwd();
   let pathProvided = false;
   let browser = true;
-  let port = 0;
+  let port = 4310;
   const args = process.argv.slice(2);
   if (args.includes("--help") || args.includes("-h")) {
     console.log(
-      "Usage: quint-format-review [directory] [--no-open] [--port <0-65535>]\n\nReview .qnt files beneath a Git working directory. No files are modified.\nDefaults: current directory, automatic browser launch, available local port.\nRequires Bun and Git. Press Ctrl+C to stop.",
+      "Usage: quint-format-review [directory] [--no-open] [--port <0-65535>]\n\nReview .qnt files beneath a Git working directory. No files are modified.\nDefaults: current directory, automatic browser launch, local port 4310.\nRequires Bun and Git. Press Ctrl+C to stop.",
     );
   } else {
     for (let index = 0; index < args.length; index++) {

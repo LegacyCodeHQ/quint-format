@@ -31,9 +31,9 @@ Or supply the directory explicitly:
 bun tools/quint-format-review/dist/cli.js /path/to/repository-to-review
 ```
 
-The CLI opens your browser automatically and prints a local URL. Stop it with
-Ctrl+C. Use `--no-open` to open the URL yourself, `--port 4310` to select a port,
-or `--help` for usage. Port `0`, the default, chooses an available port.
+The CLI opens your browser automatically at `http://127.0.0.1:4310/`. Stop it
+with Ctrl+C. Use `--no-open` to open the URL yourself, `--port <number>` to
+select another port, or `--help` for usage. Port `0` chooses an available port.
 
 At startup, the CLI resolves `quintfmt` from its inherited `PATH`, prints the
 resolved location, and shows it in the browser sidebar. Every file load invokes
@@ -77,10 +77,10 @@ alias quint-review='bun /absolute/path/to/quint-format/tools/quint-format-review
   correspondence cannot be established, a warning explains why linked selection
   is unavailable; the formatted preview and whole-file copy still work.
 
-The server binds only to `127.0.0.1`, uses an unpredictable session URL, rejects
-foreign origins and non-GET requests, and serves all assets locally. Files larger
-than 2 MiB show an explicit error. This is a local developer tool, not a hosted
-service. Clipboard copying requires browser clipboard permission.
+The server binds only to `127.0.0.1`, rejects foreign origins and non-GET
+requests, and serves all assets locally. Files larger than 2 MiB show an explicit
+error. This is a local developer tool, not a hosted service. Clipboard copying
+requires browser clipboard permission.
 
 ## Development checks
 

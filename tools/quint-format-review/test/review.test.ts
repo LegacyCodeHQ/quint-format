@@ -180,13 +180,19 @@ test("server serves embedded assets and read-only comparisons, rejects cross-ori
       return formatQuint(await readFile(filePath, "utf8"));
     },
   };
-  const { server, url } = startServer(repository, formatter, {
-    html: "<html>review</html>",
-    css: "body{}",
-    js: "console.log('review')",
-  });
+  const { server, url } = startServer(
+    repository,
+    formatter,
+    {
+      html: "<html>review</html>",
+      css: "body{}",
+      js: "console.log('review')",
+    },
+    0,
+  );
   const beforeStatus = execFileSync("git", ["-C", path, "status", "--porcelain=v1", "-z"]);
   try {
+    expect(new URL(url).pathname).toBe("/");
     expect(await (await fetch(url)).text()).toBe("<html>review</html>");
     expect(await (await fetch(`${url}api/files`)).json()).toMatchObject({
       formatter: "/test/bin/quintfmt",
@@ -201,7 +207,7 @@ test("server serves embedded assets and read-only comparisons, rejects cross-ori
     expect((await fetch(`${url}api/compare?path=..%2Foutside.qnt`)).status).toBe(400);
     expect((await fetch(url, { method: "POST" })).status).toBe(405);
     expect((await fetch(url, { headers: { Origin: "https://example.com" } })).status).toBe(403);
-    expect((await fetch(new URL("/", url))).status).toBe(404);
+    expect((await fetch(new URL("/unknown", url))).status).toBe(404);
     expect(await readFile(join(path, "tracked.qnt"), "utf8")).toBe(input);
     expect(execFileSync("git", ["-C", path, "status", "--porcelain=v1", "-z"])).toEqual(
       beforeStatus,
