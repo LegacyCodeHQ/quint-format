@@ -344,21 +344,6 @@ export function ufcsContinuationIndentation(): number {
   return 2;
 }
 
-export function preservesDefinitionBodyLineBreak(
-  definition: Parser.SyntaxNode,
-  body: Parser.SyntaxNode,
-): boolean {
-  const equals = definition.children.find((child) => child.type === "=");
-  const hasBodyComments = definition.namedChildren.some(
-    (child) =>
-      (child.type === "comment" || child.type === "documentation_comment") &&
-      equals &&
-      child.startIndex >= equals.endIndex &&
-      child.endIndex <= body.startIndex,
-  );
-  return Boolean(equals && !hasBodyComments && body.startPosition.row > equals.endPosition.row);
-}
-
 export function collectNodes(node: Parser.SyntaxNode, type: string): Parser.SyntaxNode[] {
   return [
     ...(node.type === type ? [node] : []),

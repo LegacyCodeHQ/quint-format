@@ -66,7 +66,15 @@ export function checkAnalyzedSource(
 
       checkPatternSpacing(declaration.nameNode, source, lines, filePath, diagnostics);
       diagnostics.push(...checkParameterList(declaration, source, filePath, lines));
-      diagnostics.push(...checkDefinitionBody(declaration, source, filePath, lines));
+      diagnostics.push(
+        ...checkDefinitionBody(
+          declaration,
+          source,
+          filePath,
+          lines,
+          analyzedSource.commentAttachments,
+        ),
+      );
       diagnostics.push(...checkOptionalSemicolon(declaration, filePath, lines));
       diagnostics.push(
         ...checkBinaryExpressions(declaration.binaryOperators ?? [], source, filePath, lines),

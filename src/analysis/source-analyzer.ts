@@ -43,5 +43,5 @@ export function analyzeSource(source: string): AnalyzedSource {
     throw new Error("Formatting this Quint syntax is not implemented yet");
   }
 
-  return { hashbang, modules, trailingComments: pendingComments };
+  return { commentAttachments, hashbang, modules, trailingComments: pendingComments };
 }

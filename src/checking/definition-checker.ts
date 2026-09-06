@@ -1,12 +1,14 @@
 import type { ModuleDeclaration } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
-import { preservesDefinitionBodyLineBreak } from "@/parsing/syntax.js";
+import { preservesDefinitionBodyLineBreak } from "@/formatting/definition-body-formatter.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 
 export function checkDefinitionBody(
   declaration: ModuleDeclaration,
   source: string,
   filePath: string,
   lines: string[],
+  commentAttachments: CommentAttachmentIndex,
 ): FormatDiagnostic[] {
   if (!declaration.equals || !declaration.valueNode) return [];
 
@@ -22,7 +24,8 @@ export function checkDefinitionBody(
     declaration.valueNode.type === "sum_type" &&
     declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
   const requiresLineBreakAfterEquals =
-    isMultilineSum || preservesDefinitionBodyLineBreak(declaration.node, declaration.valueNode);
+    isMultilineSum ||
+    preservesDefinitionBodyLineBreak(declaration.node, declaration.valueNode, commentAttachments);
   const hasCanonicalAfterEquals = requiresLineBreakAfterEquals
     ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterEquals)
     : afterEquals === " ";

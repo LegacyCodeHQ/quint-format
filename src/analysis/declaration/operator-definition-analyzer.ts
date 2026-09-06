@@ -139,6 +139,13 @@ export function analyzeOperatorDefinition(
     sequenceLiterals: expression.sequenceLiterals,
     recordLiterals: expression.recordLiterals,
     callExpressions: expression.callExpressions,
-    document: definitionBodyDocument(definitionHeadDocument, node, body, expression.document),
+    document: definitionBodyDocument(
+      definitionHeadDocument,
+      node,
+      body,
+      expression.document,
+      1,
+      commentAttachments,
+    ),
   };
 }

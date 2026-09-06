@@ -19,9 +19,18 @@ describe("comment attachments", () => {
     expect(comments).toHaveLength(2);
     for (const comment of comments) {
       const attachment = attachments.attachmentFor(comment);
-      expect(attachment?.placement).toBe("trailing");
-      expect(attachment?.owner.type).toBe("value_definition");
-      expect(attachment?.anchor?.type).toBe("integer_literal");
+      expect(attachment).toBeDefined();
+      if (!attachment) throw new Error("Expected the comment to be attached");
+      expect(attachment.placement).toBe("trailing");
+      expect(attachment.owner.type).toBe("value_definition");
+      expect(attachment.anchor?.type).toBe("integer_literal");
+      expect(
+        attachments.commentsBetween(
+          attachment.owner,
+          attachment.anchor?.endIndex ?? 0,
+          comment.endIndex,
+        ),
+      ).toContain(comment);
       expect(attachments.isAlignedLocalTrailingComment(comment)).toBe(true);
     }
   });

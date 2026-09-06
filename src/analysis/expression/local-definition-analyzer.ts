@@ -54,6 +54,8 @@ export function analyzeLocalDefinition(
               node,
               value,
               valueAnalysis.document,
+              1,
+              commentAttachments,
             )
           : text(
               `${qualifier ? "pure " : ""}val ${formatPattern(name)}${typeNode ? `: ${formatType(typeNode)}` : ""}`,
@@ -108,6 +110,8 @@ export function analyzeLocalDefinition(
               node,
               body,
               bodyAnalysis.document,
+              1,
+              commentAttachments,
             )
           : text(
               `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""}`,

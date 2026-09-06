@@ -36,6 +36,7 @@ export function analyzeAssumptionDeclaration(
       condition,
       expression.document,
       2,
+      commentAttachments,
     ),
   };
 }

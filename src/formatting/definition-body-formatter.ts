@@ -1,5 +1,5 @@
 import type Parser from "tree-sitter";
-import { preservesDefinitionBodyLineBreak } from "@/parsing/syntax.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import { commentDocument } from "./comments.js";
 import { concat, type Doc, hardLine, indent, text } from "./document.js";
 
@@ -15,14 +15,13 @@ export function definitionBodyDocument(
   body: Parser.SyntaxNode,
   bodyDocument: Doc,
   minimumContinuationIndentation = 1,
+  commentAttachments?: CommentAttachmentIndex,
 ): Doc {
   const headDocument = typeof head === "string" ? text(head) : head;
-  const comments = definition.namedChildren.filter(
-    (child) =>
-      (child.type === "comment" || child.type === "documentation_comment") &&
-      child.endIndex <= body.startIndex,
-  );
   const equals = definition.children.find((child) => child.type === "=");
+  const comments = equals
+    ? (commentAttachments?.commentsBetween(definition, equals.endIndex, body.startIndex) ?? [])
+    : [];
   const firstContinuationNode = comments[0] ?? body;
   const continuationIndentation = Math.max(
     minimumContinuationIndentation,
@@ -35,7 +34,7 @@ export function definitionBodyDocument(
   const equalsLineComment =
     equals && comments[0]?.startPosition.row === equals.endPosition.row ? comments[0] : undefined;
   if (comments.length === 0) {
-    return preservesDefinitionBodyLineBreak(definition, body)
+    return preservesDefinitionBodyLineBreak(definition, body, commentAttachments)
       ? concat([headDocument, indentBy(concat([hardLine, bodyDocument]), continuationIndentation)])
       : concat([headDocument, text(" "), bodyDocument]);
   }
@@ -65,4 +64,17 @@ export function definitionBodyDocument(
       continuationIndentation,
     ),
   ]);
+}
+
+export function preservesDefinitionBodyLineBreak(
+  definition: Parser.SyntaxNode,
+  body: Parser.SyntaxNode,
+  commentAttachments?: CommentAttachmentIndex,
+): boolean {
+  const equals = definition.children.find((child) => child.type === "=");
+  const hasBodyComments = Boolean(
+    equals &&
+      commentAttachments?.commentsBetween(definition, equals.endIndex, body.startIndex).length,
+  );
+  return Boolean(equals && !hasBodyComments && body.startPosition.row > equals.endPosition.row);
 }

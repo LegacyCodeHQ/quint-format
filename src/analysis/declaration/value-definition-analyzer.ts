@@ -55,6 +55,8 @@ export function analyzeValueDefinition(
       node,
       value,
       expression.document,
+      1,
+      commentAttachments,
     ),
   };
 }

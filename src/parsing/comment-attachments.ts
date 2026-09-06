@@ -31,6 +31,16 @@ export class CommentAttachmentIndex {
       .map((attachment) => attachment.comment);
   }
 
+  commentsBetween(
+    owner: Parser.SyntaxNode,
+    startIndex: number,
+    endIndex: number,
+  ): Parser.SyntaxNode[] {
+    return this.commentsFor(owner).filter(
+      (comment) => comment.startIndex >= startIndex && comment.endIndex <= endIndex,
+    );
+  }
+
   markAlignedLocalTrailingComment(comment: Parser.SyntaxNode): void {
     this.#alignedLocalTrailingCommentIds.add(comment.id);
   }

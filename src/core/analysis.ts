@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { Doc } from "@/formatting/document.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 
 export interface ModuleDeclaration {
   node: Parser.SyntaxNode;
@@ -75,6 +76,7 @@ export interface AnalyzedSourceModule extends AnalyzedModule {
 }
 
 export interface AnalyzedSource {
+  commentAttachments: CommentAttachmentIndex;
   hashbang?: Parser.SyntaxNode;
   modules: AnalyzedSourceModule[];
   trailingComments: Parser.SyntaxNode[];
