@@ -7,7 +7,7 @@ exports[`module instances formats module instances and overrides 1`] = `
 }
 
 module Example {
-  import Library(N = 1, Flag = true) as Lib
+  import Library(N = 1, Flag = true,) as Lib
 }
 "
 `;
@@ -47,7 +47,7 @@ exports[`module instances formats anonymous instances 1`] = `
 }
 
 module Example {
-  import Library(N = 1).*
+  import Library(N = 1,).*
 }
 "
 `;

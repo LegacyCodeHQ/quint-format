@@ -11,11 +11,6 @@ test/fixtures/call-expression.qnt:2:23: error[format/argument-separator-spacing]
 2 |   val values = Set( 1 ,2, )
   |                       ^
   |
-test/fixtures/call-expression.qnt:2:25: error[format/unnecessary-trailing-comma]: trailing commas are omitted from calls
-  |
-2 |   val values = Set( 1 ,2, )
-  |                         ^
-  |
 test/fixtures/call-expression.qnt:2:26: error[format/call-delimiter-spacing]: expected no space before ')'
   |
 2 |   val values = Set( 1 ,2, )

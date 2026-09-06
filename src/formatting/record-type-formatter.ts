@@ -5,6 +5,12 @@ import { formatType } from "./type-formatter.js";
 
 export function formatExpandedRecordType(node: Parser.SyntaxNode): Doc {
   const row = node.childForFieldName("row");
+  const fields = node.namedChildren.filter((child) => child.type === "record_type_field");
+  const lastField = fields.at(-1);
+  const hasTrailingComma = node.children.some(
+    (child) =>
+      !row && child.type === "," && Boolean(lastField && child.startIndex >= lastField.endIndex),
+  );
   const entries: Doc[] = [];
   let previousField: Parser.SyntaxNode | undefined;
   for (const child of node.namedChildren) {
@@ -50,7 +56,9 @@ export function formatExpandedRecordType(node: Parser.SyntaxNode): Doc {
           (candidate.type === "record_type_field" || (row && candidate.id === row.id)),
       );
       entries.push(
-        text(`${name.text}: ${formatType(fieldType)}${hasFollowingFieldOrRow ? "," : ""}`),
+        text(
+          `${name.text}: ${formatType(fieldType)}${hasFollowingFieldOrRow || (child.id === lastField?.id && hasTrailingComma) ? "," : ""}`,
+        ),
       );
       previousField = child;
       continue;

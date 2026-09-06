@@ -84,7 +84,7 @@ describe("value definitions and literals", () => {
   test("formats a list literal", () => {
     const input = "module Example {\n  val values = [ 1 ,2, ]\n}\n";
     const output = formatQuint(input);
-    const compact = "module Example {\n  val values = [1, 2]\n}\n";
+    const compact = "module Example {\n  val values = [1, 2,]\n}\n";
     const padded = "module Example {\n  val values = [ 1, 2 ]\n}\n";
 
     expect(output).toBe(compact);
@@ -131,16 +131,15 @@ describe("value definitions and literals", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("removes a trailing comma from a multiline record literal", () => {
+  test("preserves a trailing comma in a multiline record literal", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-record-literal.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
-    const expected = input.replace("    balance: 0,\n", "    balance: 0\n");
 
-    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
-    expect(output).toBe(expected);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

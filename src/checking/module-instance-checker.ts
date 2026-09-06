@@ -17,14 +17,18 @@ export function checkModuleInstance(
   );
   const first = overrides[0];
   const last = overrides.at(-1);
+  const trailingComma = (declaration.instanceCommas ?? []).find((comma) =>
+    Boolean(last && comma.startIndex >= last.endIndex),
+  );
+  const closeAnchor = trailingComma ?? last;
   const insideStart = first
     ? source.slice(declaration.instanceOpenParen.endIndex, first.startIndex)
     : source.slice(
         declaration.instanceOpenParen.endIndex,
         declaration.instanceCloseParen.startIndex,
       );
-  const insideEnd = last
-    ? source.slice(last.endIndex, declaration.instanceCloseParen.startIndex)
+  const insideEnd = closeAnchor
+    ? source.slice(closeAnchor.endIndex, declaration.instanceCloseParen.startIndex)
     : "";
   const isExpandedInstance = Boolean(
     first &&
@@ -78,16 +82,18 @@ export function checkModuleInstance(
     const previous = overrides[index];
     const next = overrides[index + 1];
     if (!previous || !next) {
-      const row = comma.startPosition.row;
-      diagnostics.push({
-        filePath,
-        line: row + 1,
-        column: comma.startPosition.column + 1,
-        length: 1,
-        rule: "format/instance-trailing-comma",
-        message: "trailing commas are omitted from inline instances",
-        sourceLine: lines[row] ?? "",
-      });
+      if (previous && source.slice(previous.endIndex, comma.startIndex) !== "") {
+        const row = comma.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: comma.startPosition.column + 1,
+          length: 1,
+          rule: "format/instance-override-separator-spacing",
+          message: "expected the trailing comma immediately after the final instance override",
+          sourceLine: lines[row] ?? "",
+        });
+      }
     } else if (
       source.slice(previous.endIndex, comma.startIndex) !== "" ||
       (isExpandedInstance

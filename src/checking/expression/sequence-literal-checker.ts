@@ -44,16 +44,18 @@ export function checkSequenceLiterals(
         const previousElement = elements[index];
         const nextElement = elements[index + 1];
         if (!previousElement || !nextElement) {
-          const row = comma.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: comma.startPosition.column + 1,
-            length: 1,
-            rule: "format/unnecessary-trailing-comma",
-            message: `trailing commas are omitted from inline ${kind}s`,
-            sourceLine: lines[row] ?? "",
-          });
+          if (previousElement && source.slice(previousElement.endIndex, comma.startIndex) !== "") {
+            const row = comma.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: comma.startPosition.column + 1,
+              length: 1,
+              rule: "format/expression-separator-spacing",
+              message: `expected the trailing comma immediately after the final ${kind} element`,
+              sourceLine: lines[row] ?? "",
+            });
+          }
           continue;
         }
         const beforeComma = source.slice(previousElement.endIndex, comma.startIndex);

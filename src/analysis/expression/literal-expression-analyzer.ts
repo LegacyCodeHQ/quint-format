@@ -50,6 +50,10 @@ export function analyzeLiteralExpression(
       .find((child) => child.type === closeDelimiter);
     const firstElement = elements[0];
     const lastElement = elements.at(-1);
+    const hasTrailingComma = node.children.some(
+      (child) =>
+        child.type === "," && Boolean(lastElement && child.startIndex >= lastElement.endIndex),
+    );
     const isExpandedList = Boolean(
       node.type === "list_literal" &&
         openDelimiterNode &&
@@ -74,6 +78,7 @@ export function analyzeLiteralExpression(
         ? concat([
             text(openDelimiter),
             indent(concat(elementDocuments)),
+            ...(hasTrailingComma ? [text(",")] : []),
             hardLine,
             text(closeDelimiter),
           ])
@@ -83,6 +88,7 @@ export function analyzeLiteralExpression(
               ...(index === 0 ? [] : [text(", ")]),
               analysis.document,
             ]),
+            ...(hasTrailingComma ? [text(",")] : []),
             text(closeDelimiter),
           ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
@@ -153,6 +159,12 @@ export function analyzeLiteralExpression(
       ];
     });
     const analyses = entries.flatMap((entry) => (entry.analysis ? [entry.analysis] : []));
+    const lastDirectElement = directElements.at(-1);
+    const hasTrailingComma = node.children.some(
+      (child) =>
+        child.type === "," &&
+        Boolean(lastDirectElement && child.startIndex >= lastDirectElement.endIndex),
+    );
     const hasComments =
       Boolean(trailingClosingComment) ||
       entries.some(
@@ -179,6 +191,7 @@ export function analyzeLiteralExpression(
           const hasFollowingElement = directElements.some(
             (candidate) => candidate.startIndex > entry.node.endIndex,
           );
+          const isLastDirectElement = entry.node.id === lastDirectElement?.id;
           const attachesClosingComment =
             !isComment &&
             Boolean(trailingClosingComment) &&
@@ -188,7 +201,9 @@ export function analyzeLiteralExpression(
               ? entry.document
               : concat([
                   entry.document,
-                  ...(hasFollowingElement ? [text(",")] : []),
+                  ...(hasFollowingElement || (isLastDirectElement && hasTrailingComma)
+                    ? [text(",")]
+                    : []),
                   ...(attachesClosingComment && trailingClosingComment
                     ? [text(" "), commentDocument(trailingClosingComment)]
                     : []),
@@ -233,6 +248,7 @@ export function analyzeLiteralExpression(
               ...(index === 0 ? [] : [text(", ")]),
               document,
             ]),
+            ...(hasTrailingComma ? [text(",")] : []),
             text(" }"),
           ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),

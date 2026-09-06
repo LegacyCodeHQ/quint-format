@@ -148,7 +148,12 @@ export function formatType(node: Parser.SyntaxNode): string {
     });
     const row = node.childForFieldName("row");
     const rowSuffix = row ? ` | ${row.text}` : "";
-    return `{ ${formattedFields.join(", ")}${rowSuffix} }`;
+    const lastField = fields.at(-1);
+    const trailingComma = node.children.some(
+      (child) =>
+        !row && child.type === "," && Boolean(lastField && child.startIndex >= lastField.endIndex),
+    );
+    return `{ ${formattedFields.join(", ")}${rowSuffix}${trailingComma ? "," : ""} }`;
   }
 
   if (node.type === "function_type") {

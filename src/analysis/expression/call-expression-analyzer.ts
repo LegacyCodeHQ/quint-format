@@ -20,6 +20,12 @@ export function analyzeCallExpression(
     if (!functionNode) throw new Error("Unable to locate the call target");
     const openParenthesis = node.children.find((child) => child.type === "(");
     const closeParenthesis = [...node.children].reverse().find((child) => child.type === ")");
+    const lastArgument = arguments_.at(-1);
+    const trailingComma = node.children.find(
+      (child) =>
+        child.type === "," && Boolean(lastArgument && child.startIndex >= lastArgument.endIndex),
+    );
+    const trailingCommaDocuments = trailingComma ? [text(",")] : [];
     const functionAnalysis = analyzeExpression(functionNode);
     const analyses = arguments_.map(analyzeExpression);
     const hasComments = node.namedChildren.some(
@@ -41,6 +47,7 @@ export function analyzeCallExpression(
             hardLine,
             text(`.${field.text}(`),
             (analyses[0] as ExpressionAnalysis).document,
+            ...trailingCommaDocuments,
             hardLine,
             text(")"),
           ]),
@@ -55,6 +62,7 @@ export function analyzeCallExpression(
             functionAnalysis.document,
             text("("),
             (analyses[0] as ExpressionAnalysis).document,
+            ...trailingCommaDocuments,
             hardLine,
             text(")"),
           ])
@@ -66,6 +74,7 @@ export function analyzeCallExpression(
         ...(index === 0 ? [] : [text(", ")]),
         analysis.document,
       ]),
+      ...trailingCommaDocuments,
       text(")"),
     ]);
     const inlineCallLines = renderDoc(inlineCallDocument).split("\n");
@@ -189,7 +198,7 @@ export function analyzeCallExpression(
           return [
             concat([
               analysis.document,
-              ...(argumentIndex < arguments_.length - 1 ? [text(",")] : []),
+              ...(argumentIndex < arguments_.length - 1 || trailingComma ? [text(",")] : []),
             ]),
           ];
         })
@@ -220,6 +229,7 @@ export function analyzeCallExpression(
                   concat([hardLine, (analyses.at(-1) as ExpressionAnalysis).document]),
                   multilineUfcsCall ? ufcsContinuationIndentation() + 1 : 1,
                 ),
+                ...trailingCommaDocuments,
                 hardLine,
                 indentBy(text(")"), multilineUfcsCall ? ufcsContinuationIndentation() : 0),
               ])
@@ -231,6 +241,7 @@ export function analyzeCallExpression(
                     ...(index === 0 ? [] : [text(", ")]),
                     analysis.document,
                   ]),
+                  ...trailingCommaDocuments,
                   hardLine,
                   text(")"),
                 ])
@@ -242,6 +253,7 @@ export function analyzeCallExpression(
                       concat([hardLine, (analyses[0] as ExpressionAnalysis).document]),
                       multilineUfcsCall ? ufcsContinuationIndentation() + 1 : 1,
                     ),
+                    ...trailingCommaDocuments,
                     hardLine,
                     indentBy(text(")"), multilineUfcsCall ? ufcsContinuationIndentation() : 0),
                   ])
@@ -253,6 +265,7 @@ export function analyzeCallExpression(
                         concat(sourceArgumentDocuments),
                         multilineUfcsCall ? ufcsContinuationIndentation() + 2 : 2,
                       ),
+                      ...trailingCommaDocuments,
                       hardLine,
                       indentBy(text(")"), multilineUfcsCall ? ufcsContinuationIndentation() : 0),
                     ])
@@ -264,6 +277,7 @@ export function analyzeCallExpression(
                           concat(sourceArgumentDocuments),
                           multilineUfcsCall ? ufcsContinuationIndentation() + 2 : 2,
                         ),
+                        ...trailingCommaDocuments,
                         text(")"),
                       ])
                     : multilineUfcsCall
@@ -276,6 +290,7 @@ export function analyzeCallExpression(
                                 ...(index === 0 ? [] : [text(", ")]),
                                 analysis.document,
                               ]),
+                              ...trailingCommaDocuments,
                               text(")"),
                             ]),
                             ufcsContinuationIndentation(),
@@ -286,6 +301,7 @@ export function analyzeCallExpression(
                             functionAnalysis.document,
                             text("("),
                             indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
+                            ...trailingCommaDocuments,
                             hardLine,
                             text(")"),
                           ])

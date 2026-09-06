@@ -102,16 +102,15 @@ describe("call expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("removes a trailing comma from a fully expanded call", () => {
+  test("preserves a trailing comma in a fully expanded call", () => {
     const input = readFileSync(
       new URL("../fixtures/expanded-call-trailing-comma.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
-    const expected = input.replace('      "bob" -> 2,\n', '      "bob" -> 2\n');
 
-    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
-    expect(output).toBe(expected);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

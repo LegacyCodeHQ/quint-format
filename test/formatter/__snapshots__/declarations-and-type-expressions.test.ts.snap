@@ -56,25 +56,11 @@ exports[`declarations and type expressions formats a record type 1`] = `
 "
 `;
 
-exports[`declarations and type expressions removes a trailing comma from a multiline record type 1`] = `
-[
-  {
-    "column": 17,
-    "filePath": "input.qnt",
-    "length": 1,
-    "line": 4,
-    "message": "trailing commas are omitted from record types",
-    "rule": "format/unnecessary-trailing-comma",
-    "sourceLine": "    balance: int,",
-  },
-]
-`;
-
-exports[`declarations and type expressions removes a trailing comma from a multiline record type 2`] = `
+exports[`declarations and type expressions preserves a trailing comma in a multiline record type 1`] = `
 "module Example {
   type Account = {
     owner: str,
-    balance: int
+    balance: int,
   }
 }
 "
@@ -94,7 +80,7 @@ exports[`declarations and type expressions preserves comments in a record type 1
 "module Example {
   type Item = {
     // Preserve this field comment.
-    id: int
+    id: int,
   }
 }
 "

@@ -135,15 +135,17 @@ export function checkRecordLiterals(
             sourceLine: lines[row] ?? "",
           });
         }
-        if (!nextElement && comma) {
+        if (!nextElement && comma && source.slice(element.endIndex, comma.startIndex) !== "") {
           const row = comma.startPosition.row;
           diagnostics.push({
             filePath,
             line: row + 1,
             column: comma.startPosition.column + 1,
             length: 1,
-            rule: "format/unnecessary-trailing-comma",
-            message: "trailing commas are omitted from records",
+            rule: isCommentedRecord
+              ? "format/commented-record-separator"
+              : "format/multiline-record-separator",
+            message: "expected the trailing comma immediately after the final record element",
             sourceLine: lines[row] ?? "",
           });
         }
@@ -193,16 +195,18 @@ export function checkRecordLiterals(
         const previousElement = elements[index];
         const nextElement = elements[index + 1];
         if (!previousElement || !nextElement) {
-          const row = comma.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: comma.startPosition.column + 1,
-            length: 1,
-            rule: "format/unnecessary-trailing-comma",
-            message: "trailing commas are omitted from records",
-            sourceLine: lines[row] ?? "",
-          });
+          if (previousElement && source.slice(previousElement.endIndex, comma.startIndex) !== "") {
+            const row = comma.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: comma.startPosition.column + 1,
+              length: 1,
+              rule: "format/expression-separator-spacing",
+              message: "expected the trailing comma immediately after the final record element",
+              sourceLine: lines[row] ?? "",
+            });
+          }
           continue;
         }
         const beforeComma = source.slice(previousElement.endIndex, comma.startIndex);

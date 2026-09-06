@@ -84,16 +84,18 @@ export function checkCallExpressions(
         const previous = arguments_[index];
         const next = arguments_[index + 1];
         if (!previous || !next) {
-          const row = comma.startPosition.row;
-          diagnostics.push({
-            filePath,
-            line: row + 1,
-            column: comma.startPosition.column + 1,
-            length: 1,
-            rule: "format/unnecessary-trailing-comma",
-            message: "trailing commas are omitted from calls",
-            sourceLine: lines[row] ?? "",
-          });
+          if (previous && source.slice(previous.endIndex, comma.startIndex) !== "") {
+            const row = comma.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: comma.startPosition.column + 1,
+              length: 1,
+              rule: "format/argument-separator-spacing",
+              message: "expected the trailing comma immediately after the final argument",
+              sourceLine: lines[row] ?? "",
+            });
+          }
           continue;
         }
         const nextStartsOnNewLine = next.startPosition.row > previous.endPosition.row;

@@ -2,7 +2,7 @@
 
 exports[`call expressions formats a call expression 1`] = `
 "module Example {
-  val values = Set(1, 2)
+  val values = Set(1, 2,)
 }
 "
 `;
@@ -77,25 +77,11 @@ exports[`call expressions preserves a fully expanded call 1`] = `
 "
 `;
 
-exports[`call expressions removes a trailing comma from a fully expanded call 1`] = `
-[
-  {
-    "column": 17,
-    "filePath": "input.qnt",
-    "length": 1,
-    "line": 4,
-    "message": "trailing commas are omitted from calls",
-    "rule": "format/unnecessary-trailing-comma",
-    "sourceLine": "      "bob" -> 2,",
-  },
-]
-`;
-
-exports[`call expressions removes a trailing comma from a fully expanded call 2`] = `
+exports[`call expressions preserves a trailing comma in a fully expanded call 1`] = `
 "module Example {
   pure val balances = Map(
       "alice" -> 1,
-      "bob" -> 2
+      "bob" -> 2,
   )
 }
 "

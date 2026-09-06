@@ -55,6 +55,9 @@ export function analyzeModuleInstance(node: Parser.SyntaxNode): ModuleDeclaratio
   );
   const firstOverride = overrides[0];
   const lastOverride = overrides.at(-1);
+  const hasTrailingComma = commas.some((comma) =>
+    Boolean(lastOverride && comma.startIndex >= lastOverride.endIndex),
+  );
   const isExpandedInstance = Boolean(
     firstOverride &&
       lastOverride &&
@@ -91,7 +94,7 @@ export function analyzeModuleInstance(node: Parser.SyntaxNode): ModuleDeclaratio
                 hardLine,
                 text(`${formatPattern(name)} = `),
                 value.document,
-                ...(index < overrideAnalyses.length - 1 ? [text(",")] : []),
+                ...(index < overrideAnalyses.length - 1 || hasTrailingComma ? [text(",")] : []),
               ]),
             ),
           ),
@@ -105,6 +108,7 @@ export function analyzeModuleInstance(node: Parser.SyntaxNode): ModuleDeclaratio
             text(`${formatPattern(name)} = `),
             value.document,
           ]),
+          ...(hasTrailingComma ? [text(",")] : []),
           text(suffix),
         ]);
   const common = {
@@ -189,7 +193,7 @@ function buildOverrideDocuments(
       concat([
         text(`${formatPattern(override.name)} = `),
         override.value.document,
-        ...(index < overrideAnalyses.length - 1 ? [text(",")] : []),
+        ...(index < overrideAnalyses.length - 1 || commas[index] ? [text(",")] : []),
       ]),
     );
     previousOverride = override;

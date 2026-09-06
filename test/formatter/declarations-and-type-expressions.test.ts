@@ -81,16 +81,15 @@ describe("declarations and type expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("removes a trailing comma from a multiline record type", () => {
+  test("preserves a trailing comma in a multiline record type", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-record-type.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
-    const expected = input.replace("    balance: int,\n", "    balance: int\n");
 
-    expect(checkQuint(input, "input.qnt")).toMatchSnapshot();
-    expect(output).toBe(expected);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

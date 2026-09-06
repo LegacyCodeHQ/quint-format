@@ -71,15 +71,15 @@ export function checkRecordType(node: Parser.SyntaxNode, context: TypeCheckConte
           sourceLine: lines[row] ?? "",
         });
       }
-      if (!requiresSeparator && comma) {
+      if (!requiresSeparator && comma && source.slice(field.endIndex, comma.startIndex) !== "") {
         const row = comma.startPosition.row;
         diagnostics.push({
           filePath,
           line: row + 1,
           column: comma.startPosition.column + 1,
           length: 1,
-          rule: "format/unnecessary-trailing-comma",
-          message: "trailing commas are omitted from record types",
+          rule: "format/multiline-record-separator",
+          message: "expected the trailing comma immediately after the final record field",
           sourceLine: lines[row] ?? "",
         });
       }
@@ -93,16 +93,18 @@ export function checkRecordType(node: Parser.SyntaxNode, context: TypeCheckConte
       throw new Error("Unable to locate record fields around ','");
     }
     if (!nextField) {
-      const row = comma.startPosition.row;
-      diagnostics.push({
-        filePath,
-        line: row + 1,
-        column: comma.startPosition.column + 1,
-        length: 1,
-        rule: "format/unnecessary-trailing-comma",
-        message: "trailing commas are omitted from record types",
-        sourceLine: lines[row] ?? "",
-      });
+      if (source.slice(previousField.endIndex, comma.startIndex) !== "") {
+        const row = comma.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: comma.startPosition.column + 1,
+          length: 1,
+          rule: "format/type-separator-spacing",
+          message: "expected the trailing comma immediately after the final record field",
+          sourceLine: lines[row] ?? "",
+        });
+      }
       continue;
     }
     const beforeComma = source.slice(previousField.endIndex, comma.startIndex);

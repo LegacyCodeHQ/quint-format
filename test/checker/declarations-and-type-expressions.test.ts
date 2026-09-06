@@ -42,8 +42,11 @@ describe("checker diagnostics", () => {
       expectFormattingViolation("record-type.qnt");
     });
 
-    test("reports a multiline record-type trailing comma", () => {
-      expectFormattingViolation("multiline-record-type.qnt");
+    test("accepts a multiline record-type trailing comma", () => {
+      const result = checkFixture("multiline-record-type.qnt");
+
+      expect(result.kind).toBe("clean");
+      expect(result.diagnostics).toEqual([]);
     });
 
     test("reports noncanonical commented-record-type formatting", () => {

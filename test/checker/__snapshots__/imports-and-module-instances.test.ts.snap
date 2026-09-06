@@ -164,11 +164,6 @@ test/fixtures/module-instance.qnt:6:28: error[format/instance-override-spacing]:
 6 |  import Library ( N=1 ,Flag=true, )  as   Lib
   |                            ^
   |
-test/fixtures/module-instance.qnt:6:33: error[format/instance-trailing-comma]: trailing commas are omitted from inline instances
-  |
-6 |  import Library ( N=1 ,Flag=true, )  as   Lib
-  |                                 ^
-  |
 test/fixtures/module-instance.qnt:6:38: error[format/import-alias-spacing]: expected one space around 'as'
   |
 6 |  import Library ( N=1 ,Flag=true, )  as   Lib
@@ -246,11 +241,6 @@ test/fixtures/anonymous-instance.qnt:5:20: error[format/instance-override-spacin
   |
 5 |  import Library ( N=1, ) . *
   |                    ^
-  |
-test/fixtures/anonymous-instance.qnt:5:22: error[format/instance-trailing-comma]: trailing commas are omitted from inline instances
-  |
-5 |  import Library ( N=1, ) . *
-  |                      ^
   |
 test/fixtures/anonymous-instance.qnt:5:26: error[format/import-selector-spacing]: expected no space around '.'
   |
