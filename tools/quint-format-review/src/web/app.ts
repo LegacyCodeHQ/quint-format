@@ -3,6 +3,7 @@ import { type ChangeBlock, sourceLines } from "../changes.js";
 import type { Comparison, NodePair, SourceRange } from "../comparison.js";
 import { finalNewlineLabel, markdownComparison, selectionRanges } from "../selection.js";
 import { filePathFromUrl, urlForFile } from "../url-state.js";
+import { nextFileAfterRemoval } from "./file-navigation.js";
 
 function element<T extends HTMLElement>(id: string): T {
   const result = document.getElementById(id);
@@ -46,13 +47,17 @@ function showNotice(message: string, error = false) {
   notice.classList.toggle("error", error);
 }
 
-function renderTree() {
-  tree.replaceChildren();
-  const visible = files.filter(
+function visibleFilePaths() {
+  return files.filter(
     (path) =>
       path.toLowerCase().includes(filter.value.toLowerCase()) &&
       (approvalFilter === "all" || (approvalStatuses[path] ?? "unreviewed") === approvalFilter),
   );
+}
+
+function renderTree() {
+  tree.replaceChildren();
+  const visible = visibleFilePaths();
   const approvedCount = files.filter((path) => approvalStatuses[path] === "approved").length;
   const changedCount = files.filter((path) => approvalStatuses[path] === "changed").length;
   element("file-count").textContent =
@@ -359,6 +364,29 @@ async function loadFile(path: string, navigation: NavigationMode = "push") {
   }
 }
 
+function clearFileView(filename: string, state: string, message: string) {
+  ++requestId;
+  currentPath = "";
+  window.history.replaceState(null, "", urlForFile(new URL(window.location.href), ""));
+  comparison = undefined;
+  currentChange = -1;
+  updateChangeControls();
+  selected = undefined;
+  copy.disabled = true;
+  approve.disabled = true;
+  unapprove.hidden = true;
+  unapprove.disabled = true;
+  approve.textContent = "Approve file";
+  approve.classList.remove("approved");
+  drawSelection();
+  renderSource("before", "", []);
+  renderSource("after", "", []);
+  element("filename").textContent = filename;
+  element("filename").title = "";
+  element("file-state").textContent = state;
+  showNotice(message);
+}
+
 function textOffset(target: HTMLElement, node: Node, offset: number): number {
   const range = document.createRange();
   range.selectNodeContents(target);
@@ -459,14 +487,35 @@ copy.addEventListener("click", async () => {
 });
 approve.addEventListener("click", async () => {
   if (!currentPath || !comparison || comparison.after === null) return;
+  const approvedPath = currentPath;
+  const visibleBeforeApproval = visibleFilePaths();
   approve.disabled = true;
   approve.textContent = "Approving…";
   try {
     const data = await api<ReviewComparison>(
-      `api/approve?path=${encodeURIComponent(currentPath)}`,
+      `api/approve?path=${encodeURIComponent(approvedPath)}`,
       { method: "POST" },
     );
-    showComparison(data);
+    approvalStatuses[approvedPath] = data.approval;
+    if (currentPath !== approvedPath) {
+      renderTree();
+      return;
+    }
+    if (visibleFilePaths().includes(approvedPath)) {
+      showComparison(data);
+      return;
+    }
+    const nextPath = nextFileAfterRemoval(visibleBeforeApproval, approvedPath);
+    renderTree();
+    if (nextPath) await loadFile(nextPath, "replace");
+    else {
+      clearFileView(
+        "No matching files",
+        "No files in this view",
+        "No files match the current filters.",
+      );
+      renderTree();
+    }
   } catch (error) {
     approve.disabled = false;
     approve.textContent = "Approve file";
@@ -522,23 +571,9 @@ async function refresh() {
     if (currentPath && files.includes(currentPath)) await loadFile(currentPath, "replace");
     else if (files.length) await loadFile(files[0], "replace");
     else {
-      ++requestId;
-      currentPath = "";
-      window.history.replaceState(null, "", urlForFile(new URL(window.location.href), ""));
-      comparison = undefined;
-      currentChange = -1;
-      updateChangeControls();
-      selected = undefined;
-      copy.disabled = true;
-      approve.disabled = true;
-      unapprove.hidden = true;
-      unapprove.disabled = true;
-      drawSelection();
-      renderSource("before", "", []);
-      renderSource("after", "", []);
-      element("filename").textContent = "No Quint files";
-      element("file-state").textContent = "No .qnt files found";
-      showNotice(
+      clearFileView(
+        "No Quint files",
+        "No .qnt files found",
         "Add a .qnt file beneath this directory, then refresh. Ignored files are excluded.",
       );
     }
