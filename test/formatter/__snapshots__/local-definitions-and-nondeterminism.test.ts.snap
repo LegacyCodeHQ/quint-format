@@ -171,3 +171,18 @@ exports[`local definitions and nondeterminism preserves a comment before a local
 }
 "
 `;
+
+exports[`local definitions and nondeterminism preserves a blank line between leading body comment groups 1`] = `
+"module Example {
+  run check = {
+    pure val result = true
+
+    // First explanation.
+    // Continue the explanation.
+
+    // Introduce the final check.
+    assert(result)
+  }
+}
+"
+`;

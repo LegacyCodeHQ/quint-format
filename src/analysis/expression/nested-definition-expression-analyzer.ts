@@ -83,7 +83,17 @@ export function analyzeNestedDefinitionExpression(
               separatesMultilineDefinitionFromLeadingComment
                 ? [hardLine]
                 : []),
-              ...leadingBodyComments.flatMap((comment) => [commentDocument(comment), hardLine]),
+              ...leadingBodyComments.flatMap((comment, index) => {
+                const nextComment = leadingBodyComments[index + 1];
+                const preservesCommentGroupGap = Boolean(
+                  nextComment && nextComment.startPosition.row > comment.endPosition.row + 1,
+                );
+                return [
+                  commentDocument(comment),
+                  hardLine,
+                  ...(preservesCommentGroupGap ? [hardLine] : []),
+                ];
+              }),
               bodyAnalysis.document,
             ]),
       binaryOperators: analyses.flatMap((analysis) => analysis.binaryOperators),
