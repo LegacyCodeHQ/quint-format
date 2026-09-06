@@ -17,3 +17,13 @@ export function separatesDefinitions(
 
   return isMultiline(previous) && isMultiline(current);
 }
+
+export function groupsCommentedAssumptions(
+  previous: ModuleDeclaration,
+  current: ModuleDeclaration,
+): boolean {
+  return (
+    previous.node.type === "assumption_declaration" &&
+    current.node.type === "assumption_declaration"
+  );
+}

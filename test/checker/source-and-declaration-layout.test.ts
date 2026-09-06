@@ -33,6 +33,14 @@ describe("checker diagnostics", () => {
       expect(result.rendered).toBe("");
     });
 
+    test("accepts adjacent assumptions with label comments", () => {
+      const result = checkFixture("adjacent-commented-assumptions.qnt");
+
+      expect(result.kind).toBe("clean");
+      expect(result.diagnostics).toEqual([]);
+      expect(result.rendered).toBe("");
+    });
+
     test("reports adjacent multiline value definitions without blank lines", () => {
       const result = checkFixture("multiline-definition-separation.qnt");
 

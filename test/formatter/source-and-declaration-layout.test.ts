@@ -53,6 +53,21 @@ describe("source and declaration layout", () => {
     expect(parser.parse(output).rootNode.hasError).toBe(false);
   });
 
+  test("preserves adjacent assumptions with label comments", () => {
+    const input = readFileSync(
+      new URL("../fixtures/adjacent-commented-assumptions.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    expect(parser.parse(input).rootNode.hasError).toBe(false);
+    expect(parser.parse(output).rootNode.hasError).toBe(false);
+  });
+
   test("separates adjacent multiline value definitions", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-definition-separation.qnt", import.meta.url),

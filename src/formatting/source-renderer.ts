@@ -1,6 +1,6 @@
 import type { AnalyzedModule, AnalyzedSource } from "@/core/analysis.js";
 import { commentDocument, leadingCommentsDocument } from "./comments.js";
-import { separatesDefinitions } from "./declaration-spacing.js";
+import { groupsCommentedAssumptions, separatesDefinitions } from "./declaration-spacing.js";
 import { concat, hardLine, indent, renderDoc, text } from "./document.js";
 
 function renderModule(module: AnalyzedModule): string {
@@ -20,7 +20,9 @@ function renderModule(module: AnalyzedModule): string {
     const groupsCommentedImports =
       previous.keyword.text === "import" && declaration.keyword.text === "import";
     const separatesCommentedDeclaration = Boolean(
-      declaration.leadingComments?.length && !groupsCommentedImports,
+      declaration.leadingComments?.length &&
+        !groupsCommentedImports &&
+        !groupsCommentedAssumptions(previous, declaration),
     );
     const separatesAdjacentDefinitions = separatesDefinitions(previous, declaration);
     const lineBreaks =

@@ -33,6 +33,18 @@ exports[`source and declaration layout preserves adjacent def declarations when 
 "
 `;
 
+exports[`source and declaration layout preserves adjacent assumptions with label comments 1`] = `
+"module Example {
+  const N: int
+
+  // a named assumption
+  assume positive = N > 0
+  // an anonymous assumption
+  assume _ = N != 0
+}
+"
+`;
+
 exports[`source and declaration layout separates adjacent multiline value definitions 1`] = `
 "module Example {
   pure val first = {
