@@ -53,6 +53,12 @@ test("approvals persist beneath the home directory, stay repository-scoped, and 
   expect(reopened.status("demo.qnt", fingerprint)).toBe("approved");
   expect(other.status("demo.qnt", fingerprint)).toBe("unreviewed");
   expect(other.filePath).not.toBe(reopened.filePath);
+
+  await reopened.unapprove("demo.qnt");
+  expect(reopened.status("demo.qnt", fingerprint)).toBe("unreviewed");
+  expect((await ApprovalStore.open(firstRepository, home)).status("demo.qnt", fingerprint)).toBe(
+    "unreviewed",
+  );
 });
 
 test("comparison preserves exact source, validates both trees, and yields idempotent output", () => {
@@ -294,6 +300,19 @@ test("server serves assets and repository-scoped approvals without modifying rev
     expect((await (await fetch(`${url}api/files`)).json()).approvals).toMatchObject({
       "nested/space ü.qnt": "changed",
     });
+    const unapproved = await (
+      await fetch(`${url}api/unapprove?path=${encodeURIComponent("nested/space ü.qnt")}`, {
+        method: "POST",
+      })
+    ).json();
+    expect(unapproved.approval).toBe("unreviewed");
+    expect(
+      (
+        await (
+          await fetch(`${url}api/compare?path=${encodeURIComponent("nested/space ü.qnt")}`)
+        ).json()
+      ).approval,
+    ).toBe("unreviewed");
     expect((await fetch(`${url}api/compare?path=..%2Foutside.qnt`)).status).toBe(400);
     expect((await fetch(url, { method: "POST" })).status).toBe(405);
     expect((await fetch(url, { headers: { Origin: "https://example.com" } })).status).toBe(403);

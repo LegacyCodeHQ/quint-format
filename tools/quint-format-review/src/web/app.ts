@@ -13,6 +13,7 @@ const before = element<HTMLPreElement>("before");
 const after = element<HTMLPreElement>("after");
 const copy = element<HTMLButtonElement>("copy");
 const approve = element<HTMLButtonElement>("approve");
+const unapprove = element<HTMLButtonElement>("unapprove");
 const clear = element<HTMLButtonElement>("clear");
 const filter = element<HTMLInputElement>("filter");
 const tree = element("tree");
@@ -21,6 +22,7 @@ const panes = { before, after };
 const scrolls = { before: element("before-scroll"), after: element("after-scroll") };
 let files: string[] = [];
 let approvalStatuses: Record<string, ApprovalStatus> = {};
+let approvalFilter: ApprovalStatus | "all" = "all";
 let currentPath = filePathFromUrl(new URL(window.location.href));
 let comparison: Comparison | undefined;
 let selected: NodePair | undefined;
@@ -46,12 +48,20 @@ function showNotice(message: string, error = false) {
 
 function renderTree() {
   tree.replaceChildren();
-  const visible = files.filter((path) => path.toLowerCase().includes(filter.value.toLowerCase()));
+  const visible = files.filter(
+    (path) =>
+      path.toLowerCase().includes(filter.value.toLowerCase()) &&
+      (approvalFilter === "all" || (approvalStatuses[path] ?? "unreviewed") === approvalFilter),
+  );
   const approvedCount = files.filter((path) => approvalStatuses[path] === "approved").length;
   const changedCount = files.filter((path) => approvalStatuses[path] === "changed").length;
   element("file-count").textContent =
     `${visible.length} OF ${files.length} QUINT FILES · ${approvedCount} APPROVED` +
     (changedCount ? ` · ${changedCount} CHANGED` : "");
+  for (const button of element("approval-filters").querySelectorAll<HTMLButtonElement>("button")) {
+    const active = button.dataset.status === approvalFilter;
+    button.setAttribute("aria-pressed", String(active));
+  }
   const directories = new Map<string, HTMLElement>([["", tree]]);
   for (const path of visible) {
     const segments = path.split("/");
@@ -289,6 +299,8 @@ function showComparison(data: ReviewComparison) {
   updateChangeControls();
   copy.disabled = data.after === null;
   approve.disabled = data.after === null || data.approval === "approved";
+  unapprove.hidden = data.approval === "unreviewed";
+  unapprove.disabled = false;
   approve.textContent =
     data.approval === "approved"
       ? "Approved ✓"
@@ -324,6 +336,8 @@ async function loadFile(path: string, navigation: NavigationMode = "push") {
   drawSelection();
   copy.disabled = true;
   approve.disabled = true;
+  unapprove.hidden = true;
+  unapprove.disabled = true;
   approve.textContent = "Approve file";
   approve.classList.remove("approved");
   element("copy-state").textContent = "Markdown export";
@@ -459,7 +473,30 @@ approve.addEventListener("click", async () => {
     showNotice(String(error instanceof Error ? error.message : error), true);
   }
 });
+unapprove.addEventListener("click", async () => {
+  if (!currentPath || !comparison) return;
+  unapprove.disabled = true;
+  unapprove.textContent = "Unapproving…";
+  try {
+    const data = await api<ReviewComparison>(
+      `api/unapprove?path=${encodeURIComponent(currentPath)}`,
+      { method: "POST" },
+    );
+    showComparison(data);
+  } catch (error) {
+    unapprove.disabled = false;
+    showNotice(String(error instanceof Error ? error.message : error), true);
+  } finally {
+    unapprove.textContent = "Unapprove";
+  }
+});
 filter.addEventListener("input", renderTree);
+element("approval-filters").addEventListener("click", (event) => {
+  const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-status]");
+  if (!button) return;
+  approvalFilter = button.dataset.status as ApprovalStatus | "all";
+  renderTree();
+});
 
 async function refresh() {
   const button = element<HTMLButtonElement>("refresh");
@@ -494,6 +531,8 @@ async function refresh() {
       selected = undefined;
       copy.disabled = true;
       approve.disabled = true;
+      unapprove.hidden = true;
+      unapprove.disabled = true;
       drawSelection();
       renderSource("before", "", []);
       renderSource("after", "", []);

@@ -65,6 +65,11 @@ export function startServer(
           await approvals.approve(result.approvalPath, result.fingerprint);
           return json({ ...result.comparison, approval: "approved" satisfies ApprovalStatus });
         }
+        if (route === "api/unapprove" && request.method === "POST") {
+          const result = await compare(url.searchParams.get("path") ?? "");
+          await approvals.unapprove(result.approvalPath);
+          return json({ ...result.comparison, approval: "unreviewed" satisfies ApprovalStatus });
+        }
         if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
         if (route === "api/files") {
           const files = await repository.refresh();

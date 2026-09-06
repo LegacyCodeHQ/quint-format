@@ -63,6 +63,9 @@ alias quint-review='bun /absolute/path/to/quint-format/tools/quint-format-review
   the dashboard. The selected path is encoded in the URL, so browser refresh,
   history navigation, and copied links retain the current file. Files are loaded
   on demand, never written.
+- Filter the explorer by approval status to revisit approved or changed files.
+  **Unapprove** removes the selected file's saved approval without modifying
+  the Quint file.
 - Click a token to highlight its corresponding syntax node on both sides. Drag
   across code to highlight matching nodes; partial tokens expand to their full
   token boundaries. Selection works in either panel. Scrolling is synchronized

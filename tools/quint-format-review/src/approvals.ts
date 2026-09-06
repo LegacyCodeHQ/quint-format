@@ -69,6 +69,11 @@ export class ApprovalStore {
     await this.save();
   }
 
+  async unapprove(path: string): Promise<void> {
+    if (!this.approvals.delete(path)) return;
+    await this.save();
+  }
+
   async prune(paths: Set<string>): Promise<void> {
     const stale = [...this.approvals.keys()].filter((path) => !paths.has(path));
     if (stale.length === 0) return;
