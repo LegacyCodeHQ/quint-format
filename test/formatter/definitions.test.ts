@@ -128,6 +128,23 @@ describe("definitions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a long definition header written on one line", () => {
+    const input = readFileSync(
+      new URL("../fixtures/single-line-long-definition-header.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("formats an untyped parameter with a return type", () => {
     const input = readFileSync(
       new URL("../fixtures/untyped-parameter-return.qnt", import.meta.url),

@@ -90,8 +90,7 @@ export function analyzeOperatorDefinition(node: Parser.SyntaxNode): ModuleDeclar
     openParen &&
       closeParen &&
       parameters.length > 0 &&
-      (openParen.startPosition.row < closeParen.endPosition.row ||
-        inlineDefinitionHead.length + 2 > 120),
+      openParen.startPosition.row < closeParen.endPosition.row,
   );
   const definitionHeadDocument = usesExpandedParameterList
     ? concat([
