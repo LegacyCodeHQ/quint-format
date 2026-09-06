@@ -1,6 +1,7 @@
 import type { ModuleDeclaration } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { preservesTrailingCommentAlignment } from "@/formatting/comments.js";
+import { separatesDefinitions } from "@/formatting/declaration-spacing.js";
 
 export function checkDeclarationLayout(
   declaration: ModuleDeclaration,
@@ -22,10 +23,8 @@ export function checkDeclarationLayout(
     previousDeclaration && declaration.leadingComments?.length && !groupsCommentedImports,
   );
   const requiresDefinitionSeparation = Boolean(
-    previousDeclaration?.node.type === "operator_definition" &&
-      declaration.node.type === "operator_definition" &&
-      previousDeclaration.keyword.text === "def" &&
-      declaration.keyword.text === "def" &&
+    previousDeclaration &&
+      separatesDefinitions(previousDeclaration, declaration) &&
       !declaration.leadingComments?.length,
   );
 

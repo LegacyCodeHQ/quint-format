@@ -51,6 +51,23 @@ describe("source and declaration layout", () => {
     expect(parser.parse(output).rootNode.hasError).toBe(false);
   });
 
+  test("separates adjacent multiline value definitions", () => {
+    const input = readFileSync(
+      new URL("../fixtures/multiline-definition-separation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "    right: 2\n  }\n\n  pure val second = {\n    left: 3,\n    right: 4\n  }\n\n  pure val third",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    expect(parser.parse(input).rootNode.hasError).toBe(false);
+    expect(parser.parse(output).rootNode.hasError).toBe(false);
+  });
+
   test("separates a braced definition from the next commented definition", () => {
     const input = readFileSync(
       new URL("../fixtures/commented-definition-separation.qnt", import.meta.url),

@@ -33,6 +33,26 @@ exports[`source and declaration layout separates adjacent def declarations 1`] =
 "
 `;
 
+exports[`source and declaration layout separates adjacent multiline value definitions 1`] = `
+"module Example {
+  pure val first = {
+    left: 1,
+    right: 2
+  }
+
+  pure val second = {
+    left: 3,
+    right: 4
+  }
+
+  pure val third = {
+    left: 5,
+    right: 6
+  }
+}
+"
+`;
+
 exports[`source and declaration layout separates a braced definition from the next commented definition 1`] = `
 "module Example {
   pure def ready = and {

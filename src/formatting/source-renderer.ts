@@ -1,5 +1,6 @@
 import type { AnalyzedModule, AnalyzedSource } from "@/core/analysis.js";
 import { commentDocument, leadingCommentsDocument } from "./comments.js";
+import { separatesDefinitions } from "./declaration-spacing.js";
 import { concat, hardLine, indent, renderDoc, text } from "./document.js";
 
 function renderModule(module: AnalyzedModule): string {
@@ -21,13 +22,9 @@ function renderModule(module: AnalyzedModule): string {
     const separatesCommentedDeclaration = Boolean(
       declaration.leadingComments?.length && !groupsCommentedImports,
     );
-    const separatesDefinitions =
-      previous.node.type === "operator_definition" &&
-      declaration.node.type === "operator_definition" &&
-      previous.keyword.text === "def" &&
-      declaration.keyword.text === "def";
+    const separatesAdjacentDefinitions = separatesDefinitions(previous, declaration);
     const lineBreaks =
-      separatesCommentedDeclaration || separatesDefinitions
+      separatesCommentedDeclaration || separatesAdjacentDefinitions
         ? 2
         : Math.max(1, declarationStart.startPosition.row - previousEnd.endPosition.row);
     return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];

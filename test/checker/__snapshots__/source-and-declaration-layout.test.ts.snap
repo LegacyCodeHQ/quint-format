@@ -36,3 +36,17 @@ exports[`checker diagnostics source and declaration layout reports adjacent def 
   |
 "
 `;
+
+exports[`checker diagnostics source and declaration layout reports adjacent multiline value definitions without blank lines 1`] = `
+"test/fixtures/multiline-definition-separation.qnt:6:8: error[format/definition-separation]: expected exactly one blank line between definitions
+  |
+6 |   pure val second = {
+  |        ^^^
+  |
+test/fixtures/multiline-definition-separation.qnt:10:8: error[format/definition-separation]: expected exactly one blank line between definitions
+   |
+10 |   pure val third = {
+   |        ^^^
+   |
+"
+`;

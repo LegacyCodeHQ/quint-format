@@ -31,5 +31,12 @@ describe("checker diagnostics", () => {
       expect(result.kind).toBe("format");
       expect(result.rendered).toMatchSnapshot();
     });
+
+    test("reports adjacent multiline value definitions without blank lines", () => {
+      const result = checkFixture("multiline-definition-separation.qnt");
+
+      expect(result.kind).toBe("format");
+      expect(result.rendered).toMatchSnapshot();
+    });
   });
 });
