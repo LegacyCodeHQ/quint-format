@@ -11,6 +11,7 @@ const SELF_INDENTING_ARM_BODY_TYPES = new Set([
   "block_expression",
   "match_expression",
   "or_block_expression",
+  "record_literal",
 ]);
 
 export function analyzeMatchExpression(

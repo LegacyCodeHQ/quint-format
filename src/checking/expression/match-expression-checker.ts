@@ -131,12 +131,16 @@ export function checkMatchExpressions(
         ? body.childrenForFieldName(combinatorField)
         : body.type === "match_expression"
           ? body.childrenForFieldName("arm")
-          : body.type === "block_expression"
-            ? [
-                ...body.childrenForFieldName("binding"),
-                body.childForFieldName("expression"),
-              ].filter((entry): entry is Parser.SyntaxNode => entry !== null)
-            : undefined;
+          : body.type === "record_literal"
+            ? body.namedChildren.filter(
+                (child) => child.type === "record_literal_field" || child.type === "record_spread",
+              )
+            : body.type === "block_expression"
+              ? [
+                  ...body.childrenForFieldName("binding"),
+                  body.childForFieldName("expression"),
+                ].filter((entry): entry is Parser.SyntaxNode => entry !== null)
+              : undefined;
       if (structuralEntries && body.startPosition.row === arrow.endPosition.row) {
         const indentationColumn = (candidate: Parser.SyntaxNode) =>
           lines[candidate.startPosition.row]?.search(/\S|$/u) ?? candidate.startPosition.column;
