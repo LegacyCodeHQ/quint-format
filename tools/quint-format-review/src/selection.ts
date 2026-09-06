@@ -18,6 +18,7 @@ export function selectionRanges(
   start: number,
   end: number,
   side: "before" | "after" = "before",
+  sources?: { before: string; after: string },
 ): NodePair | undefined {
   if (start === end) return selectionPair(nodes, start, end, side);
   // Choose the outermost fully selected nodes, then include partial boundary tokens.
@@ -48,7 +49,31 @@ export function selectionRanges(
       }),
       { start: Infinity, end: 0 },
     );
-  return { type: "selection", before: union("before"), after: union("after") };
+  const result: NodePair = {
+    type: "selection",
+    before: union("before"),
+    after: union("after"),
+  };
+  if (!sources) return result;
+  for (const which of ["before", "after"] as const) {
+    const source = sources[which];
+    const lineStart = source.lastIndexOf("\n", Math.max(0, result[which].start - 1)) + 1;
+    if (/^[\t ]*$/.test(source.slice(lineStart, result[which].start))) {
+      result[which].start = lineStart;
+    }
+  }
+  if (end === sources[side].length) {
+    result.before.end = sources.before.length;
+    result.after.end = sources.after.length;
+  }
+  return result;
+}
+
+export function finalNewlineLabel(source: string): string {
+  if (source.endsWith("\r\n")) return "CRLF · final newline";
+  if (source.endsWith("\n")) return "LF · final newline";
+  if (source.endsWith("\r")) return "CR · final newline";
+  return "No final newline";
 }
 
 export function markdownComparison(before: string, after: string): string {
@@ -56,5 +81,7 @@ export function markdownComparison(before: string, after: string): string {
   for (const match of `${before}\n${after}`.matchAll(/`+/g))
     longest = Math.max(longest, match[0].length);
   const fence = "`".repeat(Math.max(3, longest + 1));
-  return `### Before\n\n${fence}quint\n${before}\n${fence}\n\n### After\n\n${fence}quint\n${after}\n${fence}\n`;
+  const fenced = (source: string) =>
+    `${source}${source.endsWith("\n") || source.endsWith("\r") ? "" : "\n"}${fence}\n`;
+  return `### Before\n\n${fence}quint\n${fenced(before)}\n### After\n\n${fence}quint\n${fenced(after)}`;
 }

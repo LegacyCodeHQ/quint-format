@@ -76,6 +76,10 @@ alias quint-review='bun /absolute/path/to/quint-format/tools/quint-format-review
   Within changed lines, darker amber and green marks show the exact spaces or
   tabs removed and added. Newline-only changes remain represented by the line
   highlight or boundary marker.
+- Each editor header reports whether the content ends with LF, CRLF, CR, or no
+  final newline. Selections that reach the end of a file retain its final
+  newline and leading line indentation, and Markdown export does not add a
+  second newline to content that already has one.
 - **Copy before & after** copies labeled Markdown code blocks. With a selection,
   it copies the highlighted ranges; otherwise it copies both complete files.
   **Clear selection** or Escape returns to whole-file copying.

@@ -10,7 +10,12 @@ import { compareSource, mapNodes } from "../src/comparison.js";
 import type { Formatter } from "../src/formatter.js";
 import { PathFormatter } from "../src/formatter.js";
 import { Repository } from "../src/repository.js";
-import { markdownComparison, selectionPair, selectionRanges } from "../src/selection.js";
+import {
+  finalNewlineLabel,
+  markdownComparison,
+  selectionPair,
+  selectionRanges,
+} from "../src/selection.js";
 import { startServer } from "../src/server.js";
 
 const temporary: string[] = [];
@@ -138,6 +143,26 @@ test("Markdown export labels both versions and safely fences embedded backticks"
     "### Before\n\n```quint\nval x=1\n```\n\n### After\n\n```quint\nval x = 1\n```\n",
   );
   expect(markdownComparison("// ```", "// ```")).toContain("````quint\n// ```\n````");
+});
+
+test("EOF selections and Markdown exports preserve exactly one final newline", () => {
+  const source = "module M {\n  // final declaration\n  val value = 1\n}\n";
+  const result = compare(source);
+  const selected = selectionRanges(
+    result.nodes,
+    source.indexOf("// final"),
+    source.length,
+    "before",
+    { before: source, after: source },
+  );
+
+  expect(source.slice(selected?.before.start, selected?.before.end)).toBe(
+    "  // final declaration\n  val value = 1\n}\n",
+  );
+  expect(markdownComparison(source, source)).toContain("  val value = 1\n}\n```\n");
+  expect(markdownComparison(source, source)).not.toContain("  val value = 1\n}\n\n```\n");
+  expect(finalNewlineLabel(source)).toBe("LF · final newline");
+  expect(finalNewlineLabel(source.slice(0, -1))).toBe("No final newline");
 });
 
 test("PATH formatter resolves the executable and picks up binary replacements without rebuilding", async () => {

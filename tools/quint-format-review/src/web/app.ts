@@ -1,7 +1,7 @@
 import type { ApprovalStatus } from "../approvals.js";
 import { type ChangeBlock, sourceLines } from "../changes.js";
 import type { Comparison, NodePair, SourceRange } from "../comparison.js";
-import { markdownComparison, selectionRanges } from "../selection.js";
+import { finalNewlineLabel, markdownComparison, selectionRanges } from "../selection.js";
 import { filePathFromUrl, urlForFile } from "../url-state.js";
 
 function element<T extends HTMLElement>(id: string): T {
@@ -140,6 +140,7 @@ function renderSource(
   spacing: SourceRange[] = [],
 ) {
   const target = panes[side];
+  element(`${side}-eol`).textContent = finalNewlineLabel(source);
   const fragment = document.createDocumentFragment();
   const numbers = document.createDocumentFragment();
   const tokens = nodes.filter((node) => node.token).sort((a, b) => a[side].start - b[side].start);
@@ -362,6 +363,7 @@ function readSelection(side: "before" | "after") {
     textOffset(target, range.startContainer, range.startOffset),
     textOffset(target, range.endContainer, range.endOffset),
     side,
+    { before: comparison.before, after: comparison.after ?? "" },
   );
   drawSelection();
   if (selected) {
