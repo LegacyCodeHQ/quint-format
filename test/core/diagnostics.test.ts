@@ -54,4 +54,25 @@ describe("diagnostic hardening", () => {
       ).toMatchSnapshot();
     }
   });
+
+  test("locates an error node that contains an errored token", () => {
+    const source = "module Example {\n  type T = {\n    field: int,\n    | row\n  }\n}\n";
+
+    try {
+      checkQuint(source, "nested-error.qnt");
+      throw new Error("Expected invalid Quint syntax");
+    } catch (error) {
+      expect(error).toBeInstanceOf(QuintSyntaxError);
+      expect((error as QuintSyntaxError).diagnostics).toEqual([
+        {
+          line: 3,
+          column: 15,
+          length: 1,
+          rule: "parse/unexpected-token",
+          message: "unexpected ','",
+          sourceLine: "    field: int,",
+        },
+      ]);
+    }
+  });
 });

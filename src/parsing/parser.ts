@@ -22,13 +22,12 @@ export class QuintSyntaxError extends SyntaxError {
 }
 
 function findSyntaxProblems(node: Parser.SyntaxNode): Parser.SyntaxNode[] {
-  if (node.isMissing || (node.isError && !node.hasError)) {
-    return [node];
-  }
+  if (node.isMissing) return [node];
 
-  return node.children
+  const nestedProblems = node.children
     .filter((child) => child.hasError || child.isError || child.isMissing)
     .flatMap(findSyntaxProblems);
+  return node.isError && nestedProblems.length === 0 ? [node] : nestedProblems;
 }
 
 export function parseQuint(source: string): Parser.SyntaxNode {
