@@ -32,6 +32,7 @@ export function checkNestedDefinitions(
     if (
       definitionValue &&
       firstLeadingBodyComment &&
+      leadingBodyComments.length > 1 &&
       definitionValue.startPosition.row < definitionValue.endPosition.row &&
       firstLeadingBodyComment.startPosition.row - definitionValue.endPosition.row !== 2
     ) {

@@ -58,6 +58,7 @@ export function analyzeNestedDefinitionExpression(
     const separatesMultilineDefinitionFromLeadingComment = Boolean(
       firstComment &&
         definitionValue &&
+        leadingBodyComments.length > 1 &&
         definitionValue.startPosition.row < definitionValue.endPosition.row,
     );
     const preservesBodyGap =
