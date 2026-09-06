@@ -60,3 +60,5 @@ jobs:
 
       - name: Publish package
         run: npm publish --tag "${{ steps.npm-tag.outputs.value }}"
+        env:
+          QUINT_FORMAT_BUILD_CHANNEL: npm

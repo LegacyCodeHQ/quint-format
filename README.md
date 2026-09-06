@@ -21,6 +21,11 @@ npm install --global @legacycodehq/quint-format@next
 
 ## Use
 
+Identify the installed build with `quintfmt --version` (or `quintfmt version`).
+Published packages report the canonical version; local builds add
+`(dev <commit>)`, with a `-dirty` suffix when built from an uncommitted working
+tree.
+
 Print a formatted file:
 
 ```sh

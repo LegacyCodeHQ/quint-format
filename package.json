@@ -33,7 +33,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
+    "build": "node scripts/build.mjs",
     "check": "biome check . && tsc --noEmit && tsc --project tsconfig.build.json --noEmit",
     "format": "biome format --write .",
     "format:check": "biome format .",

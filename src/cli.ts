@@ -5,6 +5,7 @@ import { readdir, readFile, realpath, rename, stat, unlink, writeFile } from "no
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkQuint, formatQuint, QuintSyntaxError, renderDiagnostic } from "./index.js";
+import { formatVersion } from "./version.js";
 
 export interface CliOutput {
   writeStdout(value: string): void;
@@ -48,6 +49,11 @@ async function writeAtomically(filePath: string, contents: string) {
 export async function runCli(args: string[], output: CliOutput = processOutput): Promise<number> {
   const [command, ...filePaths] = args;
 
+  if ((command === "--version" || command === "version") && filePaths.length === 0) {
+    output.writeStdout(`${formatVersion()}\n`);
+    return 0;
+  }
+
   if (command && command !== "--check" && filePaths.length === 0) {
     try {
       const source = await readFile(command, "utf8");
@@ -68,7 +74,7 @@ export async function runCli(args: string[], output: CliOutput = processOutput):
 
   if ((command !== "--check" && command !== "--write") || filePaths.length === 0) {
     output.writeStderr(
-      "Usage: quintfmt <file> | quintfmt --check <path>... | quintfmt --write <path>...\n",
+      "Usage: quintfmt <file> | quintfmt --check <path>... | quintfmt --write <path>... | quintfmt --version\n",
     );
     return 2;
   }

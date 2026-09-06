@@ -2,10 +2,35 @@ import { describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { formatVersion } from "../../src/version.js";
 import { projectRoot, runCliInProcess } from "../support/cli";
+
+const packageVersion = JSON.parse(readFileSync(join(projectRoot, "package.json"), "utf8")).version;
 
 describe("command-line checker", () => {
   describe("command execution", () => {
+    test("identifies npm and development builds", () => {
+      expect(
+        formatVersion({ version: "1.2.3", channel: "npm", commit: "ignored", dirty: false }),
+      ).toBe("quintfmt 1.2.3");
+      expect(
+        formatVersion({ version: "1.2.3", channel: "dev", commit: "abc123", dirty: false }),
+      ).toBe("quintfmt 1.2.3 (dev abc123)");
+      expect(
+        formatVersion({ version: "1.2.3", channel: "dev", commit: "abc123", dirty: true }),
+      ).toBe("quintfmt 1.2.3 (dev abc123-dirty)");
+    });
+
+    test("prints build provenance with both version commands", async () => {
+      const option = await runCliInProcess("--version");
+      const command = await runCliInProcess("version");
+
+      expect(option.exitCode).toBe(0);
+      expect(option.stdout).toBe(`quintfmt ${packageVersion} (dev unknown-dirty)\n`);
+      expect(option.stderr).toBe("");
+      expect(command).toEqual(option);
+    });
+
     test("runs the compiled distribution with Node.js", () => {
       const build = Bun.spawnSync(["bun", "run", "build"], { cwd: projectRoot });
 
@@ -23,6 +48,15 @@ describe("command-line checker", () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout.toString()).toMatchSnapshot();
       expect(result.stderr.toString()).toBe("");
+
+      const version = Bun.spawnSync(["node", "dist/cli.js", "--version"], { cwd: projectRoot });
+      expect(version.exitCode).toBe(0);
+      expect(version.stdout.toString()).toMatch(
+        new RegExp(
+          `^quintfmt ${packageVersion.replaceAll(".", "\\.")} \\(dev [0-9a-f]{12}(?:-dirty)?\\)\\n$`,
+        ),
+      );
+      expect(version.stderr.toString()).toBe("");
     });
 
     test("runs the compiled distribution through an npm-style binary symlink", () => {
