@@ -111,11 +111,13 @@ function renderSource(
   source: string,
   nodes: NodePair[],
   changes: ChangeBlock[] = [],
+  spacing: SourceRange[] = [],
 ) {
   const target = panes[side];
   const fragment = document.createDocumentFragment();
   const numbers = document.createDocumentFragment();
   const tokens = nodes.filter((node) => node.token).sort((a, b) => a[side].start - b[side].start);
+  const spacingRanges = [...spacing].sort((a, b) => a.start - b.start);
   const lines = sourceLines(source);
   const changedLines = new Set<number>();
   const boundaries = new Set<number>();
@@ -126,6 +128,7 @@ function renderSource(
   }
   let offset = 0;
   let tokenIndex = 0;
+  let spacingIndex = 0;
   for (const [index, text] of lines.entries()) {
     const line = document.createElement("span");
     const number = document.createElement("span");
@@ -136,21 +139,28 @@ function renderSource(
     const end = offset + text.length;
     while (offset < end) {
       while (tokens[tokenIndex] && tokens[tokenIndex][side].end <= offset) tokenIndex++;
-      const node = tokens[tokenIndex];
-      if (!node || node[side].start > offset) {
-        const until = Math.min(end, node?.[side].start ?? end);
-        line.append(document.createTextNode(source.slice(offset, until)));
-        offset = until;
-      } else {
-        const until = Math.min(end, node[side].end);
+      while (spacingRanges[spacingIndex]?.end <= offset) spacingIndex++;
+      const candidate = tokens[tokenIndex];
+      const node = candidate && candidate[side].start <= offset ? candidate : undefined;
+      const spacingChange = spacingRanges[spacingIndex];
+      const marked = spacingChange && spacingChange.start <= offset;
+      const until = Math.min(
+        end,
+        node?.[side].end ?? candidate?.[side].start ?? end,
+        marked ? spacingChange.end : (spacingChange?.start ?? end),
+      );
+      if (node || marked) {
         const span = document.createElement("span");
-        span.className = syntaxClass(node.type);
-        span.dataset.start = String(offset);
-        span.dataset.end = String(until);
+        span.className =
+          `${node ? syntaxClass(node.type) : ""}${marked ? " spacing-change" : ""}`.trim();
+        if (node) {
+          span.dataset.start = String(offset);
+          span.dataset.end = String(until);
+        }
         span.textContent = source.slice(offset, until);
         line.append(span);
-        offset = until;
-      }
+      } else line.append(document.createTextNode(source.slice(offset, until)));
+      offset = until;
     }
     fragment.append(line);
     numbers.append(number);
@@ -262,8 +272,8 @@ async function loadFile(path: string) {
     const data = await api<Comparison>(`api/compare?path=${encodeURIComponent(path)}`);
     if (id !== requestId) return;
     comparison = data;
-    renderSource("before", data.before, data.nodes, data.changes);
-    renderSource("after", data.after ?? "", data.nodes, data.changes);
+    renderSource("before", data.before, data.nodes, data.changes, data.spacing.before);
+    renderSource("after", data.after ?? "", data.nodes, data.changes, data.spacing.after);
     updateChangeControls();
     copy.disabled = data.after === null;
     element("file-state").textContent = data.error

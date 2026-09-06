@@ -277,6 +277,14 @@ h1 {
   background: #3882602e;
   box-shadow: inset 2px 0 #63b58a;
 }
+.before-editor .spacing-change {
+  background: #71451f;
+  box-shadow: inset 0 -1px #e1a85f;
+}
+.after-editor .spacing-change {
+  background: #18553d;
+  box-shadow: inset 0 -1px #71d4a3;
+}
 .change-boundary {
   box-shadow: inset 0 -2px #cc9b52;
 }

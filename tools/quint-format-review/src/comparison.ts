@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import { parseQuint } from "../../../src/parsing/parser.js";
 import { type ChangeBlock, changedBlocks } from "./changes.js";
+import { type SpacingChanges, spacingChanges } from "./spacing.js";
 
 export interface SourceRange {
   start: number;
@@ -18,6 +19,7 @@ export interface Comparison {
   nodes: NodePair[];
   changed: boolean;
   changes: ChangeBlock[];
+  spacing: SpacingChanges;
   error?: string;
   mappingWarning?: string;
 }
@@ -103,9 +105,11 @@ export function compareSource(before: string, after: string): Comparison {
       nodes: [],
       changed: before !== after,
       changes: changedBlocks(before, after),
+      spacing: { before: [], after: [] },
     };
     try {
       result.nodes = mapNodes(input, output);
+      result.spacing = spacingChanges(before, after, result.nodes);
     } catch (error) {
       result.mappingWarning = String(error instanceof Error ? error.message : error);
     }
@@ -117,6 +121,7 @@ export function compareSource(before: string, after: string): Comparison {
       nodes: [],
       changed: false,
       changes: [],
+      spacing: { before: [], after: [] },
       error: error instanceof Error ? error.message : String(error),
     };
   }
@@ -129,6 +134,7 @@ export function failedComparison(before: string, error: unknown): Comparison {
     nodes: [],
     changed: false,
     changes: [],
+    spacing: { before: [], after: [] },
     error: error instanceof Error ? error.message : String(error),
   };
 }

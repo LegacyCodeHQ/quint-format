@@ -67,6 +67,9 @@ alias quint-review='bun /absolute/path/to/quint-format/tools/quint-format-review
   Whitespace and final-newline changes are included. A boundary marker identifies
   the corresponding position when a block only inserts or removes lines. Linked
   selections use blue so they remain distinct from the change highlights.
+  Within changed lines, darker amber and green marks show the exact spaces or
+  tabs removed and added. Newline-only changes remain represented by the line
+  highlight or boundary marker.
 - **Copy before & after** copies labeled Markdown code blocks. With a selection,
   it copies the highlighted ranges; otherwise it copies both complete files.
   **Clear selection** or Escape returns to whole-file copying.
