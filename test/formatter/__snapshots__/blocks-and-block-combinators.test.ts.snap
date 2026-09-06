@@ -32,6 +32,38 @@ exports[`blocks and block combinators preserves a trailing comment on an ordinar
 "
 `;
 
+exports[`blocks and block combinators preserves one blank line before ordinary block closing braces 1`] = `
+"module Example {
+  type Outcome = Updated(int) | Deleted
+
+  pure def evaluate(outcome) = if (outcome == Deleted) {
+    { result: 0 }
+
+  } else {
+    match outcome {
+      | Updated(number) => number
+      | Deleted => 0
+    }
+
+  }
+}
+"
+`;
+
+exports[`blocks and block combinators preserves one blank line before ordinary block closing braces 2`] = `
+[
+  {
+    "column": 3,
+    "filePath": "block-closing-gap.qnt",
+    "length": 1,
+    "line": 14,
+    "message": "expected one blank line before the block closing brace",
+    "rule": "format/block-closing-gap",
+    "sourceLine": "  }",
+  },
+]
+`;
+
 exports[`blocks and block combinators formats all block combinators 1`] = `
 "module Example {
   var count: int

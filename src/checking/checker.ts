@@ -93,7 +93,7 @@ export function checkAnalyzedSource(
         diagnostics.push(...checkMatchExpressions(declaration.valueNode, source, filePath, lines));
         diagnostics.push(...checkNamespaceAccess(declaration.valueNode, source, filePath, lines));
         diagnostics.push(...checkAssignments(declaration.valueNode, source, filePath, lines));
-        diagnostics.push(...checkBlockExpressions(declaration.valueNode, filePath, lines));
+        diagnostics.push(...checkBlockExpressions(declaration.valueNode, source, filePath, lines));
         diagnostics.push(...checkNondetBindings(declaration.valueNode, source, filePath, lines));
         diagnostics.push(...checkNestedDefinitions(declaration.valueNode, source, filePath, lines));
         diagnostics.push(...checkBlockCombinators(declaration.valueNode, source, filePath, lines));

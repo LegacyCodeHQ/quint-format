@@ -8,6 +8,7 @@ import {
 
 export function checkBlockExpressions(
   root: Parser.SyntaxNode,
+  source: string,
   filePath: string,
   lines: string[],
 ): FormatDiagnostic[] {
@@ -52,6 +53,26 @@ export function checkBlockExpressions(
         message: "expected block contents and the closing brace on separate lines",
         sourceLine: lines[row] ?? "",
       });
+    }
+    const finalContent = block.namedChildren.at(-1);
+    if (finalContent && closeBrace.startPosition.row > finalContent.endPosition.row) {
+      const closingGap = source.slice(finalContent.endIndex, closeBrace.startIndex);
+      const lineBreakCount = closingGap.match(/\r\n|\r|\n/gu)?.length ?? 0;
+      const preservesClosingBlankLine =
+        closeBrace.startPosition.row > finalContent.endPosition.row + 1;
+      const expectedLineBreakCount = preservesClosingBlankLine ? 2 : 1;
+      if (lineBreakCount !== expectedLineBreakCount) {
+        const row = closeBrace.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: closeBrace.startPosition.column + 1,
+          length: 1,
+          rule: "format/block-closing-gap",
+          message: "expected one blank line before the block closing brace",
+          sourceLine: lines[row] ?? "",
+        });
+      }
     }
   }
   return diagnostics;

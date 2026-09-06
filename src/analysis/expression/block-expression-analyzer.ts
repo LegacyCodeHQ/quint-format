@@ -19,7 +19,8 @@ export function analyzeBlockExpression(
   if (node.type === "block_expression") {
     const bindings = node.childrenForFieldName("binding");
     const expression = node.childForFieldName("expression");
-    if (!expression) throw new Error("Unable to locate the block expression");
+    const closeBrace = node.children.find((child) => child.type === "}");
+    if (!expression || !closeBrace) throw new Error("Unable to locate the block expression");
     const bindingAnalyses = bindings.map((binding) => {
       const name = binding.childForFieldName("name");
       const value = binding.childForFieldName("value");
@@ -68,10 +69,15 @@ export function analyzeBlockExpression(
       }
       throw new Error("Formatting this block content is not implemented yet");
     }
+    const finalContent = node.namedChildren.at(-1);
+    const preservesClosingBlankLine = Boolean(
+      finalContent && closeBrace.startPosition.row > finalContent.endPosition.row + 1,
+    );
     return {
       document: concat([
         text("{"),
         indent(concat(contentDocuments.flatMap((document) => [hardLine, document]))),
+        ...(preservesClosingBlankLine ? [hardLine] : []),
         hardLine,
         text("}"),
       ]),
