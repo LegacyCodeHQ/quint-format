@@ -39,6 +39,21 @@ exports[`type declarations formats a polymorphic type application 1`] = `
 "
 `;
 
+exports[`type declarations preserves an expanded type application 1`] = `
+"module Example {
+  type Applied[a, b, c, d, e] = (a, b, c, d, e)
+
+  type GlobalContext = Applied[
+    int,
+    bool,
+    str,
+    int,
+    bool
+  ]
+}
+"
+`;
+
 exports[`type declarations formats an inline sum type 1`] = `
 "module Example {
   type Elem = S(str) | I(int)

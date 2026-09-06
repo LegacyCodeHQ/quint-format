@@ -3,7 +3,11 @@ import type { ModuleDeclaration } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { formatExpandedRecordType } from "@/formatting/record-type-formatter.js";
-import { formatSumVariant, formatType } from "@/formatting/type-formatter.js";
+import {
+  formatExpandedTypeApplication,
+  formatSumVariant,
+  formatType,
+} from "@/formatting/type-formatter.js";
 
 export function analyzeTypeDeclaration(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
   if (node.type === "uninterpreted_type_declaration") {
@@ -74,6 +78,8 @@ export function analyzeTypeDeclaration(node: Parser.SyntaxNode): ModuleDeclarati
     );
   const isMultilineRecordType =
     value.type === "record_type" && value.startPosition.row < value.endPosition.row;
+  const isExpandedTypeApplication =
+    value.type === "type_application" && value.startPosition.row < value.endPosition.row;
   const aliasDocument = isMultilineSumType
     ? concat([
         text(`type ${declarationName.text}${typeParameterList} =`),
@@ -84,7 +90,12 @@ export function analyzeTypeDeclaration(node: Parser.SyntaxNode): ModuleDeclarati
           text(`type ${declarationName.text}${typeParameterList} = `),
           formatExpandedRecordType(value),
         ])
-      : text(`type ${declarationName.text}${typeParameterList} = ${formatType(value)}`);
+      : isExpandedTypeApplication
+        ? concat([
+            text(`type ${declarationName.text}${typeParameterList} = `),
+            formatExpandedTypeApplication(value),
+          ])
+        : text(`type ${declarationName.text}${typeParameterList} = ${formatType(value)}`);
 
   return {
     node,

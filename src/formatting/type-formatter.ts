@@ -1,4 +1,5 @@
 import type Parser from "tree-sitter";
+import { concat, type Doc, hardLine, indent, text } from "./document.js";
 
 export function canFormatType(node: Parser.SyntaxNode): boolean {
   if (
@@ -85,6 +86,27 @@ export function formatSumVariant(variant: Parser.SyntaxNode): string {
     throw new Error("Unable to locate the sum variant name");
   }
   return `${name.text}${payload ? `(${formatType(payload)})` : ""}`;
+}
+
+export function formatExpandedTypeApplication(node: Parser.SyntaxNode): Doc {
+  const typeConstructor = node.childForFieldName("constructor");
+  const arguments_ = node.childrenForFieldName("argument");
+  if (!typeConstructor || arguments_.length === 0) {
+    throw new Error("Unable to locate the applied type fields");
+  }
+  return concat([
+    text(`${typeConstructor.text}[`),
+    indent(
+      concat(
+        arguments_.flatMap((argument, index) => [
+          hardLine,
+          text(`${formatType(argument)}${index < arguments_.length - 1 ? "," : ""}`),
+        ]),
+      ),
+    ),
+    hardLine,
+    text("]"),
+  ]);
 }
 
 export function formatType(node: Parser.SyntaxNode): string {
