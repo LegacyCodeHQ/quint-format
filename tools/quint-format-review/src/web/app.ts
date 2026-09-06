@@ -2,7 +2,13 @@ import type { ApprovalStatus } from "../approvals.js";
 import { type ChangeBlock, sourceLines } from "../changes.js";
 import type { Comparison, NodePair, SourceRange } from "../comparison.js";
 import { finalNewlineLabel, markdownComparison, selectionRanges } from "../selection.js";
-import { filePathFromUrl, urlForFile } from "../url-state.js";
+import {
+  type ApprovalView,
+  approvalViewFromUrl,
+  filePathFromUrl,
+  urlForApprovalView,
+  urlForFile,
+} from "../url-state.js";
 import { nextFileAfterRemoval } from "./file-navigation.js";
 
 function element<T extends HTMLElement>(id: string): T {
@@ -23,7 +29,7 @@ const panes = { before, after };
 const scrolls = { before: element("before-scroll"), after: element("after-scroll") };
 let files: string[] = [];
 let approvalStatuses: Record<string, ApprovalStatus> = {};
-let approvalFilter: ApprovalStatus | "all" = "all";
+let approvalFilter: ApprovalView = approvalViewFromUrl(new URL(window.location.href));
 let currentPath = filePathFromUrl(new URL(window.location.href));
 let comparison: Comparison | undefined;
 let selected: NodePair | undefined;
@@ -543,8 +549,24 @@ filter.addEventListener("input", renderTree);
 element("approval-filters").addEventListener("click", (event) => {
   const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-status]");
   if (!button) return;
-  approvalFilter = button.dataset.status as ApprovalStatus | "all";
+  approvalFilter = button.dataset.status as ApprovalView;
+  window.history.pushState(
+    null,
+    "",
+    urlForApprovalView(new URL(window.location.href), approvalFilter),
+  );
   renderTree();
+  const visible = visibleFilePaths();
+  if (currentPath && visible.includes(currentPath)) return;
+  if (visible[0]) void loadFile(visible[0], "replace");
+  else {
+    clearFileView(
+      "No matching files",
+      "No files in this view",
+      "No files match the current filters.",
+    );
+    renderTree();
+  }
 });
 
 async function refresh() {
@@ -568,9 +590,17 @@ async function refresh() {
     element("approval-store").textContent = `Approvals: ${data.approvalFile}`;
     element("approval-store").title = data.approvalFile;
     renderTree();
-    if (currentPath && files.includes(currentPath)) await loadFile(currentPath, "replace");
-    else if (files.length) await loadFile(files[0], "replace");
-    else {
+    const visible = visibleFilePaths();
+    if (currentPath && visible.includes(currentPath)) await loadFile(currentPath, "replace");
+    else if (visible[0]) await loadFile(visible[0], "replace");
+    else if (files.length) {
+      clearFileView(
+        "No matching files",
+        "No files in this view",
+        "No files match the current filters.",
+      );
+      renderTree();
+    } else {
       clearFileView(
         "No Quint files",
         "No .qnt files found",
@@ -586,8 +616,20 @@ async function refresh() {
 }
 element("refresh").addEventListener("click", () => void refresh());
 window.addEventListener("popstate", () => {
-  const path = filePathFromUrl(new URL(window.location.href));
-  if (path && files.includes(path)) void loadFile(path, "none");
-  else if (files.length) void loadFile(files[0], "replace");
+  const url = new URL(window.location.href);
+  approvalFilter = approvalViewFromUrl(url);
+  renderTree();
+  const path = filePathFromUrl(url);
+  const visible = visibleFilePaths();
+  if (path && visible.includes(path)) void loadFile(path, "none");
+  else if (visible[0]) void loadFile(visible[0], "replace");
+  else {
+    clearFileView(
+      "No matching files",
+      "No files in this view",
+      "No files match the current filters.",
+    );
+    renderTree();
+  }
 });
 void refresh();
