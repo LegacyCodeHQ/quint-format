@@ -6,6 +6,11 @@ import { promisify } from "node:util";
 const exec = promisify(execFile);
 export const MAX_FILE_BYTES = 2 * 1024 * 1024;
 
+export interface RepositoryFile {
+  path: string;
+  source: string;
+}
+
 export class Repository {
   private files = new Set<string>();
 
@@ -64,11 +69,11 @@ export class Repository {
     return path;
   }
 
-  async read(name: string): Promise<string> {
+  async read(name: string): Promise<RepositoryFile> {
     if (!this.files.has(name)) throw new Error("Unknown .qnt file; refresh the file list");
     const path = await this.safePath(name);
     if ((await lstat(path)).size > MAX_FILE_BYTES)
       throw new Error("File exceeds the 2 MiB review limit");
-    return readFile(path, "utf8");
+    return { path, source: await readFile(path, "utf8") };
   }
 }

@@ -1,11 +1,13 @@
 import { afterEach, expect, test } from "bun:test";
 import { execFileSync } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkQuint, formatQuint } from "../../../src/index.js";
 import { parseQuint } from "../../../src/parsing/parser.js";
 import { compareSource, mapNodes } from "../src/comparison.js";
+import type { Formatter } from "../src/formatter.js";
+import { PathFormatter } from "../src/formatter.js";
 import { Repository } from "../src/repository.js";
 import { markdownComparison, selectionPair, selectionRanges } from "../src/selection.js";
 import { startServer } from "../src/server.js";
@@ -17,9 +19,10 @@ afterEach(async () => {
 
 const input = 'module Demo{val x=1+2 val greeting="héllo 🌍"}\n';
 const expected = 'module Demo {\n  val x = 1 + 2\n  val greeting = "héllo 🌍"\n}\n';
+const compare = (source: string) => compareSource(source, formatQuint(source));
 
 test("comparison preserves exact source, validates both trees, and yields idempotent output", () => {
-  const result = compareSource(input);
+  const result = compare(input);
   expect(result.error).toBeUndefined();
   expect(result.mappingWarning).toBeUndefined();
   expect(result.before).toBe(input);
@@ -29,7 +32,7 @@ test("comparison preserves exact source, validates both trees, and yields idempo
   expect(parseQuint(expected).hasError).toBe(false);
   expect(formatQuint(expected)).toBe(expected);
   expect(checkQuint(expected, "demo.qnt")).toEqual([]);
-  expect(compareSource(expected).changed).toBe(false);
+  expect(compare(expected).changed).toBe(false);
   for (const node of result.nodes.filter((node) => node.token)) {
     expect(result.before.slice(node.before.start, node.before.end)).toBe(
       expected.slice(node.after.start, node.after.end),
@@ -38,7 +41,7 @@ test("comparison preserves exact source, validates both trees, and yields idempo
 });
 
 test("clicking and multi-node selection map repeated identifiers and Unicode offsets", () => {
-  const result = compareSource(input);
+  const result = compare(input);
   const start = input.indexOf('"héllo');
   const clicked = selectionPair(result.nodes, start + 4, start + 4);
   expect(clicked?.type).toBe("string_literal");
@@ -54,7 +57,7 @@ test("clicking and multi-node selection map repeated identifiers and Unicode off
     "after",
   );
   expect(input.slice(reverse?.before.start, reverse?.before.end)).toBe('"héllo 🌍"');
-  const repeated = compareSource("module M { val x=1 val y=x+x }\n");
+  const repeated = compare("module M { val x=1 val y=x+x }\n");
   const secondX = repeated.before.lastIndexOf("x");
   expect(selectionPair(repeated.nodes, secondX, secondX)?.after.start).toBe(
     repeated.after?.lastIndexOf("x"),
@@ -62,7 +65,7 @@ test("clicking and multi-node selection map repeated identifiers and Unicode off
 });
 
 test("selection at whitespace boundaries does not expand to the whole module", () => {
-  const result = compareSource(expected);
+  const result = compare(expected);
   const selected = selectionRanges(
     result.nodes,
     expected.indexOf("  val"),
@@ -72,7 +75,7 @@ test("selection at whitespace boundaries does not expand to the whole module", (
 });
 
 test("removed semicolons retain declaration and comment correspondence", () => {
-  const result = compareSource("module M {\n// keep me\nval x=1;\nval y=x;\n}\n");
+  const result = compare("module M {\n// keep me\nval x=1;\nval y=x;\n}\n");
   expect(result.error).toBeUndefined();
   expect(result.mappingWarning).toBeUndefined();
   expect(result.after).toContain("// keep me");
@@ -81,9 +84,7 @@ test("removed semicolons retain declaration and comment correspondence", () => {
 });
 
 test("comment reindentation and trailing spaces preserve linked selections", () => {
-  const result = compareSource(
-    "module M {\n    /* first\n       second */\n    val x=1 // tail  \n}\n",
-  );
+  const result = compare("module M {\n    /* first\n       second */\n    val x=1 // tail  \n}\n");
   expect(result.error).toBeUndefined();
   expect(result.mappingWarning).toBeUndefined();
   const comment = result.nodes.find((node) => node.type === "comment");
@@ -93,7 +94,7 @@ test("comment reindentation and trailing spaces preserve linked selections", () 
 
 test("invalid syntax preserves input with an explicit error; changed tokens never receive guessed mappings", () => {
   const invalid = "module Broken { val x = }";
-  const result = compareSource(invalid);
+  const result = compareSource(invalid, "");
   expect(result.before).toBe(invalid);
   expect(result.after).toBeNull();
   expect(result.error).toBeDefined();
@@ -108,6 +109,37 @@ test("Markdown export labels both versions and safely fences embedded backticks"
     "### Before\n\n```quint\nval x=1\n```\n\n### After\n\n```quint\nval x = 1\n```\n",
   );
   expect(markdownComparison("// ```", "// ```")).toContain("````quint\n// ```\n````");
+});
+
+test("PATH formatter resolves the executable and picks up binary replacements without rebuilding", async () => {
+  const path = await mkdtemp(join(tmpdir(), "quint-review-formatter-"));
+  temporary.push(path);
+  const executable = join(path, "review-test-quintfmt");
+  const previousPath = process.env.PATH;
+  process.env.PATH = `${path}:${previousPath ?? ""}`;
+  try {
+    await writeFile(
+      executable,
+      `#!${process.execPath}\nprocess.stdout.write(${JSON.stringify(expected)});\n`,
+    );
+    await chmod(executable, 0o755);
+    const formatter = PathFormatter.discover("review-test-quintfmt");
+    expect(formatter.displayPath).toBe(executable);
+    expect(await formatter.format("unused.qnt")).toBe(expected);
+
+    const replacement = expected.replace("1 + 2", "1+2");
+    await writeFile(
+      executable,
+      `#!${process.execPath}\nprocess.stdout.write(${JSON.stringify(replacement)});\n`,
+    );
+    await chmod(executable, 0o755);
+    expect(await formatter.format("unused.qnt")).toBe(replacement);
+  } finally {
+    process.env.PATH = previousPath;
+  }
+  expect(() => PathFormatter.discover("definitely-not-a-real-quintfmt-command")).toThrow(
+    "Cannot find",
+  );
 });
 
 async function fixture() {
@@ -131,7 +163,7 @@ test("Git discovery includes tracked and untracked .qnt files, excludes ignored/
   const path = await fixture();
   const repository = await Repository.open(path);
   expect(await repository.refresh()).toEqual(["nested/space ü.qnt", "tracked.qnt"]);
-  expect(await repository.read("nested/space ü.qnt")).toBe(input);
+  expect((await repository.read("nested/space ü.qnt")).source).toBe(input);
   await expect(repository.read("../outside.qnt")).rejects.toThrow("Unknown");
   await expect(repository.read("ignored.qnt")).rejects.toThrow("Unknown");
   expect(await (await Repository.open(join(path, "nested"))).refresh()).toEqual(["space ü.qnt"]);
@@ -142,7 +174,13 @@ test("Git discovery includes tracked and untracked .qnt files, excludes ignored/
 test("server serves embedded assets and read-only comparisons, rejects cross-origin requests and unknown paths", async () => {
   const path = await fixture();
   const repository = await Repository.open(path);
-  const { server, url } = startServer(repository, {
+  const formatter: Formatter = {
+    displayPath: "/test/bin/quintfmt",
+    async format(filePath) {
+      return formatQuint(await readFile(filePath, "utf8"));
+    },
+  };
+  const { server, url } = startServer(repository, formatter, {
     html: "<html>review</html>",
     css: "body{}",
     js: "console.log('review')",
@@ -150,6 +188,9 @@ test("server serves embedded assets and read-only comparisons, rejects cross-ori
   const beforeStatus = execFileSync("git", ["-C", path, "status", "--porcelain=v1", "-z"]);
   try {
     expect(await (await fetch(url)).text()).toBe("<html>review</html>");
+    expect(await (await fetch(`${url}api/files`)).json()).toMatchObject({
+      formatter: "/test/bin/quintfmt",
+    });
     expect((await fetch(`${url}style.css`)).headers.get("content-type")).toBe(
       "text/css; charset=utf-8",
     );

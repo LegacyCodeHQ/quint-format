@@ -382,10 +382,12 @@ async function refresh() {
   const button = element<HTMLButtonElement>("refresh");
   button.disabled = true;
   try {
-    const data = await api<{ directory: string; files: string[] }>("api/files");
+    const data = await api<{ directory: string; formatter: string; files: string[] }>("api/files");
     files = data.files;
     element("directory").textContent = data.directory;
     element("directory").title = data.directory;
+    element("formatter").textContent = `Formatter: ${data.formatter}`;
+    element("formatter").title = `Resolved from PATH: ${data.formatter}`;
     renderTree();
     if (currentPath && files.includes(currentPath)) await loadFile(currentPath);
     else if (files.length) await loadFile(files[0]);

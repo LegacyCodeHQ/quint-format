@@ -1,7 +1,4 @@
 import type Parser from "tree-sitter";
-import { commentDocument } from "../../../src/formatting/comments.js";
-import { renderDoc } from "../../../src/formatting/document.js";
-import { formatQuint } from "../../../src/index.js";
 import { parseQuint } from "../../../src/parsing/parser.js";
 import { type ChangeBlock, changedBlocks } from "./changes.js";
 
@@ -30,8 +27,20 @@ function leaves(node: Parser.SyntaxNode): Parser.SyntaxNode[] {
 }
 
 const optionalPunctuation = new Set([";", "(", ")", ","]);
-const key = (node: Parser.SyntaxNode) =>
-  `${node.type}\0${node.type === "comment" || node.type === "documentation_comment" ? renderDoc(commentDocument(node)) : node.text}`;
+function normalizedToken(node: Parser.SyntaxNode): string {
+  if (node.type !== "comment" && node.type !== "documentation_comment") return node.text;
+  const prefix = " ".repeat(node.startPosition.column);
+  return node.text
+    .split(/\r\n|\r|\n/)
+    .map((line, index) => {
+      const trimmed = line.replace(/[ \t]+$/u, "");
+      return index > 0 && prefix && trimmed.startsWith(prefix)
+        ? trimmed.slice(prefix.length)
+        : trimmed;
+    })
+    .join("\n");
+}
+const key = (node: Parser.SyntaxNode) => `${node.type}\0${normalizedToken(node)}`;
 const range = (node: Parser.SyntaxNode): SourceRange => ({
   start: node.startIndex,
   end: node.endIndex,
@@ -84,10 +93,9 @@ export function mapNodes(before: Parser.SyntaxNode, after: Parser.SyntaxNode): N
   return pairs;
 }
 
-export function compareSource(before: string): Comparison {
+export function compareSource(before: string, after: string): Comparison {
   try {
     const input = parseQuint(before);
-    const after = formatQuint(before);
     const output = parseQuint(after);
     const result: Comparison = {
       before,
@@ -112,4 +120,15 @@ export function compareSource(before: string): Comparison {
       error: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+export function failedComparison(before: string, error: unknown): Comparison {
+  return {
+    before,
+    after: null,
+    nodes: [],
+    changed: false,
+    changes: [],
+    error: error instanceof Error ? error.message : String(error),
+  };
 }

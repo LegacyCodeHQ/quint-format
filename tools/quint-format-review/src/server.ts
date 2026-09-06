@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
-import { compareSource } from "./comparison.js";
+import { compareSource, failedComparison } from "./comparison.js";
+import type { Formatter } from "./formatter.js";
 import type { Repository } from "./repository.js";
 
 export interface Assets {
@@ -8,7 +9,12 @@ export interface Assets {
   js: string;
 }
 
-export function startServer(repository: Repository, assets: Assets, port = 0) {
+export function startServer(
+  repository: Repository,
+  formatter: Formatter,
+  assets: Assets,
+  port = 0,
+) {
   const token = randomBytes(24).toString("hex");
   const base = `/${token}/`;
   const server = Bun.serve({
@@ -36,9 +42,18 @@ export function startServer(repository: Repository, assets: Assets, port = 0) {
       const route = url.pathname.slice(base.length);
       try {
         if (route === "api/files")
-          return json({ directory: repository.directory, files: await repository.refresh() });
+          return json({
+            directory: repository.directory,
+            formatter: formatter.displayPath,
+            files: await repository.refresh(),
+          });
         if (route === "api/compare") {
-          return json(compareSource(await repository.read(url.searchParams.get("path") ?? "")));
+          const file = await repository.read(url.searchParams.get("path") ?? "");
+          try {
+            return json(compareSource(file.source, await formatter.format(file.path)));
+          } catch (error) {
+            return json(failedComparison(file.source, error));
+          }
         }
         const asset =
           route === ""

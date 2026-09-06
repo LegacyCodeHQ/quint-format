@@ -1,8 +1,8 @@
 # Quint Format Review
 
-A local, read-only browser tool for reviewing the formatter against any Git working
-directory. Built separately from the published formatter, using this checkout's
-formatter implementation. Requires Bun and Git; no frontend dependencies or CDN.
+A local, read-only browser tool for reviewing the `quintfmt` executable found in
+`PATH` against any Git working directory. Built separately from the published
+formatter. Requires Bun, Git, and `quintfmt`; no frontend dependencies or CDN.
 
 ## Build
 
@@ -13,10 +13,10 @@ bun install
 bun run --cwd tools/quint-format-review build
 ```
 
-The build embeds the browser assets and formatter into `dist/cli.js` inside this
-directory. It uses the native Tree-sitter dependencies installed at the repository
-root. Keep the build in this checkout; it is not a standalone binary. Rebuild after
-changing the formatter or viewer.
+The build embeds the browser assets and syntax-mapping parser into `dist/cli.js`
+inside this directory. It uses the native Tree-sitter dependencies installed at
+the repository root. Keep the build in this checkout; it is not a standalone
+binary. Rebuild after changing the viewer, but not after changing `quintfmt`.
 
 ## Run from any Git repository
 
@@ -34,6 +34,13 @@ bun tools/quint-format-review/dist/cli.js /path/to/repository-to-review
 The CLI opens your browser automatically and prints a local URL. Stop it with
 Ctrl+C. Use `--no-open` to open the URL yourself, `--port 4310` to select a port,
 or `--help` for usage. Port `0`, the default, chooses an available port.
+
+At startup, the CLI resolves `quintfmt` from its inherited `PATH`, prints the
+resolved location, and shows it in the browser sidebar. Every file load invokes
+`quintfmt <absolute-file-path>` as a read-only subprocess. Replacing the executable
+at that path takes effect on the next file load or refresh without rebuilding or
+restarting this tool. Restart the tool if you change which directory `PATH` resolves
+first, because a running process retains its inherited environment.
 
 For a short command, add a shell alias using your actual checkout path:
 

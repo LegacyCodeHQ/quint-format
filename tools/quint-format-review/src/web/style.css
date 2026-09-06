@@ -113,9 +113,17 @@ aside {
   padding: 5px 8px;
 }
 .directory {
-  margin: 12px 0 20px;
+  margin: 12px 0 5px;
   color: #8291a5;
   font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.formatter {
+  margin: 0 0 20px;
+  color: #6f8198;
+  font-size: 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

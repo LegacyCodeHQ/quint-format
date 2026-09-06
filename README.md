@@ -44,8 +44,9 @@ For local setup and project maintenance, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 The separate internal [Quint Format Review](tools/quint-format-review/README.md)
 tool opens a local browser with a `.qnt` file tree, original and formatted source
-panels, linked syntax selections, and before/after Markdown copying. It can run
-against any Git working directory without changing its files.
+panels, linked syntax selections, and before/after Markdown copying. It invokes
+the `quintfmt` executable found in `PATH` and can run against any Git working
+directory without changing its files.
 
 ```sh
 bun run --cwd tools/quint-format-review build
