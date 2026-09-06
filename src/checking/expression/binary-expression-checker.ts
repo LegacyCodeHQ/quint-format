@@ -1,6 +1,6 @@
 import type { BinaryOperator } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
-import { hasPeerMatchOperands, isWithinExpandedConditionalCondition } from "@/parsing/syntax.js";
+import { indentWidth } from "@/formatting/document.js";
 
 export function checkBinaryExpressions(
   operators: BinaryOperator[],
@@ -63,13 +63,10 @@ export function checkBinaryExpressions(
     }
     if (preservesLeadingOperatorBreak) {
       const expressionLine = lines[operator.left.startPosition.row] ?? "";
-      const isExpandedConditionalCondition = isWithinExpandedConditionalCondition(
-        operator.node.parent ?? operator.node,
-      );
-      const alignsMatchOperands = hasPeerMatchOperands(operator.node.parent ?? operator.node);
+      const isExpandedConditionalCondition = operator.plan.expandedCondition;
+      const alignsMatchOperands = operator.plan.matchPeers;
       const expectedColumn =
-        expressionLine.search(/\S|$/) +
-        (isExpandedConditionalCondition || alignsMatchOperands ? 0 : 4);
+        expressionLine.search(/\S|$/) + operator.plan.operatorIndent * indentWidth;
       if (operator.node.startPosition.column !== expectedColumn) {
         const row = operator.node.startPosition.row;
         diagnostics.push({
@@ -89,16 +86,9 @@ export function checkBinaryExpressions(
     }
     if (preservesRightOperandBreak) {
       const expressionLine = lines[operator.left.startPosition.row] ?? "";
-      const alignsMatchOperands = hasPeerMatchOperands(operator.node.parent ?? operator.node);
+      const alignsMatchOperands = operator.plan.matchPeers;
       const expectedColumn =
-        expressionLine.search(/\S|$/) +
-        (alignsMatchOperands
-          ? 0
-          : preservesLeadingOperatorBreak
-            ? 8
-            : preservesMultilinePairValue
-              ? 2
-              : 4);
+        expressionLine.search(/\S|$/) + operator.plan.rightIndent * indentWidth;
       if (operator.right.startPosition.column !== expectedColumn) {
         const row = operator.right.startPosition.row;
         diagnostics.push({

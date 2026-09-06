@@ -4,7 +4,6 @@ import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { planOperatorBreaks } from "@/parsing/break-authority.js";
-import { hasPeerMatchOperands, isWithinExpandedConditionalCondition } from "@/parsing/syntax.js";
 
 export function analyzeOperatorExpression(
   node: Parser.SyntaxNode,
@@ -69,12 +68,8 @@ export function analyzeOperatorExpression(
       right,
       hasComments: inlineComments.length > 0 || rightComments.length > 0,
     });
-    const preservesMultilinePairValue = plan.pairValue;
     const hasSourceRightBreak = plan.rightBreak;
     const hasSourceOperatorBreak = plan.operatorBreak;
-    const alignsMatchOperands = hasPeerMatchOperands(node);
-    const operatorContinuationIndentation =
-      isWithinExpandedConditionalCondition(node) || alignsMatchOperands ? 0 : 2;
     return {
       document:
         rightComments.length === 0
@@ -82,17 +77,14 @@ export function analyzeOperatorExpression(
             ? hasSourceRightBreak
               ? concat([
                   leftAnalysis.document,
-                  indentBy(
-                    concat([hardLine, text(operator.text)]),
-                    operatorContinuationIndentation,
-                  ),
-                  indentBy(concat([hardLine, rightAnalysis.document]), alignsMatchOperands ? 0 : 4),
+                  indentBy(concat([hardLine, text(operator.text)]), plan.operatorIndent),
+                  indentBy(concat([hardLine, rightAnalysis.document]), plan.rightIndent),
                 ])
               : concat([
                   leftAnalysis.document,
                   indentBy(
                     concat([hardLine, text(`${operator.text} `), rightAnalysis.document]),
-                    operatorContinuationIndentation,
+                    plan.operatorIndent,
                   ),
                 ])
             : hasSourceRightBreak
@@ -100,10 +92,7 @@ export function analyzeOperatorExpression(
                   leftAnalysis.document,
                   ...comments,
                   text(` ${operator.text}`),
-                  indentBy(
-                    concat([hardLine, rightAnalysis.document]),
-                    alignsMatchOperands ? 0 : preservesMultilinePairValue ? 1 : 2,
-                  ),
+                  indentBy(concat([hardLine, rightAnalysis.document]), plan.rightIndent),
                 ])
               : concat([
                   leftAnalysis.document,

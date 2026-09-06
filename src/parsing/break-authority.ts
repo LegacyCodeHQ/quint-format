@@ -2,6 +2,7 @@ import type Parser from "tree-sitter";
 import type { OperatorBreakPlan } from "@/core/analysis.js";
 import {
   hasLineBrokenMultilinePairValue,
+  hasPeerMatchOperands,
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
   isNestedDefinitionBody,
@@ -9,6 +10,7 @@ import {
   isOrdinaryBlockResult,
   isWithinBlockCombinatorEntry,
   isWithinConditionalCondition,
+  isWithinExpandedConditionalCondition,
 } from "./syntax.js";
 
 export type BreakReason =
@@ -71,11 +73,19 @@ export function planOperatorBreaks(
   const rightReason = rightBreakReason(node);
   const brokeBeforeOperator = sites.operator.startPosition.row > sites.left.endPosition.row;
   const brokeBeforeRight = sites.right.startPosition.row > sites.operator.endPosition.row;
+  const operatorBreak = !sites.hasComments && brokeBeforeOperator && operatorReason !== null;
+  const pairValue = hasLineBrokenMultilinePairValue(node);
+  const matchPeers = hasPeerMatchOperands(node);
+  const expandedCondition = isWithinExpandedConditionalCondition(node);
   return {
-    operatorBreak: !sites.hasComments && brokeBeforeOperator && operatorReason !== null,
+    operatorBreak,
     rightBreak: brokeBeforeRight && rightReason !== null,
     operatorReason,
     rightReason,
-    pairValue: hasLineBrokenMultilinePairValue(node),
+    pairValue,
+    matchPeers,
+    expandedCondition,
+    operatorIndent: expandedCondition || matchPeers ? 0 : 2,
+    rightIndent: matchPeers ? 0 : operatorBreak ? 4 : pairValue ? 1 : 2,
   };
 }

@@ -6,6 +6,8 @@ export type Doc =
   | { kind: "line" }
   | { kind: "group"; contents: Doc };
 
+export const indentWidth = 2;
+
 export const hardLine: Doc = { kind: "hard-line" };
 export const line: Doc = { kind: "line" };
 
@@ -103,7 +105,7 @@ export function renderDoc(document: Doc, options: RenderOptions = {}): string {
     switch (command.document.kind) {
       case "text":
         if (atLineStart && command.document.value.length > 0) {
-          const indentation = "  ".repeat(command.indentation);
+          const indentation = " ".repeat(indentWidth * command.indentation);
           output += indentation;
           column += indentation.length;
         }

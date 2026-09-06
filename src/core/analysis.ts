@@ -51,6 +51,10 @@ export interface OperatorBreakPlan {
   operatorReason: BreakReason | null;
   rightReason: BreakReason | null;
   pairValue: boolean;
+  matchPeers: boolean;
+  expandedCondition: boolean;
+  operatorIndent: number;
+  rightIndent: number;
 }
 
 export interface BinaryOperator {
