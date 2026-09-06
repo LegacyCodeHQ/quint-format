@@ -12,6 +12,7 @@ const operatorIndentMessages: Record<OperatorIndentKind, string> = {
 const rightIndentMessages: Record<RightIndentKind, string> = {
   "match-peers": "expected alignment with the left match operand",
   "continued-operator": "expected the right operand four spaces beyond the continued operator",
+  "structured-operand": "expected a two-space structured right-operand continuation",
   "pair-value": "expected a two-space map value continuation",
   continuation: "expected a four-space continuation indent",
 };

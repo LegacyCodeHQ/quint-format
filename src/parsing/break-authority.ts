@@ -2,6 +2,7 @@ import type Parser from "tree-sitter";
 import type { OperatorBreakPlan } from "@/core/analysis.js";
 import {
   hasLineBrokenMultilineValue,
+  hasMultilineLambdaCallRightOperand,
   hasPeerMatchOperands,
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
@@ -25,7 +26,12 @@ export type BreakReason =
 
 export type OperatorIndentKind = "match-peers" | "expanded-condition" | "continuation";
 
-export type RightIndentKind = "match-peers" | "continued-operator" | "pair-value" | "continuation";
+export type RightIndentKind =
+  | "match-peers"
+  | "continued-operator"
+  | "structured-operand"
+  | "pair-value"
+  | "continuation";
 
 type BreakAuthority = readonly [BreakReason, (node: Parser.SyntaxNode) => boolean];
 
@@ -79,6 +85,7 @@ export function planOperatorBreaks(
   const brokeBeforeRight = sites.right.startPosition.row > sites.operator.endPosition.row;
   const operatorBreak = !sites.hasComments && brokeBeforeOperator && operatorReason !== null;
   const pairValue = hasLineBrokenMultilineValue(node);
+  const structuredOperand = hasMultilineLambdaCallRightOperand(node);
   const matchPeers = hasPeerMatchOperands(node);
   const expandedCondition = isWithinExpandedConditionalCondition(node);
   return {
@@ -90,7 +97,7 @@ export function planOperatorBreaks(
     matchPeers,
     expandedCondition,
     operatorIndent: expandedCondition || matchPeers ? 0 : 2,
-    rightIndent: matchPeers ? 0 : operatorBreak ? 4 : pairValue ? 1 : 2,
+    rightIndent: matchPeers ? 0 : operatorBreak ? 4 : structuredOperand || pairValue ? 1 : 2,
     operatorIndentKind: matchPeers
       ? "match-peers"
       : expandedCondition
@@ -100,8 +107,10 @@ export function planOperatorBreaks(
       ? "match-peers"
       : operatorBreak
         ? "continued-operator"
-        : pairValue
-          ? "pair-value"
-          : "continuation",
+        : structuredOperand
+          ? "structured-operand"
+          : pairValue
+            ? "pair-value"
+            : "continuation",
   };
 }
