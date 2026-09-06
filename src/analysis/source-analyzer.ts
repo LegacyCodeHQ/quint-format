@@ -1,10 +1,12 @@
 import type Parser from "tree-sitter";
 import type { AnalyzedSource } from "@/core/analysis.js";
+import { attachComments } from "@/parsing/comment-attachments.js";
 import { parseQuint } from "@/parsing/parser.js";
 import { analyzeModuleNode } from "./module-analyzer.js";
 
 export function analyzeSource(source: string): AnalyzedSource {
   const root = parseQuint(source);
+  const commentAttachments = attachComments(root);
   let hashbang: Parser.SyntaxNode | undefined;
   let pendingComments: Parser.SyntaxNode[] = [];
   const modules: AnalyzedSource["modules"] = [];
@@ -26,7 +28,10 @@ export function analyzeSource(source: string): AnalyzedSource {
     }
 
     if (node.type === "module_definition") {
-      modules.push({ ...analyzeModuleNode(node), leadingComments: pendingComments });
+      modules.push({
+        ...analyzeModuleNode(node, commentAttachments),
+        leadingComments: pendingComments,
+      });
       pendingComments = [];
       continue;
     }

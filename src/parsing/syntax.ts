@@ -382,48 +382,6 @@ export function isCompactDefaultMatch(node: Parser.SyntaxNode): boolean {
   );
 }
 
-export function isAlignedLocalTrailingComment(
-  definition: Parser.SyntaxNode,
-  comment: Parser.SyntaxNode,
-): boolean {
-  let chainRoot = definition.parent;
-  if (chainRoot?.type !== "nested_definition_expression") return false;
-
-  while (
-    chainRoot.parent?.type === "nested_definition_expression" &&
-    chainRoot.parent.childForFieldName("body")?.id === chainRoot.id
-  ) {
-    chainRoot = chainRoot.parent;
-  }
-
-  const commentColumns: Array<number | undefined> = [];
-  const definitionIds: number[] = [];
-  let current: Parser.SyntaxNode | null = chainRoot;
-  while (current?.type === "nested_definition_expression") {
-    const currentDefinition = current.childForFieldName("definition");
-    if (!currentDefinition) break;
-    const value = definitionBody(currentDefinition);
-    const trailingComment = value
-      ? currentDefinition.namedChildren.find(
-          (child) =>
-            (child.type === "comment" || child.type === "documentation_comment") &&
-            child.startIndex >= value.endIndex &&
-            child.startPosition.row === value.endPosition.row,
-        )
-      : undefined;
-    definitionIds.push(currentDefinition.id);
-    commentColumns.push(trailingComment?.startPosition.column);
-    current = current.childForFieldName("body");
-  }
-
-  const index = definitionIds.indexOf(definition.id);
-  if (index < 0 || commentColumns[index] !== comment.startPosition.column) return false;
-  return (
-    commentColumns[index - 1] === comment.startPosition.column ||
-    commentColumns[index + 1] === comment.startPosition.column
-  );
-}
-
 export function callTrailingCommentAlignment(
   callExpression: Parser.SyntaxNode,
 ): Map<number, number> {

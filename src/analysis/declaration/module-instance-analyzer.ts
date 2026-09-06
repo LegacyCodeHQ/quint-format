@@ -4,6 +4,7 @@ import type { ExpressionAnalysis, ModuleDeclaration } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { formatPattern } from "@/formatting/pattern-formatter.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 
 interface OverrideAnalysis {
   node: Parser.SyntaxNode;
@@ -11,7 +12,10 @@ interface OverrideAnalysis {
   value: ExpressionAnalysis;
 }
 
-export function analyzeModuleInstance(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
+export function analyzeModuleInstance(
+  node: Parser.SyntaxNode,
+  commentAttachments: CommentAttachmentIndex,
+): ModuleDeclaration | undefined {
   const isAnonymous = node.type === "anonymous_instance_declaration";
   if (!isAnonymous && node.type !== "instance_declaration") return undefined;
 
@@ -48,7 +52,11 @@ export function analyzeModuleInstance(node: Parser.SyntaxNode): ModuleDeclaratio
     const overrideName = override.childForFieldName("name");
     const value = override.childForFieldName("value");
     if (!overrideName || !value) throw new Error("Unable to locate the instance override");
-    return { node: override, name: overrideName, value: analyzeExpression(value) };
+    return {
+      node: override,
+      name: overrideName,
+      value: analyzeExpression(value, commentAttachments),
+    };
   });
   const hasComments = node.namedChildren.some(
     (child) => child.type === "comment" || child.type === "documentation_comment",

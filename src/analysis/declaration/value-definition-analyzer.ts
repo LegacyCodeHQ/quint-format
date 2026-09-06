@@ -4,9 +4,13 @@ import type { ModuleDeclaration } from "@/core/analysis.js";
 import { definitionBodyDocument } from "@/formatting/definition-body-formatter.js";
 import { formatPattern } from "@/formatting/pattern-formatter.js";
 import { formatType } from "@/formatting/type-formatter.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import { definitionBody } from "@/parsing/syntax.js";
 
-export function analyzeValueDefinition(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
+export function analyzeValueDefinition(
+  node: Parser.SyntaxNode,
+  commentAttachments: CommentAttachmentIndex,
+): ModuleDeclaration | undefined {
   if (node.type !== "value_definition") return undefined;
 
   const qualifier = node.childForFieldName("qualifier");
@@ -28,7 +32,7 @@ export function analyzeValueDefinition(node: Parser.SyntaxNode): ModuleDeclarati
     throw new Error("Formatting this value definition syntax is not implemented yet");
   }
 
-  const expression = analyzeExpression(value);
+  const expression = analyzeExpression(value, commentAttachments);
   const typeAnnotation = declarationType ? `: ${formatType(declarationType)}` : "";
   return {
     node,

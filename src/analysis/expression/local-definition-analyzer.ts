@@ -5,15 +5,17 @@ import { definitionBodyDocument } from "@/formatting/definition-body-formatter.j
 import { concat, type Doc, text } from "@/formatting/document.js";
 import { formatPattern } from "@/formatting/pattern-formatter.js";
 import { formatType } from "@/formatting/type-formatter.js";
-import { definitionBody, isAlignedLocalTrailingComment } from "@/parsing/syntax.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import { definitionBody } from "@/parsing/syntax.js";
 
 function localTrailingCommentDocuments(
   definition: Parser.SyntaxNode,
   value: Parser.SyntaxNode,
   comments: Parser.SyntaxNode[],
+  commentAttachments: CommentAttachmentIndex,
 ): Doc[] {
   return comments.flatMap((comment) => {
-    const gap = isAlignedLocalTrailingComment(definition, comment)
+    const gap = commentAttachments.isAlignedLocalTrailingComment(comment)
       ? definition.text.slice(
           value.endIndex - definition.startIndex,
           comment.startIndex - definition.startIndex,
@@ -26,6 +28,7 @@ function localTrailingCommentDocuments(
 export function analyzeLocalDefinition(
   node: Parser.SyntaxNode,
   analyzeExpression: (node: Parser.SyntaxNode) => ExpressionAnalysis,
+  commentAttachments: CommentAttachmentIndex,
 ): ExpressionAnalysis {
   if (node.type === "value_definition") {
     const qualifier = node.childForFieldName("qualifier");
@@ -55,7 +58,9 @@ export function analyzeLocalDefinition(
           : text(
               `${qualifier ? "pure " : ""}val ${formatPattern(name)}${typeNode ? `: ${formatType(typeNode)}` : ""}`,
             ),
-        ...(value ? localTrailingCommentDocuments(node, value, trailingComments) : []),
+        ...(value
+          ? localTrailingCommentDocuments(node, value, trailingComments, commentAttachments)
+          : []),
       ]),
       binaryOperators: valueAnalysis?.binaryOperators ?? [],
       unitLiterals: valueAnalysis?.unitLiterals ?? [],
@@ -107,7 +112,9 @@ export function analyzeLocalDefinition(
           : text(
               `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""}`,
             ),
-        ...(body ? localTrailingCommentDocuments(node, body, trailingComments) : []),
+        ...(body
+          ? localTrailingCommentDocuments(node, body, trailingComments, commentAttachments)
+          : []),
       ]),
       binaryOperators: bodyAnalysis?.binaryOperators ?? [],
       unitLiterals: bodyAnalysis?.unitLiterals ?? [],

@@ -2,9 +2,11 @@ import type Parser from "tree-sitter";
 import { analyzeExpression } from "@/analysis/expression/expression-analyzer.js";
 import type { ModuleDeclaration } from "@/core/analysis.js";
 import { definitionBodyDocument } from "@/formatting/definition-body-formatter.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 
 export function analyzeAssumptionDeclaration(
   node: Parser.SyntaxNode,
+  commentAttachments: CommentAttachmentIndex,
 ): ModuleDeclaration | undefined {
   if (node.type !== "assumption_declaration") return undefined;
 
@@ -16,7 +18,7 @@ export function analyzeAssumptionDeclaration(
     throw new Error("Formatting this assumption syntax is not implemented yet");
   }
 
-  const expression = analyzeExpression(condition);
+  const expression = analyzeExpression(condition, commentAttachments);
   return {
     node,
     keyword,

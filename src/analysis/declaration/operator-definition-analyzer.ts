@@ -4,9 +4,13 @@ import type { ModuleDeclaration } from "@/core/analysis.js";
 import { definitionBodyDocument } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { canFormatType, formatType } from "@/formatting/type-formatter.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import { definitionBody } from "@/parsing/syntax.js";
 
-export function analyzeOperatorDefinition(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
+export function analyzeOperatorDefinition(
+  node: Parser.SyntaxNode,
+  commentAttachments: CommentAttachmentIndex,
+): ModuleDeclaration | undefined {
   if (node.type !== "operator_definition") return undefined;
 
   const defKeyword = node.children.find((child) => child.type === "def");
@@ -69,7 +73,7 @@ export function analyzeOperatorDefinition(node: Parser.SyntaxNode): ModuleDeclar
     throw new Error("Formatting this operator definition syntax is not implemented yet");
   }
 
-  const expression = analyzeExpression(body);
+  const expression = analyzeExpression(body, commentAttachments);
   const definitionHead = isStandaloneDefinition
     ? qualifier.text
     : `${qualifier ? `${qualifier.text} ` : ""}def`;

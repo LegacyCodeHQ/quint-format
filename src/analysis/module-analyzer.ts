@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { AnalyzedModule } from "@/core/analysis.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import { analyzeAssumptionDeclaration } from "./declaration/assumption-declaration-analyzer.js";
 import { analyzeImportExportDeclaration } from "./declaration/import-export-declaration-analyzer.js";
 import { analyzeModuleInstance } from "./declaration/module-instance-analyzer.js";
@@ -9,7 +10,10 @@ import { analyzeValueDefinition } from "./declaration/value-definition-analyzer.
 import { analyzeVariableDeclaration } from "./declaration/variable-declaration-analyzer.js";
 import { ModuleDeclarationCollector } from "./module-declaration-collector.js";
 
-export function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule {
+export function analyzeModuleNode(
+  moduleNode: Parser.SyntaxNode,
+  commentAttachments: CommentAttachmentIndex,
+): AnalyzedModule {
   const nameNode = moduleNode.childForFieldName("name");
 
   if (moduleNode.type !== "module_definition" || nameNode?.type !== "identifier") {
@@ -25,19 +29,19 @@ export function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule
 
     if (collector.consumeComment(node)) continue;
 
-    const assumptionDeclaration = analyzeAssumptionDeclaration(node);
+    const assumptionDeclaration = analyzeAssumptionDeclaration(node, commentAttachments);
     if (assumptionDeclaration) {
       collector.add(assumptionDeclaration);
       continue;
     }
 
-    const valueDefinition = analyzeValueDefinition(node);
+    const valueDefinition = analyzeValueDefinition(node, commentAttachments);
     if (valueDefinition) {
       collector.add(valueDefinition);
       continue;
     }
 
-    const operatorDefinition = analyzeOperatorDefinition(node);
+    const operatorDefinition = analyzeOperatorDefinition(node, commentAttachments);
     if (operatorDefinition) {
       collector.add(operatorDefinition);
       continue;
@@ -49,7 +53,7 @@ export function analyzeModuleNode(moduleNode: Parser.SyntaxNode): AnalyzedModule
       continue;
     }
 
-    const moduleInstance = analyzeModuleInstance(node);
+    const moduleInstance = analyzeModuleInstance(node, commentAttachments);
     if (moduleInstance) {
       collector.add(moduleInstance);
       continue;
