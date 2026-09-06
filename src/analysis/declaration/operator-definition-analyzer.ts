@@ -89,8 +89,13 @@ export function analyzeOperatorDefinition(
     openParen && closeParen
       ? `(${formattedParameters.join(", ")}${hasTrailingParameterComma ? "," : ""})`
       : "";
-  const returnTypeAnnotation = returnType ? `: ${formatType(returnType)}` : "";
-  const inlineDefinitionHead = `${definitionHead} ${declarationName.text}${parameterList}${returnTypeAnnotation} =`;
+  const typeAnchor = closeParen ?? declarationName;
+  const lineBrokenTypeAnnotation = Boolean(
+    returnColon && returnColon.startPosition.row > typeAnchor.endPosition.row,
+  );
+  const returnTypeDocuments = returnType
+    ? [...(lineBrokenTypeAnnotation ? [hardLine] : []), text(`: ${formatType(returnType)}`)]
+    : [];
   const usesExpandedParameterList = Boolean(
     openParen &&
       closeParen &&
@@ -111,9 +116,15 @@ export function analyzeOperatorDefinition(
           ),
         ),
         hardLine,
-        text(`)${returnTypeAnnotation} =`),
+        text(")"),
+        ...returnTypeDocuments,
+        text(" ="),
       ])
-    : text(inlineDefinitionHead);
+    : concat([
+        text(`${definitionHead} ${declarationName.text}${parameterList}`),
+        ...returnTypeDocuments,
+        text(" ="),
+      ]);
   return {
     node,
     qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
@@ -121,7 +132,8 @@ export function analyzeOperatorDefinition(
     nameNode: declarationName,
     colon: returnColon,
     typeNode: returnType ?? undefined,
-    typeAnchor: closeParen ?? declarationName,
+    typeAnchor,
+    lineBrokenTypeAnnotation,
     typeRoots: [
       ...parameterTypes.filter((type) => type !== null),
       ...(returnType ? [returnType] : []),

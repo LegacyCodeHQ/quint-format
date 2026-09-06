@@ -99,6 +99,27 @@ describe("definitions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves a return type placed below the definition header", () => {
+    const input = readFileSync(
+      new URL("../fixtures/line-broken-return-type.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const misaligned = input.replace("\n  : bool", "\n    : bool");
+    expect(formatQuint(misaligned)).toBe(input);
+    expect(checkQuint(misaligned, "misaligned-return-type.qnt")).toMatchSnapshot();
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("expands a multiline definition header", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-definition-header.qnt", import.meta.url),

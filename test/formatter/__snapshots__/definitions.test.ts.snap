@@ -123,3 +123,27 @@ exports[`definitions removes an optional definition semicolon 1`] = `
 }
 "
 `;
+
+exports[`definitions preserves a return type placed below the definition header 1`] = `
+"module Example {
+  /// Reports whether two values are equal.
+  pure def matches(left: int, right: int)
+  : bool =
+    left == right
+}
+"
+`;
+
+exports[`definitions preserves a return type placed below the definition header 2`] = `
+[
+  {
+    "column": 1,
+    "filePath": "misaligned-return-type.qnt",
+    "length": 4,
+    "line": 4,
+    "message": "expected return type on the next aligned line",
+    "rule": "format/type-colon-spacing",
+    "sourceLine": "    : bool =",
+  },
+]
+`;

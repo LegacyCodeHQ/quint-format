@@ -12,6 +12,7 @@ export interface ModuleDeclaration {
   colon?: Parser.SyntaxNode;
   typeNode?: Parser.SyntaxNode;
   typeAnchor?: Parser.SyntaxNode;
+  lineBrokenTypeAnnotation?: boolean;
   typeRoots?: Parser.SyntaxNode[];
   openParen?: Parser.SyntaxNode;
   closeParen?: Parser.SyntaxNode;

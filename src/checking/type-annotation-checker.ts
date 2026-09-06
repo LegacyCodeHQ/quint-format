@@ -50,15 +50,28 @@ export function checkTypeAnnotations(
 
   const typeAnchor = declaration.typeAnchor ?? declaration.nameNode;
   const colonGap = source.slice(typeAnchor.endIndex, declaration.colon.startIndex);
-  if (colonGap.length > 0) {
-    const row = typeAnchor.endPosition.row;
+  const hasCanonicalLineBrokenTypeAnnotation =
+    /^(?:\r\n|\r|\n)[\t ]*$/u.test(colonGap) &&
+    declaration.colon.startPosition.column === declaration.node.startPosition.column;
+  if (
+    declaration.lineBrokenTypeAnnotation
+      ? !hasCanonicalLineBrokenTypeAnnotation
+      : colonGap.length > 0
+  ) {
+    const row = declaration.lineBrokenTypeAnnotation
+      ? declaration.colon.startPosition.row
+      : typeAnchor.endPosition.row;
     diagnostics.push({
       filePath,
       line: row + 1,
-      column: typeAnchor.endPosition.column + 1,
-      length: Math.max(1, declaration.colon.startPosition.column - typeAnchor.endPosition.column),
+      column: declaration.lineBrokenTypeAnnotation ? 1 : typeAnchor.endPosition.column + 1,
+      length: declaration.lineBrokenTypeAnnotation
+        ? Math.max(1, declaration.colon.startPosition.column)
+        : Math.max(1, declaration.colon.startPosition.column - typeAnchor.endPosition.column),
       rule: "format/type-colon-spacing",
-      message: "expected no space before ':'",
+      message: declaration.lineBrokenTypeAnnotation
+        ? "expected return type on the next aligned line"
+        : "expected no space before ':'",
       sourceLine: lines[row] ?? "",
     });
   }
