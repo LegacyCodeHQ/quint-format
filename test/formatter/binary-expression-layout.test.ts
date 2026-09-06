@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import Quint from "@legacycodehq/tree-sitter-quint";
+import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+import { namedParseTreeSignature } from "../support/parse-tree";
+
+const parser = new Parser();
+parser.setLanguage(Quint);
 
 describe("binary expression layout", () => {
   test("preserves a comment before a binary right operand", () => {
@@ -112,6 +118,31 @@ describe("binary expression layout", () => {
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("aligns multiline match operands at the same level", () => {
+    const input = readFileSync(
+      new URL("../fixtures/match-binary-peers.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const overIndented = input
+      .replace("\n    and", "\n        and")
+      .replace("\n    match right", "\n            match right");
+
+    expect(output).toBe(input);
+    expect(checkQuint(overIndented, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/binary-operator-indentation",
+      "format/binary-operator-indentation",
+    ]);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
   test("preserves a nested-definition right operand", () => {

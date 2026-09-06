@@ -1,6 +1,7 @@
 import type { BinaryOperator } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
+  hasPeerMatchOperands,
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
   isNestedDefinitionBody,
@@ -85,8 +86,10 @@ export function checkBinaryExpressions(
       const isExpandedConditionalCondition = isWithinExpandedConditionalCondition(
         operator.node.parent ?? operator.node,
       );
+      const alignsMatchOperands = hasPeerMatchOperands(operator.node.parent ?? operator.node);
       const expectedColumn =
-        expressionLine.search(/\S|$/) + (isExpandedConditionalCondition ? 0 : 4);
+        expressionLine.search(/\S|$/) +
+        (isExpandedConditionalCondition || alignsMatchOperands ? 0 : 4);
       if (operator.node.startPosition.column !== expectedColumn) {
         const row = operator.node.startPosition.row;
         diagnostics.push({
@@ -95,17 +98,21 @@ export function checkBinaryExpressions(
           column: 1,
           length: Math.max(1, operator.node.startPosition.column),
           rule: "format/binary-operator-indentation",
-          message: isExpandedConditionalCondition
-            ? "expected alignment within the expanded conditional condition"
-            : "expected a four-space continuation indent",
+          message: alignsMatchOperands
+            ? "expected alignment with the match operands"
+            : isExpandedConditionalCondition
+              ? "expected alignment within the expanded conditional condition"
+              : "expected a four-space continuation indent",
           sourceLine: lines[row] ?? "",
         });
       }
     }
     if (preservesRightOperandBreak) {
       const expressionLine = lines[operator.left.startPosition.row] ?? "";
+      const alignsMatchOperands = hasPeerMatchOperands(operator.node.parent ?? operator.node);
       const expectedColumn =
-        expressionLine.search(/\S|$/) + (preservesLeadingOperatorBreak ? 8 : 4);
+        expressionLine.search(/\S|$/) +
+        (alignsMatchOperands ? 0 : preservesLeadingOperatorBreak ? 8 : 4);
       if (operator.right.startPosition.column !== expectedColumn) {
         const row = operator.right.startPosition.row;
         diagnostics.push({
@@ -114,9 +121,11 @@ export function checkBinaryExpressions(
           column: 1,
           length: Math.max(1, operator.right.startPosition.column),
           rule: "format/binary-operator-indentation",
-          message: preservesLeadingOperatorBreak
-            ? "expected the right operand four spaces beyond the continued operator"
-            : "expected a four-space continuation indent",
+          message: alignsMatchOperands
+            ? "expected alignment with the left match operand"
+            : preservesLeadingOperatorBreak
+              ? "expected the right operand four spaces beyond the continued operator"
+              : "expected a four-space continuation indent",
           sourceLine: lines[row] ?? "",
         });
       }

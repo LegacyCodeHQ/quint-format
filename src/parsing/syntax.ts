@@ -89,6 +89,14 @@ export function isOrdinaryBlockResult(node: Parser.SyntaxNode): boolean {
   return node.parent?.type === "block_expression";
 }
 
+export function hasPeerMatchOperands(node: Parser.SyntaxNode): boolean {
+  return (
+    node.type === "binary_expression" &&
+    node.childForFieldName("left")?.type === "match_expression" &&
+    node.childForFieldName("right")?.type === "match_expression"
+  );
+}
+
 export function isNestedDefinitionBody(node: Parser.SyntaxNode): boolean {
   return Boolean(
     node.parent?.type === "nested_definition_expression" &&

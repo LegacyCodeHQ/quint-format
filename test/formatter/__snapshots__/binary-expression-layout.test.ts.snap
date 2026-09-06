@@ -68,6 +68,25 @@ exports[`binary expression layout preserves a three-line binary expression in an
 "
 `;
 
+exports[`binary expression layout aligns multiline match operands at the same level 1`] = `
+"module Example {
+  type Maybe = Some(int) | None
+
+  pure def valid(left: Maybe, right: Maybe): bool = {
+    match left {
+      | None => true
+      | Some(_) => false
+    }
+    and
+    match right {
+      | None => true
+      | Some(_) => false
+    }
+  }
+}
+"
+`;
+
 exports[`binary expression layout preserves a nested-definition right operand 1`] = `
 "module Example {
   pure val holds = {

@@ -4,6 +4,7 @@ import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import {
+  hasPeerMatchOperands,
   isBlockCombinatorEntry,
   isIndentedExpressionBody,
   isNestedDefinitionBody,
@@ -81,7 +82,9 @@ export function analyzeOperatorExpression(
         isBlockCombinatorEntry(node) ||
         isOrdinaryBlockResult(node) ||
         isNestedDefinitionBody(node));
-    const operatorContinuationIndentation = isWithinExpandedConditionalCondition(node) ? 0 : 2;
+    const alignsMatchOperands = hasPeerMatchOperands(node);
+    const operatorContinuationIndentation =
+      isWithinExpandedConditionalCondition(node) || alignsMatchOperands ? 0 : 2;
     return {
       document:
         rightComments.length === 0
@@ -93,7 +96,7 @@ export function analyzeOperatorExpression(
                     concat([hardLine, text(operator.text)]),
                     operatorContinuationIndentation,
                   ),
-                  indentBy(concat([hardLine, rightAnalysis.document]), 4),
+                  indentBy(concat([hardLine, rightAnalysis.document]), alignsMatchOperands ? 0 : 4),
                 ])
               : concat([
                   leftAnalysis.document,
@@ -107,7 +110,7 @@ export function analyzeOperatorExpression(
                   leftAnalysis.document,
                   ...comments,
                   text(` ${operator.text}`),
-                  indentBy(concat([hardLine, rightAnalysis.document]), 2),
+                  indentBy(concat([hardLine, rightAnalysis.document]), alignsMatchOperands ? 0 : 2),
                 ])
               : concat([
                   leftAnalysis.document,
