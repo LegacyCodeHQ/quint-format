@@ -9,6 +9,7 @@ import {
   isNestedDefinitionBody,
   isOrdinaryBlockResult,
   isWithinConditionalCondition,
+  isWithinExpandedConditionalCondition,
 } from "@/parsing/syntax.js";
 
 export function analyzeOperatorExpression(
@@ -80,7 +81,7 @@ export function analyzeOperatorExpression(
         isBlockCombinatorEntry(node) ||
         isOrdinaryBlockResult(node) ||
         isNestedDefinitionBody(node));
-    const operatorContinuationIndentation = 2;
+    const operatorContinuationIndentation = isWithinExpandedConditionalCondition(node) ? 0 : 2;
     return {
       document:
         rightComments.length === 0

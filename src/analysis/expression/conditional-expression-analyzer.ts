@@ -12,9 +12,10 @@ export function analyzeConditionalExpression(
     const condition = node.childForFieldName("condition");
     const consequence = node.childForFieldName("consequence");
     const alternative = node.childForFieldName("alternative");
+    const openParen = node.children.find((child) => child.type === "(");
     const closeParen = node.children.find((child) => child.type === ")");
     const elseKeyword = node.children.find((child) => child.type === "else");
-    if (!condition || !consequence || !alternative || !closeParen || !elseKeyword) {
+    if (!condition || !consequence || !alternative || !openParen || !closeParen || !elseKeyword) {
       throw new Error("Unable to locate the conditional branches");
     }
     const analyses = [condition, consequence, alternative].map(analyzeExpression);
@@ -59,6 +60,9 @@ export function analyzeConditionalExpression(
       ...trailingConsequenceDocuments,
     ]);
     const expandsSourceMultilineCondition = condition.startPosition.row < condition.endPosition.row;
+    const expandsConditionDelimiters =
+      condition.startPosition.row > openParen.endPosition.row ||
+      closeParen.startPosition.row > condition.endPosition.row;
     const expandsConditionalChain = alternative.type === "if_expression";
     const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(node);
     const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
@@ -96,7 +100,9 @@ export function analyzeConditionalExpression(
     return {
       document: concat([
         text("if ("),
-        conditionAnalysis.document,
+        ...(expandsConditionDelimiters
+          ? [indent(concat([hardLine, conditionAnalysis.document])), hardLine]
+          : [conditionAnalysis.document]),
         ...(consequenceComments.length === 0
           ? preservesConsequenceLineBreak
             ? [text(")"), indent(concat([hardLine, consequenceDocument]))]

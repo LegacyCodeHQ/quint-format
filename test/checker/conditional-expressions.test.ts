@@ -23,5 +23,12 @@ describe("checker diagnostics", () => {
       expect(result.kind).toBe("format");
       expect(result.rendered).toMatchSnapshot();
     });
+
+    test("reports a noncanonical explicitly expanded condition", () => {
+      const result = checkFixture("expanded-if-condition.qnt");
+
+      expect(result.kind).toBe("format");
+      expect(result.rendered).toMatchSnapshot();
+    });
   });
 });

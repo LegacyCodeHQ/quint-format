@@ -53,6 +53,20 @@ exports[`conditional expressions uses a four-space leading operator continuation
 "
 `;
 
+exports[`conditional expressions formats an explicitly expanded condition as a complete block 1`] = `
+"module Example {
+  pure def choose(a: bool, b: bool, c: bool, d: bool): bool =
+    if (
+      (a and b)
+      and (c and d)
+    )
+      true
+    else
+      false
+}
+"
+`;
+
 exports[`conditional expressions preserves an explicit line break after else 1`] = `
 "module Example {
   type State = { value: int }

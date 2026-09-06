@@ -6,6 +6,7 @@ import {
   isNestedDefinitionBody,
   isOrdinaryBlockResult,
   isWithinConditionalCondition,
+  isWithinExpandedConditionalCondition,
 } from "@/parsing/syntax.js";
 
 export function checkBinaryExpressions(
@@ -81,7 +82,11 @@ export function checkBinaryExpressions(
     }
     if (preservesLeadingOperatorBreak) {
       const expressionLine = lines[operator.left.startPosition.row] ?? "";
-      const expectedColumn = expressionLine.search(/\S|$/) + 4;
+      const isExpandedConditionalCondition = isWithinExpandedConditionalCondition(
+        operator.node.parent ?? operator.node,
+      );
+      const expectedColumn =
+        expressionLine.search(/\S|$/) + (isExpandedConditionalCondition ? 0 : 4);
       if (operator.node.startPosition.column !== expectedColumn) {
         const row = operator.node.startPosition.row;
         diagnostics.push({
@@ -90,7 +95,9 @@ export function checkBinaryExpressions(
           column: 1,
           length: Math.max(1, operator.node.startPosition.column),
           rule: "format/binary-operator-indentation",
-          message: "expected a four-space continuation indent",
+          message: isExpandedConditionalCondition
+            ? "expected alignment within the expanded conditional condition"
+            : "expected a four-space continuation indent",
           sourceLine: lines[row] ?? "",
         });
       }

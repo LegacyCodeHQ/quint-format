@@ -40,8 +40,14 @@ export function checkConditionalExpressions(
         sourceLine: lines[row] ?? "",
       });
     }
+    const expandsConditionDelimiters =
+      condition.startPosition.row > openParen.endPosition.row ||
+      closeParen.startPosition.row > condition.endPosition.row;
+    const expectedAfterOpen = expandsConditionDelimiters
+      ? `\n${" ".repeat(conditional.startPosition.column + 2)}`
+      : "";
     const afterOpen = source.slice(openParen.endIndex, condition.startIndex);
-    if (afterOpen !== "") {
+    if (afterOpen !== expectedAfterOpen) {
       const row = openParen.endPosition.row;
       diagnostics.push({
         filePath,
@@ -49,12 +55,17 @@ export function checkConditionalExpressions(
         column: openParen.endPosition.column + 1,
         length: Math.max(1, afterOpen.length),
         rule: "format/conditional-delimiter-spacing",
-        message: "expected no space after '('",
+        message: expandsConditionDelimiters
+          ? "expected a line break and two-space indentation after '('"
+          : "expected no space after '('",
         sourceLine: lines[row] ?? "",
       });
     }
+    const expectedBeforeClose = expandsConditionDelimiters
+      ? `\n${" ".repeat(conditional.startPosition.column)}`
+      : "";
     const beforeClose = source.slice(condition.endIndex, closeParen.startIndex);
-    if (beforeClose !== "") {
+    if (beforeClose !== expectedBeforeClose) {
       const row = closeParen.startPosition.row;
       diagnostics.push({
         filePath,
@@ -62,7 +73,9 @@ export function checkConditionalExpressions(
         column: condition.endPosition.column + 1,
         length: Math.max(1, beforeClose.length),
         rule: "format/conditional-delimiter-spacing",
-        message: "expected no space before ')'",
+        message: expandsConditionDelimiters
+          ? "expected ')' on a new line aligned with 'if'"
+          : "expected no space before ')'",
         sourceLine: lines[row] ?? "",
       });
     }

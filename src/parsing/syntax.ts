@@ -110,6 +110,27 @@ export function isWithinConditionalCondition(node: Parser.SyntaxNode): boolean {
   return false;
 }
 
+export function isWithinExpandedConditionalCondition(node: Parser.SyntaxNode): boolean {
+  let ancestor = node.parent;
+  while (ancestor) {
+    if (ancestor.type === "if_expression") {
+      const condition = ancestor.childForFieldName("condition");
+      const openParen = ancestor.children.find((child) => child.type === "(");
+      const closeParen = ancestor.children.find((child) => child.type === ")");
+      if (!condition || !openParen || !closeParen) return false;
+      const containsNode =
+        condition.startIndex <= node.startIndex && condition.endIndex >= node.endIndex;
+      return (
+        containsNode &&
+        (condition.startPosition.row > openParen.endPosition.row ||
+          closeParen.startPosition.row > condition.endPosition.row)
+      );
+    }
+    ancestor = ancestor.parent;
+  }
+  return false;
+}
+
 export function isElseIfBranch(node: Parser.SyntaxNode): boolean {
   return Boolean(
     node.parent?.type === "if_expression" &&

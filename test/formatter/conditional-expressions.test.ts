@@ -81,6 +81,24 @@ describe("conditional expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("formats an explicitly expanded condition as a complete block", () => {
+    const input = readFileSync(
+      new URL("../fixtures/expanded-if-condition.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("    if (\n      (a and b)\n      and (c and d)\n    )\n      true");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves an explicit line break after else", () => {
     const input = readFileSync(
       new URL("../fixtures/explicit-else-break.qnt", import.meta.url),

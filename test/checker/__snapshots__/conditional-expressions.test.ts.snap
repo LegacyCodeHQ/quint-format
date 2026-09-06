@@ -91,3 +91,22 @@ test/fixtures/conditional-consequence-comment.qnt:2:25: error[format/conditional
   |
 "
 `;
+
+exports[`checker diagnostics conditional expressions reports a noncanonical explicitly expanded condition 1`] = `
+"test/fixtures/expanded-if-condition.qnt:3:7: error[format/conditional-keyword-spacing]: expected one space after 'if'
+  |
+3 |     if(
+  |       ^
+  |
+test/fixtures/expanded-if-condition.qnt:3:8: error[format/conditional-delimiter-spacing]: expected a line break and two-space indentation after '('
+  |
+3 |     if(
+  |        ^
+  |
+test/fixtures/expanded-if-condition.qnt:6:22: error[format/conditional-delimiter-spacing]: expected ')' on a new line aligned with 'if'
+  |
+6 |       )
+  |        ^
+  |
+"
+`;
