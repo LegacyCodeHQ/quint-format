@@ -85,14 +85,11 @@ export function checkCallExpressions(
           return argument.startPosition.row === previous.endPosition.row;
         }) &&
         closeParen.startPosition.row > last.endPosition.row;
-      const functionDot = target?.dot;
+      const functionDot = target?.kind === "ufcs" ? target.dot : undefined;
       const callIndentation =
         functionDot?.startPosition.column ?? callExpression.startPosition.column;
       const isMultilineUfcsCall = Boolean(
-        functionDot &&
-          isMultilineUfcsContinuation(
-            callExpression.type === "ufcs_call_expression" ? callExpression : functionNode,
-          ),
+        target?.kind === "ufcs" && functionDot && isMultilineUfcsContinuation(callExpression),
       );
       const hangingArgumentGap = `\n${" ".repeat(callIndentation + 2)}`;
       const hangingCloseGap = `\n${" ".repeat(callIndentation)}`;

@@ -76,16 +76,12 @@ export function analyzeLambdaExpression(
     const isInlineSecondaryArgument = Boolean(
       previousArgument && previousArgument.endPosition.row === node.startPosition.row,
     );
-    const enclosingFunction = enclosingCall
-      ? callExpressionTarget(enclosingCall)?.functionNode
-      : undefined;
+    const enclosingTarget = enclosingCall ? callExpressionTarget(enclosingCall) : null;
     const isInlineSecondaryArgumentInContinuedUfcsCall = Boolean(
       isInlineSecondaryArgument &&
-        enclosingFunction &&
+        enclosingTarget?.kind === "ufcs" &&
         enclosingCall &&
-        isMultilineUfcsContinuation(
-          enclosingCall.type === "ufcs_call_expression" ? enclosingCall : enclosingFunction,
-        ),
+        isMultilineUfcsContinuation(enclosingCall),
     );
     const inlineCallHeaderExceedsLineWidth = arrow.endPosition.column > 120;
     const continuationIndentation = isInlineSecondaryArgumentInContinuedUfcsCall

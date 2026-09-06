@@ -274,14 +274,11 @@ export function compactLambdaBlockExpression(
 export function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode): boolean {
   if (node.type !== "parenthesized_expression") return false;
   const expression = node.childForFieldName("expression");
-  const parent = node.parent;
+  const target = node.parent ? postfixExpressionTarget(node.parent) : null;
   return Boolean(
     expression &&
       expression.startPosition.row < expression.endPosition.row &&
-      ((parent?.type === "field_access_expression" &&
-        parent.childForFieldName("object")?.id === node.id) ||
-        (parent?.type === "ufcs_call_expression" &&
-          parent.childForFieldName("receiver")?.id === node.id)),
+      target?.receiver.id === node.id,
   );
 }
 
@@ -294,11 +291,35 @@ export function isBraceDelimitedExpression(node: Parser.SyntaxNode): boolean {
   );
 }
 
-export interface CallExpressionTarget {
+export interface DirectCallExpressionTarget {
+  kind: "direct";
   functionNode: Parser.SyntaxNode;
-  receiver?: Parser.SyntaxNode;
-  method?: Parser.SyntaxNode;
-  dot?: Parser.SyntaxNode;
+}
+
+export interface UfcsCallExpressionTarget {
+  kind: "ufcs";
+  functionNode: Parser.SyntaxNode;
+  receiver: Parser.SyntaxNode;
+  method: Parser.SyntaxNode;
+  dot: Parser.SyntaxNode;
+}
+
+export type CallExpressionTarget = DirectCallExpressionTarget | UfcsCallExpressionTarget;
+
+export interface PostfixExpressionTarget {
+  receiver: Parser.SyntaxNode;
+  member: Parser.SyntaxNode;
+  dot: Parser.SyntaxNode;
+}
+
+export function postfixExpressionTarget(node: Parser.SyntaxNode): PostfixExpressionTarget | null {
+  if (node.type !== "field_access_expression" && node.type !== "ufcs_call_expression") return null;
+  const receiver = node.childForFieldName(
+    node.type === "ufcs_call_expression" ? "receiver" : "object",
+  );
+  const member = node.childForFieldName(node.type === "ufcs_call_expression" ? "method" : "field");
+  const dot = node.children.find((child) => child.type === ".");
+  return receiver && member && dot ? { receiver, member, dot } : null;
 }
 
 export function isCallExpression(node: Parser.SyntaxNode): boolean {
@@ -307,21 +328,20 @@ export function isCallExpression(node: Parser.SyntaxNode): boolean {
 
 export function callExpressionTarget(node: Parser.SyntaxNode): CallExpressionTarget | null {
   if (node.type === "ufcs_call_expression") {
-    const receiver = node.childForFieldName("receiver");
-    const method = node.childForFieldName("method");
-    const dot = node.children.find((child) => child.type === ".");
-    return receiver && method ? { functionNode: method, receiver, method, dot } : null;
+    const target = postfixExpressionTarget(node);
+    return target
+      ? {
+          kind: "ufcs",
+          functionNode: target.member,
+          receiver: target.receiver,
+          method: target.member,
+          dot: target.dot,
+        }
+      : null;
   }
   if (node.type !== "call_expression") return null;
   const functionNode = node.childForFieldName("function");
-  if (!functionNode) return null;
-  if (functionNode.type !== "field_access_expression") return { functionNode };
-  return {
-    functionNode,
-    receiver: functionNode.childForFieldName("object") ?? undefined,
-    method: functionNode.childForFieldName("field") ?? undefined,
-    dot: functionNode.children.find((child) => child.type === "."),
-  };
+  return functionNode ? { kind: "direct", functionNode } : null;
 }
 
 export function ufcsChainRoot(node: Parser.SyntaxNode): Parser.SyntaxNode {
@@ -330,25 +350,16 @@ export function ufcsChainRoot(node: Parser.SyntaxNode): Parser.SyntaxNode {
     const parent = current.parent;
     const continuesThroughCall =
       parent.type === "call_expression" && parent.childForFieldName("function")?.id === current.id;
-    const continuesThroughField =
-      parent.type === "field_access_expression" &&
-      parent.childForFieldName("object")?.id === current.id;
-    const continuesThroughNamedUfcs =
-      parent.type === "ufcs_call_expression" &&
-      parent.childForFieldName("receiver")?.id === current.id;
-    if (!continuesThroughCall && !continuesThroughField && !continuesThroughNamedUfcs) break;
+    const continuesThroughPostfix = postfixExpressionTarget(parent)?.receiver.id === current.id;
+    if (!continuesThroughCall && !continuesThroughPostfix) break;
     current = parent;
   }
   return current;
 }
 
 export function isMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
-  if (node.type !== "field_access_expression" && node.type !== "ufcs_call_expression") return false;
-  const object = node.childForFieldName(
-    node.type === "ufcs_call_expression" ? "receiver" : "object",
-  );
-  const dot = node.children.find((child) => child.type === ".");
-  return Boolean(object && dot && dot.startPosition.row > object.endPosition.row);
+  const target = postfixExpressionTarget(node);
+  return Boolean(target && target.dot.startPosition.row > target.receiver.endPosition.row);
 }
 
 export function ufcsContinuationIndentation(): number {

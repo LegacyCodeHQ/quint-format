@@ -60,7 +60,13 @@ describe("syntax helpers", () => {
     } as unknown as Parser.SyntaxNode;
 
     expect(isCallExpression(ufcs)).toBe(true);
-    expect(callExpressionTarget(ufcs)).toEqual({ functionNode: method, receiver, method, dot });
+    expect(callExpressionTarget(ufcs)).toEqual({
+      kind: "ufcs",
+      functionNode: method,
+      receiver,
+      method,
+      dot,
+    });
     expect(isMultilineUfcsContinuation(ufcs)).toBe(true);
     expect(isCallExpression(definitionNode("field_access_expression", {}))).toBe(false);
   });

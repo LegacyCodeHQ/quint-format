@@ -23,7 +23,10 @@ export function analyzeCallExpression(
     const target = callExpressionTarget(node);
     const arguments_ = node.childrenForFieldName("argument");
     if (!target) throw new Error("Unable to locate the call target");
-    const { functionNode, receiver, method, dot } = target;
+    const { functionNode } = target;
+    const receiver = target.kind === "ufcs" ? target.receiver : undefined;
+    const method = target.kind === "ufcs" ? target.method : undefined;
+    const dot = target.kind === "ufcs" ? target.dot : undefined;
     const openParenthesis = node.children.find((child) => child.type === "(");
     const closeParenthesis = [...node.children].reverse().find((child) => child.type === ")");
     const lastArgument = arguments_.at(-1);
@@ -32,8 +35,7 @@ export function analyzeCallExpression(
         child.type === "," && Boolean(lastArgument && child.startIndex >= lastArgument.endIndex),
     );
     const trailingCommaDocuments = trailingComma ? [text(",")] : [];
-    const receiverAnalysis =
-      node.type === "ufcs_call_expression" && receiver ? analyzeExpression(receiver) : undefined;
+    const receiverAnalysis = receiver ? analyzeExpression(receiver) : undefined;
     const targetComments =
       receiver && method
         ? node.namedChildren.filter(
@@ -89,9 +91,7 @@ export function analyzeCallExpression(
     const trailingCommentAlignment = callTrailingCommentAlignment(node);
     const multilineLambdaArgument =
       arguments_.length === 1 && isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
-    const multilineUfcsCall = isMultilineUfcsContinuation(
-      node.type === "ufcs_call_expression" ? node : functionNode,
-    );
+    const multilineUfcsCall = target.kind === "ufcs" && isMultilineUfcsContinuation(node);
     let multilineUfcsLambdaDocument: Doc | undefined;
     if (multilineLambdaArgument && multilineUfcsCall) {
       if (!receiver || !method) throw new Error("Unable to locate the UFCS call target");

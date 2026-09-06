@@ -106,8 +106,8 @@ export function checkLambdaExpressions(
     const parentCall = lambda.parent && isCallExpression(lambda.parent) ? lambda.parent : undefined;
     const parentTarget = parentCall ? callExpressionTarget(parentCall) : null;
     const parentFunction = parentTarget?.functionNode;
-    const functionObject = parentTarget?.receiver;
-    const functionDot = parentTarget?.dot;
+    const functionObject = parentTarget?.kind === "ufcs" ? parentTarget.receiver : undefined;
+    const functionDot = parentTarget?.kind === "ufcs" ? parentTarget.dot : undefined;
     const isMultilineUfcsLambda = Boolean(
       functionObject &&
         functionDot &&
@@ -117,7 +117,7 @@ export function checkLambdaExpressions(
     const callArguments = parentCall?.childrenForFieldName("argument") ?? [];
     const argumentIndex = callArguments.findIndex((argument) => argument.id === lambda.id);
     const previousArgument = callArguments[argumentIndex - 1];
-    const ufcsNode = parentCall?.type === "ufcs_call_expression" ? parentCall : parentFunction;
+    const ufcsNode = parentTarget?.kind === "ufcs" ? parentCall : undefined;
     const isInlineSecondaryArgumentInContinuedUfcsCall = Boolean(
       argumentIndex > 0 &&
         previousArgument?.endPosition.row === lambda.startPosition.row &&

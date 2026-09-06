@@ -1,9 +1,9 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import {
-  callExpressionTarget,
   collectNodes,
   isMultilineUfcsContinuation,
+  postfixExpressionTarget,
   ufcsChainRoot,
   ufcsContinuationIndentation,
 } from "@/parsing/syntax.js";
@@ -21,14 +21,11 @@ export function checkFieldAccessExpressions(
     ...collectNodes(root, "ufcs_call_expression"),
   ];
   for (const fieldAccess of accesses) {
-    const target =
-      fieldAccess.type === "ufcs_call_expression" ? callExpressionTarget(fieldAccess) : null;
-    const object = target?.receiver ?? fieldAccess.childForFieldName("object");
-    const field = target?.method ?? fieldAccess.childForFieldName("field");
-    const dot = target?.dot ?? fieldAccess.children.find((child) => child.type === ".");
-    if (!object || !field || !dot) {
+    const target = postfixExpressionTarget(fieldAccess);
+    if (!target) {
       throw new Error("Unable to locate the field access operator");
     }
+    const { receiver: object, member: field, dot } = target;
     const beforeDot = source.slice(object.endIndex, dot.startIndex);
     const afterDot = source.slice(dot.endIndex, field.startIndex);
     const isMultilineContinuation = isMultilineUfcsContinuation(fieldAccess);
