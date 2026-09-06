@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import Quint from "@legacycodehq/tree-sitter-quint";
+import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+import { namedParseTreeSignature } from "../support/parse-tree";
+
+const parser = new Parser();
+parser.setLanguage(Quint);
 
 describe("local definitions and nondeterminism", () => {
   test("formats a nondeterministic binding", () => {
@@ -100,6 +106,26 @@ describe("local definitions and nondeterminism", () => {
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("separates a multiline local definition from a following comment block", () => {
+    const input = readFileSync(
+      new URL("../fixtures/multiline-local-comment-gap.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain(
+      "      acc.union(Set(value)))\n\n    // Continue with the collected values.",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
   test("preserves a blank line before a commented local definition", () => {

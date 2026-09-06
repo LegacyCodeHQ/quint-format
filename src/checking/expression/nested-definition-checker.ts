@@ -19,6 +19,33 @@ export function checkNestedDefinitions(
     const body = nested.childForFieldName("body");
     if (!definition || !body) throw new Error("Unable to locate the nested definition layout");
     checkLocalDefinition(definition, source, lines, filePath, diagnostics);
+    const definitionValue =
+      definition.childForFieldName("value") ?? definition.childForFieldName("body");
+    const leadingBodyComments = nested.namedChildren.filter(
+      (child) =>
+        (child.type === "comment" || child.type === "documentation_comment") &&
+        child.startIndex >= definition.endIndex &&
+        child.endIndex <= body.startIndex &&
+        child.startPosition.row !== definitionValue?.endPosition.row,
+    );
+    const firstLeadingBodyComment = leadingBodyComments[0];
+    if (
+      definitionValue &&
+      firstLeadingBodyComment &&
+      definitionValue.startPosition.row < definitionValue.endPosition.row &&
+      firstLeadingBodyComment.startPosition.row - definitionValue.endPosition.row !== 2
+    ) {
+      const row = firstLeadingBodyComment.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: firstLeadingBodyComment.startPosition.column + 1,
+        length: 2,
+        rule: "format/nested-definition-comment-separation",
+        message: "expected one blank line after the multiline local definition",
+        sourceLine: lines[row] ?? "",
+      });
+    }
     const preservesCompactNondetSequence = isCompactNondetSequence(definition, body);
     const hasCanonicalCompactGap =
       preservesCompactNondetSequence && source.slice(definition.endIndex, body.startIndex) === " ";

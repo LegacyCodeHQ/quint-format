@@ -44,5 +44,12 @@ describe("checker diagnostics", () => {
       expect(result.kind).toBe("format");
       expect(result.rendered).toMatchSnapshot();
     });
+
+    test("reports a missing gap after a multiline local definition", () => {
+      const result = checkFixture("multiline-local-comment-gap.qnt");
+
+      expect(result.kind).toBe("format");
+      expect(result.rendered).toMatchSnapshot();
+    });
   });
 });

@@ -55,6 +55,11 @@ export function analyzeNestedDefinitionExpression(
         definitionValue &&
         firstComment.startPosition.row > definitionValue.endPosition.row + 1,
     );
+    const separatesMultilineDefinitionFromLeadingComment = Boolean(
+      firstComment &&
+        definitionValue &&
+        definitionValue.startPosition.row < definitionValue.endPosition.row,
+    );
     const preservesBodyGap =
       leadingBodyComments.length === 0 &&
       definitionValue !== null &&
@@ -69,7 +74,11 @@ export function analyzeNestedDefinitionExpression(
           : concat([
               definitionDocument,
               hardLine,
-              ...(preservesBodyGap || preservesLeadingCommentGap ? [hardLine] : []),
+              ...(preservesBodyGap ||
+              preservesLeadingCommentGap ||
+              separatesMultilineDefinitionFromLeadingComment
+                ? [hardLine]
+                : []),
               ...leadingBodyComments.flatMap((comment) => [commentDocument(comment), hardLine]),
               bodyAnalysis.document,
             ]),
