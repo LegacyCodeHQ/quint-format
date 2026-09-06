@@ -107,6 +107,28 @@ describe("lambdas", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("places the closing parenthesis after an inline multiline lambda", () => {
+    const input = readFileSync(
+      new URL("../fixtures/inline-multiline-lambda-close.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected = input.replace("        largest)\n", "        largest\n    )\n");
+
+    expect(output).toBe(expected);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/call-delimiter-spacing",
+    );
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("keeps a short call header inline when its lambda body has a long line", () => {
     const input = readFileSync(
       new URL("../fixtures/fold-lambda-call-expansion.qnt", import.meta.url),

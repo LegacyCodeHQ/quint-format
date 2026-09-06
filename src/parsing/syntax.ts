@@ -34,6 +34,11 @@ export function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   );
 }
 
+export function hasMultilineLambdaBody(node: Parser.SyntaxNode): boolean {
+  const body = node.type === "lambda_expression" ? node.childForFieldName("body") : undefined;
+  return Boolean(body && body.endPosition.row > body.startPosition.row);
+}
+
 export function isNestedInVerticallyExpandedCall(node: Parser.SyntaxNode): boolean {
   let ancestor = node.parent;
 

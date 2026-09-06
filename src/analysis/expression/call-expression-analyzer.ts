@@ -4,6 +4,7 @@ import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, renderDoc, text } from "@/formatting/document.js";
 import {
+  hasMultilineLambdaBody,
   isMultilineLambdaExpression,
   isMultilineUfcsContinuation,
   isNestedInVerticallyExpandedCall,
@@ -144,7 +145,7 @@ export function analyzeCallExpression(
       isMultilineLambdaExpression(arguments_.at(-1) as Parser.SyntaxNode) &&
       hasInlineMultilineLambdaArgument &&
       !hasSourceArgumentBreak &&
-      hasSourceClosingBreak &&
+      (hasSourceClosingBreak || hasMultilineLambdaBody(arguments_.at(-1) as Parser.SyntaxNode)) &&
       !inlineCallFirstLineExceedsWidth;
     const hangingMultilineLambdaCall =
       arguments_.length > 1 &&

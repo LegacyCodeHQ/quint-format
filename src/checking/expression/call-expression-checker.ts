@@ -1,6 +1,10 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
-import { isMultilineLambdaExpression, isMultilineUfcsContinuation } from "@/parsing/syntax.js";
+import {
+  hasMultilineLambdaBody,
+  isMultilineLambdaExpression,
+  isMultilineUfcsContinuation,
+} from "@/parsing/syntax.js";
 
 export function checkCallExpressions(
   callExpressions: Parser.SyntaxNode[],
@@ -61,6 +65,15 @@ export function checkCallExpressions(
         const previous = index === 0 ? openParen : arguments_[index - 1];
         return argument.startPosition.row > previous.endPosition.row;
       });
+      const isInlineMultilineLambdaCall =
+        arguments_.length > 1 &&
+        isMultilineLambdaExpression(last) &&
+        !hasSourceArgumentBreak &&
+        (hasMultilineLambdaBody(last) || closeParen.startPosition.row > last.endPosition.row) &&
+        arguments_.every((argument, index) => {
+          const previous = index === 0 ? openParen : arguments_[index - 1];
+          return argument.startPosition.row === previous.endPosition.row;
+        });
       const isPartiallyExpandedCallWithClosingBreak =
         first.startPosition.row === openParen.endPosition.row &&
         hasSourceArgumentBreak &&
@@ -134,11 +147,13 @@ export function checkCallExpressions(
           ? beforeClose === expandedCloseGap
           : isHangingMultilineLambdaCall
             ? beforeClose === hangingCloseGap
-            : isMultilineLambdaCall
-              ? isMultilineUfcsCall
-                ? beforeClose === hangingCloseGap
-                : /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
-              : beforeClose === "";
+            : isInlineMultilineLambdaCall
+              ? beforeClose === expandedCloseGap
+              : isMultilineLambdaCall
+                ? isMultilineUfcsCall
+                  ? beforeClose === hangingCloseGap
+                  : /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
+                : beforeClose === "";
       if (!hasCanonicalClose) {
         const row = closeParen.startPosition.row;
         diagnostics.push({
@@ -147,7 +162,9 @@ export function checkCallExpressions(
           column: anchor.endPosition.column + 1,
           length: Math.max(1, beforeClose.length),
           rule: "format/call-delimiter-spacing",
-          message: "expected no space before ')'",
+          message: isInlineMultilineLambdaCall
+            ? "expected the closing ')' on a separate line"
+            : "expected no space before ')'",
           sourceLine: lines[row] ?? "",
         });
       }
