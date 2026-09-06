@@ -11,6 +11,7 @@ import {
   renderDoc,
   text,
 } from "@/formatting/document.js";
+import { blockCombinatorEntries, isBlockCombinatorExpression } from "@/parsing/syntax.js";
 
 export function analyzeBlockExpression(
   node: Parser.SyntaxNode,
@@ -101,19 +102,8 @@ export function analyzeBlockExpression(
     };
   }
 
-  if (
-    node.type === "any_expression" ||
-    node.type === "all_expression" ||
-    node.type === "and_block_expression" ||
-    node.type === "or_block_expression"
-  ) {
-    const fieldName =
-      node.type === "any_expression"
-        ? "choice"
-        : node.type === "or_block_expression"
-          ? "disjunct"
-          : "conjunct";
-    const entries = node.childrenForFieldName(fieldName);
+  if (isBlockCombinatorExpression(node)) {
+    const entries = blockCombinatorEntries(node);
     const keyword = node.children.find((child) => ["any", "all", "and", "or"].includes(child.type));
     const openBrace = node.children.find((child) => child.type === "{");
     const closeBrace = [...node.children].reverse().find((child) => child.type === "}");

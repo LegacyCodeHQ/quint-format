@@ -1,4 +1,41 @@
+import Quint from "@legacycodehq/tree-sitter-quint";
 import type Parser from "tree-sitter";
+
+const LEGACY_BLOCK_COMBINATOR_TYPES = [
+  "all_expression",
+  "and_block_expression",
+  "any_expression",
+  "or_block_expression",
+];
+
+const blockCombinatorSupertype = Quint.nodeTypeInfo.find(
+  (node) => node.type === "_block_combinator_expression" && "subtypes" in node,
+);
+const blockCombinatorTypes = new Set(
+  blockCombinatorSupertype && "subtypes" in blockCombinatorSupertype
+    ? blockCombinatorSupertype.subtypes.map((subtype) => subtype.type)
+    : LEGACY_BLOCK_COMBINATOR_TYPES,
+);
+
+export function isBlockCombinatorExpression(node: Parser.SyntaxNode): boolean {
+  return blockCombinatorTypes.has(node.type);
+}
+
+export function blockCombinatorEntries(node: Parser.SyntaxNode): Parser.SyntaxNode[] {
+  if (!isBlockCombinatorExpression(node)) return [];
+  for (const field of ["entry", "choice", "conjunct", "disjunct"]) {
+    const entries = node.childrenForFieldName(field);
+    if (entries.length > 0) return entries;
+  }
+  return [];
+}
+
+export function collectBlockCombinatorExpressions(node: Parser.SyntaxNode): Parser.SyntaxNode[] {
+  return [
+    ...(isBlockCombinatorExpression(node) ? [node] : []),
+    ...node.namedChildren.flatMap(collectBlockCombinatorExpressions),
+  ];
+}
 
 export function definitionBody(node: Parser.SyntaxNode): Parser.SyntaxNode | null {
   if (node.type !== "value_definition" && node.type !== "operator_definition") return null;
@@ -21,15 +58,8 @@ export function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   const body = node.childForFieldName("body");
   const hasBraceDelimitedBody = Boolean(
     body &&
-      [
-        "block_expression",
-        "record_literal",
-        "all_expression",
-        "any_expression",
-        "and_block_expression",
-        "or_block_expression",
-        "match_expression",
-      ].includes(body.type),
+      (isBlockCombinatorExpression(body) ||
+        ["block_expression", "record_literal", "match_expression"].includes(body.type)),
   );
   return Boolean(
     arrow &&
@@ -126,12 +156,7 @@ export function isIndentedExpressionBody(node: Parser.SyntaxNode): boolean {
 }
 
 export function isBlockCombinatorEntry(node: Parser.SyntaxNode): boolean {
-  return Boolean(
-    node.parent &&
-      ["all_expression", "any_expression", "and_block_expression", "or_block_expression"].includes(
-        node.parent.type,
-      ),
-  );
+  return Boolean(node.parent && isBlockCombinatorExpression(node.parent));
 }
 
 export function isOrdinaryBlockResult(node: Parser.SyntaxNode): boolean {
@@ -249,13 +274,8 @@ export function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode)
 
 export function isBraceDelimitedExpression(node: Parser.SyntaxNode): boolean {
   return (
-    [
-      "block_expression",
-      "all_expression",
-      "any_expression",
-      "and_block_expression",
-      "or_block_expression",
-    ].includes(node.type) ||
+    node.type === "block_expression" ||
+    isBlockCombinatorExpression(node) ||
     (node.type === "lambda_expression" &&
       node.childForFieldName("body")?.type === "block_expression")
   );

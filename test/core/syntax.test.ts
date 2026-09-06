@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import type Parser from "tree-sitter";
-import { definitionBody } from "@/parsing/syntax.js";
+import {
+  blockCombinatorEntries,
+  definitionBody,
+  isBlockCombinatorExpression,
+} from "@/parsing/syntax.js";
 
 function definitionNode(
   type: string,
@@ -20,5 +24,17 @@ describe("syntax helpers", () => {
     expect(definitionBody(definitionNode("value_definition", { value: body }))).toBe(body);
     expect(definitionBody(definitionNode("operator_definition", { body }))).toBe(body);
     expect(definitionBody(definitionNode("record_literal_field", { value: body }))).toBeNull();
+  });
+
+  test("classifies block combinators and reads their legacy entry fields", () => {
+    const entry = { id: 2 } as Parser.SyntaxNode;
+    const combinator = {
+      type: "any_expression",
+      childrenForFieldName: (name: string) => (name === "choice" ? [entry] : []),
+    } as unknown as Parser.SyntaxNode;
+
+    expect(isBlockCombinatorExpression(combinator)).toBe(true);
+    expect(blockCombinatorEntries(combinator)).toEqual([entry]);
+    expect(isBlockCombinatorExpression(definitionNode("block_expression", {}))).toBe(false);
   });
 });

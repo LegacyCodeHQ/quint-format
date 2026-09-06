@@ -1,6 +1,11 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
-import { collectNodes, isCompactDefaultMatch } from "@/parsing/syntax.js";
+import {
+  blockCombinatorEntries,
+  collectNodes,
+  isBlockCombinatorExpression,
+  isCompactDefaultMatch,
+} from "@/parsing/syntax.js";
 
 export function checkMatchExpressions(
   root: Parser.SyntaxNode,
@@ -119,16 +124,8 @@ export function checkMatchExpressions(
         });
       }
 
-      const combinatorField =
-        body.type === "any_expression"
-          ? "choice"
-          : body.type === "or_block_expression"
-            ? "disjunct"
-            : body.type === "all_expression" || body.type === "and_block_expression"
-              ? "conjunct"
-              : undefined;
-      const structuralEntries = combinatorField
-        ? body.childrenForFieldName(combinatorField)
+      const structuralEntries = isBlockCombinatorExpression(body)
+        ? blockCombinatorEntries(body)
         : body.type === "match_expression"
           ? body.childrenForFieldName("arm")
           : body.type === "record_literal"
