@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import { randomUUID } from "node:crypto";
-import { readdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
+import { readdir, readFile, realpath, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { checkQuint, formatQuint, QuintSyntaxError, renderDiagnostic } from "./index.js";
 
 export interface CliOutput {
@@ -116,6 +116,9 @@ export async function runCli(args: string[], output: CliOutput = processOutput):
 }
 
 const executablePath = process.argv[1];
-if (executablePath && pathToFileURL(executablePath).href === import.meta.url) {
+if (
+  executablePath &&
+  (await realpath(executablePath)) === (await realpath(fileURLToPath(import.meta.url)))
+) {
   process.exitCode = await runCli(process.argv.slice(2));
 }

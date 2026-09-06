@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { projectRoot, runCliInProcess } from "../support/cli";
@@ -23,6 +23,26 @@ describe("command-line checker", () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout.toString()).toMatchSnapshot();
       expect(result.stderr.toString()).toBe("");
+    });
+
+    test("runs the compiled distribution through an npm-style binary symlink", () => {
+      const scratch = mkdtempSync(join(tmpdir(), "quint-format-bin-link-"));
+      const binaryPath = join(scratch, "quintfmt");
+      const build = Bun.spawnSync(["bun", "run", "build"], { cwd: projectRoot });
+
+      try {
+        expect(build.exitCode).toBe(0);
+        symlinkSync(join(projectRoot, "dist/cli.js"), binaryPath);
+        const result = Bun.spawnSync([binaryPath, "test/fixtures/compact-empty-module.qnt"], {
+          cwd: projectRoot,
+        });
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout.toString()).toBe("module Example {\n}\n");
+        expect(result.stderr.toString()).toBe("");
+      } finally {
+        rmSync(scratch, { recursive: true, force: true });
+      }
     });
 
     test("formats one file to standard output", async () => {
