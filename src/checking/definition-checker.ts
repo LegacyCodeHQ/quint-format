@@ -2,7 +2,6 @@ import type { ModuleDeclaration } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { preservesDefinitionBodyLineBreak } from "@/formatting/definition-body-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
-import { isMultilineUfcsContinuation } from "@/parsing/syntax.js";
 
 export function checkDefinitionBody(
   declaration: ModuleDeclaration,
@@ -50,8 +49,8 @@ export function checkDefinitionBody(
         declaration.valueNode,
         commentAttachments,
       )) ||
-      (declaration.valueNode.type === "ufcs_call_expression" &&
-        isMultilineUfcsContinuation(declaration.valueNode)));
+      declaration.valueNode.type === "call_expression" ||
+      declaration.valueNode.type === "ufcs_call_expression");
   const requiresLineBreakAfterEquals =
     isMultilineSum ||
     preservesTypeContinuation ||

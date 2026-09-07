@@ -57,6 +57,29 @@ describe("call expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("uses continuation indentation for a multiline call definition body", () => {
+    const input = readFileSync(
+      new URL("../fixtures/multiline-call-definition-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected =
+      "module Example {\n  pure def buyableVia1Swap(someCoins) = someCoins\n\n  pure def buyableNSwaps(someCoins, n) =\n      1.to(n).fold(someCoins,\n          (prevCoins, i) => buyableVia1Swap(prevCoins))\n}\n";
+
+    expect(output).toBe(expected);
+    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/definition-body-indentation",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves leading argument breaks when the closing parenthesis is attached", () => {
     const input = readFileSync(
       new URL("../fixtures/leading-expanded-call-with-attached-close.qnt", import.meta.url),
@@ -66,9 +89,9 @@ describe("call expressions", () => {
     const expected = [
       "module Example {",
       "  pure def listContains(__list: List[a], __elem: a): bool =",
-      "    __list.foldl(",
-      "        false,",
-      "        (__acc, __i) => __acc or __i == __elem)",
+      "      __list.foldl(",
+      "          false,",
+      "          (__acc, __i) => __acc or __i == __elem)",
       "}",
       "",
     ].join("\n");

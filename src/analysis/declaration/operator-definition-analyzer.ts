@@ -8,7 +8,7 @@ import {
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { canFormatType, formatType } from "@/formatting/type-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
-import { definitionBody, isMultilineUfcsContinuation } from "@/parsing/syntax.js";
+import { definitionBody } from "@/parsing/syntax.js";
 
 export function analyzeOperatorDefinition(
   node: Parser.SyntaxNode,
@@ -131,9 +131,8 @@ export function analyzeOperatorDefinition(
   const usesContinuationIndentation =
     (body.startPosition.row === body.endPosition.row &&
       preservesDefinitionBodyLineBreak(node, body, commentAttachments)) ||
-    (body.type === "ufcs_call_expression" &&
-      body.startPosition.row > equals.endPosition.row &&
-      isMultilineUfcsContinuation(body));
+    ((body.type === "call_expression" || body.type === "ufcs_call_expression") &&
+      body.startPosition.row > equals.endPosition.row);
   return {
     node,
     qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,

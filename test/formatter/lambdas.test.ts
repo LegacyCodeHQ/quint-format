@@ -204,16 +204,17 @@ describe("lambdas", () => {
     const expected = [
       "module Example {",
       "  pure def maximum(values: List[int]): int =",
-      "    values.foldl(0, (largest, value) => if (value > largest)",
-      "        value",
-      "      else",
-      "        largest)",
+      "      values.foldl(0, (largest, value) => if (value > largest)",
+      "          value",
+      "        else",
+      "          largest)",
       "}",
       "",
     ].join("\n");
 
     expect(output).toBe(expected);
     expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/definition-body-indentation",
       "format/conditional-branch-spacing",
       "format/conditional-else-spacing",
       "format/call-delimiter-spacing",
@@ -254,7 +255,7 @@ describe("lambdas", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      '    lhs.bind(left =>\n      rhs.bind(right =>\n        if (left == right)\n          Ok(left)\n        else\n          Err("different")))',
+      '      lhs.bind(left =>\n        rhs.bind(right =>\n          if (left == right)\n            Ok(left)\n          else\n            Err("different")))',
     );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
@@ -269,7 +270,7 @@ describe("lambdas", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      "    ((x, y) => {\n      val result = x - y\n      if (result < 0) -result else result\n    }).app(lhs, rhs)",
+      "      ((x, y) => {\n        val result = x - y\n        if (result < 0) -result else result\n      }).app(lhs, rhs)",
     );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);

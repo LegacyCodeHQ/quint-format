@@ -42,6 +42,27 @@ exports[`call expressions preserves a hanging partially expanded call 1`] = `
 "
 `;
 
+exports[`call expressions uses continuation indentation for a multiline call definition body 1`] = `
+"module Example {
+  pure def buyableVia1Swap(someCoins) = someCoins
+
+  pure def buyableNSwaps(someCoins, n) =
+      1.to(n).fold(someCoins,
+          (prevCoins, i) => buyableVia1Swap(prevCoins))
+}
+"
+`;
+
+exports[`call expressions preserves leading argument breaks when the closing parenthesis is attached 1`] = `
+"module Example {
+  pure def listContains(__list: List[a], __elem: a): bool =
+      __list.foldl(
+          false,
+          (__acc, __i) => __acc or __i == __elem)
+}
+"
+`;
+
 exports[`call expressions preserves a leading call argument beside the opening parenthesis 1`] = `
 "module Example {
   pure val decreased: List[int] = [1, 2, 3].foldl([],
@@ -191,16 +212,6 @@ exports[`call expressions preserves blank lines between commented call argument 
       3,
       4
   )
-}
-"
-`;
-
-exports[`call expressions preserves leading argument breaks when the closing parenthesis is attached 1`] = `
-"module Example {
-  pure def listContains(__list: List[a], __elem: a): bool =
-    __list.foldl(
-        false,
-        (__acc, __i) => __acc or __i == __elem)
 }
 "
 `;

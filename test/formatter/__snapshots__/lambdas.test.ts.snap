@@ -92,11 +92,11 @@ exports[`lambdas keeps leading call arguments beside a multiline lambda 1`] = `
 exports[`lambdas preserves an attached close after an inline multiline lambda 1`] = `
 "module Example {
   pure def maximum(values: List[int]): int =
-    values.foldl(0, (largest, value) =>
-      if (value > largest)
-        value
-      else
-        largest)
+      values.foldl(0, (largest, value) =>
+        if (value > largest)
+          value
+        else
+          largest)
 }
 "
 `;
@@ -104,9 +104,9 @@ exports[`lambdas preserves an attached close after an inline multiline lambda 1`
 exports[`lambdas preserves attached closes for nested multiline lambdas 1`] = `
 "module Example {
   pure def allDistinct(values: List[int]): bool =
-    values.forall(a =>
-      values.forall(b =>
-        (a != b) implies values.contains(a)))
+      values.forall(a =>
+        values.forall(b =>
+          (a != b) implies values.contains(a)))
 }
 "
 `;
@@ -116,22 +116,11 @@ exports[`lambdas preserves an attached call close after a brace-delimited lambda
   type Node = Internal(int) | Leaf(int)
 
   pure def sumInternals(nodes: List[Node]): int =
-    nodes.foldl(0, (total, node) =>
-      match node {
-        | Internal(value) => total + value
-        | Leaf(_) => total
-      })
-}
-"
-`;
-
-exports[`lambdas preserves an inline conditional lambda header 1`] = `
-"module Example {
-  pure def maximum(values: List[int]): int =
-    values.foldl(0, (largest, value) => if (value > largest)
-        value
-      else
-        largest)
+      nodes.foldl(0, (total, node) =>
+        match node {
+          | Internal(value) => total + value
+          | Leaf(_) => total
+        })
 }
 "
 `;
@@ -139,13 +128,13 @@ exports[`lambdas preserves an inline conditional lambda header 1`] = `
 exports[`lambdas keeps a short call header inline when its lambda body has a long line 1`] = `
 "module Example {
   pure def update(values: Set[int]): Set[int] =
-    values.fold(Set(), (result, value) =>
-        if (value > 0 and value > 1 and value > 2 and value > 3 and value > 4 and value > 5 and value > 6 and value > 7 and value > 8)
-          val updated = result.union(Set(value))
-          updated
-        else
-          result
-    )
+      values.fold(Set(), (result, value) =>
+          if (value > 0 and value > 1 and value > 2 and value > 3 and value > 4 and value > 5 and value > 6 and value > 7 and value > 8)
+            val updated = result.union(Set(value))
+            updated
+          else
+            result
+      )
 }
 "
 `;
@@ -161,12 +150,12 @@ exports[`lambdas propagates multiline layout through nested lambda calls 1`] = `
     }
 
   pure def combine(lhs: Result, rhs: Result): Result =
-    lhs.bind(left =>
-      rhs.bind(right =>
-        if (left == right)
-          Ok(left)
-        else
-          Err("different")))
+      lhs.bind(left =>
+        rhs.bind(right =>
+          if (left == right)
+            Ok(left)
+          else
+            Err("different")))
 }
 "
 `;
@@ -176,10 +165,10 @@ exports[`lambdas keeps a block-bodied lambda brace beside its arrow 1`] = `
   pure def app(op: (int, int) => int, lhs: int, rhs: int): int = op(lhs, rhs)
 
   pure def absoluteDifference(lhs: int, rhs: int): int =
-    ((x, y) => {
-      val result = x - y
-      if (result < 0) -result else result
-    }).app(lhs, rhs)
+      ((x, y) => {
+        val result = x - y
+        if (result < 0) -result else result
+      }).app(lhs, rhs)
 }
 "
 `;
@@ -237,6 +226,17 @@ exports[`lambdas preserves a comment before a lambda body 1`] = `
   pure val increment = (value =>
     // Preserve this lambda comment.
     value + 1)
+}
+"
+`;
+
+exports[`lambdas preserves an inline conditional lambda header 1`] = `
+"module Example {
+  pure def maximum(values: List[int]): int =
+      values.foldl(0, (largest, value) => if (value > largest)
+          value
+        else
+          largest)
 }
 "
 `;
