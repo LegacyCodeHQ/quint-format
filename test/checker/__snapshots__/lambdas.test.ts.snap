@@ -45,6 +45,11 @@ test/fixtures/lambda-comment.qnt:2:26: error[format/lambda-arrow-spacing]: expec
 2 | pure val increment=(value=>
   |                          ^^
   |
+test/fixtures/lambda-comment.qnt:3:1: error[format/lambda-body-indentation]: expected a four-space continuation indent after '=>'
+  |
+3 | // Preserve this lambda comment.
+  | ^
+  |
 test/fixtures/lambda-comment.qnt:4:6: error[format/binary-operator-spacing]: expected one space around '+'
   |
 4 | value+1)

@@ -131,8 +131,8 @@ exports[`binary expression layout preserves a binary continuation in a lambda bo
 
   pure val valid =
       chains.forall(chain =>
-        chain != "b" implies
-            chain == "a"
+          chain != "b" implies
+              chain == "a"
       )
 }
 "
@@ -155,11 +155,11 @@ exports[`binary expression layout uses four-space implies continuations at every
   pure def nested(values: Set[int]): bool =
       values.size() > 0 implies
           values.forall(value =>
-            value > 0 implies
-                values.exists(other => {
-                  val same = other == value
-                  same
-                })
+              value > 0 implies
+                  values.exists(other => {
+                    val same = other == value
+                    same
+                  })
           )
 }
 "

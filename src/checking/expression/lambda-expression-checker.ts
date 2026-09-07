@@ -1,14 +1,10 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { lambdaBodyColumn, lambdaBodyIndentation } from "@/formatting/lambda-body-formatter.js";
 import {
-  callExpressionTarget,
   collectNodes,
   hasInlineMultilineConditionalLambdaBody,
-  isCallExpression,
   isMultilineLambdaExpression,
-  isMultilineUfcsContinuation,
-  ufcsChainRoot,
-  ufcsContinuationIndentation,
 } from "@/parsing/syntax.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
 
@@ -103,44 +99,32 @@ export function checkLambdaExpressions(
         sourceLine: lines[row] ?? "",
       });
     }
-    const parentCall = lambda.parent && isCallExpression(lambda.parent) ? lambda.parent : undefined;
-    const parentTarget = parentCall ? callExpressionTarget(parentCall) : null;
-    const parentFunction = parentTarget?.functionNode;
-    const functionObject = parentTarget?.kind === "ufcs" ? parentTarget.receiver : undefined;
-    const functionDot = parentTarget?.kind === "ufcs" ? parentTarget.dot : undefined;
-    const isMultilineUfcsLambda = Boolean(
-      functionObject &&
-        functionDot &&
-        functionDot.startPosition.row > functionObject.endPosition.row &&
-        body.startPosition.row > arrow.endPosition.row,
+    const leadingComments = lambda.namedChildren.filter(
+      (child) =>
+        (child.type === "comment" || child.type === "documentation_comment") &&
+        child.startIndex >= arrow.endIndex &&
+        child.endIndex <= body.startIndex,
     );
-    const callArguments = parentCall?.childrenForFieldName("argument") ?? [];
-    const argumentIndex = callArguments.findIndex((argument) => argument.id === lambda.id);
-    const previousArgument = callArguments[argumentIndex - 1];
-    const ufcsNode = parentTarget?.kind === "ufcs" ? parentCall : undefined;
-    const isInlineSecondaryArgumentInContinuedUfcsCall = Boolean(
-      argumentIndex > 0 &&
-        previousArgument?.endPosition.row === lambda.startPosition.row &&
-        parentFunction &&
-        ufcsNode &&
-        isMultilineUfcsContinuation(ufcsNode),
-    );
-    const expectedBodyColumn =
-      isInlineSecondaryArgumentInContinuedUfcsCall && ufcsNode
-        ? (lines[ufcsChainRoot(ufcsNode).startPosition.row]?.search(/\S|$/) ?? 0) +
-          ufcsContinuationIndentation() * 2
-        : (functionDot?.startPosition.column ?? 0) + 2;
-    if (isMultilineUfcsLambda && functionDot && body.startPosition.column !== expectedBodyColumn) {
-      const row = body.startPosition.row;
+    const firstContinuationNode = leadingComments[0] ?? body;
+    const hasLineBrokenBody = firstContinuationNode.startPosition.row > arrow.endPosition.row;
+    const bodyIndentation = lambdaBodyIndentation(body);
+    const expectedBodyColumn = lambdaBodyColumn(lambda, body);
+    if (
+      hasLineBrokenBody &&
+      (firstContinuationNode.startPosition.column !== expectedBodyColumn ||
+        body.startPosition.column !== expectedBodyColumn)
+    ) {
+      const row = firstContinuationNode.startPosition.row;
       diagnostics.push({
         filePath,
         line: row + 1,
         column: 1,
-        length: Math.max(1, body.startPosition.column),
+        length: Math.max(1, firstContinuationNode.startPosition.column),
         rule: "format/lambda-body-indentation",
-        message: isInlineSecondaryArgumentInContinuedUfcsCall
-          ? "expected the secondary lambda body to align with the UFCS continuation"
-          : "expected the lambda body two spaces inside the UFCS call",
+        message:
+          bodyIndentation === 2
+            ? "expected a four-space continuation indent after '=>'"
+            : "expected a two-space structural indent after '=>'",
         sourceLine: lines[row] ?? "",
       });
     }

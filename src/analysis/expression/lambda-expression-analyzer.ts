@@ -3,15 +3,13 @@ import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
+import { lambdaBodyIndentation } from "@/formatting/lambda-body-formatter.js";
 import { formatCommentedTuplePattern, formatPattern } from "@/formatting/pattern-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import {
-  callExpressionTarget,
   compactLambdaBlockExpression,
   hasInlineMultilineConditionalLambdaBody,
-  isCallExpression,
   isMultilineLambdaExpression,
-  isMultilineUfcsContinuation,
 } from "@/parsing/syntax.js";
 
 export function analyzeLambdaExpression(
@@ -51,44 +49,6 @@ export function analyzeLambdaExpression(
     );
     const isMultilineBody = isMultilineLambdaExpression(node);
     const preservesInlineConditionalHeader = hasInlineMultilineConditionalLambdaBody(node);
-    let continuationAnchor = node;
-    let ancestor = node.parent;
-    while (ancestor) {
-      if (
-        ancestor.startPosition.row === node.startPosition.row &&
-        ancestor.startPosition.column < continuationAnchor.startPosition.column &&
-        ancestor.type !== "module_definition" &&
-        ancestor.type !== "source_file"
-      ) {
-        continuationAnchor = ancestor;
-      }
-      ancestor = ancestor.parent;
-    }
-    const sourceContinuationIndentation =
-      body.startPosition.row > arrow.endPosition.row &&
-      body.startPosition.column - continuationAnchor.startPosition.column >= 4
-        ? 2
-        : 1;
-    const enclosingCall = node.parent && isCallExpression(node.parent) ? node.parent : undefined;
-    const callArguments = enclosingCall?.childrenForFieldName("argument") ?? [];
-    const argumentIndex = callArguments.findIndex((argument) => argument.id === node.id);
-    const previousArgument = callArguments[argumentIndex - 1];
-    const isInlineSecondaryArgument = Boolean(
-      previousArgument && previousArgument.endPosition.row === node.startPosition.row,
-    );
-    const enclosingTarget = enclosingCall ? callExpressionTarget(enclosingCall) : null;
-    const isInlineSecondaryArgumentInContinuedUfcsCall = Boolean(
-      isInlineSecondaryArgument &&
-        enclosingTarget?.kind === "ufcs" &&
-        enclosingCall &&
-        isMultilineUfcsContinuation(enclosingCall),
-    );
-    const inlineCallHeaderExceedsLineWidth = arrow.endPosition.column > 120;
-    const continuationIndentation = isInlineSecondaryArgumentInContinuedUfcsCall
-      ? 0
-      : isInlineSecondaryArgument && inlineCallHeaderExceedsLineWidth
-        ? 1
-        : sourceContinuationIndentation;
     return {
       document: compactBlockExpression
         ? concat([parameterDocument, text(" => { "), analysis.document, text(" }")])
@@ -99,18 +59,19 @@ export function analyzeLambdaExpression(
               : concat([
                   parameterDocument,
                   text(" =>"),
-                  indentBy(concat([hardLine, analysis.document]), continuationIndentation),
+                  indentBy(concat([hardLine, analysis.document]), lambdaBodyIndentation(body)),
                 ])
             : concat([parameterDocument, text(" => "), analysis.document])
           : concat([
               parameterDocument,
               text(" =>"),
-              indent(
+              indentBy(
                 concat([
                   ...comments.flatMap((comment) => [hardLine, commentDocument(comment)]),
                   hardLine,
                   analysis.document,
                 ]),
+                lambdaBodyIndentation(body),
               ),
             ]),
       binaryOperators: analysis.binaryOperators,

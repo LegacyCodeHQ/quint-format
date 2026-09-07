@@ -31,14 +31,17 @@ describe("lambdas", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("preserves a multiline call with a lambda argument", () => {
+  test("uses continuation indentation after a lambda arrow", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-lambda-call.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
 
-    expect(output).toContain("names.forall(name =>\n    names.contains(name)\n  )");
+    expect(output).toContain("names.forall(name =>\n      names.contains(name)\n  )");
+    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/lambda-body-indentation",
+    );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
@@ -63,7 +66,7 @@ describe("lambdas", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("does not stack a secondary lambda continuation on a continued UFCS call", () => {
+  test("uses lambda continuation indentation within a continued UFCS call", () => {
     const input = readFileSync(
       new URL("../fixtures/continued-ufcs-secondary-lambda.qnt", import.meta.url),
       "utf8",
@@ -74,7 +77,7 @@ describe("lambdas", () => {
       "  pure def maximum(values: List[int]): int = {",
       "    val result = values",
       "        .fold(0, (largest, value) =>",
-      "        if (value > largest) value else largest)",
+      "            if (value > largest) value else largest)",
       "",
       "    result",
       "  }",
@@ -85,6 +88,7 @@ describe("lambdas", () => {
     expect(output).toBe(expected);
     expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toEqual([
       "format/field-access-indentation",
+      "format/lambda-body-indentation",
     ]);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
@@ -104,7 +108,7 @@ describe("lambdas", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      "  pure val valid = Set(1, 2).forall(value =>\n    (value > 0)\n        implies (value >= 1)\n  )",
+      "  pure val valid = Set(1, 2).forall(value =>\n      (value > 0)\n          implies (value >= 1)\n  )",
     );
     expect(checkQuint(input, "input.qnt").map((diagnostic) => diagnostic.rule)).toContain(
       "format/binary-operator-indentation",
@@ -158,17 +162,24 @@ describe("lambdas", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
-  test("preserves attached closes for nested multiline lambdas", () => {
+  test("uses continuation indentation for nested multiline lambdas", () => {
     const input = readFileSync(
       new URL("../fixtures/attached-nested-lambda-closes.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
 
-    expect(output).toBe(input);
+    const expected = input
+      .replace("\n        values.forall(b", "\n          values.forall(b")
+      .replace("\n          (a != b)", "\n              (a != b)");
+
+    expect(output).toBe(expected);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
-    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/lambda-body-indentation",
+      "format/lambda-body-indentation",
+    ]);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
     const inputTree = parser.parse(input).rootNode;
     const outputTree = parser.parse(output).rootNode;
@@ -255,7 +266,7 @@ describe("lambdas", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      '      lhs.bind(left =>\n        rhs.bind(right =>\n          if (left == right)\n            Ok(left)\n          else\n            Err("different")))',
+      '      lhs.bind(left =>\n          rhs.bind(right =>\n              if (left == right)\n                Ok(left)\n              else\n                Err("different")))',
     );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
@@ -331,7 +342,7 @@ describe("lambdas", () => {
     const input = readFileSync(new URL("../fixtures/lambda-comment.qnt", import.meta.url), "utf8");
     const output = formatQuint(input);
 
-    expect(output).toContain("// Preserve this lambda comment.");
+    expect(output).toContain("(value =>\n      // Preserve this lambda comment.\n      value + 1)");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

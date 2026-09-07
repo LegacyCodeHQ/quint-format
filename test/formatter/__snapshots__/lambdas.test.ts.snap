@@ -19,12 +19,12 @@ exports[`lambdas uses a four-space continuation for a multiline lambda body 1`] 
 "
 `;
 
-exports[`lambdas preserves a multiline call with a lambda argument 1`] = `
+exports[`lambdas uses continuation indentation after a lambda arrow 1`] = `
 "module Example {
   const names: Set[str]
 
   val all_present = names.forall(name =>
-    names.contains(name)
+      names.contains(name)
   )
 }
 "
@@ -41,12 +41,12 @@ exports[`lambdas indents a multiline lambda within a UFCS call 1`] = `
 "
 `;
 
-exports[`lambdas does not stack a secondary lambda continuation on a continued UFCS call 1`] = `
+exports[`lambdas uses lambda continuation indentation within a continued UFCS call 1`] = `
 "module Example {
   pure def maximum(values: List[int]): int = {
     val result = values
         .fold(0, (largest, value) =>
-        if (value > largest) value else largest)
+            if (value > largest) value else largest)
 
     result
   }
@@ -57,8 +57,8 @@ exports[`lambdas does not stack a secondary lambda continuation on a continued U
 exports[`lambdas uses a four-space leading operator continuation in a lambda 1`] = `
 "module Example {
   pure val valid = Set(1, 2).forall(value =>
-    (value > 0)
-        implies (value >= 1)
+      (value > 0)
+          implies (value >= 1)
   )
 }
 "
@@ -70,7 +70,7 @@ exports[`lambdas keeps a secondary lambda header beside the call opening 1`] = `
 
   action update = {
     values' = values.setBy("one", value =>
-      value + 1
+        value + 1
     )
   }
 }
@@ -83,7 +83,7 @@ exports[`lambdas keeps leading call arguments beside a multiline lambda 1`] = `
       0.range(8)
           .foldl(Map(),
             (m, key) =>
-              if (key > 0) m.put(key, key) else m
+                if (key > 0) m.put(key, key) else m
           )
 }
 "
@@ -93,20 +93,20 @@ exports[`lambdas preserves an attached close after an inline multiline lambda 1`
 "module Example {
   pure def maximum(values: List[int]): int =
       values.foldl(0, (largest, value) =>
-        if (value > largest)
-          value
-        else
-          largest)
+          if (value > largest)
+            value
+          else
+            largest)
 }
 "
 `;
 
-exports[`lambdas preserves attached closes for nested multiline lambdas 1`] = `
+exports[`lambdas uses continuation indentation for nested multiline lambdas 1`] = `
 "module Example {
   pure def allDistinct(values: List[int]): bool =
       values.forall(a =>
-        values.forall(b =>
-          (a != b) implies values.contains(a)))
+          values.forall(b =>
+              (a != b) implies values.contains(a)))
 }
 "
 `;
@@ -151,11 +151,11 @@ exports[`lambdas propagates multiline layout through nested lambda calls 1`] = `
 
   pure def combine(lhs: Result, rhs: Result): Result =
       lhs.bind(left =>
-        rhs.bind(right =>
-          if (left == right)
-            Ok(left)
-          else
-            Err("different")))
+          rhs.bind(right =>
+              if (left == right)
+                Ok(left)
+              else
+                Err("different")))
 }
 "
 `;
@@ -224,8 +224,8 @@ exports[`lambdas keeps block-combinator lambda bodies attached 1`] = `
 exports[`lambdas preserves a comment before a lambda body 1`] = `
 "module Example {
   pure val increment = (value =>
-    // Preserve this lambda comment.
-    value + 1)
+      // Preserve this lambda comment.
+      value + 1)
 }
 "
 `;

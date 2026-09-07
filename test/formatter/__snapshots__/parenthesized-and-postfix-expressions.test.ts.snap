@@ -39,8 +39,8 @@ exports[`parenthesized and postfix expressions attaches postfix access to a mult
 
   pure def multiply(lhs: int, rhs: int): int =
       ((x, y) =>
-        val result = x * y
-        if (result > 0) result else 0
+          val result = x * y
+          if (result > 0) result else 0
       ).app(lhs, rhs)
 }
 "

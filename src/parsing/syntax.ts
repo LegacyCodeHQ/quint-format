@@ -60,7 +60,7 @@ export function isCompactNondetSequence(
   );
 }
 
-function isBraceDelimitedLambdaBody(node: Parser.SyntaxNode): boolean {
+export function isBraceDelimitedLambdaBody(node: Parser.SyntaxNode): boolean {
   return (
     isBlockCombinatorExpression(node) ||
     ["block_expression", "record_literal", "match_expression"].includes(node.type)

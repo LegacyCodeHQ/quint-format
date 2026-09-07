@@ -102,7 +102,7 @@ describe("local definitions and nondeterminism", () => {
     );
     const output = formatQuint(input);
     const expected =
-      "module Example {\n  pure def check(values: Set[int]): bool = {\n    pure def allPositive(items: Set[int]): bool =\n        items.forall(element =>\n          element > 0)\n    allPositive(values)\n  }\n}\n";
+      "module Example {\n  pure def check(values: Set[int]): bool = {\n    pure def allPositive(items: Set[int]): bool =\n        items.forall(element =>\n            element > 0)\n    allPositive(values)\n  }\n}\n";
 
     expect(output).toBe(expected);
     expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toContain(
