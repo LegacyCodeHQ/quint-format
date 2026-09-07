@@ -1,6 +1,20 @@
 import type Parser from "tree-sitter";
 import { concat, type Doc, hardLine, indent, text } from "./document.js";
 
+export function preservedInlineReturnTypePrefix(
+  definition: Parser.SyntaxNode,
+  closeParen: Parser.SyntaxNode | undefined,
+  colon: Parser.SyntaxNode | undefined,
+): "" | " " {
+  if (!closeParen || !colon || closeParen.endPosition.row !== colon.startPosition.row) return "";
+
+  const gap = definition.text.slice(
+    closeParen.endIndex - definition.startIndex,
+    colon.startIndex - definition.startIndex,
+  );
+  return gap === " " ? " " : "";
+}
+
 export function canFormatType(node: Parser.SyntaxNode): boolean {
   if (
     node.type === "primitive_type" ||

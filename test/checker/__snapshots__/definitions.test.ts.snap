@@ -76,11 +76,6 @@ test/fixtures/typed-def-header.qnt:2:23: error[format/type-colon-spacing]: expec
 2 |   def identity(value :int) :int=value
   |                       ^
   |
-test/fixtures/typed-def-header.qnt:2:27: error[format/type-colon-spacing]: expected no space before ':'
-  |
-2 |   def identity(value :int) :int=value
-  |                           ^
-  |
 test/fixtures/typed-def-header.qnt:2:29: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |   def identity(value :int) :int=value
@@ -109,11 +104,6 @@ test/fixtures/untyped-parameter-return.qnt:2:21: error[format/parameter-list-spa
   |
 2 |  def identity( value ) : int=value
   |                     ^
-  |
-test/fixtures/untyped-parameter-return.qnt:2:23: error[format/type-colon-spacing]: expected no space before ':'
-  |
-2 |  def identity( value ) : int=value
-  |                       ^
   |
 test/fixtures/untyped-parameter-return.qnt:2:29: error[format/equals-spacing]: expected one space around '='
   |

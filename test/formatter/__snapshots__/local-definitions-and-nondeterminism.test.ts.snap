@@ -253,3 +253,13 @@ exports[`local definitions and nondeterminism uses continuation indentation for 
 }
 "
 `;
+
+exports[`local definitions and nondeterminism preserves one space before an inline local return type 1`] = `
+"module Example {
+  pure def check = {
+    pure def isPositive(n: int) : bool = n > 0
+    isPositive(1)
+  }
+}
+"
+`;

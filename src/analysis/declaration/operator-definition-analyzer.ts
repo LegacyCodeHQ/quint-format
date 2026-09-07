@@ -6,7 +6,11 @@ import {
   definitionBodyDocument,
 } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
-import { canFormatType, formatType } from "@/formatting/type-formatter.js";
+import {
+  canFormatType,
+  formatType,
+  preservedInlineReturnTypePrefix,
+} from "@/formatting/type-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import { definitionBody } from "@/parsing/syntax.js";
 
@@ -97,7 +101,12 @@ export function analyzeOperatorDefinition(
     returnColon && returnColon.startPosition.row > typeAnchor.endPosition.row,
   );
   const returnTypeDocuments = returnType
-    ? [...(lineBrokenTypeAnnotation ? [hardLine] : []), text(`: ${formatType(returnType)}`)]
+    ? [
+        ...(lineBrokenTypeAnnotation ? [hardLine] : []),
+        text(
+          `${preservedInlineReturnTypePrefix(node, closeParen, returnColon)}: ${formatType(returnType)}`,
+        ),
+      ]
     : [];
   const usesExpandedParameterList = Boolean(
     openParen &&

@@ -56,7 +56,7 @@ exports[`definitions preserves an expanded pure def parameter list without a tra
 
 exports[`definitions formats a typed def header 1`] = `
 "module Example {
-  def identity(value: int): int = value
+  def identity(value: int) : int = value
 }
 "
 `;
@@ -105,7 +105,7 @@ exports[`definitions expands a multiline definition header 2`] = `
 
 exports[`definitions formats an untyped parameter with a return type 1`] = `
 "module Example {
-  def identity(value): int = value
+  def identity(value) : int = value
 }
 "
 `;
@@ -146,4 +146,17 @@ exports[`definitions preserves a return type placed below the definition header 
     "sourceLine": "    : bool =",
   },
 ]
+`;
+
+exports[`definitions preserves one space before an inline return type 1`] = `
+"module Example {
+  type Node = Leaf(int) | Internal(int)
+
+  pure def is_leaf(n: Node) : bool =
+    match n {
+      | Leaf(n) => true
+      | Internal(n) => false
+    }
+}
+"
 `;

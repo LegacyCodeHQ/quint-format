@@ -5,6 +5,7 @@ import {
   definitionBodyContinuationIndentation,
   preservesDefinitionBodyLineBreak,
 } from "@/formatting/definition-body-formatter.js";
+import { preservedInlineReturnTypePrefix } from "@/formatting/type-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import { definitionBody, isCompactNondetSequence } from "@/parsing/syntax.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
@@ -175,7 +176,8 @@ export function checkLocalDefinition(
   const hasCanonicalColonGap = lineBrokenTypeAnnotation
     ? /^(?:\r\n|\r|\n)[\t ]*$/.test(source.slice(typeAnchor.endIndex, colon?.startIndex)) &&
       colon?.startPosition.column === node.startPosition.column
-    : source.slice(typeAnchor.endIndex, colon?.startIndex) === "";
+    : source.slice(typeAnchor.endIndex, colon?.startIndex) === "" ||
+      preservedInlineReturnTypePrefix(node, closeParen, colon) === " ";
   if (
     typeNode &&
     colon &&

@@ -1,5 +1,6 @@
 import type { ModuleDeclaration } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { preservedInlineReturnTypePrefix } from "@/formatting/type-formatter.js";
 
 export function checkTypeAnnotations(
   declaration: ModuleDeclaration,
@@ -50,13 +51,16 @@ export function checkTypeAnnotations(
 
   const typeAnchor = declaration.typeAnchor ?? declaration.nameNode;
   const colonGap = source.slice(typeAnchor.endIndex, declaration.colon.startIndex);
+  const preservesSpacedInlineReturnType =
+    preservedInlineReturnTypePrefix(declaration.node, declaration.closeParen, declaration.colon) ===
+    " ";
   const hasCanonicalLineBrokenTypeAnnotation =
     /^(?:\r\n|\r|\n)[\t ]*$/u.test(colonGap) &&
     declaration.colon.startPosition.column === declaration.node.startPosition.column;
   if (
     declaration.lineBrokenTypeAnnotation
       ? !hasCanonicalLineBrokenTypeAnnotation
-      : colonGap.length > 0
+      : colonGap.length > 0 && !preservesSpacedInlineReturnType
   ) {
     const row = declaration.lineBrokenTypeAnnotation
       ? declaration.colon.startPosition.row

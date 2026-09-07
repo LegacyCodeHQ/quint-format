@@ -94,11 +94,6 @@ test/fixtures/empty-parameter-lists.qnt:2:13: error[format/parameter-list-spacin
 2 |  action step(  ) :bool=true
   |             ^
   |
-test/fixtures/empty-parameter-lists.qnt:2:17: error[format/type-colon-spacing]: expected no space before ':'
-  |
-2 |  action step(  ) :bool=true
-  |                 ^
-  |
 test/fixtures/empty-parameter-lists.qnt:2:19: error[format/type-colon-spacing]: expected one space after ':'
   |
 2 |  action step(  ) :bool=true
@@ -158,11 +153,6 @@ test/fixtures/empty-parameter-lists.qnt:5:15: error[format/parameter-list-spacin
   |
 5 |  nondet choose( ) :int=1
   |               ^
-  |
-test/fixtures/empty-parameter-lists.qnt:5:18: error[format/type-colon-spacing]: expected no space before ':'
-  |
-5 |  nondet choose( ) :int=1
-  |                  ^
   |
 test/fixtures/empty-parameter-lists.qnt:5:20: error[format/type-colon-spacing]: expected one space after ':'
   |

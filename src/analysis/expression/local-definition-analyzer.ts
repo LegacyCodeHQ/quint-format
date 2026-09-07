@@ -7,7 +7,7 @@ import {
 } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { formatPattern } from "@/formatting/pattern-formatter.js";
-import { formatType } from "@/formatting/type-formatter.js";
+import { formatType, preservedInlineReturnTypePrefix } from "@/formatting/type-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import { definitionBody } from "@/parsing/syntax.js";
 
@@ -123,7 +123,12 @@ export function analyzeLocalDefinition(
       returnColon && returnColon.startPosition.row > typeAnchor.endPosition.row,
     );
     const returnTypeDocuments = returnType
-      ? [...(lineBrokenTypeAnnotation ? [hardLine] : []), text(`: ${formatType(returnType)}`)]
+      ? [
+          ...(lineBrokenTypeAnnotation ? [hardLine] : []),
+          text(
+            `${preservedInlineReturnTypePrefix(node, closeParen, returnColon)}: ${formatType(returnType)}`,
+          ),
+        ]
       : [];
     const definitionHeadDocument = usesExpandedParameterList
       ? concat([

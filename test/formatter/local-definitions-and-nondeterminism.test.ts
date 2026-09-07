@@ -154,6 +154,20 @@ describe("local definitions and nondeterminism", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves one space before an inline local return type", () => {
+    const input = readFileSync(
+      new URL("../fixtures/spaced-local-return-type.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(input, "input.qnt")).toEqual([]);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("uses continuation indentation for module and local value bodies", () => {
     const input = readFileSync(
       new URL("../fixtures/value-continuations.qnt", import.meta.url),
