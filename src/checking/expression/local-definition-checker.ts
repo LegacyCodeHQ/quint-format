@@ -56,6 +56,12 @@ export function checkLocalDefinition(
   const parameters = node.childrenForFieldName("parameter");
   const openParen = node.children.find((child) => child.type === "(");
   const closeParen = node.children.find((child) => child.type === ")");
+  const usesExpandedParameterList = Boolean(
+    openParen &&
+      closeParen &&
+      parameters.length > 0 &&
+      openParen.startPosition.row < closeParen.endPosition.row,
+  );
   if (openParen && closeParen && parameters.length > 0) {
     const first = parameters[0] as Parser.SyntaxNode;
     const last = parameters.at(-1) as Parser.SyntaxNode;
@@ -72,8 +78,9 @@ export function checkLocalDefinition(
       });
     }
     if (
-      source.slice(openParen.endIndex, first.startIndex) !== "" ||
-      source.slice(last.endIndex, closeParen.startIndex) !== ""
+      !usesExpandedParameterList &&
+      (source.slice(openParen.endIndex, first.startIndex) !== "" ||
+        source.slice(last.endIndex, closeParen.startIndex) !== "")
     ) {
       const row = openParen.startPosition.row;
       diagnostics.push({
@@ -90,6 +97,7 @@ export function checkLocalDefinition(
       const previous = parameters[index];
       const next = parameters[index + 1];
       if (
+        !usesExpandedParameterList &&
         previous &&
         next &&
         (source.slice(previous.endIndex, comma.startIndex) !== "" ||
@@ -103,6 +111,29 @@ export function checkLocalDefinition(
           length: 1,
           rule: "format/parameter-separator-spacing",
           message: "expected ', ' between parameters",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
+    if (usesExpandedParameterList) {
+      const expectedParameterColumn = node.startPosition.column + 2;
+      const parametersAreAligned = parameters.every(
+        (parameter) => parameter.startPosition.column === expectedParameterColumn,
+      );
+      if (
+        first.startPosition.row !== openParen.endPosition.row + 1 ||
+        !parametersAreAligned ||
+        closeParen.startPosition.row !== last.endPosition.row + 1 ||
+        closeParen.startPosition.column !== node.startPosition.column
+      ) {
+        const row = first.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: first.startPosition.column + 1,
+          length: Math.max(1, first.text.length),
+          rule: "format/multiline-parameter-layout",
+          message: "expected one local parameter per indented line",
           sourceLine: lines[row] ?? "",
         });
       }

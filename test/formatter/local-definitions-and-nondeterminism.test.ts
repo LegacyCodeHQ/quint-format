@@ -118,6 +118,24 @@ describe("local definitions and nondeterminism", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves an expanded local operator parameter list", () => {
+    const input = readFileSync(
+      new URL("../fixtures/local-expanded-parameters.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves a comment after a nested definition", () => {
     const input = readFileSync(
       new URL("../fixtures/nested-definition-comment.qnt", import.meta.url),

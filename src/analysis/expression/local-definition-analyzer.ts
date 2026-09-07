@@ -5,7 +5,7 @@ import {
   definitionBodyContinuationIndentation,
   definitionBodyDocument,
 } from "@/formatting/definition-body-formatter.js";
-import { concat, type Doc, text } from "@/formatting/document.js";
+import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { formatPattern } from "@/formatting/pattern-formatter.js";
 import { formatType } from "@/formatting/type-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
@@ -80,6 +80,9 @@ export function analyzeLocalDefinition(
     const defKeyword = node.children.find((child) => child.type === "def");
     const name = node.childForFieldName("name");
     const parameters = node.childrenForFieldName("parameter");
+    const parameterCommas = node.children.filter((child) => child.type === ",");
+    const openParen = node.children.find((child) => child.type === "(");
+    const closeParen = node.children.find((child) => child.type === ")");
     const returnType = node.childForFieldName("return_type");
     const body = definitionBody(node);
     if (!name || (!defKeyword && !qualifier)) {
@@ -94,22 +97,50 @@ export function analyzeLocalDefinition(
         )
       : [];
     const head = defKeyword ? `${qualifier ? `${qualifier.text} ` : ""}def` : qualifier?.text;
+    const formattedParameters = parameters.map((parameter) => {
+      const parameterName = parameter.childForFieldName("name");
+      const parameterType = parameter.childForFieldName("type");
+      if (!parameterName) throw new Error("Unable to locate a local operator parameter");
+      return `${formatPattern(parameterName)}${parameterType ? `: ${formatType(parameterType)}` : ""}`;
+    });
+    const lastParameter = parameters.at(-1);
+    const hasTrailingParameterComma = Boolean(
+      lastParameter && parameterCommas.some((comma) => comma.startIndex >= lastParameter.endIndex),
+    );
+    const usesExpandedParameterList = Boolean(
+      openParen &&
+        closeParen &&
+        parameters.length > 0 &&
+        openParen.startPosition.row < closeParen.endPosition.row,
+    );
     const parameterList =
-      parameters.length > 0
-        ? `(${parameters
-            .map((parameter) => {
-              const parameterName = parameter.childForFieldName("name");
-              const parameterType = parameter.childForFieldName("type");
-              if (!parameterName) throw new Error("Unable to locate a local operator parameter");
-              return `${formatPattern(parameterName)}${parameterType ? `: ${formatType(parameterType)}` : ""}`;
-            })
-            .join(", ")})`
+      openParen && closeParen
+        ? `(${formattedParameters.join(", ")}${hasTrailingParameterComma ? "," : ""})`
         : "";
+    const definitionHeadDocument = usesExpandedParameterList
+      ? concat([
+          text(`${head} ${name.text}(`),
+          indent(
+            concat(
+              formattedParameters.flatMap((parameter, index) => [
+                hardLine,
+                text(
+                  `${parameter}${index < formattedParameters.length - 1 || hasTrailingParameterComma ? "," : ""}`,
+                ),
+              ]),
+            ),
+          ),
+          hardLine,
+          text(`)${returnType ? `: ${formatType(returnType)}` : ""} =`),
+        ])
+      : text(
+          `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""} =`,
+        );
     return {
       document: concat([
         body && bodyAnalysis
           ? definitionBodyDocument(
-              `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""} =`,
+              definitionHeadDocument,
               node,
               body,
               bodyAnalysis.document,
