@@ -78,6 +78,7 @@ exports[`UFCS and member access preserves all aligned dots in a nondet UFCS chai
         Set(1, 2, 3)
             .filter(value => value > 1)
             .oneOf()
+
     selected' = choice
 }
 "
@@ -118,6 +119,7 @@ exports[`UFCS and member access uses a four-space structural indent for UFCS con
         .oneOf()
     val updated = states
         .set(key, 1)
+
     states' = states
         .set(key, updated.get(key))
   }
@@ -146,12 +148,12 @@ exports[`UFCS and member access uses a four-space structural indent for UFCS con
     "sourceLine": "                      .set(key, 1)",
   },
   {
-    "column": 5,
+    "column": 1,
     "filePath": "unformatted.qnt",
-    "length": 59,
+    "length": 4,
     "line": 9,
-    "message": "expected the nested definition body on a new line",
-    "rule": "format/nested-definition-layout",
+    "message": "expected one blank line after the multiline local definition",
+    "rule": "format/nested-definition-separation",
     "sourceLine": "    states' = states",
   },
   {

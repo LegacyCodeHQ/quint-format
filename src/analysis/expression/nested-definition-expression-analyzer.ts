@@ -2,6 +2,7 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { concat, hardLine, text } from "@/formatting/document.js";
+import { requiresNestedDefinitionResultGap } from "@/formatting/nested-definition-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import {
   compactNestedBlockExpression,
@@ -73,6 +74,11 @@ export function analyzeNestedDefinitionExpression(
       leadingBodyComments.length === 0 &&
       definitionValue !== null &&
       body.startPosition.row > definitionValue.endPosition.row + 1;
+    const requiresBodyGap = requiresNestedDefinitionResultGap(
+      definition,
+      body,
+      leadingBodyComments.length > 0,
+    );
     const preservesLeadingCommentsBodyGap = Boolean(
       lastComment && body.startPosition.row > lastComment.endPosition.row + 1,
     );
@@ -86,7 +92,9 @@ export function analyzeNestedDefinitionExpression(
           : concat([
               definitionDocument,
               hardLine,
-              ...(preservesBodyGap || preservesLeadingCommentGap ? [hardLine] : []),
+              ...(requiresBodyGap || preservesBodyGap || preservesLeadingCommentGap
+                ? [hardLine]
+                : []),
               ...leadingBodyComments.flatMap((comment, index) => {
                 const nextComment = leadingBodyComments[index + 1];
                 const preservesCommentGroupGap = Boolean(

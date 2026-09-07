@@ -272,6 +272,7 @@ exports[`conditional expressions expands the consequence when the alternative ha
         else
           // fallback result
           2
+
     selected
   }
 }

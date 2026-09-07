@@ -5,6 +5,7 @@ module Example {
       expected: int,
     ): bool =
         items.contains(expected)
+
     includesExpected(values, 1)
   }
 }

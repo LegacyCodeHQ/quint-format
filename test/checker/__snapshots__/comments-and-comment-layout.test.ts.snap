@@ -214,11 +214,6 @@ test/fixtures/local-definition-trailing-comment.qnt:3:11: error[format/equals-sp
 3 | val answer=42 // Preserve this local comment.
   |           ^
   |
-test/fixtures/local-definition-trailing-comment.qnt:4:1: error[format/nested-definition-layout]: expected the nested definition body on a new line
-  |
-4 | answer
-  | ^^^^^^
-  |
 "
 `;
 
@@ -243,10 +238,10 @@ test/fixtures/local-definition-body-comment.qnt:3:11: error[format/equals-spacin
 3 | val answer=
   |           ^
   |
-test/fixtures/local-definition-body-comment.qnt:6:1: error[format/nested-definition-layout]: expected the nested definition body on a new line
+test/fixtures/local-definition-body-comment.qnt:6:1: error[format/nested-definition-separation]: expected one blank line after the multiline local definition
   |
 6 | answer
-  | ^^^^^^
+  | ^
   |
 "
 `;
