@@ -4,16 +4,16 @@ module Example {
   type First = Next(Second) | NoFirst
 
   pure def evaluate(first: First): int =
-    match first {
-      | Next(second) =>
-        match second {
-          | More(third) =>
-            match third {
-              | Value(number) => number
-              | NoThird => 0
-            }
-          | NoSecond => 0
-        }
-      | NoFirst => 0
-    }
+      match first {
+        | Next(second) =>
+          match second {
+            | More(third) =>
+              match third {
+                | Value(number) => number
+                | NoThird => 0
+              }
+            | NoSecond => 0
+          }
+        | NoFirst => 0
+      }
 }

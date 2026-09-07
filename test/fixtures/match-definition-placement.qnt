@@ -7,8 +7,8 @@ module Example {
   }
 
   pure def expanded(value: Option): int =
-    match value {
-      | Some(result) => result
-      | None => 0
-    }
+      match value {
+        | Some(result) => result
+        | None => 0
+      }
 }

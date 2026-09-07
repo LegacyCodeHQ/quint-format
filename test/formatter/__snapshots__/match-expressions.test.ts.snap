@@ -18,10 +18,10 @@ exports[`match expressions joins a line-broken match arrow with one space 1`] = 
   type Node = Internal(int) | Leaf
 
   pure def value(node: Node): int =
-    match node {
-      | Internal(number) => number
-      | Leaf => 0
-    }
+      match node {
+        | Internal(number) => number
+        | Leaf => 0
+      }
 }
 "
 `;
@@ -39,10 +39,10 @@ exports[`match expressions places a match expression below a definition header 1
   var status: Status
 
   action step =
-    match status {
-      | Ready => { status' = Waiting }
-      | Waiting => { status' = Ready }
-    }
+      match status {
+        | Ready => { status' = Waiting }
+        | Waiting => { status' = Ready }
+      }
 }
 "
 `;
@@ -57,10 +57,10 @@ exports[`match expressions preserves match placement after a definition equals s
   }
 
   pure def expanded(value: Option): int =
-    match value {
-      | Some(result) => result
-      | None => 0
-    }
+      match value {
+        | Some(result) => result
+        | None => 0
+      }
 }
 "
 `;
@@ -78,23 +78,74 @@ exports[`match expressions preserves an inline multiline match used as a lambda 
 "
 `;
 
+exports[`match expressions aligns inline block-combinator bodies with the match case 1`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+  var n: int
+
+  action step =
+      match status {
+        | Ready => all {
+            n' = n,
+            status' = Waiting,
+          }
+        | Waiting => all {
+            n' = n + 1,
+            status' = Ready,
+          }
+      }
+}
+"
+`;
+
+exports[`match expressions aligns inline block-combinator bodies in nested matches 1`] = `
+"module Example {
+  type Inner = Exist(int) | NonExist
+  type Outer = Some(Inner) | None
+
+  pure def verify(value: Outer): bool =
+      match value {
+        | Some(inner) =>
+          match inner {
+            | Exist(n) => and {
+                n > 0,
+                n < 10,
+              }
+            | NonExist => true
+          }
+        | None => false
+      }
+}
+"
+`;
+
 exports[`match expressions aligns an ordinary block body with the match case 1`] = `
 "module Example {
   type Proof = Found(int) | Missing
 
   pure def verify(proof: Proof): bool =
-    match proof {
-      | Found(value) => {
-          value > 0
-        }
-      | Missing => false
-    }
+      match proof {
+        | Found(value) => {
+            value > 0
+          }
+        | Missing => false
+      }
 }
 "
 `;
 
 exports[`match expressions aligns an ordinary block body with the match case 2`] = `
 [
+  {
+    "column": 1,
+    "filePath": "pipe-aligned-block.qnt",
+    "length": 4,
+    "line": 5,
+    "message": "expected a four-space continuation indent",
+    "rule": "format/definition-body-indentation",
+    "sourceLine": "    match proof {",
+  },
   {
     "column": 1,
     "filePath": "pipe-aligned-block.qnt",
@@ -134,18 +185,18 @@ exports[`match expressions preserves line-broken match arm baselines at every ne
   type First = Next(Second) | NoFirst
 
   pure def evaluate(first: First): int =
-    match first {
-      | Next(second) =>
-        match second {
-          | More(third) =>
-            match third {
-              | Value(number) => number
-              | NoThird => 0
-            }
-          | NoSecond => 0
-        }
-      | NoFirst => 0
-    }
+      match first {
+        | Next(second) =>
+          match second {
+            | More(third) =>
+              match third {
+                | Value(number) => number
+                | NoThird => 0
+              }
+            | NoSecond => 0
+          }
+        | NoFirst => 0
+      }
 }
 "
 `;
@@ -156,14 +207,14 @@ exports[`match expressions uses a four-space continuation for a line-broken matc
   type Proof = Exist(int) | NonExist
 
   pure def evaluate(proof: Proof, nodes: Set[Node], k: int): bool =
-    match proof {
-      | Exist(ep) =>
-          nodes.filter(n => match n {
-            | Leaf(n) => n.key_hash == k
-            | Internal(_) => false
-          }).size() > 0
-      | NonExist => true
-    }
+      match proof {
+        | Exist(ep) =>
+            nodes.filter(n => match n {
+              | Leaf(n) => n.key_hash == k
+              | Internal(_) => false
+            }).size() > 0
+        | NonExist => true
+      }
 }
 "
 `;
@@ -259,53 +310,11 @@ exports[`match expressions preserves a multiline match-arm body with a trailing 
   var status: Status
 
   val number =
-    match status {
-      | Ready =>
-          1 // Ready has a value
-      | Waiting => 0
-    }
-}
-"
-`;
-
-exports[`match expressions aligns inline block-combinator bodies with the match case 1`] = `
-"module Example {
-  type Status = Ready | Waiting
-  var status: Status
-  var n: int
-
-  action step =
-    match status {
-      | Ready => all {
-          n' = n,
-          status' = Waiting,
-        }
-      | Waiting => all {
-          n' = n + 1,
-          status' = Ready,
-        }
-    }
-}
-"
-`;
-
-exports[`match expressions aligns inline block-combinator bodies in nested matches 1`] = `
-"module Example {
-  type Inner = Exist(int) | NonExist
-  type Outer = Some(Inner) | None
-
-  pure def verify(value: Outer): bool =
-    match value {
-      | Some(inner) =>
-        match inner {
-          | Exist(n) => and {
-              n > 0,
-              n < 10,
-            }
-          | NonExist => true
-        }
-      | None => false
-    }
+      match status {
+        | Ready =>
+            1 // Ready has a value
+        | Waiting => 0
+      }
 }
 "
 `;

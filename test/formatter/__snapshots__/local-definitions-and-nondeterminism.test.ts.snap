@@ -263,3 +263,23 @@ exports[`local definitions and nondeterminism preserves one space before an inli
 }
 "
 `;
+
+exports[`local definitions and nondeterminism uses continuation indentation for line-broken match bodies 1`] = `
+"module Example {
+  type Child = Some(int) | None
+  type Node = Internal(Child) | Leaf
+
+  pure def check(node: Node): bool =
+      match node {
+        | Internal(child) =>
+            val childOK =
+                match child {
+                  | Some(value) => value > 0
+                  | None => false
+                }
+            childOK
+        | Leaf => true
+      }
+}
+"
+`;

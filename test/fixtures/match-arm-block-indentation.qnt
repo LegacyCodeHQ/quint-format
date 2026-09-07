@@ -4,14 +4,14 @@ module Example {
   var n: int
 
   action step =
-    match status {
-      | Ready => all {
-          n' = n,
-          status' = Waiting,
-        }
-      | Waiting => all {
-          n' = n + 1,
-          status' = Ready,
-        }
-    }
+      match status {
+        | Ready => all {
+            n' = n,
+            status' = Waiting,
+          }
+        | Waiting => all {
+            n' = n + 1,
+            status' = Ready,
+          }
+      }
 }

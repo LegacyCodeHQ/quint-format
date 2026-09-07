@@ -28,7 +28,7 @@ describe("match expressions", () => {
     );
     const output = formatQuint(input);
 
-    expect(output).toContain("      | Internal(number) => number");
+    expect(output).toContain("        | Internal(number) => number");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
@@ -59,7 +59,7 @@ describe("match expressions", () => {
     );
     const output = formatQuint(input);
 
-    expect(output).toContain("action step =\n    match status {");
+    expect(output).toContain("action step =\n      match status {");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
@@ -184,8 +184,8 @@ describe("match expressions", () => {
     );
     const output = formatQuint(input);
     const overIndented = input
-      .replace("\n        match second {", "\n          match second {")
-      .replace("\n            match third {", "\n              match third {");
+      .replace("\n          match second {", "\n            match second {")
+      .replace("\n              match third {", "\n                match third {");
 
     expect(checkQuint(input, "deep-line-broken-matches.qnt")).toEqual([]);
     expect(
@@ -304,7 +304,7 @@ describe("match expressions", () => {
     );
     const output = formatQuint(input);
 
-    expect(output).toContain("| Ready =>\n          1 // Ready has a value");
+    expect(output).toContain("| Ready =>\n            1 // Ready has a value");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

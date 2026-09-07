@@ -20,7 +20,8 @@ export function definitionBodyContinuationIndentation(
   const isContinuationExpression =
     body.type === "call_expression" ||
     body.type === "ufcs_call_expression" ||
-    body.type === "binary_expression";
+    body.type === "binary_expression" ||
+    body.type === "match_expression";
   const isSingleLineExpression =
     body.startPosition.row === body.endPosition.row &&
     preservesDefinitionBodyLineBreak(definition, body, commentAttachments);

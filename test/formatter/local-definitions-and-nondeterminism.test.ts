@@ -168,6 +168,35 @@ describe("local definitions and nondeterminism", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("uses continuation indentation for line-broken match bodies", () => {
+    const input = readFileSync(
+      new URL("../fixtures/local-match-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected = input
+      .replace("\n              match child {", "\n                match child {")
+      .replace("\n                | Some(value)", "\n                  | Some(value)")
+      .replace("\n                | None", "\n                  | None")
+      .replace(
+        "\n              }\n            childOK",
+        "\n                }\n            childOK",
+      );
+
+    expect(checkQuint(input, "local-match-continuation.qnt").map(({ rule }) => rule)).toContain(
+      "format/definition-body-indentation",
+    );
+    expect(output).toBe(expected);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("uses continuation indentation for module and local value bodies", () => {
     const input = readFileSync(
       new URL("../fixtures/value-continuations.qnt", import.meta.url),

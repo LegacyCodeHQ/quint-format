@@ -20,7 +20,12 @@ test/fixtures/match-check.qnt:5:16: error[format/match-arrow-spacing]: expected 
 `;
 
 exports[`checker diagnostics match expressions reports a match arrow on a separate line 1`] = `
-"test/fixtures/match-arrow-line-break.qnt:7:10: error[format/match-arrow-spacing]: expected one space around '=>'
+"test/fixtures/match-arrow-line-break.qnt:5:1: error[format/definition-body-indentation]: expected a four-space continuation indent
+  |
+5 |     match node {
+  | ^^^^
+  |
+test/fixtures/match-arrow-line-break.qnt:7:10: error[format/match-arrow-spacing]: expected one space around '=>'
   |
 7 |          => number
   |          ^^
