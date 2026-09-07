@@ -4,6 +4,7 @@ import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
 import { namedParseTreeSignature } from "../support/parse-tree";
+import { parseQuintAst } from "../support/quint-ast.js";
 
 const parser = new Parser();
 parser.setLanguage(Quint);
@@ -168,6 +169,36 @@ describe("conditional expressions", () => {
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
     expect(parser.parse(output).rootNode.hasError).toBe(false);
+  });
+
+  test("preserves a vertical else-if ladder with compact block branches", () => {
+    const input = readFileSync(
+      new URL("../fixtures/compact-block-else-if-ladder.qnt", import.meta.url),
+      "utf8",
+    );
+    const expected = [
+      "module Example {",
+      "  type Ordering = LT | GT | EQ",
+      "",
+      "  pure def intCompare(__a: int, __b: int): Ordering = {",
+      "    if (__a < __b) { LT }",
+      "    else if (__a > __b) { GT }",
+      "    else { EQ }",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toBe(expected);
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
   test("joins trailing else lines in a compact conditional ladder", () => {

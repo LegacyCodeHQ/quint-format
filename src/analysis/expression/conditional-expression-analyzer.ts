@@ -84,12 +84,18 @@ export function analyzeConditionalExpression(
         (!preservesCompactLadder && hasSourceElseBreak) ||
         leadingAlternativeComments.length > 0 ||
         consequence.startPosition.row > closeParen.endPosition.row);
+    const preservesCompactBlockLadderBreak =
+      consequence.type === "block_expression" &&
+      consequence.startPosition.row === consequence.endPosition.row &&
+      formatsConditionalChain &&
+      hasSourceElseBreak;
     const preservesElseLineBreak =
-      consequence.type !== "block_expression" &&
       leadingAlternativeComments.length === 0 &&
-      (formatsConditionalChain ||
-        expandsSourceMultilineCondition ||
-        elseKeyword.startPosition.row > consequence.endPosition.row);
+      (preservesCompactBlockLadderBreak ||
+        (consequence.type !== "block_expression" &&
+          (formatsConditionalChain ||
+            expandsSourceMultilineCondition ||
+            elseKeyword.startPosition.row > consequence.endPosition.row)));
     const preservesAlternativeLineBreak =
       alternative.type !== "block_expression" &&
       alternative.type !== "if_expression" &&
