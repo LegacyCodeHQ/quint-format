@@ -6,14 +6,14 @@ module Example {
   pure def evaluate(first: First): int =
       match first {
         | Next(second) =>
-          match second {
-            | More(third) =>
-              match third {
-                | Value(number) => number
-                | NoThird => 0
-              }
-            | NoSecond => 0
-          }
+            match second {
+              | More(third) =>
+                  match third {
+                    | Value(number) => number
+                    | NoThird => 0
+                  }
+              | NoSecond => 0
+            }
         | NoFirst => 0
       }
 }

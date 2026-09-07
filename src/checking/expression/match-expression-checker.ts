@@ -1,5 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { indentWidth } from "@/formatting/document.js";
+import { matchArmBodyIndentation } from "@/formatting/match-arm-body-formatter.js";
 import {
   blockCombinatorEntries,
   collectNodes,
@@ -142,27 +144,28 @@ export function checkMatchExpressions(
         lines[candidate.startPosition.row]?.search(/\S|$/u) ?? candidate.startPosition.column;
       const armColumn = indentationColumn(arm);
       const lineBrokenBody = body.startPosition.row > arrow.endPosition.row;
-      const isStructuralBody = structuralEntries !== undefined;
-      const expectedLineBrokenBodyColumn = armColumn + (isStructuralBody ? 2 : 4);
+      const bodyIndentationLevels = matchArmBodyIndentation(body);
+      const expectedLineBrokenBodyColumn = armColumn + bodyIndentationLevels * indentWidth;
       if (lineBrokenBody && indentationColumn(body) !== expectedLineBrokenBodyColumn) {
         const row = body.startPosition.row;
-        const bodyIndentation = indentationColumn(body);
+        const actualBodyColumn = indentationColumn(body);
         diagnostics.push({
           filePath,
           line: row + 1,
           column: 1,
-          length: Math.max(1, bodyIndentation),
+          length: Math.max(1, actualBodyColumn),
           rule: "format/match-arm-body-indentation",
-          message: isStructuralBody
-            ? "expected one indentation level for the line-broken match arm body"
-            : "expected a four-space continuation indent for the line-broken match arm body",
+          message:
+            bodyIndentationLevels === 1
+              ? "expected one indentation level for the line-broken match arm body"
+              : "expected a four-space continuation indent for the line-broken match arm body",
           sourceLine: lines[row] ?? "",
         });
       }
       if (structuralEntries) {
         const closeBrace = body.children.find((child) => child.type === "}");
-        const bodyColumn = armColumn + 2;
-        const expectedEntryColumn = bodyColumn + 2;
+        const bodyColumn = armColumn + (lineBrokenBody ? bodyIndentationLevels : 1) * indentWidth;
+        const expectedEntryColumn = bodyColumn + indentWidth;
         const expectedCloseColumn = bodyColumn;
         const misindentedEntry = structuralEntries.find(
           (entry) => indentationColumn(entry) !== expectedEntryColumn,

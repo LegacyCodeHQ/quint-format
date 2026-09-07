@@ -3,7 +3,8 @@ import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
-import { isBlockCombinatorExpression, isCompactDefaultMatch } from "@/parsing/syntax.js";
+import { matchArmBodyIndentation } from "@/formatting/match-arm-body-formatter.js";
+import { isCompactDefaultMatch } from "@/parsing/syntax.js";
 
 export function analyzeMatchExpression(
   node: Parser.SyntaxNode,
@@ -43,12 +44,6 @@ export function analyzeMatchExpression(
           ? rawArrowGap
           : " ";
       const isMultilineBody = body.startPosition.row > arrow.endPosition.row;
-      const isSelfIndentingBody = isBlockCombinatorExpression(body);
-      const isStructuralBody =
-        isSelfIndentingBody ||
-        body.type === "match_expression" ||
-        body.type === "record_literal" ||
-        body.type === "block_expression";
       return {
         node: arm,
         body: bodyAnalysis,
@@ -74,7 +69,10 @@ export function analyzeMatchExpression(
             ? isMultilineBody
               ? concat([
                   text(`| ${pattern}${arrowGap}=>`),
-                  indentBy(concat([hardLine, bodyAnalysis.document]), isStructuralBody ? 1 : 2),
+                  indentBy(
+                    concat([hardLine, bodyAnalysis.document]),
+                    matchArmBodyIndentation(body),
+                  ),
                 ])
               : concat([text(`| ${pattern}${arrowGap}=> `), indent(bodyAnalysis.document)])
             : concat([

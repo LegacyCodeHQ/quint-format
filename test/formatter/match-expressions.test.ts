@@ -183,17 +183,36 @@ describe("match expressions", () => {
       "utf8",
     );
     const output = formatQuint(input);
-    const overIndented = input
-      .replace("\n          match second {", "\n            match second {")
-      .replace("\n              match third {", "\n                match third {");
+    const underIndented = input
+      .replace("\n            match second {", "\n          match second {")
+      .replace("\n                  match third {", "\n                match third {");
 
     expect(checkQuint(input, "deep-line-broken-matches.qnt")).toEqual([]);
     expect(
-      checkQuint(overIndented, "over-indented-matches.qnt").filter(
+      checkQuint(underIndented, "under-indented-matches.qnt").filter(
         ({ rule }) => rule === "format/match-arm-body-indentation",
       ),
     ).toHaveLength(2);
-    expect(formatQuint(overIndented)).toBe(input);
+    expect(formatQuint(underIndented)).toBe(input);
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
+  test("uses a continuation indent for a line-broken nested match arm", () => {
+    const input = readFileSync(
+      new URL("../fixtures/nested-match-arm-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(checkQuint(input, "nested-match-arm-continuation.qnt")).toEqual([]);
     expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);

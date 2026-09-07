@@ -107,13 +107,13 @@ exports[`match expressions aligns inline block-combinator bodies in nested match
   pure def verify(value: Outer): bool =
       match value {
         | Some(inner) =>
-          match inner {
-            | Exist(n) => and {
-                n > 0,
-                n < 10,
-              }
-            | NonExist => true
-          }
+            match inner {
+              | Exist(n) => and {
+                  n > 0,
+                  n < 10,
+                }
+              | NonExist => true
+            }
         | None => false
       }
 }
@@ -187,15 +187,33 @@ exports[`match expressions preserves line-broken match arm baselines at every ne
   pure def evaluate(first: First): int =
       match first {
         | Next(second) =>
-          match second {
-            | More(third) =>
-              match third {
-                | Value(number) => number
-                | NoThird => 0
-              }
-            | NoSecond => 0
-          }
+            match second {
+              | More(third) =>
+                  match third {
+                    | Value(number) => number
+                    | NoThird => 0
+                  }
+              | NoSecond => 0
+            }
         | NoFirst => 0
+      }
+}
+"
+`;
+
+exports[`match expressions uses a continuation indent for a line-broken nested match arm 1`] = `
+"module Example {
+  type Inner = Exist(int) | NonExist
+  type Outer = Some(Inner) | None
+
+  pure def verify(value: Outer): bool =
+      match value {
+        | Some(inner) =>
+            match inner {
+              | Exist(number) => number > 0
+              | NonExist => true
+            }
+        | None => false
       }
 }
 "

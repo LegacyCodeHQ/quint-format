@@ -6,10 +6,7 @@ module Example {
       match value {
         | Some(inner) =>
             match inner {
-              | Exist(n) => and {
-                  n > 0,
-                  n < 10,
-                }
+              | Exist(number) => number > 0
               | NonExist => true
             }
         | None => false
