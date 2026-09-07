@@ -421,19 +421,27 @@ export function collectNodes(node: Parser.SyntaxNode, type: string): Parser.Synt
   ];
 }
 
+export function isCompactMatchExpression(node: Parser.SyntaxNode): boolean {
+  const arms = node.childrenForFieldName("arm");
+  return Boolean(
+    arms.length > 0 &&
+      node.startPosition.row === node.endPosition.row &&
+      node.endPosition.column <= 120 &&
+      collectNodes(node, "comment").length === 0 &&
+      collectNodes(node, "documentation_comment").length === 0,
+  );
+}
+
 export function isCompactDefaultMatch(node: Parser.SyntaxNode): boolean {
   const arms = node.childrenForFieldName("arm");
   const arm = arms[0];
   const variant = arm?.childForFieldName("variant");
   return Boolean(
-    arms.length === 1 &&
+    isCompactMatchExpression(node) &&
+      arms.length === 1 &&
       arm &&
       variant?.type === "hole" &&
-      !arm.childForFieldName("parameter") &&
-      node.startPosition.row === node.endPosition.row &&
-      node.endPosition.column <= 120 &&
-      collectNodes(node, "comment").length === 0 &&
-      collectNodes(node, "documentation_comment").length === 0,
+      !arm.childForFieldName("parameter"),
   );
 }
 

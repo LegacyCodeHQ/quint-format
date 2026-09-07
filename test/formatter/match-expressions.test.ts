@@ -4,6 +4,7 @@ import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
 import { namedParseTreeSignature } from "../support/parse-tree";
+import { parseQuintAst } from "../support/quint-ast.js";
 
 const parser = new Parser();
 parser.setLanguage(Quint);
@@ -47,6 +48,25 @@ describe("match expressions", () => {
     const output = formatQuint(input);
 
     expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("preserves a compact multi-arm match", () => {
+    const input = readFileSync(
+      new URL("../fixtures/compact-multi-arm-match.qnt", import.meta.url),
+      "utf8",
+    );
+    const expected = input.replace("Some(n+1)", "Some(n + 1)");
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toBe(expected);
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

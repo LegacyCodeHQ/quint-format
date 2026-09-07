@@ -31,7 +31,7 @@ describe("checker diagnostics", () => {
       expect(result.rendered).toMatchSnapshot();
     });
 
-    test("reports an inline match layout", () => {
+    test("reports noncanonical compact match spacing", () => {
       const result = checkFixture("match-expression.qnt");
 
       expect(result.kind).toBe("format");

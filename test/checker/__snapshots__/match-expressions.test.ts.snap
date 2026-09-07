@@ -126,8 +126,8 @@ test/fixtures/match-arm-body-comment.qnt:7:8: error[format/match-arrow-spacing]:
 "
 `;
 
-exports[`checker diagnostics match expressions reports an inline match layout 1`] = `
-"test/fixtures/match-expression.qnt:4:56: error[format/match-layout]: expected match arms and the closing brace on separate lines
+exports[`checker diagnostics match expressions reports noncanonical compact match spacing 1`] = `
+"test/fixtures/match-expression.qnt:4:56: error[format/match-layout]: expected one space around compact match braces and arm separators
   |
 4 |   pure def getOrZero(value: Option): int = match value {Some(x)=>x|None=>0|_=>0}
   |                                                        ^

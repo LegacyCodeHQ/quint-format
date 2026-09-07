@@ -4,7 +4,7 @@ import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { matchArmBodyIndentation } from "@/formatting/match-arm-body-formatter.js";
-import { isCompactDefaultMatch } from "@/parsing/syntax.js";
+import { isCompactMatchExpression } from "@/parsing/syntax.js";
 
 export function analyzeMatchExpression(
   node: Parser.SyntaxNode,
@@ -47,6 +47,7 @@ export function analyzeMatchExpression(
       return {
         node: arm,
         body: bodyAnalysis,
+        compactDocument: concat([text(`${pattern}${arrowGap}=> `), bodyAnalysis.document]),
         document: inlineArrowComment
           ? concat([
               text(`| ${pattern}${arrowGap}=>`),
@@ -88,7 +89,11 @@ export function analyzeMatchExpression(
       };
     });
     const analyses = [valueAnalysis, ...armAnalyses.map(({ body }) => body)];
-    const compactDefaultMatch = isCompactDefaultMatch(node);
+    const compactMatch = isCompactMatchExpression(node);
+    const firstArm = arms[0];
+    const hasLeadingSeparator = node.children.some(
+      (child) => child.type === "|" && firstArm && child.endIndex <= firstArm.startIndex,
+    );
     const contentDocuments: Doc[] = [];
     let previousArm: (typeof armAnalyses)[number] | undefined;
     for (const child of node.namedChildren.filter((candidate) => candidate.id !== value.id)) {
@@ -115,12 +120,15 @@ export function analyzeMatchExpression(
       previousArm = arm;
     }
     return {
-      document: compactDefaultMatch
+      document: compactMatch
         ? concat([
             text("match "),
             valueAnalysis.document,
-            text(" { _ => "),
-            armAnalyses[0]?.body.document ?? text(""),
+            text(hasLeadingSeparator ? " { | " : " { "),
+            ...armAnalyses.flatMap((arm, index) => [
+              ...(index > 0 ? [text(" | ")] : []),
+              arm.compactDocument,
+            ]),
             text(" }"),
           ])
         : concat([

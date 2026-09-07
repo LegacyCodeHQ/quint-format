@@ -7,6 +7,7 @@ import {
   collectNodes,
   isBlockCombinatorExpression,
   isCompactDefaultMatch,
+  isCompactMatchExpression,
 } from "@/parsing/syntax.js";
 
 export function checkMatchExpressions(
@@ -25,13 +26,28 @@ export function checkMatchExpressions(
     }
     const rows = arms.map((arm) => arm.startPosition.row);
     const compactDefaultMatch = isCompactDefaultMatch(matchExpression);
-    const compactArm = arms[0];
+    const compactMatch = isCompactMatchExpression(matchExpression);
+    const pipes = matchExpression.children.filter((child) => child.type === "|");
+    const firstArm = arms[0];
+    const leadingPipe = pipes.find((pipe) => firstArm && pipe.endIndex <= firstArm.startIndex);
+    const separatingPipes = pipes.filter((pipe) => pipe.id !== leadingPipe?.id);
     const hasCanonicalCompactLayout = Boolean(
-      compactDefaultMatch &&
-        compactArm &&
-        !compactArm.children.some((child) => child.type === "|") &&
-        source.slice(openBrace.endIndex, compactArm.startIndex) === " " &&
-        source.slice(compactArm.endIndex, closeBrace.startIndex) === " ",
+      compactMatch &&
+        firstArm &&
+        source.slice(openBrace.endIndex, (leadingPipe ?? firstArm).startIndex) === " " &&
+        (!leadingPipe || source.slice(leadingPipe.endIndex, firstArm.startIndex) === " ") &&
+        separatingPipes.length === arms.length - 1 &&
+        arms.slice(1).every((arm, index) => {
+          const previousArm = arms[index];
+          const pipe = separatingPipes[index];
+          return Boolean(
+            previousArm &&
+              pipe &&
+              source.slice(previousArm.endIndex, pipe.startIndex) === " " &&
+              source.slice(pipe.endIndex, arm.startIndex) === " ",
+          );
+        }) &&
+        source.slice(arms.at(-1)?.endIndex ?? closeBrace.startIndex, closeBrace.startIndex) === " ",
     );
     const hasCanonicalLines =
       hasCanonicalCompactLayout ||
@@ -46,8 +62,10 @@ export function checkMatchExpressions(
         column: openBrace.startPosition.column + 1,
         length: 1,
         rule: "format/match-layout",
-        message: compactDefaultMatch
-          ? "expected one space inside the compact default match braces"
+        message: compactMatch
+          ? compactDefaultMatch
+            ? "expected one space inside the compact default match braces"
+            : "expected one space around compact match braces and arm separators"
           : "expected match arms and the closing brace on separate lines",
         sourceLine: lines[row] ?? "",
       });
