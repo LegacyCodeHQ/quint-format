@@ -161,14 +161,7 @@ export function checkMatchExpressions(
       }
       if (structuralEntries) {
         const closeBrace = body.children.find((child) => child.type === "}");
-        const bodyColumn =
-          armColumn +
-          (lineBrokenBody ||
-          body.type === "block_expression" ||
-          body.type === "match_expression" ||
-          body.type === "record_literal"
-            ? 2
-            : 0);
+        const bodyColumn = armColumn + 2;
         const expectedEntryColumn = bodyColumn + 2;
         const expectedCloseColumn = bodyColumn;
         const misindentedEntry = structuralEntries.find(

@@ -76,10 +76,7 @@ export function analyzeMatchExpression(
                   text(`| ${pattern}${arrowGap}=>`),
                   indentBy(concat([hardLine, bodyAnalysis.document]), isStructuralBody ? 1 : 2),
                 ])
-              : concat([
-                  text(`| ${pattern}${arrowGap}=> `),
-                  isSelfIndentingBody ? bodyAnalysis.document : indent(bodyAnalysis.document),
-                ])
+              : concat([text(`| ${pattern}${arrowGap}=> `), indent(bodyAnalysis.document)])
             : concat([
                 text(`| ${pattern}${arrowGap}=>`),
                 indent(

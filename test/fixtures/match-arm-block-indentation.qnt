@@ -6,12 +6,12 @@ module Example {
   action step =
     match status {
       | Ready => all {
-        n' = n,
-        status' = Waiting,
-      }
+          n' = n,
+          status' = Waiting,
+        }
       | Waiting => all {
-        n' = n + 1,
-        status' = Ready,
-      }
+          n' = n + 1,
+          status' = Ready,
+        }
     }
 }

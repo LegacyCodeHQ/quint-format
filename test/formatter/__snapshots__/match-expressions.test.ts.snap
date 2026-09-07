@@ -78,27 +78,6 @@ exports[`match expressions preserves an inline multiline match used as a lambda 
 "
 `;
 
-exports[`match expressions preserves one structural indentation level for block-combinator arm bodies 1`] = `
-"module Example {
-  type Status = Ready | Waiting
-  var status: Status
-  var n: int
-
-  action step =
-    match status {
-      | Ready => all {
-        n' = n,
-        status' = Waiting,
-      }
-      | Waiting => all {
-        n' = n + 1,
-        status' = Ready,
-      }
-    }
-}
-"
-`;
-
 exports[`match expressions aligns an ordinary block body with the match case 1`] = `
 "module Example {
   type Proof = Found(int) | Missing
@@ -284,6 +263,48 @@ exports[`match expressions preserves a multiline match-arm body with a trailing 
       | Ready =>
           1 // Ready has a value
       | Waiting => 0
+    }
+}
+"
+`;
+
+exports[`match expressions aligns inline block-combinator bodies with the match case 1`] = `
+"module Example {
+  type Status = Ready | Waiting
+  var status: Status
+  var n: int
+
+  action step =
+    match status {
+      | Ready => all {
+          n' = n,
+          status' = Waiting,
+        }
+      | Waiting => all {
+          n' = n + 1,
+          status' = Ready,
+        }
+    }
+}
+"
+`;
+
+exports[`match expressions aligns inline block-combinator bodies in nested matches 1`] = `
+"module Example {
+  type Inner = Exist(int) | NonExist
+  type Outer = Some(Inner) | None
+
+  pure def verify(value: Outer): bool =
+    match value {
+      | Some(inner) =>
+        match inner {
+          | Exist(n) => and {
+              n > 0,
+              n < 10,
+            }
+          | NonExist => true
+        }
+      | None => false
     }
 }
 "

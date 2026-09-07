@@ -91,7 +91,7 @@ describe("match expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("preserves one structural indentation level for block-combinator arm bodies", () => {
+  test("aligns inline block-combinator bodies with the match case", () => {
     const input = readFileSync(
       new URL("../fixtures/match-arm-block-indentation.qnt", import.meta.url),
       "utf8",
@@ -103,6 +103,25 @@ describe("match expressions", () => {
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("aligns inline block-combinator bodies in nested matches", () => {
+    const input = readFileSync(
+      new URL("../fixtures/nested-match-arm-block-combinator.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(checkQuint(input, "nested-match-arm-block-combinator.qnt")).toEqual([]);
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
   test("aligns an ordinary block body with the match case", () => {
