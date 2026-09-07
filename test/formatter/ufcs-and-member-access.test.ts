@@ -72,7 +72,7 @@ describe("UFCS and member access", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      "      Set(1, 2, 3)\n          .filter(value => value > 1)\n          .oneOf()",
+      "        Set(1, 2, 3)\n            .filter(value => value > 1)\n            .oneOf()",
     );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);

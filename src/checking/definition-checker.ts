@@ -1,6 +1,9 @@
 import type { ModuleDeclaration } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
-import { preservesDefinitionBodyLineBreak } from "@/formatting/definition-body-formatter.js";
+import {
+  definitionBodyContinuationIndentation,
+  preservesDefinitionBodyLineBreak,
+} from "@/formatting/definition-body-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 
 export function checkDefinitionBody(
@@ -43,14 +46,11 @@ export function checkDefinitionBody(
     !isExpandedTypeApplication;
   const usesOperatorBodyContinuation =
     declaration.node.type === "operator_definition" &&
-    ((declaration.valueNode.startPosition.row === declaration.valueNode.endPosition.row &&
-      preservesDefinitionBodyLineBreak(
-        declaration.node,
-        declaration.valueNode,
-        commentAttachments,
-      )) ||
-      declaration.valueNode.type === "call_expression" ||
-      declaration.valueNode.type === "ufcs_call_expression");
+    definitionBodyContinuationIndentation(
+      declaration.node,
+      declaration.valueNode,
+      commentAttachments,
+    ) === 2;
   const requiresLineBreakAfterEquals =
     isMultilineSum ||
     preservesTypeContinuation ||

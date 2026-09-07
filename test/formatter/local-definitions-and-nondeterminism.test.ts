@@ -95,6 +95,29 @@ describe("local definitions and nondeterminism", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("uses continuation indentation for a local operator body", () => {
+    const input = readFileSync(
+      new URL("../fixtures/local-operator-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected =
+      "module Example {\n  pure def check(values: Set[int]): bool = {\n    pure def allPositive(items: Set[int]): bool =\n        items.forall(element =>\n          element > 0)\n    allPositive(values)\n  }\n}\n";
+
+    expect(output).toBe(expected);
+    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/definition-body-indentation",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves a comment after a nested definition", () => {
     const input = readFileSync(
       new URL("../fixtures/nested-definition-comment.qnt", import.meta.url),

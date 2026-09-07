@@ -75,9 +75,9 @@ exports[`UFCS and member access preserves all aligned dots in a nondet UFCS chai
 
   action step =
     nondet choice =
-      Set(1, 2, 3)
-          .filter(value => value > 1)
-          .oneOf()
+        Set(1, 2, 3)
+            .filter(value => value > 1)
+            .oneOf()
     selected' = choice
 }
 "

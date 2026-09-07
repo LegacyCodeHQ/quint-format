@@ -1,6 +1,11 @@
 import type Parser from "tree-sitter";
 import { checkTypeDelimiterSpacing } from "@/checking/type/type-checker.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import {
+  definitionBodyContinuationIndentation,
+  preservesDefinitionBodyLineBreak,
+} from "@/formatting/definition-body-formatter.js";
+import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import { definitionBody, isCompactNondetSequence } from "@/parsing/syntax.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
 
@@ -10,6 +15,7 @@ export function checkLocalDefinition(
   lines: string[],
   filePath: string,
   diagnostics: FormatDiagnostic[],
+  commentAttachments: CommentAttachmentIndex,
 ) {
   const qualifier = node.childForFieldName("qualifier");
   const keyword =
@@ -154,9 +160,17 @@ export function checkLocalDefinition(
   const equals = node.children.find((child) => child.type === "=");
   if (value && equals) {
     const anchor = typeNode ?? closeParen ?? name;
+    const afterEquals = source.slice(equals.endIndex, value.startIndex);
+    const requiresLineBreakAfterEquals = preservesDefinitionBodyLineBreak(
+      node,
+      value,
+      commentAttachments,
+    );
     if (
       source.slice(anchor.endIndex, equals.startIndex) !== " " ||
-      source.slice(equals.endIndex, value.startIndex) !== " "
+      (requiresLineBreakAfterEquals
+        ? !/^(?:\r\n|\r|\n)[\t ]*$/.test(afterEquals)
+        : afterEquals !== " ")
     ) {
       const row = equals.startPosition.row;
       diagnostics.push({
@@ -166,6 +180,22 @@ export function checkLocalDefinition(
         length: 1,
         rule: "format/equals-spacing",
         message: "expected one space around '='",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+    if (
+      node.type === "operator_definition" &&
+      definitionBodyContinuationIndentation(node, value, commentAttachments) === 2 &&
+      value.startPosition.column !== node.startPosition.column + 4
+    ) {
+      const row = value.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: 1,
+        length: Math.max(1, value.startPosition.column),
+        rule: "format/definition-body-indentation",
+        message: "expected a four-space continuation indent",
         sourceLine: lines[row] ?? "",
       });
     }

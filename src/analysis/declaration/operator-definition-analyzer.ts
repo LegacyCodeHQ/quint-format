@@ -2,8 +2,8 @@ import type Parser from "tree-sitter";
 import { analyzeExpression } from "@/analysis/expression/expression-analyzer.js";
 import type { ModuleDeclaration } from "@/core/analysis.js";
 import {
+  definitionBodyContinuationIndentation,
   definitionBodyDocument,
-  preservesDefinitionBodyLineBreak,
 } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { canFormatType, formatType } from "@/formatting/type-formatter.js";
@@ -128,11 +128,6 @@ export function analyzeOperatorDefinition(
         ...returnTypeDocuments,
         text(" ="),
       ]);
-  const usesContinuationIndentation =
-    (body.startPosition.row === body.endPosition.row &&
-      preservesDefinitionBodyLineBreak(node, body, commentAttachments)) ||
-    ((body.type === "call_expression" || body.type === "ufcs_call_expression") &&
-      body.startPosition.row > equals.endPosition.row);
   return {
     node,
     qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
@@ -164,7 +159,7 @@ export function analyzeOperatorDefinition(
       node,
       body,
       expression.document,
-      usesContinuationIndentation ? 2 : 1,
+      definitionBodyContinuationIndentation(node, body, commentAttachments),
       commentAttachments,
     ),
   };

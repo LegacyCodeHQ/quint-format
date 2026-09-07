@@ -20,7 +20,7 @@ export function checkNestedDefinitions(
     const definition = nested.childForFieldName("definition");
     const body = nested.childForFieldName("body");
     if (!definition || !body) throw new Error("Unable to locate the nested definition layout");
-    checkLocalDefinition(definition, source, lines, filePath, diagnostics);
+    checkLocalDefinition(definition, source, lines, filePath, diagnostics, commentAttachments);
     const preservesCompactNondetSequence = isCompactNondetSequence(definition, body);
     const hasCanonicalCompactGap =
       preservesCompactNondetSequence && source.slice(definition.endIndex, body.startIndex) === " ";

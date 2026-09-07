@@ -9,6 +9,21 @@ export function indentBy(document: Doc, levels: number): Doc {
   return indented;
 }
 
+export function definitionBodyContinuationIndentation(
+  definition: Parser.SyntaxNode,
+  body: Parser.SyntaxNode,
+  commentAttachments?: CommentAttachmentIndex,
+): number {
+  const equals = definition.children.find((child) => child.type === "=");
+  if (!equals || body.startPosition.row <= equals.endPosition.row) return 1;
+
+  const isCallExpression = body.type === "call_expression" || body.type === "ufcs_call_expression";
+  const isSingleLineExpression =
+    body.startPosition.row === body.endPosition.row &&
+    preservesDefinitionBodyLineBreak(definition, body, commentAttachments);
+  return isCallExpression || isSingleLineExpression ? 2 : 1;
+}
+
 export function definitionBodyDocument(
   head: string | Doc,
   definition: Parser.SyntaxNode,
