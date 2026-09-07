@@ -103,6 +103,25 @@ exports[`blocks and block combinators formats all block combinators 1`] = `
 "
 `;
 
+exports[`blocks and block combinators keeps multiline local definitions adjacent to block-combinator results 1`] = `
+"module Example {
+  pure def single = and {
+    pure def value =
+        1 + 2
+    assert(value == 3)
+  }
+
+  pure def chained = and {
+    pure def left =
+        1 + 2
+    pure def right =
+        3 + 4
+    assert(left < right),
+  }
+}
+"
+`;
+
 exports[`blocks and block combinators preserves a compact block combinator 1`] = `
 "module Example {
   action first = true

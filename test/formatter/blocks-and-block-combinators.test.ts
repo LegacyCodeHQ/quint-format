@@ -4,6 +4,7 @@ import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
 import { namedParseTreeSignature } from "../support/parse-tree";
+import { parseQuintAst } from "../support/quint-ast.js";
 
 const parser = new Parser();
 parser.setLanguage(Quint);
@@ -91,6 +92,42 @@ describe("blocks and block combinators", () => {
     );
     const output = formatQuint(input);
 
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("keeps multiline local definitions adjacent to block-combinator results", () => {
+    const input = readFileSync(
+      new URL("../fixtures/block-combinator-local-results.qnt", import.meta.url),
+      "utf8",
+    );
+    const expected = [
+      "module Example {",
+      "  pure def single = and {",
+      "    pure def value =",
+      "        1 + 2",
+      "    assert(value == 3)",
+      "  }",
+      "",
+      "  pure def chained = and {",
+      "    pure def left =",
+      "        1 + 2",
+      "    pure def right =",
+      "        3 + 4",
+      "    assert(left < right),",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toBe(expected);
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
