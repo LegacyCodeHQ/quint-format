@@ -169,11 +169,17 @@ export function checkLocalDefinition(
   );
   const colon = node.children.find((child) => child.type === ":");
   const typeAnchor = closeParen ?? name;
+  const lineBrokenTypeAnnotation = Boolean(
+    colon && colon.startPosition.row > typeAnchor.endPosition.row,
+  );
+  const hasCanonicalColonGap = lineBrokenTypeAnnotation
+    ? /^(?:\r\n|\r|\n)[\t ]*$/.test(source.slice(typeAnchor.endIndex, colon?.startIndex)) &&
+      colon?.startPosition.column === node.startPosition.column
+    : source.slice(typeAnchor.endIndex, colon?.startIndex) === "";
   if (
     typeNode &&
     colon &&
-    (source.slice(typeAnchor.endIndex, colon.startIndex) !== "" ||
-      source.slice(colon.endIndex, typeNode.startIndex) !== " ")
+    (!hasCanonicalColonGap || source.slice(colon.endIndex, typeNode.startIndex) !== " ")
   ) {
     const row = colon.startPosition.row;
     diagnostics.push({
@@ -182,7 +188,9 @@ export function checkLocalDefinition(
       column: colon.startPosition.column + 1,
       length: 1,
       rule: "format/type-colon-spacing",
-      message: "expected ': ' before the definition type",
+      message: lineBrokenTypeAnnotation
+        ? "expected return type on the next aligned line"
+        : "expected ': ' before the definition type",
       sourceLine: lines[row] ?? "",
     });
   }

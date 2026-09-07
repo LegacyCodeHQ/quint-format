@@ -227,3 +227,15 @@ exports[`local definitions and nondeterminism preserves an expanded local operat
 }
 "
 `;
+
+exports[`local definitions and nondeterminism preserves a local return type below the definition header 1`] = `
+"module Example {
+  pure def check(values: Set[int]): bool = {
+    pure def allPositive(items: Set[int])
+    : bool =
+        items.forall(element => element > 0)
+    allPositive(values)
+  }
+}
+"
+`;

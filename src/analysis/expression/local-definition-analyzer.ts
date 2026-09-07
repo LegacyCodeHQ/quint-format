@@ -84,6 +84,7 @@ export function analyzeLocalDefinition(
     const openParen = node.children.find((child) => child.type === "(");
     const closeParen = node.children.find((child) => child.type === ")");
     const returnType = node.childForFieldName("return_type");
+    const returnColon = node.children.find((child) => child.type === ":");
     const body = definitionBody(node);
     if (!name || (!defKeyword && !qualifier)) {
       throw new Error("Unable to locate the local operator definition");
@@ -117,6 +118,13 @@ export function analyzeLocalDefinition(
       openParen && closeParen
         ? `(${formattedParameters.join(", ")}${hasTrailingParameterComma ? "," : ""})`
         : "";
+    const typeAnchor = closeParen ?? name;
+    const lineBrokenTypeAnnotation = Boolean(
+      returnColon && returnColon.startPosition.row > typeAnchor.endPosition.row,
+    );
+    const returnTypeDocuments = returnType
+      ? [...(lineBrokenTypeAnnotation ? [hardLine] : []), text(`: ${formatType(returnType)}`)]
+      : [];
     const definitionHeadDocument = usesExpandedParameterList
       ? concat([
           text(`${head} ${name.text}(`),
@@ -131,11 +139,11 @@ export function analyzeLocalDefinition(
             ),
           ),
           hardLine,
-          text(`)${returnType ? `: ${formatType(returnType)}` : ""} =`),
+          text(")"),
+          ...returnTypeDocuments,
+          text(" ="),
         ])
-      : text(
-          `${head} ${name.text}${parameterList}${returnType ? `: ${formatType(returnType)}` : ""} =`,
-        );
+      : concat([text(`${head} ${name.text}${parameterList}`), ...returnTypeDocuments, text(" =")]);
     return {
       document: concat([
         body && bodyAnalysis
