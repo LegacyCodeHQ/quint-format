@@ -20,8 +20,8 @@ exports[`binary expression layout preserves a same-line comment after a binary o
 exports[`binary expression layout preserves a line break after a binary operator 1`] = `
 "module Example {
   pure val answer =
-    true and
-        false
+      true and
+          false
 }
 "
 `;
@@ -130,10 +130,10 @@ exports[`binary expression layout preserves a binary continuation in a lambda bo
   pure val chains = Set("a")
 
   pure val valid =
-    chains.forall(chain =>
-      chain != "b" implies
-          chain == "a"
-    )
+      chains.forall(chain =>
+        chain != "b" implies
+            chain == "a"
+      )
 }
 "
 `;

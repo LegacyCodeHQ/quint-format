@@ -223,7 +223,7 @@ export function checkLocalDefinition(
       });
     }
     if (
-      node.type === "operator_definition" &&
+      (node.type === "operator_definition" || node.type === "value_definition") &&
       definitionBodyContinuationIndentation(node, value, commentAttachments) === 2 &&
       value.startPosition.column !== node.startPosition.column + 4
     ) {

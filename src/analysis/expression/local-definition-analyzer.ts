@@ -57,7 +57,7 @@ export function analyzeLocalDefinition(
               node,
               value,
               valueAnalysis.document,
-              1,
+              definitionBodyContinuationIndentation(node, value, commentAttachments),
               commentAttachments,
             )
           : text(

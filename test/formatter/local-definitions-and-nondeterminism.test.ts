@@ -154,6 +154,27 @@ describe("local definitions and nondeterminism", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("uses continuation indentation for module and local value bodies", () => {
+    const input = readFileSync(
+      new URL("../fixtures/value-continuations.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const expected = input
+      .replace("\n    Set(1, 2, 3)", "\n      Set(1, 2, 3)")
+      .replace("\n      selected.filter", "\n        selected.filter");
+
+    expect(output).toBe(expected);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves a comment after a nested definition", () => {
     const input = readFileSync(
       new URL("../fixtures/nested-definition-comment.qnt", import.meta.url),

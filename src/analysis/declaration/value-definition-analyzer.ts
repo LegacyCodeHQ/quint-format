@@ -1,7 +1,10 @@
 import type Parser from "tree-sitter";
 import { analyzeExpression } from "@/analysis/expression/expression-analyzer.js";
 import type { ModuleDeclaration } from "@/core/analysis.js";
-import { definitionBodyDocument } from "@/formatting/definition-body-formatter.js";
+import {
+  definitionBodyContinuationIndentation,
+  definitionBodyDocument,
+} from "@/formatting/definition-body-formatter.js";
 import { formatPattern } from "@/formatting/pattern-formatter.js";
 import { formatType } from "@/formatting/type-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
@@ -55,7 +58,7 @@ export function analyzeValueDefinition(
       node,
       value,
       expression.document,
-      1,
+      definitionBodyContinuationIndentation(node, value, commentAttachments),
       commentAttachments,
     ),
   };

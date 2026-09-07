@@ -239,3 +239,17 @@ exports[`local definitions and nondeterminism preserves a local return type belo
 }
 "
 `;
+
+exports[`local definitions and nondeterminism uses continuation indentation for module and local value bodies 1`] = `
+"module Example {
+  pure val selected =
+      Set(1, 2, 3).filter(value => value > 1)
+
+  pure def countSelected(): int = {
+    pure val localSelected =
+        selected.filter(value => value < 3)
+    localSelected.size()
+  }
+}
+"
+`;

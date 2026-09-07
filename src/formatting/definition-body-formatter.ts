@@ -17,11 +17,14 @@ export function definitionBodyContinuationIndentation(
   const equals = definition.children.find((child) => child.type === "=");
   if (!equals || body.startPosition.row <= equals.endPosition.row) return 1;
 
-  const isCallExpression = body.type === "call_expression" || body.type === "ufcs_call_expression";
+  const isContinuationExpression =
+    body.type === "call_expression" ||
+    body.type === "ufcs_call_expression" ||
+    body.type === "binary_expression";
   const isSingleLineExpression =
     body.startPosition.row === body.endPosition.row &&
     preservesDefinitionBodyLineBreak(definition, body, commentAttachments);
-  return isCallExpression || isSingleLineExpression ? 2 : 1;
+  return isContinuationExpression || isSingleLineExpression ? 2 : 1;
 }
 
 export function definitionBodyDocument(

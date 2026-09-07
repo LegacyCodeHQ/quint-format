@@ -10,7 +10,7 @@ exports[`formatter properties converges for deterministic whitespace fuzz cases 
 exports[`formatter properties converges for deterministic whitespace fuzz cases 2`] = `
 "module Fuzz {
   val result: bool =
-    Set(1, 2).contains(1) and 1 + 2 == 3
+      Set(1, 2).contains(1) and 1 + 2 == 3
 }
 "
 `;

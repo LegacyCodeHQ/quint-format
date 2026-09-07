@@ -44,8 +44,9 @@ export function checkDefinitionBody(
     !hasRecordComments &&
     !isMultilineRecord &&
     !isExpandedTypeApplication;
-  const usesOperatorBodyContinuation =
-    declaration.node.type === "operator_definition" &&
+  const usesDefinitionBodyContinuation =
+    (declaration.node.type === "operator_definition" ||
+      declaration.node.type === "value_definition") &&
     definitionBodyContinuationIndentation(
       declaration.node,
       declaration.valueNode,
@@ -75,7 +76,7 @@ export function checkDefinitionBody(
   if (
     (declaration.node.type === "assumption_declaration" ||
       preservesTypeContinuation ||
-      usesOperatorBodyContinuation) &&
+      usesDefinitionBodyContinuation) &&
     declaration.valueNode.startPosition.row > declaration.equals.endPosition.row &&
     declaration.valueNode.startPosition.column !== declaration.node.startPosition.column + 4
   ) {
