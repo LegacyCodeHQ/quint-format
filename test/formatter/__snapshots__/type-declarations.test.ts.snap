@@ -78,6 +78,25 @@ exports[`type declarations formats a multiline sum type 1`] = `
 "
 `;
 
+exports[`type declarations preserves the leading pipe on a multiline single-variant sum type 1`] = `
+"module Example {
+  type Single =
+    | Only
+
+  val example: Single = Only
+}
+"
+`;
+
+exports[`type declarations preserves a leading pipe on an inline sum type 1`] = `
+"module Example {
+  type Single = | Only
+
+  val example: Single = Only
+}
+"
+`;
+
 exports[`type declarations preserves comments between sum-type variants 1`] = `
 "module Example {
   type Step =

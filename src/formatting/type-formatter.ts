@@ -232,7 +232,8 @@ export function formatType(node: Parser.SyntaxNode): string {
     if (variants.length === 0) {
       throw new Error("Unable to locate the sum type variants");
     }
-    return variants.map(formatSumVariant).join(" | ");
+    const leadingSeparator = node.children[0]?.type === "|" ? "| " : "";
+    return `${leadingSeparator}${variants.map(formatSumVariant).join(" | ")}`;
   }
 
   throw new Error("Formatting this type syntax is not implemented yet");

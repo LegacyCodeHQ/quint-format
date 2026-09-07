@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import Quint from "@legacycodehq/tree-sitter-quint";
+import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+import { parseQuintAst } from "../support/quint-ast.js";
+
+const parser = new Parser();
+parser.setLanguage(Quint);
 
 describe("type declarations", () => {
   test("formats a primitive type alias", () => {
@@ -85,6 +91,38 @@ describe("type declarations", () => {
     const input = "module Example {\n  type Option[a] =\n  | Some( a )\n   | None\n}\n";
     const output = formatQuint(input);
 
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("preserves the leading pipe on a multiline single-variant sum type", () => {
+    const input =
+      "module Example {\n  type Single =\n    | Only\n\n  val example: Single = Only\n}\n";
+    const expected = input;
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toBe(expected);
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("preserves a leading pipe on an inline sum type", () => {
+    const input = "module Example {\n  type Single = | Only\n\n  val example: Single = Only\n}\n";
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toBe(input);
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

@@ -141,7 +141,7 @@ exports[`lambdas keeps a short call header inline when its lambda body has a lon
 
 exports[`lambdas propagates multiline layout through nested lambda calls 1`] = `
 "module Example {
-  type Result = Ok(int) | Err(str)
+  type Result = | Ok(int) | Err(str)
 
   pure def bind(result: Result, callback: int => Result): Result =
       match result {

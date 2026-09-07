@@ -41,7 +41,9 @@ export function analyzeTypeDeclaration(node: Parser.SyntaxNode): ModuleDeclarati
       ? `[${typeParameterNames.map((name) => name?.text).join(", ")}]`
       : "";
   const isMultilineSumType =
-    value.type === "sum_type" && value.startPosition.row < value.endPosition.row;
+    value.type === "sum_type" &&
+    (value.startPosition.row > equals.endPosition.row ||
+      value.startPosition.row < value.endPosition.row);
   const sumEntries: Doc[] = [];
   if (isMultilineSumType) {
     let previousVariant: Parser.SyntaxNode | undefined;
