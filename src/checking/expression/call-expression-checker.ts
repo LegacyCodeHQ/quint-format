@@ -117,6 +117,8 @@ export function checkCallExpressions(
       const preservesAttachedMultilineLambdaCallClose =
         !commas.some((comma) => comma.startIndex >= last.endIndex) &&
         hasAttachedMultilineLambdaCallClose(callExpression);
+      const preservesMultilineUfcsClosingBreak =
+        isMultilineUfcsCall && closeParen.startPosition.row > last.endPosition.row;
       const isPartiallyExpandedCallWithClosingBreak =
         first.startPosition.row === openParen.endPosition.row &&
         hasSourceArgumentBreak &&
@@ -200,7 +202,9 @@ export function checkCallExpressions(
                   : isMultilineUfcsCall
                     ? beforeClose === hangingCloseGap
                     : /^(?:\r\n|\r|\n)[\t ]*$/.test(beforeClose)
-                : beforeClose === "";
+                : preservesMultilineUfcsClosingBreak
+                  ? beforeClose === hangingCloseGap
+                  : beforeClose === "";
       if (!hasCanonicalClose) {
         const row = closeParen.startPosition.row;
         diagnostics.push({
@@ -210,8 +214,9 @@ export function checkCallExpressions(
           length: Math.max(1, beforeClose.length),
           rule: "format/call-delimiter-spacing",
           message:
-            (isInlineMultilineLambdaCall || isMultilineLambdaCall) &&
-            !preservesAttachedMultilineLambdaCallClose
+            ((isInlineMultilineLambdaCall || isMultilineLambdaCall) &&
+              !preservesAttachedMultilineLambdaCallClose) ||
+            preservesMultilineUfcsClosingBreak
               ? "expected the closing ')' on a separate line"
               : "expected no space before ')'",
           sourceLine: lines[row] ?? "",

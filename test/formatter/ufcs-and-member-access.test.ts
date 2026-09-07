@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
+import { parseQuintAst } from "../support/quint-ast.js";
 
 const parser = new Parser();
 parser.setLanguage(Quint);
@@ -27,6 +28,41 @@ describe("UFCS and member access", () => {
     expect(output).toContain(
       "run trace =\n      init.then(step)\n          .then(step)\n          .then(all {",
     );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("preserves a closing break on a multiline UFCS call", () => {
+    const input = readFileSync(
+      new URL("../fixtures/ufcs-call-closing-break.qnt", import.meta.url),
+      "utf8",
+    );
+    const expected = [
+      "module Example {",
+      "  action init = true",
+      "  action p2 = true",
+      "  action proposal = true",
+      "  action with_cue(process, cue) = process",
+      "  action perform(process) = process",
+      "",
+      "  action result =",
+      "      init",
+      "          .then(p2",
+      "              .with_cue(proposal)",
+      "              .perform()",
+      "          )",
+      "}",
+      "",
+    ].join("\n");
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toBe(expected);
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

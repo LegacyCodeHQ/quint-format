@@ -393,6 +393,7 @@ export function analyzeCallExpression(
                                   analysis.document,
                                 ]),
                                 ...trailingCommaDocuments,
+                                ...(hasSourceClosingBreak ? [hardLine] : []),
                                 text(")"),
                               ]),
                               ufcsContinuationIndentation(),

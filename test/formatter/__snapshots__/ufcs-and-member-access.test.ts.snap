@@ -25,6 +25,24 @@ exports[`UFCS and member access preserves aligned dots in a multiline UFCS chain
 "
 `;
 
+exports[`UFCS and member access preserves a closing break on a multiline UFCS call 1`] = `
+"module Example {
+  action init = true
+  action p2 = true
+  action proposal = true
+  action with_cue(process, cue) = process
+  action perform(process) = process
+
+  action result =
+      init
+          .then(p2
+              .with_cue(proposal)
+              .perform()
+          )
+}
+"
+`;
+
 exports[`UFCS and member access uses continuation indentation for a line-broken UFCS definition body 1`] = `
 "module Example {
   pure def buyableVia1Swap(someCoins: Set[int]): Set[int] = someCoins
