@@ -43,6 +43,26 @@ exports[`UFCS and member access preserves a closing break on a multiline UFCS ca
 "
 `;
 
+exports[`UFCS and member access preserves both delimiter breaks around a multiline UFCS argument 1`] = `
+"module Example {
+  val ready = true
+  action init = true
+  action first = true
+  action second = true
+
+  action result =
+      init.then(first)
+          .then(
+              if (ready) {
+                first
+              } else {
+                second
+              }
+          )
+}
+"
+`;
+
 exports[`UFCS and member access uses continuation indentation for a line-broken UFCS definition body 1`] = `
 "module Example {
   pure def buyableVia1Swap(someCoins: Set[int]): Set[int] = someCoins

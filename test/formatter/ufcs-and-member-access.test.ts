@@ -68,6 +68,43 @@ describe("UFCS and member access", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("preserves both delimiter breaks around a multiline UFCS argument", () => {
+    const input = readFileSync(
+      new URL("../fixtures/expanded-ufcs-conditional.qnt", import.meta.url),
+      "utf8",
+    );
+    const expected = [
+      "module Example {",
+      "  val ready = true",
+      "  action init = true",
+      "  action first = true",
+      "  action second = true",
+      "",
+      "  action result =",
+      "      init.then(first)",
+      "          .then(",
+      "              if (ready) {",
+      "                first",
+      "              } else {",
+      "                second",
+      "              }",
+      "          )",
+      "}",
+      "",
+    ].join("\n");
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toBe(expected);
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("uses continuation indentation for a line-broken UFCS definition body", () => {
     const input = [
       "module Example {",

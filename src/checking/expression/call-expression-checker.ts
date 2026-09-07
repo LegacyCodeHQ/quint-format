@@ -97,7 +97,9 @@ export function checkCallExpressions(
       const expressionLineIndentation = (lines[callExpression.startPosition.row] ?? "").search(
         /\S|$/,
       );
-      const expandedArgumentColumn = expressionLineIndentation + 4;
+      const expandedArgumentColumn = isMultilineUfcsCall
+        ? callIndentation + 4
+        : expressionLineIndentation + 4;
       const isVerticallyExpandedCall =
         first.startPosition.row > openParen.endPosition.row &&
         closeParen.startPosition.row > last.endPosition.row;
@@ -124,7 +126,8 @@ export function checkCallExpressions(
         hasSourceArgumentBreak &&
         closeParen.startPosition.row > last.endPosition.row;
       const expandedArgumentGap = `\n${" ".repeat(expandedArgumentColumn)}`;
-      const expandedCloseGap = `\n${" ".repeat(expressionLineIndentation)}`;
+      const expandedCloseColumn = isMultilineUfcsCall ? callIndentation : expressionLineIndentation;
+      const expandedCloseGap = `\n${" ".repeat(expandedCloseColumn)}`;
       const afterOpen = source.slice(openParen.endIndex, first.startIndex);
       if (afterOpen !== (isVerticallyExpandedCall ? expandedArgumentGap : "")) {
         const row = openParen.endPosition.row;

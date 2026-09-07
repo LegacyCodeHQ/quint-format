@@ -202,6 +202,12 @@ export function analyzeCallExpression(
       arguments_[0]?.type === "nested_definition_expression" &&
       hasSourceArgumentBreak &&
       hasSourceClosingBreak;
+    const verticallyExpandedUfcsCall = Boolean(
+      multilineUfcsCall &&
+        openParenthesis &&
+        arguments_[0]?.startPosition.row > openParenthesis.endPosition.row &&
+        hasSourceClosingBreak,
+    );
     const inlineMultilineLambdaCall =
       arguments_.length > 1 &&
       isMultilineLambdaExpression(arguments_.at(-1) as Parser.SyntaxNode) &&
@@ -382,33 +388,47 @@ export function analyzeCallExpression(
                           ...trailingCommaDocuments,
                           text(")"),
                         ])
-                      : multilineUfcsCall
+                      : verticallyExpandedUfcsCall
                         ? concat([
                             functionAnalysis.document,
                             indentBy(
                               concat([
                                 text("("),
-                                ...analyses.flatMap((analysis, index) => [
-                                  ...(index === 0 ? [] : [text(", ")]),
-                                  analysis.document,
-                                ]),
+                                indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
                                 ...trailingCommaDocuments,
-                                ...(hasSourceClosingBreak ? [hardLine] : []),
+                                hardLine,
                                 text(")"),
                               ]),
                               ufcsContinuationIndentation(),
                             ),
                           ])
-                        : sourceMultilineCall
+                        : multilineUfcsCall
                           ? concat([
                               functionAnalysis.document,
-                              text("("),
-                              indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
-                              ...trailingCommaDocuments,
-                              hardLine,
-                              text(")"),
+                              indentBy(
+                                concat([
+                                  text("("),
+                                  ...analyses.flatMap((analysis, index) => [
+                                    ...(index === 0 ? [] : [text(", ")]),
+                                    analysis.document,
+                                  ]),
+                                  ...trailingCommaDocuments,
+                                  ...(hasSourceClosingBreak ? [hardLine] : []),
+                                  text(")"),
+                                ]),
+                                ufcsContinuationIndentation(),
+                              ),
                             ])
-                          : inlineCallDocument,
+                          : sourceMultilineCall
+                            ? concat([
+                                functionAnalysis.document,
+                                text("("),
+                                indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
+                                ...trailingCommaDocuments,
+                                hardLine,
+                                text(")"),
+                              ])
+                            : inlineCallDocument,
       binaryOperators: [
         ...functionAnalysis.binaryOperators,
         ...analyses.flatMap((analysis) => analysis.binaryOperators),
