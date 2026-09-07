@@ -65,19 +65,36 @@ describe("binary expression layout", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("uses a two-space continuation for a multiline lambda right operand", () => {
+  test("uses a four-space continuation for a multiline lambda right operand", () => {
     const input = readFileSync(
       new URL("../fixtures/binary-multiline-lambda-right-operand.qnt", import.meta.url),
       "utf8",
     );
     const output = formatQuint(input);
-    const overIndented = input.replace("\n      values.forall", "\n        values.forall");
+    const expected = input.replaceAll("\n      ", "\n        ");
 
-    expect(output).toBe(input);
-    expect(checkQuint(input, "input.qnt")).toEqual([]);
-    expect(checkQuint(overIndented, "input.qnt").map(({ rule }) => rule)).toContain(
+    expect(output).toBe(expected);
+    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toContain(
       "format/binary-operator-indentation",
     );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
+  test("uses four-space implies continuations at every nesting level", () => {
+    const input = readFileSync(
+      new URL("../fixtures/nested-implies-continuations.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

@@ -150,14 +150,29 @@ exports[`binary expression layout preserves a leading binary continuation inside
 "
 `;
 
-exports[`binary expression layout uses a two-space continuation for a multiline lambda right operand 1`] = `
+exports[`binary expression layout uses four-space implies continuations at every nesting level 1`] = `
+"module Example {
+  pure def nested(values: Set[int]): bool =
+      values.size() > 0 implies
+          values.forall(value =>
+            value > 0 implies
+                values.exists(other => {
+                  val same = other == value
+                  same
+                })
+          )
+}
+"
+`;
+
+exports[`binary expression layout uses a four-space continuation for a multiline lambda right operand 1`] = `
 "module Example {
   pure def check(values: Set[int]): bool = {
     values.size() > 0 implies
-      values.forall(value => {
-        val positive = value > 0
-        positive
-      })
+        values.forall(value => {
+          val positive = value > 0
+          positive
+        })
   }
 }
 "

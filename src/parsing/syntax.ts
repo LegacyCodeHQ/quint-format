@@ -126,14 +126,6 @@ export function hasLineBrokenMultilineValue(node: Parser.SyntaxNode): boolean {
   );
 }
 
-export function hasMultilineLambdaCallRightOperand(node: Parser.SyntaxNode): boolean {
-  if (node.type !== "binary_expression") return false;
-  const right = node.childForFieldName("right");
-  if (!right || !isCallExpression(right)) return false;
-  const lastArgument = right.childrenForFieldName("argument").at(-1);
-  return Boolean(lastArgument && hasMultilineLambdaBody(lastArgument));
-}
-
 export function isNestedInVerticallyExpandedCall(node: Parser.SyntaxNode): boolean {
   let ancestor = node.parent;
 
