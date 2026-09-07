@@ -3,8 +3,8 @@ module Example {
 
   pure def sumInternals(nodes: List[Node]): int =
       nodes.foldl(0, (total, node) =>
-        match node {
-          | Internal(value) => total + value
-          | Leaf(_) => total
-        })
+          match node {
+            | Internal(value) => total + value
+            | Leaf(_) => total
+          })
 }

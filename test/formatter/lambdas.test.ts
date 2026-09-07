@@ -47,6 +47,25 @@ describe("lambdas", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("uses continuation indentation for a line-broken match body", () => {
+    const input = readFileSync(
+      new URL("../fixtures/lambda-match-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(checkQuint(input, "lambda-match-continuation.qnt")).toEqual([]);
+    expect(output).toBe(input);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("indents a multiline lambda within a UFCS call", () => {
     const input = readFileSync(
       new URL("../fixtures/ufcs-multiline-lambda.qnt", import.meta.url),

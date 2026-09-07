@@ -117,10 +117,10 @@ exports[`lambdas preserves an attached call close after a brace-delimited lambda
 
   pure def sumInternals(nodes: List[Node]): int =
       nodes.foldl(0, (total, node) =>
-        match node {
-          | Internal(value) => total + value
-          | Leaf(_) => total
-        })
+          match node {
+            | Internal(value) => total + value
+            | Leaf(_) => total
+          })
 }
 "
 `;
@@ -237,6 +237,22 @@ exports[`lambdas preserves an inline conditional lambda header 1`] = `
           value
         else
           largest)
+}
+"
+`;
+
+exports[`lambdas uses continuation indentation for a line-broken match body 1`] = `
+"module Example {
+  type Node = Leaf(int) | Internal(int)
+
+  pure def complete(nodes: Set[Node]): bool =
+      nodes.size() > 0 implies
+          nodes.forall(node =>
+              match node {
+                | Leaf(n) => n > 0
+                | Internal(_) => true
+              }
+          )
 }
 "
 `;

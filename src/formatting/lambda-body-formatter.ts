@@ -3,7 +3,7 @@ import { isBraceDelimitedLambdaBody } from "@/parsing/syntax.js";
 import { indentWidth } from "./document.js";
 
 export function lambdaBodyIndentation(body: Parser.SyntaxNode): number {
-  return isBraceDelimitedLambdaBody(body) ? 1 : 2;
+  return isBraceDelimitedLambdaBody(body) && body.type !== "match_expression" ? 1 : 2;
 }
 
 export function lambdaContinuationAnchor(lambda: Parser.SyntaxNode): Parser.SyntaxNode {
