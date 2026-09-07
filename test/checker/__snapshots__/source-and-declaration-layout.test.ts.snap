@@ -41,3 +41,32 @@ test/fixtures/multiline-definition-separation.qnt:10:8: error[format/definition-
    |
 "
 `;
+
+exports[`checker diagnostics source and declaration layout reports a multiline definition adjacent to a type declaration 1`] = `
+"test/fixtures/multiline-definition-type-separation.qnt:5:37: error[format/type-colon-spacing]: expected one space after ':'
+  |
+5 |   pure def intCompare(__a: int, __b:int): Ordering = {
+  |                                     ^
+  |
+test/fixtures/multiline-definition-type-separation.qnt:6:19: error[format/conditional-branch-spacing]: expected one space after ')'
+  |
+6 |     if (__a < __b)
+  |                   ^
+  |
+test/fixtures/multiline-definition-type-separation.qnt:8:24: error[format/conditional-branch-spacing]: expected one space after ')'
+  |
+8 |     else if (__a > __b)
+  |                        ^
+  |
+test/fixtures/multiline-definition-type-separation.qnt:10:5: error[format/conditional-else-spacing]: expected preserved line breaks and indentation around 'else'
+   |
+10 |     else
+   |     ^^^^
+   |
+test/fixtures/multiline-definition-type-separation.qnt:13:3: error[format/definition-separation]: expected exactly one blank line between definitions
+   |
+13 |   type NodeIdToCompare = {
+   |   ^^^^
+   |
+"
+`;

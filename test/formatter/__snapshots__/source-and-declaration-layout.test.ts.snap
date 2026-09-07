@@ -65,6 +65,25 @@ exports[`source and declaration layout separates adjacent multiline value defini
 "
 `;
 
+exports[`source and declaration layout separates a multiline definition from a following type declaration 1`] = `
+"module Example {
+  type Ordering = LT | GT | EQ
+
+  /// Comparison of integers
+  pure def intCompare(__a: int, __b: int): Ordering = {
+    if (__a < __b) { LT }
+    else if (__a > __b) { GT }
+    else { EQ }
+  }
+
+  type NodeIdToCompare = {
+    version: int,
+    key_hash: List[int]
+  }
+}
+"
+`;
+
 exports[`source and declaration layout separates a braced definition from the next commented definition 1`] = `
 "module Example {
   pure def ready = and {

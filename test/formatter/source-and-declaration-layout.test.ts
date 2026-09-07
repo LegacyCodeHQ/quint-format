@@ -85,6 +85,24 @@ describe("source and declaration layout", () => {
     expect(parser.parse(output).rootNode.hasError).toBe(false);
   });
 
+  test("separates a multiline definition from a following type declaration", () => {
+    const input = readFileSync(
+      new URL("../fixtures/multiline-definition-type-separation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(output).toContain("    else { EQ }\n  }\n\n  type NodeIdToCompare = {");
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(input, "input.qnt").map((diagnostic) => diagnostic.rule)).toContain(
+      "format/definition-separation",
+    );
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    expect(parser.parse(input).rootNode.hasError).toBe(false);
+    expect(parser.parse(output).rootNode.hasError).toBe(false);
+  });
+
   test("separates a braced definition from the next commented definition", () => {
     const input = readFileSync(
       new URL("../fixtures/commented-definition-separation.qnt", import.meta.url),

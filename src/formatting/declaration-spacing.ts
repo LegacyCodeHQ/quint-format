@@ -2,7 +2,12 @@ import type { ModuleDeclaration } from "@/core/analysis.js";
 
 function isDefinition(declaration: ModuleDeclaration): boolean {
   const type = declaration.node.type;
-  return type === "operator_definition" || type === "value_definition";
+  return (
+    type === "operator_definition" ||
+    type === "value_definition" ||
+    type === "type_alias_declaration" ||
+    type === "uninterpreted_type_declaration"
+  );
 }
 
 function isMultiline(declaration: ModuleDeclaration): boolean {

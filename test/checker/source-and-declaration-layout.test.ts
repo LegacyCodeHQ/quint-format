@@ -47,5 +47,15 @@ describe("checker diagnostics", () => {
       expect(result.kind).toBe("format");
       expect(result.rendered).toMatchSnapshot();
     });
+
+    test("reports a multiline definition adjacent to a type declaration", () => {
+      const result = checkFixture("multiline-definition-type-separation.qnt");
+
+      expect(result.kind).toBe("format");
+      expect(result.diagnostics.map((diagnostic) => diagnostic.rule)).toContain(
+        "format/definition-separation",
+      );
+      expect(result.rendered).toMatchSnapshot();
+    });
   });
 });
