@@ -1,7 +1,7 @@
 import type { AnalyzedModule, AnalyzedSource } from "@/core/analysis.js";
 import type { SourceLayoutIndex } from "@/parsing/source-layout.js";
 import { commentDocument, leadingCommentsDocument } from "./comments.js";
-import { groupsCommentedAssumptions, separatesDefinitions } from "./declaration-spacing.js";
+import { planDeclarationBoundary } from "./declaration-spacing.js";
 import { concat, hardLine, indent, renderDoc, text } from "./document.js";
 import { maxPreservedLineBreaks } from "./policy.js";
 
@@ -17,21 +17,11 @@ function renderModule(module: AnalyzedModule, sourceLayout: SourceLayoutIndex): 
     }
     const previous = allDeclarations[index - 1];
     if (!previous) return [hardLine, declaration.document];
-    const previousEnd = previous.trailingComments?.at(-1) ?? previous.node;
-    const declarationStart = declaration.leadingComments?.[0] ?? declaration.node;
-    const groupsCommentedImports =
-      previous.keyword.text === "import" && declaration.keyword.text === "import";
-    const separatesCommentedDeclaration = Boolean(
-      declaration.leadingComments?.length &&
-        !groupsCommentedImports &&
-        !groupsCommentedAssumptions(previous, declaration),
-    );
-    const separatesAdjacentDefinitions = separatesDefinitions(previous, declaration);
-    const lineBreaks =
-      separatesCommentedDeclaration || separatesAdjacentDefinitions
-        ? maxPreservedLineBreaks
-        : Math.max(1, sourceLayout.lineBreaksBetween(previousEnd, declarationStart));
-    return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
+    const plan = planDeclarationBoundary(previous, declaration, sourceLayout);
+    return [
+      ...Array.from({ length: plan.expectedLineBreaks }, () => hardLine),
+      declaration.document,
+    ];
   });
   const danglingComments = module.danglingComments.flatMap((comment, index, allComments) => {
     const lastDeclaration = module.declarations.at(-1);

@@ -1,10 +1,7 @@
 import type { ModuleDeclaration } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { preservesTrailingCommentAlignment } from "@/formatting/comments.js";
-import {
-  groupsCommentedAssumptions,
-  separatesDefinitions,
-} from "@/formatting/declaration-spacing.js";
+import { planDeclarationBoundary } from "@/formatting/declaration-spacing.js";
 import { defaultFormatPolicy } from "@/formatting/policy.js";
 import type { SourceLayoutIndex } from "@/parsing/source-layout.js";
 
@@ -18,31 +15,11 @@ export function checkDeclarationLayout(
 ): FormatDiagnostic[] {
   const diagnostics: FormatDiagnostic[] = [];
   const declarationStart = declaration.leadingComments?.[0] ?? declaration.node;
-  const sharesLineWithPrevious = Boolean(
-    previousDeclaration && sourceLayout.areOnSameLine(previousDeclaration.node, declarationStart),
-  );
-  const previousDeclarationEnd =
-    previousDeclaration?.trailingComments?.at(-1) ?? previousDeclaration?.node;
-  const groupsCommentedImports = Boolean(
-    previousDeclaration?.keyword.text === "import" && declaration.keyword.text === "import",
-  );
-  const requiresCommentedDeclarationSeparation = Boolean(
-    previousDeclaration &&
-      declaration.leadingComments?.length &&
-      !groupsCommentedImports &&
-      !groupsCommentedAssumptions(previousDeclaration, declaration),
-  );
-  const requiresDefinitionSeparation = Boolean(
-    previousDeclaration &&
-      separatesDefinitions(previousDeclaration, declaration) &&
-      !declaration.leadingComments?.length,
-  );
+  const boundaryPlan = previousDeclaration
+    ? planDeclarationBoundary(previousDeclaration, declaration, sourceLayout)
+    : undefined;
 
-  if (
-    requiresCommentedDeclarationSeparation &&
-    previousDeclarationEnd &&
-    sourceLayout.blankLinesBetween(previousDeclarationEnd, declarationStart) !== 1
-  ) {
+  if (boundaryPlan?.separation === "leading-comment" && boundaryPlan.requiresNormalization) {
     const row = declarationStart.startPosition.row;
     diagnostics.push({
       filePath,
@@ -55,11 +32,7 @@ export function checkDeclarationLayout(
     });
   }
 
-  if (
-    requiresDefinitionSeparation &&
-    previousDeclarationEnd &&
-    sourceLayout.blankLinesBetween(previousDeclarationEnd, declarationStart) !== 1
-  ) {
+  if (boundaryPlan?.separation === "multiline-definitions" && boundaryPlan.requiresNormalization) {
     const row = declarationStart.startPosition.row;
     diagnostics.push({
       filePath,
@@ -123,7 +96,7 @@ export function checkDeclarationLayout(
     }
   }
 
-  if (sharesLineWithPrevious) {
+  if (boundaryPlan?.sharesLineWithPrevious) {
     const row = declaration.node.startPosition.row;
     diagnostics.push({
       filePath,
