@@ -68,6 +68,10 @@ export function isBraceDelimitedLambdaBody(node: Parser.SyntaxNode): boolean {
   );
 }
 
+export function isAttachedBraceConditionalBranch(node: Parser.SyntaxNode): boolean {
+  return node.type === "block_expression" || (node.type === "record_literal" && isMultiline(node));
+}
+
 export function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   if (node.type !== "lambda_expression") return false;
   const arrow = node.children.find((child) => child.type === "=>");

@@ -201,6 +201,23 @@ describe("conditional expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
+  test("keeps multiline record literal branches attached to their conditional", () => {
+    const input = readFileSync(
+      new URL("../fixtures/multiline-record-conditional.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toBe(input);
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
   test("joins trailing else lines in a compact conditional ladder", () => {
     const input = readFileSync(
       new URL("../fixtures/trailing-else-compact-ladder.qnt", import.meta.url),

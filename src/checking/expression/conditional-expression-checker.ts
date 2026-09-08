@@ -5,6 +5,7 @@ import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   collectNodes,
   hasInlineMultilineConditionalLambdaBody,
+  isAttachedBraceConditionalBranch,
   isCompactElseIfLadder,
   isElseIfBranch,
 } from "@/parsing/syntax.js";
@@ -120,15 +121,17 @@ export function checkConditionalExpressions(
     const expandsConditionalChain = alternative.type === "if_expression";
     const formatsConditionalChain = expandsConditionalChain || isElseIfBranch(conditional);
     const preservesCompactLadder = isCompactElseIfLadder(conditional);
+    const hasBracedConsequence = isAttachedBraceConditionalBranch(consequence);
+    const hasBracedAlternative = isAttachedBraceConditionalBranch(alternative);
     const hasSourceElseBreak = elseKeyword.startPosition.row > consequence.endPosition.row;
     const separatesCommentedElse = leadingAlternativeComments.length > 0;
     const sourceElseGap = source.slice(consequence.endIndex, elseKeyword.startIndex);
     const preservesBlankLineBeforeElse =
-      consequence.type === "block_expression" &&
+      hasBracedConsequence &&
       leadingAlternativeComments.length === 0 &&
       /(?:\r\n|\r|\n)[\t ]*(?:\r\n|\r|\n)/u.test(sourceElseGap);
     const preservesConsequenceLineBreak =
-      consequence.type !== "block_expression" &&
+      !hasBracedConsequence &&
       consequenceComments.length === 0 &&
       ((!preservesCompactLadder && formatsConditionalChain) ||
         expandsSourceMultilineCondition ||
@@ -160,12 +163,12 @@ export function checkConditionalExpressions(
     const preservesElseLineBreak =
       leadingAlternativeComments.length === 0 &&
       (preservesCompactBlockLadderBreak ||
-        (consequence.type !== "block_expression" &&
+        (!hasBracedConsequence &&
           (formatsConditionalChain ||
             expandsSourceMultilineCondition ||
             elseKeyword.startPosition.row > consequence.endPosition.row)));
     const preservesAlternativeLineBreak =
-      alternative.type !== "block_expression" &&
+      !hasBracedAlternative &&
       alternative.type !== "if_expression" &&
       leadingAlternativeComments.length === 0 &&
       ((!preservesCompactLadder && formatsConditionalChain) ||
