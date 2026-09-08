@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 import { collectNodes } from "@/parsing/syntax.js";
 
 export function checkAssignments(
@@ -33,7 +34,7 @@ export function checkAssignments(
     }
     const preservesLineBreak = value.startPosition.row > equals.endPosition.row;
     const expectedValueGap = preservesLineBreak
-      ? `\n${" ".repeat(assignment.startPosition.column + 2)}`
+      ? `\n${" ".repeat(assignment.startPosition.column + defaultFormatPolicy.indentWidth)}`
       : " ";
     if (
       source.slice(target.endIndex, equals.startIndex) !== " " ||

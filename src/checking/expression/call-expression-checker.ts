@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 import {
   callExpressionTarget,
   callTrailingCommentAlignment,
@@ -92,14 +93,16 @@ export function checkCallExpressions(
       const isMultilineUfcsCall = Boolean(
         target?.kind === "ufcs" && functionDot && isMultilineUfcsContinuation(callExpression),
       );
-      const hangingArgumentGap = `\n${" ".repeat(callIndentation + 2)}`;
+      const hangingArgumentGap = `\n${" ".repeat(
+        callIndentation + defaultFormatPolicy.indentWidth,
+      )}`;
       const hangingCloseGap = `\n${" ".repeat(callIndentation)}`;
       const expressionLineIndentation = (lines[callExpression.startPosition.row] ?? "").search(
         /\S|$/,
       );
       const expandedArgumentColumn = isMultilineUfcsCall
-        ? callIndentation + 4
-        : expressionLineIndentation + 4;
+        ? callIndentation + defaultFormatPolicy.continuationIndentWidth
+        : expressionLineIndentation + defaultFormatPolicy.continuationIndentWidth;
       const isVerticallyExpandedCall =
         first.startPosition.row > openParen.endPosition.row &&
         closeParen.startPosition.row > last.endPosition.row;

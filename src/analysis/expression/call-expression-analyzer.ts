@@ -3,6 +3,11 @@ import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, renderDoc, text } from "@/formatting/document.js";
+import {
+  continuationIndentLevels,
+  defaultFormatPolicy,
+  maxPreservedLineBreaks,
+} from "@/formatting/policy.js";
 import { preservedContinuationPrefix } from "@/formatting/source-spacing.js";
 import {
   callExpressionTarget,
@@ -135,7 +140,7 @@ export function analyzeCallExpression(
     const inlineCallLines = renderDoc(inlineCallDocument).split("\n");
     const hasMultilineArgumentDocument = inlineCallLines.length > 1;
     const inlineCallFirstLineExceedsWidth =
-      (inlineCallLines[0]?.length ?? 0) + node.startPosition.column > 120;
+      (inlineCallLines[0]?.length ?? 0) + node.startPosition.column > defaultFormatPolicy.lineWidth;
     const hasInlineMultilineLambdaArgument = arguments_.some((argument, index) => {
       const previous = index === 0 ? openParenthesis : arguments_[index - 1];
       return (
@@ -144,7 +149,8 @@ export function analyzeCallExpression(
       );
     });
     const exceedsLineWidth = inlineCallLines.some(
-      (line, index) => line.length + (index === 0 ? node.startPosition.column : 0) > 120,
+      (line, index) =>
+        line.length + (index === 0 ? node.startPosition.column : 0) > defaultFormatPolicy.lineWidth,
     );
     const firstSourceArgumentBreakIndex = arguments_.findIndex((argument, index) => {
       if (index === 0) return false;
@@ -162,7 +168,7 @@ export function analyzeCallExpression(
     ]);
     const hangingFirstLineExceedsWidth = renderDoc(hangingFirstLineDocument)
       .split("\n")
-      .some((line) => line.length + node.startPosition.column > 120);
+      .some((line) => line.length + node.startPosition.column > defaultFormatPolicy.lineWidth);
     const hasSourceArgumentBreak = arguments_.some((argument, index) => {
       const previous = index === 0 ? openParenthesis : arguments_[index - 1];
       return previous && argument.startPosition.row > previous.endPosition.row;
@@ -297,7 +303,9 @@ export function analyzeCallExpression(
       const current = contentAnchors[index] as Parser.SyntaxNode;
       const previous = index > 0 ? contentAnchors[index - 1] : undefined;
       const lineBreaks =
-        previous && current.startPosition.row > previous.endPosition.row + 1 ? 2 : 1;
+        previous && current.startPosition.row > previous.endPosition.row + 1
+          ? maxPreservedLineBreaks
+          : 1;
       return [...Array.from({ length: lineBreaks }, () => hardLine), document];
     });
     return {
@@ -305,7 +313,7 @@ export function analyzeCallExpression(
         ? concat([
             functionAnalysis.document,
             text("("),
-            indentBy(concat(spacedContentDocuments), 2),
+            indentBy(concat(spacedContentDocuments), continuationIndentLevels),
             hardLine,
             text(")"),
           ])
@@ -360,7 +368,9 @@ export function analyzeCallExpression(
                       text("("),
                       indentBy(
                         concat(sourceArgumentDocuments),
-                        multilineUfcsCall ? ufcsContinuationIndentation() + 2 : 2,
+                        multilineUfcsCall
+                          ? ufcsContinuationIndentation() + continuationIndentLevels
+                          : continuationIndentLevels,
                       ),
                       ...trailingCommaDocuments,
                       hardLine,
@@ -372,7 +382,9 @@ export function analyzeCallExpression(
                         text("("),
                         indentBy(
                           concat(sourceArgumentDocuments),
-                          multilineUfcsCall ? ufcsContinuationIndentation() + 2 : 2,
+                          multilineUfcsCall
+                            ? ufcsContinuationIndentation() + continuationIndentLevels
+                            : continuationIndentLevels,
                         ),
                         ...trailingCommaDocuments,
                         text(")"),
@@ -383,7 +395,9 @@ export function analyzeCallExpression(
                           text("("),
                           indentBy(
                             concat([hardLine, ...sourceArgumentDocuments]),
-                            multilineUfcsCall ? ufcsContinuationIndentation() + 2 : 2,
+                            multilineUfcsCall
+                              ? ufcsContinuationIndentation() + continuationIndentLevels
+                              : continuationIndentLevels,
                           ),
                           ...trailingCommaDocuments,
                           text(")"),
@@ -394,7 +408,10 @@ export function analyzeCallExpression(
                             indentBy(
                               concat([
                                 text("("),
-                                indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
+                                indentBy(
+                                  concat([hardLine, ...sourceArgumentDocuments]),
+                                  continuationIndentLevels,
+                                ),
                                 ...trailingCommaDocuments,
                                 hardLine,
                                 text(")"),
@@ -423,7 +440,10 @@ export function analyzeCallExpression(
                             ? concat([
                                 functionAnalysis.document,
                                 text("("),
-                                indentBy(concat([hardLine, ...sourceArgumentDocuments]), 2),
+                                indentBy(
+                                  concat([hardLine, ...sourceArgumentDocuments]),
+                                  continuationIndentLevels,
+                                ),
                                 ...trailingCommaDocuments,
                                 hardLine,
                                 text(")"),

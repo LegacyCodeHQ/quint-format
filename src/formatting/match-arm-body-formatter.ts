@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import { isBlockCombinatorExpression } from "@/parsing/syntax.js";
+import { continuationIndentLevels, structuralIndentLevels } from "./policy.js";
 
 export function isStructuralMatchArmBody(body: Parser.SyntaxNode): boolean {
   return (
@@ -11,5 +12,7 @@ export function isStructuralMatchArmBody(body: Parser.SyntaxNode): boolean {
 }
 
 export function matchArmBodyIndentation(body: Parser.SyntaxNode): number {
-  return isStructuralMatchArmBody(body) && body.type !== "match_expression" ? 1 : 2;
+  return isStructuralMatchArmBody(body) && body.type !== "match_expression"
+    ? structuralIndentLevels
+    : continuationIndentLevels;
 }

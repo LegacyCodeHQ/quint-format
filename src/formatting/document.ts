@@ -1,3 +1,5 @@
+import { defaultFormatPolicy } from "./policy.js";
+
 export type Doc =
   | { kind: "text"; value: string }
   | { kind: "concat"; parts: Doc[] }
@@ -6,7 +8,7 @@ export type Doc =
   | { kind: "line" }
   | { kind: "group"; contents: Doc };
 
-export const indentWidth = 2;
+export const indentWidth = defaultFormatPolicy.indentWidth;
 
 export const hardLine: Doc = { kind: "hard-line" };
 export const line: Doc = { kind: "line" };
@@ -90,7 +92,7 @@ function fits(remainingWidth: number, commands: Command[]): boolean {
 }
 
 export function renderDoc(document: Doc, options: RenderOptions = {}): string {
-  const lineWidth = options.lineWidth ?? 120;
+  const lineWidth = options.lineWidth ?? defaultFormatPolicy.lineWidth;
   let output = "";
   let atLineStart = true;
   let column = 0;

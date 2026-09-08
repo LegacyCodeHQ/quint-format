@@ -1,5 +1,6 @@
 import type { AnalyzedSourceModule } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 
 export function checkModuleLayout(
   module: AnalyzedSourceModule,
@@ -101,7 +102,7 @@ export function checkModuleLayout(
   }
 
   for (const comment of module.danglingComments) {
-    if (comment.startPosition.column !== 2) {
+    if (comment.startPosition.column !== defaultFormatPolicy.indentWidth) {
       const row = comment.startPosition.row;
       diagnostics.push({
         filePath,

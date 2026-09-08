@@ -1,5 +1,19 @@
 import { describe, expect, test } from "bun:test";
-import { concat, group, hardLine, indent, line, renderDoc, text } from "@/formatting/document.js";
+import {
+  concat,
+  group,
+  hardLine,
+  indent,
+  indentWidth,
+  line,
+  renderDoc,
+  text,
+} from "@/formatting/document.js";
+import {
+  continuationIndentLevels,
+  defaultFormatPolicy,
+  maxPreservedLineBreaks,
+} from "@/formatting/policy.js";
 
 function groupedModule() {
   return concat([
@@ -43,5 +57,13 @@ describe("document renderer", () => {
 
     expect(output).toBe(`${left} ${right}`);
     expect(output).toMatchSnapshot();
+  });
+
+  test("keeps derived formatting dimensions consistent with the shared policy", () => {
+    expect(indentWidth).toBe(defaultFormatPolicy.indentWidth);
+    expect(continuationIndentLevels * indentWidth).toBe(
+      defaultFormatPolicy.continuationIndentWidth,
+    );
+    expect(maxPreservedLineBreaks).toBe(defaultFormatPolicy.maxPreservedBlankLines + 1);
   });
 });

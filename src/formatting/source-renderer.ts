@@ -2,13 +2,14 @@ import type { AnalyzedModule, AnalyzedSource } from "@/core/analysis.js";
 import { commentDocument, leadingCommentsDocument } from "./comments.js";
 import { groupsCommentedAssumptions, separatesDefinitions } from "./declaration-spacing.js";
 import { concat, hardLine, indent, renderDoc, text } from "./document.js";
+import { maxPreservedLineBreaks } from "./policy.js";
 
 function renderModule(module: AnalyzedModule): string {
   const declarations = module.declarations.flatMap((declaration, index, allDeclarations) => {
     if (index === 0) {
       const firstContent = declaration.leadingComments?.[0] ?? declaration.node;
       const lineBreaks = Math.min(
-        2,
+        maxPreservedLineBreaks,
         Math.max(1, firstContent.startPosition.row - module.openBrace.endPosition.row),
       );
       return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
@@ -27,7 +28,7 @@ function renderModule(module: AnalyzedModule): string {
     const separatesAdjacentDefinitions = separatesDefinitions(previous, declaration);
     const lineBreaks =
       separatesCommentedDeclaration || separatesAdjacentDefinitions
-        ? 2
+        ? maxPreservedLineBreaks
         : Math.max(1, declarationStart.startPosition.row - previousEnd.endPosition.row);
     return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
   });
@@ -38,7 +39,7 @@ function renderModule(module: AnalyzedModule): string {
         ? (lastDeclaration?.trailingComments?.at(-1) ?? lastDeclaration?.node ?? module.openBrace)
         : allComments[index - 1];
     const lineBreaks = Math.min(
-      2,
+      maxPreservedLineBreaks,
       Math.max(1, comment.startPosition.row - (previous?.endPosition.row ?? 0)),
     );
     return [...Array.from({ length: lineBreaks }, () => hardLine), commentDocument(comment)];

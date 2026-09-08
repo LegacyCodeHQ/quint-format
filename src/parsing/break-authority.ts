@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { OperatorBreakPlan } from "@/core/analysis.js";
+import { continuationIndentLevels, structuralIndentLevels } from "@/formatting/policy.js";
 import {
   hasLineBrokenMultilineValue,
   hasPeerMatchOperands,
@@ -89,8 +90,14 @@ export function planOperatorBreaks(
     pairValue,
     matchPeers,
     expandedCondition,
-    operatorIndent: expandedCondition || matchPeers ? 0 : 2,
-    rightIndent: matchPeers ? 0 : operatorBreak ? 4 : pairValue ? 1 : 2,
+    operatorIndent: expandedCondition || matchPeers ? 0 : continuationIndentLevels,
+    rightIndent: matchPeers
+      ? 0
+      : operatorBreak
+        ? continuationIndentLevels * 2
+        : pairValue
+          ? structuralIndentLevels
+          : continuationIndentLevels,
     operatorIndentKind: matchPeers
       ? "match-peers"
       : expandedCondition

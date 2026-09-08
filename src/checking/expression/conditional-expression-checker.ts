@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 import {
   collectNodes,
   hasInlineMultilineConditionalLambdaBody,
@@ -37,7 +38,8 @@ export function checkConditionalExpressions(
     const conditionalIndentation =
       parentLambda?.type === "lambda_expression" &&
       hasInlineMultilineConditionalLambdaBody(parentLambda)
-        ? (lines[conditional.startPosition.row] ?? "").search(/\S|$/) + 2
+        ? (lines[conditional.startPosition.row] ?? "").search(/\S|$/) +
+          defaultFormatPolicy.indentWidth
         : conditional.startPosition.column;
     if (source.slice(keyword.endIndex, openParen.startIndex) !== " ") {
       const row = openParen.startPosition.row;
@@ -55,7 +57,7 @@ export function checkConditionalExpressions(
       condition.startPosition.row > openParen.endPosition.row ||
       closeParen.startPosition.row > condition.endPosition.row;
     const expectedAfterOpen = expandsConditionDelimiters
-      ? `\n${" ".repeat(conditionalIndentation + 2)}`
+      ? `\n${" ".repeat(conditionalIndentation + defaultFormatPolicy.indentWidth)}`
       : "";
     const afterOpen = source.slice(openParen.endIndex, condition.startIndex);
     if (afterOpen !== expectedAfterOpen) {
@@ -133,7 +135,7 @@ export function checkConditionalExpressions(
         leadingAlternativeComments.length > 0 ||
         consequence.startPosition.row > closeParen.endPosition.row);
     const expectedConsequenceGap = preservesConsequenceLineBreak
-      ? `\n${" ".repeat(conditionalIndentation + 2)}`
+      ? `\n${" ".repeat(conditionalIndentation + defaultFormatPolicy.indentWidth)}`
       : " ";
     if (source.slice(closeParen.endIndex, consequence.startIndex) !== expectedConsequenceGap) {
       const row = closeParen.endPosition.row;
@@ -178,12 +180,12 @@ export function checkConditionalExpressions(
           ? `\n${" ".repeat(conditionalIndentation)}`
           : " ";
     const expectedAlternativeGap = preservesAlternativeLineBreak
-      ? `\n${" ".repeat(conditionalIndentation + 2)}`
+      ? `\n${" ".repeat(conditionalIndentation + defaultFormatPolicy.indentWidth)}`
       : " ";
     const hasCanonicalAlternativeGap = inlineElseComment
       ? /^[\t ]+$/.test(source.slice(elseKeyword.endIndex, inlineElseComment.startIndex)) &&
         source.slice(inlineElseComment.endIndex, alternative.startIndex) ===
-          `\n${" ".repeat(conditionalIndentation + 2)}`
+          `\n${" ".repeat(conditionalIndentation + defaultFormatPolicy.indentWidth)}`
       : source.slice(elseKeyword.endIndex, alternative.startIndex) === expectedAlternativeGap;
     let trailingConsequenceAnchor = consequence;
     for (const comment of trailingConsequenceComments) {

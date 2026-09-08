@@ -11,6 +11,7 @@ import {
   renderDoc,
   text,
 } from "@/formatting/document.js";
+import { defaultFormatPolicy, maxPreservedLineBreaks } from "@/formatting/policy.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import {
   blockCombinatorEntries,
@@ -39,7 +40,10 @@ export function analyzeBlockExpression(
     if (compactBlockExpression(node, commentAttachments)) {
       const compactDocument = concat([text("{ "), analysis.document, text(" }")]);
       const compactText = renderDoc(compactDocument);
-      if (!compactText.includes("\n") && node.startPosition.column + compactText.length <= 120) {
+      if (
+        !compactText.includes("\n") &&
+        node.startPosition.column + compactText.length <= defaultFormatPolicy.lineWidth
+      ) {
         return {
           document: compactDocument,
           binaryOperators: analysis.binaryOperators,
@@ -103,7 +107,9 @@ export function analyzeBlockExpression(
       const current = contentAnchors[index] as Parser.SyntaxNode;
       const previous = index > 0 ? contentAnchors[index - 1] : undefined;
       const lineBreaks =
-        previous && current.startPosition.row > previous.endPosition.row + 1 ? 2 : 1;
+        previous && current.startPosition.row > previous.endPosition.row + 1
+          ? maxPreservedLineBreaks
+          : 1;
       return [...Array.from({ length: lineBreaks }, () => hardLine), document];
     });
     return {
@@ -160,7 +166,7 @@ export function analyzeBlockExpression(
       openBrace.startPosition.row === closeBrace.startPosition.row &&
       entries.every((entry) => entry.startPosition.row === openBrace.startPosition.row) &&
       !compactText.includes("\n") &&
-      node.startPosition.column + compactText.length <= 120;
+      node.startPosition.column + compactText.length <= defaultFormatPolicy.lineWidth;
     if (preservesCompactLayout) {
       return {
         document: compactDocument,

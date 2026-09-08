@@ -2,6 +2,7 @@ import type Parser from "tree-sitter";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import { commentDocument } from "./comments.js";
 import { concat, type Doc, hardLine, indent, text } from "./document.js";
+import { continuationIndentLevels, defaultFormatPolicy } from "./policy.js";
 
 export function indentBy(document: Doc, levels: number): Doc {
   let indented = document;
@@ -25,7 +26,7 @@ export function definitionBodyContinuationIndentation(
   const isSingleLineExpression =
     body.startPosition.row === body.endPosition.row &&
     preservesDefinitionBodyLineBreak(definition, body, commentAttachments);
-  return isContinuationExpression || isSingleLineExpression ? 2 : 1;
+  return isContinuationExpression || isSingleLineExpression ? continuationIndentLevels : 1;
 }
 
 export function definitionBodyDocument(
@@ -46,8 +47,9 @@ export function definitionBodyDocument(
     minimumContinuationIndentation,
     equals &&
       firstContinuationNode.startPosition.row > equals.endPosition.row &&
-      firstContinuationNode.startPosition.column - definition.startPosition.column >= 4
-      ? 2
+      firstContinuationNode.startPosition.column - definition.startPosition.column >=
+        defaultFormatPolicy.continuationIndentWidth
+      ? continuationIndentLevels
       : 1,
   );
   const equalsLineComment =

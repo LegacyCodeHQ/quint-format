@@ -2,6 +2,7 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, text } from "@/formatting/document.js";
+import { continuationIndentLevels } from "@/formatting/policy.js";
 import {
   isBraceDelimitedExpression,
   isMultilineParenthesizedPostfixReceiver,
@@ -33,7 +34,7 @@ export function analyzeParenthesizedExpression(
           : isExplicitlyExpanded
             ? concat([
                 text("("),
-                indentBy(concat([hardLine, analysis.document]), 2),
+                indentBy(concat([hardLine, analysis.document]), continuationIndentLevels),
                 hardLine,
                 text(")"),
               ])

@@ -1,4 +1,5 @@
 import type Parser from "tree-sitter";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 import type { TypeCheckContext } from "./type-check-context.js";
 
 const parameterizedTypeNames = new Set(["set_type", "list_type", "type_application", "tuple_type"]);
@@ -34,7 +35,9 @@ export function checkParameterizedType(
       parent.childForFieldName("value")?.id === node.id,
   );
   if (isExpandedTypeAliasApplication && parent) {
-    const argumentIndentation = " ".repeat(parent.startPosition.column + 2);
+    const argumentIndentation = " ".repeat(
+      parent.startPosition.column + defaultFormatPolicy.indentWidth,
+    );
     const expectedArgumentGap = `\n${argumentIndentation}`;
     const afterOpenDelimiter = source.slice(openDelimiter.endIndex, firstElement.startIndex);
     if (afterOpenDelimiter !== expectedArgumentGap) {
@@ -45,7 +48,7 @@ export function checkParameterizedType(
         column: 1,
         length: Math.max(1, firstElement.startPosition.column),
         rule: "format/multiline-type-indentation",
-        message: `expected ${parent.startPosition.column + 2} spaces of indentation`,
+        message: `expected ${parent.startPosition.column + defaultFormatPolicy.indentWidth} spaces of indentation`,
         sourceLine: lines[row] ?? "",
       });
     }

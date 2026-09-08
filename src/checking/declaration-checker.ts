@@ -5,6 +5,7 @@ import {
   groupsCommentedAssumptions,
   separatesDefinitions,
 } from "@/formatting/declaration-spacing.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 
 export function checkDeclarationLayout(
   declaration: ModuleDeclaration,
@@ -69,7 +70,7 @@ export function checkDeclarationLayout(
   }
 
   for (const comment of declaration.leadingComments ?? []) {
-    if (comment.startPosition.column !== 2) {
+    if (comment.startPosition.column !== defaultFormatPolicy.indentWidth) {
       const row = comment.startPosition.row;
       diagnostics.push({
         filePath,
@@ -130,7 +131,7 @@ export function checkDeclarationLayout(
       message: "expected each declaration on a separate line",
       sourceLine: lines[row] ?? "",
     });
-  } else if (declaration.node.startPosition.column !== 2) {
+  } else if (declaration.node.startPosition.column !== defaultFormatPolicy.indentWidth) {
     const row = declaration.node.startPosition.row;
     diagnostics.push({
       filePath,

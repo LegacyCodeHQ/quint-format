@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 import { blockCombinatorEntries, collectBlockCombinatorExpressions } from "@/parsing/syntax.js";
 
 export function checkBlockCombinators(
@@ -27,7 +28,7 @@ export function checkBlockCombinators(
     const preservesCompactLayout =
       hasCompactLayout &&
       comments.length === 0 &&
-      (lines[openBrace.startPosition.row]?.length ?? 0) <= 120;
+      (lines[openBrace.startPosition.row]?.length ?? 0) <= defaultFormatPolicy.lineWidth;
     const hasCanonicalLines =
       preservesCompactLayout ||
       (rows[0] !== openBrace.startPosition.row &&

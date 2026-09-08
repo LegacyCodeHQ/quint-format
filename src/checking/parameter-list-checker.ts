@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { ModuleDeclaration } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 
 export function checkParameterList(
   declaration: ModuleDeclaration,
@@ -60,7 +61,8 @@ export function checkParameterList(
   }
 
   if (declaration.expandedParameterList) {
-    const parameterIndent = declaration.keyword.startPosition.column + 2;
+    const parameterIndent =
+      declaration.keyword.startPosition.column + defaultFormatPolicy.indentWidth;
     const hasCanonicalBreak = (left: Parser.SyntaxNode, right: Parser.SyntaxNode) =>
       right.startPosition.row === left.endPosition.row + 1 &&
       right.startPosition.column === parameterIndent;

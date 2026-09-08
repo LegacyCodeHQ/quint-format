@@ -4,6 +4,7 @@ import {
   definitionBodyContinuationIndentation,
   preservesDefinitionBodyLineBreak,
 } from "@/formatting/definition-body-formatter.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 
 export function checkDefinitionBody(
@@ -78,7 +79,8 @@ export function checkDefinitionBody(
       preservesTypeContinuation ||
       usesDefinitionBodyContinuation) &&
     declaration.valueNode.startPosition.row > declaration.equals.endPosition.row &&
-    declaration.valueNode.startPosition.column !== declaration.node.startPosition.column + 4
+    declaration.valueNode.startPosition.column !==
+      declaration.node.startPosition.column + defaultFormatPolicy.continuationIndentWidth
   ) {
     const row = declaration.valueNode.startPosition.row;
     diagnostics.push({

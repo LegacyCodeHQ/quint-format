@@ -5,6 +5,7 @@ import {
   definitionBodyContinuationIndentation,
   preservesDefinitionBodyLineBreak,
 } from "@/formatting/definition-body-formatter.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 import { preservedInlineReturnTypePrefix } from "@/formatting/type-formatter.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
 import { definitionBody, isCompactNondetSequence } from "@/parsing/syntax.js";
@@ -117,7 +118,7 @@ export function checkLocalDefinition(
       }
     }
     if (usesExpandedParameterList) {
-      const expectedParameterColumn = node.startPosition.column + 2;
+      const expectedParameterColumn = node.startPosition.column + defaultFormatPolicy.indentWidth;
       const parametersAreAligned = parameters.every(
         (parameter) => parameter.startPosition.column === expectedParameterColumn,
       );
@@ -227,7 +228,8 @@ export function checkLocalDefinition(
     if (
       (node.type === "operator_definition" || node.type === "value_definition") &&
       definitionBodyContinuationIndentation(node, value, commentAttachments) === 2 &&
-      value.startPosition.column !== node.startPosition.column + 4
+      value.startPosition.column !==
+        node.startPosition.column + defaultFormatPolicy.continuationIndentWidth
     ) {
       const row = value.startPosition.row;
       diagnostics.push({

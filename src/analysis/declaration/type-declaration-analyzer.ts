@@ -3,6 +3,7 @@ import type { ModuleDeclaration } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
+import { continuationIndentLevels } from "@/formatting/policy.js";
 import { formatExpandedRecordType } from "@/formatting/record-type-formatter.js";
 import {
   formatExpandedTypeApplication,
@@ -102,7 +103,7 @@ export function analyzeTypeDeclaration(node: Parser.SyntaxNode): ModuleDeclarati
         : preservesTypeContinuation
           ? concat([
               text(`type ${declarationName.text}${typeParameterList} =`),
-              indentBy(concat([hardLine, text(formatType(value))]), 2),
+              indentBy(concat([hardLine, text(formatType(value))]), continuationIndentLevels),
             ])
           : text(`type ${declarationName.text}${typeParameterList} = ${formatType(value)}`);
 

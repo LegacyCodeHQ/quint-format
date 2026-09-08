@@ -1,5 +1,6 @@
 import type { ModuleDeclaration } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 
 export function checkModuleInstance(
   declaration: ModuleDeclaration,
@@ -38,7 +39,8 @@ export function checkModuleInstance(
   );
   const hasCanonicalDelimiters = isExpandedInstance
     ? afterModule === "" &&
-      first?.startPosition.column === declaration.node.startPosition.column + 2 &&
+      first?.startPosition.column ===
+        declaration.node.startPosition.column + defaultFormatPolicy.indentWidth &&
       declaration.instanceCloseParen.startPosition.column === declaration.node.startPosition.column
     : afterModule === "" && insideStart === "" && insideEnd === "";
   if (!hasCanonicalDelimiters) {
@@ -98,7 +100,8 @@ export function checkModuleInstance(
       source.slice(previous.endIndex, comma.startIndex) !== "" ||
       (isExpandedInstance
         ? !/^\r?\n[\t ]*$/.test(source.slice(comma.endIndex, next.startIndex)) ||
-          next.startPosition.column !== declaration.node.startPosition.column + 2
+          next.startPosition.column !==
+            declaration.node.startPosition.column + defaultFormatPolicy.indentWidth
         : source.slice(comma.endIndex, next.startIndex) !== " ")
     ) {
       const row = comma.startPosition.row;

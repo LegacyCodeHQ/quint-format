@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 import { hasLineBrokenMultilineValue } from "@/parsing/syntax.js";
 
 export function checkRecordLiterals(
@@ -107,7 +108,7 @@ export function checkRecordLiterals(
       }
       if (
         preservesMultilineValueBreak &&
-        value.startPosition.column !== name.startPosition.column + 2
+        value.startPosition.column !== name.startPosition.column + defaultFormatPolicy.indentWidth
       ) {
         const row = value.startPosition.row;
         diagnostics.push({

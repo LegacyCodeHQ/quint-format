@@ -1,5 +1,6 @@
 import Quint from "@legacycodehq/tree-sitter-quint";
 import type Parser from "tree-sitter";
+import { continuationIndentLevels, defaultFormatPolicy } from "@/formatting/policy.js";
 import type { CommentAttachmentIndex } from "./comment-attachments.js";
 
 const blockCombinatorSupertype = Quint.nodeTypeInfo.find(
@@ -289,7 +290,7 @@ export function compactBlockExpression(
   if (
     body.type !== "block_expression" ||
     body.startPosition.row !== body.endPosition.row ||
-    body.endPosition.column > 120 ||
+    body.endPosition.column > defaultFormatPolicy.lineWidth ||
     body.childrenForFieldName("binding").length > 0 ||
     commentAttachments.commentsFor(body).length > 0
   ) {
@@ -314,7 +315,8 @@ export function compactLambdaBlockExpression(
   body: Parser.SyntaxNode,
   commentAttachments: CommentAttachmentIndex,
 ): Parser.SyntaxNode | null {
-  return lambda.startPosition.row === body.startPosition.row && lambda.endPosition.column <= 120
+  return lambda.startPosition.row === body.startPosition.row &&
+    lambda.endPosition.column <= defaultFormatPolicy.lineWidth
     ? compactBlockExpression(body, commentAttachments)
     : null;
 }
@@ -411,7 +413,7 @@ export function isMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
 }
 
 export function ufcsContinuationIndentation(): number {
-  return 2;
+  return continuationIndentLevels;
 }
 
 export function collectNodes(node: Parser.SyntaxNode, type: string): Parser.SyntaxNode[] {
@@ -426,7 +428,7 @@ export function isCompactMatchExpression(node: Parser.SyntaxNode): boolean {
   return Boolean(
     arms.length > 0 &&
       node.startPosition.row === node.endPosition.row &&
-      node.endPosition.column <= 120 &&
+      node.endPosition.column <= defaultFormatPolicy.lineWidth &&
       collectNodes(node, "comment").length === 0 &&
       collectNodes(node, "documentation_comment").length === 0,
   );

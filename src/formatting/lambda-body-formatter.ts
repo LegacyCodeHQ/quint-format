@@ -1,9 +1,12 @@
 import type Parser from "tree-sitter";
 import { isBraceDelimitedLambdaBody } from "@/parsing/syntax.js";
 import { indentWidth } from "./document.js";
+import { continuationIndentLevels, structuralIndentLevels } from "./policy.js";
 
 export function lambdaBodyIndentation(body: Parser.SyntaxNode): number {
-  return isBraceDelimitedLambdaBody(body) && body.type !== "match_expression" ? 1 : 2;
+  return isBraceDelimitedLambdaBody(body) && body.type !== "match_expression"
+    ? structuralIndentLevels
+    : continuationIndentLevels;
 }
 
 export function lambdaContinuationAnchor(lambda: Parser.SyntaxNode): Parser.SyntaxNode {

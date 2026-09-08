@@ -1,4 +1,5 @@
 import type Parser from "tree-sitter";
+import { defaultFormatPolicy } from "@/formatting/policy.js";
 import type { TypeCheckContext } from "./type-check-context.js";
 
 export function checkSumType(node: Parser.SyntaxNode, context: TypeCheckContext): boolean {
@@ -18,7 +19,7 @@ export function checkSumType(node: Parser.SyntaxNode, context: TypeCheckContext)
       if (!pipe) {
         throw new Error("Unable to locate the multiline sum variant separator");
       }
-      if (pipe.startPosition.column !== 4) {
+      if (pipe.startPosition.column !== defaultFormatPolicy.continuationIndentWidth) {
         const row = pipe.startPosition.row;
         diagnostics.push({
           filePath,
