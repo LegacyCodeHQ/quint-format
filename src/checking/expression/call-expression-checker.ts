@@ -111,6 +111,8 @@ export function checkCallExpressions(
         const previous = index === 0 ? openParen : arguments_[index - 1];
         return argument.startPosition.row > previous.endPosition.row;
       });
+      const isExpandedMultilineLambdaCall =
+        isMultilineLambdaCall && first.startPosition.row > openParen.endPosition.row;
       const isInlineMultilineLambdaCall =
         arguments_.length > 1 &&
         isMultilineLambdaExpression(last) &&
@@ -133,7 +135,10 @@ export function checkCallExpressions(
       const expandedCloseColumn = isMultilineUfcsCall ? callIndentation : expressionLineIndentation;
       const expandedCloseGap = `\n${" ".repeat(expandedCloseColumn)}`;
       const afterOpen = source.slice(openParen.endIndex, first.startIndex);
-      if (afterOpen !== (isVerticallyExpandedCall ? expandedArgumentGap : "")) {
+      if (
+        afterOpen !==
+        (isVerticallyExpandedCall || isExpandedMultilineLambdaCall ? expandedArgumentGap : "")
+      ) {
         const row = openParen.endPosition.row;
         diagnostics.push({
           filePath,
@@ -229,7 +234,11 @@ export function checkCallExpressions(
           sourceLine: lines[row] ?? "",
         });
       }
-      if (isVerticallyExpandedCall || isPartiallyExpandedCallWithClosingBreak) {
+      if (
+        isVerticallyExpandedCall ||
+        isPartiallyExpandedCallWithClosingBreak ||
+        isExpandedMultilineLambdaCall
+      ) {
         for (const [index, argument] of arguments_.entries()) {
           const previous = index === 0 ? openParen : arguments_[index - 1];
           if (

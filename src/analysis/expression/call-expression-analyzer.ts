@@ -95,6 +95,26 @@ export function analyzeCallExpression(
     const multilineLambdaArgument =
       arguments_.length === 1 && isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
     const multilineUfcsCall = target.kind === "ufcs" && isMultilineUfcsContinuation(node);
+    const expandedMultilineLambdaArgument = Boolean(
+      multilineLambdaArgument &&
+        !multilineUfcsCall &&
+        openParenthesis &&
+        arguments_[0] &&
+        arguments_[0].startPosition.row > openParenthesis.endPosition.row,
+    );
+    const expandedMultilineLambdaCallDocument = expandedMultilineLambdaArgument
+      ? concat([
+          functionAnalysis.document,
+          text("("),
+          indentBy(
+            concat([hardLine, (analyses[0] as ExpressionAnalysis).document]),
+            continuationIndentLevels,
+          ),
+          ...trailingCommaDocuments,
+          ...(preservesAttachedMultilineLambdaCallClose ? [] : [hardLine]),
+          text(")"),
+        ])
+      : undefined;
     let multilineUfcsLambdaDocument: Doc | undefined;
     if (multilineLambdaArgument && multilineUfcsCall) {
       if (!receiver || !method) throw new Error("Unable to locate the UFCS call target");
@@ -115,6 +135,7 @@ export function analyzeCallExpression(
       ]);
     }
     const multilineLambdaCallDocument =
+      expandedMultilineLambdaCallDocument ??
       multilineUfcsLambdaDocument ??
       (multilineLambdaArgument
         ? concat([

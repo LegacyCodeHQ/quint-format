@@ -139,7 +139,7 @@ exports[`lambdas keeps a short call header inline when its lambda body has a lon
 "
 `;
 
-exports[`lambdas keeps a same-line outer lambda call compact 1`] = `
+exports[`lambdas preserves call-opening breaks through nested lambdas 1`] = `
 "module Example {
   type Result = | Ok(int) | Err(str)
 
@@ -150,11 +150,13 @@ exports[`lambdas keeps a same-line outer lambda call compact 1`] = `
       }
 
   pure def combine(lhs: Result, rhs: Result): Result =
-      lhs.bind(left => rhs.bind(right =>
-          if (left == right)
-            Ok(left)
-          else
-            Err("different")))
+      lhs.bind(
+          left => rhs.bind(
+              right =>
+                  if (left == right)
+                    Ok(left)
+                  else
+                    Err("different")))
 }
 "
 `;

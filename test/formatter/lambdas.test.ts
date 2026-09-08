@@ -278,7 +278,7 @@ describe("lambdas", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
-  test("keeps a same-line outer lambda call compact", () => {
+  test("preserves call-opening breaks through nested lambdas", () => {
     const input = readFileSync(
       new URL("../fixtures/nested-lambda-call.qnt", import.meta.url),
       "utf8",
@@ -286,7 +286,7 @@ describe("lambdas", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      '      lhs.bind(left => rhs.bind(right =>\n          if (left == right)\n            Ok(left)\n          else\n            Err("different")))',
+      '      lhs.bind(\n          left => rhs.bind(\n              right =>\n                  if (left == right)\n                    Ok(left)\n                  else\n                    Err("different")))',
     );
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
@@ -308,6 +308,34 @@ describe("lambdas", () => {
         "      lhs.bind(x => rhs.bind(y =>",
         "          val res = op(x, y)",
         "          if (isInRange(res)) Ok(res) else Err(errMsg)))",
+      ].join("\n"),
+    );
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("preserves explicitly expanded nested lambda calls", () => {
+    const input = readFileSync(
+      new URL("../fixtures/expanded-nested-lambda-calls.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toContain(
+      [
+        "  pure def checkedDiv(lhs: UIntT, rhs: UIntT): UIntT =",
+        "      lhs.bind(",
+        "          l => rhs.bind(",
+        "              r =>",
+        "                  if (r == 0)",
+        '                    Err("division by zero")',
+        "                  else",
+        "                    Ok(l / r)))",
       ].join("\n"),
     );
     expect(inputTree.hasError).toBe(false);
