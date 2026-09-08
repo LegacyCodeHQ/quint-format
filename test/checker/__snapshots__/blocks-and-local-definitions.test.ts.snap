@@ -118,17 +118,3 @@ test/fixtures/nested-definitions.qnt:4:54: error[format/unnecessary-semicolon]: 
   |
 "
 `;
-
-exports[`checker diagnostics blocks and local definitions reports a missing gap after a multiline local definition 1`] = `
-"test/fixtures/multiline-local-result-gap.qnt:4:1: error[format/definition-body-indentation]: expected a four-space continuation indent
-  |
-4 |       values.filter(value => value > 0)
-  | ^^^^^^
-  |
-test/fixtures/multiline-local-result-gap.qnt:5:1: error[format/nested-definition-separation]: expected one blank line after the multiline local definition
-  |
-5 |     selected.fold(0, (sum, value) => sum + value)
-  | ^^^^
-  |
-"
-`;

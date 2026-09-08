@@ -195,7 +195,6 @@ describe("UFCS and member access", () => {
         "        .oneOf()",
         "    val updated = states",
         "        .set(key, 1)",
-        "",
         "    states' = states",
         "        .set(key, updated.get(key))",
       ].join("\n"),

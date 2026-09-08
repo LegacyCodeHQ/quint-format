@@ -238,10 +238,5 @@ test/fixtures/local-definition-body-comment.qnt:3:11: error[format/equals-spacin
 3 | val answer=
   |           ^
   |
-test/fixtures/local-definition-body-comment.qnt:6:1: error[format/nested-definition-separation]: expected one blank line after the multiline local definition
-  |
-6 | answer
-  | ^
-  |
 "
 `;

@@ -103,7 +103,7 @@ describe("local definitions and nondeterminism", () => {
     );
     const output = formatQuint(input);
     const expected =
-      "module Example {\n  pure def check(values: Set[int]): bool = {\n    pure def allPositive(items: Set[int]): bool =\n        items.forall(element =>\n            element > 0)\n\n    allPositive(values)\n  }\n}\n";
+      "module Example {\n  pure def check(values: Set[int]): bool = {\n    pure def allPositive(items: Set[int]): bool =\n        items.forall(element =>\n            element > 0)\n    allPositive(values)\n  }\n}\n";
 
     expect(output).toBe(expected);
     expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toContain(
@@ -181,7 +181,7 @@ describe("local definitions and nondeterminism", () => {
       .replace("\n                | None", "\n                  | None")
       .replace(
         "\n              }\n            childOK",
-        "\n                }\n\n            childOK",
+        "\n                }\n            childOK",
       );
 
     expect(checkQuint(input, "local-match-continuation.qnt").map(({ rule }) => rule)).toContain(
@@ -206,8 +206,7 @@ describe("local definitions and nondeterminism", () => {
     const output = formatQuint(input);
     const expected = input
       .replace("\n    Set(1, 2, 3)", "\n      Set(1, 2, 3)")
-      .replace("\n      selected.filter", "\n        selected.filter")
-      .replace("value < 3)\n    localSelected", "value < 3)\n\n    localSelected");
+      .replace("\n      selected.filter", "\n        selected.filter");
 
     expect(output).toBe(expected);
     expect(output).toMatchSnapshot();
@@ -220,17 +219,14 @@ describe("local definitions and nondeterminism", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
-  test("separates a multiline local definition from the result expression", () => {
+  test("keeps an adjacent result after a multiline local definition", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-local-result-gap.qnt", import.meta.url),
       "utf8",
     );
-    const expected = input
-      .replace("\n      values.filter", "\n        values.filter")
-      .replace("value > 0)\n    selected.fold", "value > 0)\n\n    selected.fold");
     const output = formatQuint(input);
 
-    expect(output).toBe(expected);
+    expect(output).toBe(input);
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);

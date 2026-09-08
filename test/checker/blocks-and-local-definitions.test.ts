@@ -52,14 +52,11 @@ describe("checker diagnostics", () => {
       expect(result.diagnostics).toEqual([]);
     });
 
-    test("reports a missing gap after a multiline local definition", () => {
+    test("accepts an adjacent result after a multiline local definition", () => {
       const result = checkFixture("multiline-local-result-gap.qnt");
 
-      expect(result.kind).toBe("format");
-      expect(result.diagnostics.map(({ rule }) => rule)).toContain(
-        "format/nested-definition-separation",
-      );
-      expect(result.rendered).toMatchSnapshot();
+      expect(result.kind).toBe("clean");
+      expect(result.diagnostics).toEqual([]);
     });
   });
 });

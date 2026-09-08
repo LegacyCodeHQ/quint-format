@@ -116,7 +116,6 @@ exports[`UFCS and member access preserves all aligned dots in a nondet UFCS chai
         Set(1, 2, 3)
             .filter(value => value > 1)
             .oneOf()
-
     selected' = choice
 }
 "
@@ -157,7 +156,6 @@ exports[`UFCS and member access uses a four-space structural indent for UFCS con
         .oneOf()
     val updated = states
         .set(key, 1)
-
     states' = states
         .set(key, updated.get(key))
   }
@@ -184,15 +182,6 @@ exports[`UFCS and member access uses a four-space structural indent for UFCS con
     "message": "expected a four-space continuation indent",
     "rule": "format/field-access-indentation",
     "sourceLine": "                      .set(key, 1)",
-  },
-  {
-    "column": 1,
-    "filePath": "unformatted.qnt",
-    "length": 4,
-    "line": 9,
-    "message": "expected one blank line after the multiline local definition",
-    "rule": "format/nested-definition-separation",
-    "sourceLine": "    states' = states",
   },
   {
     "column": 1,

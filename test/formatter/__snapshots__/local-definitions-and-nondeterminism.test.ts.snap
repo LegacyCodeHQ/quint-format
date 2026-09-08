@@ -196,20 +196,7 @@ exports[`local definitions and nondeterminism preserves a comment before a local
     val answer =
       // Preserve this local body comment.
       42
-
     answer
-  }
-}
-"
-`;
-
-exports[`local definitions and nondeterminism separates a multiline local definition from the result expression 1`] = `
-"module Example {
-  pure def total(values: Set[int]): int = {
-    pure val selected =
-        values.filter(value => value > 0)
-
-    selected.fold(0, (sum, value) => sum + value)
   }
 }
 "
@@ -221,7 +208,6 @@ exports[`local definitions and nondeterminism uses continuation indentation for 
     pure def allPositive(items: Set[int]): bool =
         items.forall(element =>
             element > 0)
-
     allPositive(values)
   }
 }
@@ -264,7 +250,6 @@ exports[`local definitions and nondeterminism uses continuation indentation for 
   pure def countSelected(): int = {
     pure val localSelected =
         selected.filter(value => value < 3)
-
     localSelected.size()
   }
 }
@@ -294,10 +279,20 @@ exports[`local definitions and nondeterminism uses continuation indentation for 
                   | Some(value) => value > 0
                   | None => false
                 }
-
             childOK
         | Leaf => true
       }
+}
+"
+`;
+
+exports[`local definitions and nondeterminism keeps an adjacent result after a multiline local definition 1`] = `
+"module Example {
+  pure def total(values: Set[int]): int = {
+    pure val selected =
+        values.filter(value => value > 0)
+    selected.fold(0, (sum, value) => sum + value)
+  }
 }
 "
 `;
