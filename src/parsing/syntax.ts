@@ -418,6 +418,10 @@ export function ufcsContinuationIndentation(): number {
   return continuationIndentLevels;
 }
 
+export function postfixContinuationIndentation(receiver: Parser.SyntaxNode): number {
+  return isMultilineParenthesizedPostfixReceiver(receiver) ? 0 : ufcsContinuationIndentation();
+}
+
 export function collectNodes(node: Parser.SyntaxNode, type: string): Parser.SyntaxNode[] {
   return [
     ...(node.type === type ? [node] : []),

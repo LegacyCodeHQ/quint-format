@@ -41,7 +41,7 @@ exports[`parenthesized and postfix expressions preserves a postfix continuation 
       ((x, y) =>
           val result = x * y
           if (result > 0) result else 0)
-          .app(lhs, rhs)
+      .app(lhs, rhs)
 }
 "
 `;

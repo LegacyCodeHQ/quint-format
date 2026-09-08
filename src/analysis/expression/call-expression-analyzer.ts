@@ -19,6 +19,7 @@ import {
   isMultilineLambdaExpression,
   isMultilineUfcsContinuation,
   isNestedInVerticallyExpandedCall,
+  postfixContinuationIndentation,
   ufcsContinuationIndentation,
 } from "@/parsing/syntax.js";
 
@@ -56,6 +57,9 @@ export function analyzeCallExpression(
         : [];
     const targetContinuationPrefix =
       receiver && dot ? preservedContinuationPrefix(receiver, targetComments, dot) : [];
+    const targetContinuationIndentation = receiver
+      ? postfixContinuationIndentation(receiver)
+      : ufcsContinuationIndentation();
     const functionAnalysis =
       receiver && receiverAnalysis && method && dot
         ? {
@@ -67,7 +71,7 @@ export function analyzeCallExpression(
                       receiverAnalysis.document,
                       indentBy(
                         concat([...targetContinuationPrefix, text(`.${method.text}`)]),
-                        ufcsContinuationIndentation(),
+                        targetContinuationIndentation,
                       ),
                     ])
                   : concat([receiverAnalysis.document, text(`.${method.text}`)])
@@ -75,7 +79,7 @@ export function analyzeCallExpression(
                     receiverAnalysis.document,
                     indentBy(
                       concat([...targetContinuationPrefix, text(`.${method.text}`)]),
-                      ufcsContinuationIndentation(),
+                      targetContinuationIndentation,
                     ),
                   ]),
           }

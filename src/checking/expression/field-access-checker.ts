@@ -4,9 +4,9 @@ import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   collectNodes,
   isMultilineUfcsContinuation,
+  postfixContinuationIndentation,
   postfixExpressionTarget,
   ufcsChainRoot,
-  ufcsContinuationIndentation,
 } from "@/parsing/syntax.js";
 
 export function checkFieldAccessExpressions(
@@ -30,6 +30,7 @@ export function checkFieldAccessExpressions(
     const beforeDot = source.slice(object.endIndex, dot.startIndex);
     const afterDot = source.slice(dot.endIndex, field.startIndex);
     const isMultilineContinuation = isMultilineUfcsContinuation(fieldAccess);
+    const continuationIndentation = postfixContinuationIndentation(object);
     const hasCanonicalBeforeDot = isMultilineContinuation
       ? /^(?:(?:\r\n|\r|\n)[\t ]*){1,2}$/.test(beforeDot)
       : beforeDot === "";
@@ -57,7 +58,7 @@ export function checkFieldAccessExpressions(
       !hasComments &&
       dot.startPosition.column !==
         (lines[ufcsChainRoot(fieldAccess).startPosition.row]?.search(/\S|$/) ?? 0) +
-          ufcsContinuationIndentation() * 2
+          continuationIndentation * 2
     ) {
       const row = dot.startPosition.row;
       diagnostics.push({
@@ -66,14 +67,17 @@ export function checkFieldAccessExpressions(
         column: 1,
         length: Math.max(1, dot.startPosition.column),
         rule: "format/field-access-indentation",
-        message: "expected a four-space continuation indent",
+        message:
+          continuationIndentation === 0
+            ? "expected the selector aligned with its multiline receiver"
+            : "expected a four-space continuation indent",
         sourceLine: lines[row] ?? "",
       });
     }
     if (hasComments && dot.startPosition.row > object.endPosition.row) {
       const expectedColumn =
         (lines[ufcsChainRoot(fieldAccess).startPosition.row]?.search(/\S|$/) ?? 0) +
-        ufcsContinuationIndentation() * 2;
+        continuationIndentation * 2;
       for (const continuation of [...comments, dot]) {
         if (continuation.startPosition.column === expectedColumn) continue;
         const row = continuation.startPosition.row;
@@ -83,7 +87,10 @@ export function checkFieldAccessExpressions(
           column: 1,
           length: Math.max(1, continuation.startPosition.column),
           rule: "format/field-access-indentation",
-          message: "expected the chain comment and selector at a four-space continuation",
+          message:
+            continuationIndentation === 0
+              ? "expected the chain comment and selector aligned with the multiline receiver"
+              : "expected the chain comment and selector at a four-space continuation",
           sourceLine: lines[row] ?? "",
         });
       }
