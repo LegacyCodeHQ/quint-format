@@ -4,8 +4,10 @@ import type { ModuleDeclaration } from "@/core/analysis.js";
 import {
   definitionBodyContinuationIndentation,
   definitionBodyDocument,
+  indentBy,
 } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
+import { continuationIndentLevels } from "@/formatting/policy.js";
 import {
   canFormatType,
   formatType,
@@ -112,7 +114,29 @@ export function analyzeOperatorDefinition(
     openParen &&
       closeParen &&
       parameters.length > 0 &&
+      parameters[0]?.startPosition.row > openParen.endPosition.row,
+  );
+  const usesHangingParameterList = Boolean(
+    openParen &&
+      closeParen &&
+      parameters.length > 0 &&
+      !usesExpandedParameterList &&
       openParen.startPosition.row < closeParen.endPosition.row,
+  );
+  const formattedParameterTokens = formattedParameters.map(
+    (parameter, index) =>
+      `${parameter}${index < formattedParameters.length - 1 || hasTrailingParameterComma ? "," : ""}`,
+  );
+  const hangingParameterGroups = parameters.reduce<string[][]>((groups, parameter, index) => {
+    const previous = parameters[index - 1];
+    if (index === 0 || (previous && parameter.startPosition.row > previous.endPosition.row)) {
+      groups.push([]);
+    }
+    groups.at(-1)?.push(formattedParameterTokens[index] as string);
+    return groups;
+  }, []);
+  const hangingCloseBreak = Boolean(
+    closeParen && lastParameter && closeParen.startPosition.row > lastParameter.endPosition.row,
   );
   const definitionHeadDocument = usesExpandedParameterList
     ? concat([
@@ -132,11 +156,25 @@ export function analyzeOperatorDefinition(
         ...returnTypeDocuments,
         text(" ="),
       ])
-    : concat([
-        text(`${definitionHead} ${declarationName.text}${parameterList}`),
-        ...returnTypeDocuments,
-        text(" ="),
-      ]);
+    : usesHangingParameterList
+      ? concat([
+          text(`${definitionHead} ${declarationName.text}(`),
+          text(hangingParameterGroups[0]?.join(" ") ?? ""),
+          indentBy(
+            concat(
+              hangingParameterGroups.slice(1).flatMap((group) => [hardLine, text(group.join(" "))]),
+            ),
+            continuationIndentLevels,
+          ),
+          ...(hangingCloseBreak ? [hardLine, text(")")] : [text(")")]),
+          ...returnTypeDocuments,
+          text(" ="),
+        ])
+      : concat([
+          text(`${definitionHead} ${declarationName.text}${parameterList}`),
+          ...returnTypeDocuments,
+          text(" ="),
+        ]);
   return {
     node,
     qualifier: isPureDefinition ? (qualifier ?? undefined) : undefined,
@@ -155,6 +193,7 @@ export function analyzeOperatorDefinition(
     parameters,
     parameterCommas,
     expandedParameterList: usesExpandedParameterList,
+    hangingParameterList: usesHangingParameterList,
     semicolon,
     equals,
     valueNode: body,

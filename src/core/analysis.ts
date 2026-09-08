@@ -25,6 +25,7 @@ export interface ModuleDeclaration {
   parameters?: Parser.SyntaxNode[];
   parameterCommas?: Parser.SyntaxNode[];
   expandedParameterList?: boolean;
+  hangingParameterList?: boolean;
   typeOpenBracket?: Parser.SyntaxNode;
   typeCloseBracket?: Parser.SyntaxNode;
   typeParameters?: Parser.SyntaxNode[];

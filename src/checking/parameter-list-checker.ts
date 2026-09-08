@@ -60,6 +60,54 @@ export function checkParameterList(
     });
   }
 
+  if (declaration.hangingParameterList) {
+    const expectedIndent =
+      declaration.keyword.startPosition.column + defaultFormatPolicy.continuationIndentWidth;
+    const afterOpenParen = source.slice(declaration.openParen.endIndex, firstParameter.startIndex);
+    if (afterOpenParen !== "") {
+      const row = firstParameter.startPosition.row;
+      diagnostics.push({
+        filePath,
+        line: row + 1,
+        column: firstParameter.startPosition.column + 1,
+        length: Math.max(1, afterOpenParen.length),
+        rule: "format/hanging-parameter-layout",
+        message: "expected the first parameter beside '('",
+        sourceLine: lines[row] ?? "",
+      });
+    }
+    const commas = declaration.parameterCommas ?? [];
+    for (const [index, parameter] of declaration.parameters.entries()) {
+      const nextParameter = declaration.parameters[index + 1];
+      if (!nextParameter) break;
+      const comma = commas[index];
+      if (!comma) continue;
+      const beforeComma = source.slice(parameter.endIndex, comma.startIndex);
+      const afterComma = source.slice(comma.endIndex, nextParameter.startIndex);
+      const continuesOnNextLine = nextParameter.startPosition.row > comma.endPosition.row;
+      const canonicalGap = continuesOnNextLine ? /^(?:\r\n|\r|\n)[\t ]*$/u : /^ $/u;
+      if (
+        beforeComma !== "" ||
+        !canonicalGap.test(afterComma) ||
+        (continuesOnNextLine && nextParameter.startPosition.column !== expectedIndent)
+      ) {
+        const row = nextParameter.startPosition.row;
+        diagnostics.push({
+          filePath,
+          line: row + 1,
+          column: nextParameter.startPosition.column + 1,
+          length: Math.max(1, nextParameter.text.length),
+          rule: "format/hanging-parameter-layout",
+          message: continuesOnNextLine
+            ? "expected continuation indentation for the parameter line"
+            : "expected ', ' between parameters",
+          sourceLine: lines[row] ?? "",
+        });
+      }
+    }
+    return diagnostics;
+  }
+
   if (declaration.expandedParameterList) {
     const parameterIndent =
       declaration.keyword.startPosition.column + defaultFormatPolicy.indentWidth;

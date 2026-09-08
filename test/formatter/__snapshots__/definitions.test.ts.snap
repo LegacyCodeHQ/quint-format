@@ -61,43 +61,35 @@ exports[`definitions formats a typed def header 1`] = `
 "
 `;
 
-exports[`definitions expands a multiline definition header 1`] = `
+exports[`definitions preserves source line groups in a hanging definition header 1`] = `
 "module Example {
-  pure def transfer(
-    chainState: str,
-    denomination: str,
-    amount: int,
-    sender: str,
-    receiver: str,
-    sourcePort: str,
-    sourceChannel: str,
-    timeoutHeight: int,
-    timeoutTimestamp: int
-  ): bool = {
+  pure def transfer(chainState: str, denomination: str, amount: int,
+      sender: str, receiver: str, sourcePort: str, sourceChannel: str,
+      timeoutHeight: int, timeoutTimestamp: int): bool = {
     true
   }
 }
 "
 `;
 
-exports[`definitions expands a multiline definition header 2`] = `
+exports[`definitions preserves source line groups in a hanging definition header 2`] = `
 [
   {
     "column": 21,
     "filePath": "multiline-definition-header.qnt",
-    "length": 15,
-    "line": 2,
-    "message": "expected the first parameter on an indented line",
-    "rule": "format/multiline-parameter-layout",
-    "sourceLine": "  pure def transfer(chainState: str, denomination: str, amount: int,",
+    "length": 11,
+    "line": 3,
+    "message": "expected continuation indentation for the parameter line",
+    "rule": "format/hanging-parameter-layout",
+    "sourceLine": "                    sender: str, receiver: str, sourcePort: str, sourceChannel: str,",
   },
   {
-    "column": 62,
+    "column": 21,
     "filePath": "multiline-definition-header.qnt",
-    "length": 1,
+    "length": 18,
     "line": 4,
-    "message": "expected the closing parenthesis on its own line",
-    "rule": "format/multiline-parameter-layout",
+    "message": "expected continuation indentation for the parameter line",
+    "rule": "format/hanging-parameter-layout",
     "sourceLine": "                    timeoutHeight: int, timeoutTimestamp: int): bool = {",
   },
 ]

@@ -90,6 +90,22 @@ describe("definitions", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves a hanging parameter list with continuation indentation", () => {
+    const input = [
+      "module Example {",
+      "  pure def receive(evm: int,",
+      "      ponzi: int, investor: int, amount: int): bool = true",
+      "}",
+      "",
+    ].join("\n");
+    const output = formatQuint(input);
+
+    expect(output).toBe(input);
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    expect(parser.parse(output).rootNode.hasError).toBe(false);
+  });
+
   test("formats a typed def header", () => {
     const input = "module Example {\n  def identity(value :int) :int=value\n}\n";
     const output = formatQuint(input);
@@ -139,7 +155,7 @@ describe("definitions", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
-  test("expands a multiline definition header", () => {
+  test("preserves source line groups in a hanging definition header", () => {
     const input = readFileSync(
       new URL("../fixtures/multiline-definition-header.qnt", import.meta.url),
       "utf8",
@@ -148,17 +164,9 @@ describe("definitions", () => {
 
     expect(output).toContain(
       [
-        "  pure def transfer(",
-        "    chainState: str,",
-        "    denomination: str,",
-        "    amount: int,",
-        "    sender: str,",
-        "    receiver: str,",
-        "    sourcePort: str,",
-        "    sourceChannel: str,",
-        "    timeoutHeight: int,",
-        "    timeoutTimestamp: int",
-        "  ): bool = {",
+        "  pure def transfer(chainState: str, denomination: str, amount: int,",
+        "      sender: str, receiver: str, sourcePort: str, sourceChannel: str,",
+        "      timeoutHeight: int, timeoutTimestamp: int): bool = {",
       ].join("\n"),
     );
     expect(output).toMatchSnapshot();
