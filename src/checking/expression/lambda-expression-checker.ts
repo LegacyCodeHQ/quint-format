@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { lambdaBodyColumn, lambdaBodyIndentation } from "@/formatting/lambda-body-formatter.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   collectNodes,
   hasInlineMultilineConditionalLambdaBody,
@@ -101,7 +102,7 @@ export function checkLambdaExpressions(
     }
     const leadingComments = lambda.namedChildren.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= arrow.endIndex &&
         child.endIndex <= body.startIndex,
     );

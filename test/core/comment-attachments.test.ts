@@ -1,9 +1,29 @@
 import { describe, expect, test } from "bun:test";
-import { attachComments } from "@/parsing/comment-attachments.js";
+import type Parser from "tree-sitter";
+import {
+  attachComments,
+  isCommentNode,
+  isDocumentationComment,
+  isOrdinaryComment,
+} from "@/parsing/comment-attachments.js";
 import { parseQuint } from "@/parsing/parser.js";
 import { collectNodes } from "@/parsing/syntax.js";
 
 describe("comment attachments", () => {
+  test("classifies both Quint comment node types", () => {
+    const root = parseQuint(`// Line comment
+/// Documentation comment
+module Example { /* Block comment */ }`);
+
+    expect(root.namedChildren.filter(isCommentNode).map((node) => node.type)).toEqual([
+      "comment",
+      "documentation_comment",
+    ]);
+    expect(isCommentNode(root.namedChildren.at(-1) as Parser.SyntaxNode)).toBe(false);
+    expect(isOrdinaryComment(root.namedChildren[0] as Parser.SyntaxNode)).toBe(true);
+    expect(isDocumentationComment(root.namedChildren[1] as Parser.SyntaxNode)).toBe(true);
+  });
+
   test("indexes aligned local trailing comments in one parse-tree pass", () => {
     const root = parseQuint(`module Example {
   pure def total = {

@@ -10,6 +10,7 @@ import {
   formatSumVariant,
   formatType,
 } from "@/formatting/type-formatter.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 
 export function analyzeTypeDeclaration(node: Parser.SyntaxNode): ModuleDeclaration | undefined {
   if (node.type === "uninterpreted_type_declaration") {
@@ -54,7 +55,7 @@ export function analyzeTypeDeclaration(node: Parser.SyntaxNode): ModuleDeclarati
         previousVariant = child;
         continue;
       }
-      if (child.type === "comment" || child.type === "documentation_comment") {
+      if (isCommentNode(child)) {
         const isTrailingVariantComment =
           previousVariant?.endPosition.row === child.startPosition.row;
         if (isTrailingVariantComment) {
@@ -76,10 +77,7 @@ export function analyzeTypeDeclaration(node: Parser.SyntaxNode): ModuleDeclarati
     }
   }
   const hasRecordComments =
-    value.type === "record_type" &&
-    value.namedChildren.some(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
-    );
+    value.type === "record_type" && value.namedChildren.some((child) => isCommentNode(child));
   const isMultilineRecordType =
     value.type === "record_type" && value.startPosition.row < value.endPosition.row;
   const isExpandedTypeApplication =

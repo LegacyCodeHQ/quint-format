@@ -4,7 +4,7 @@ import type { ExpressionAnalysis, ModuleDeclaration } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { formatPattern } from "@/formatting/pattern-formatter.js";
-import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import { type CommentAttachmentIndex, isCommentNode } from "@/parsing/comment-attachments.js";
 
 interface OverrideAnalysis {
   node: Parser.SyntaxNode;
@@ -58,9 +58,7 @@ export function analyzeModuleInstance(
       value: analyzeExpression(value, commentAttachments),
     };
   });
-  const hasComments = node.namedChildren.some(
-    (child) => child.type === "comment" || child.type === "documentation_comment",
-  );
+  const hasComments = node.namedChildren.some(isCommentNode);
   const firstOverride = overrides[0];
   const lastOverride = overrides.at(-1);
   const hasTrailingComma = commas.some((comma) =>
@@ -159,7 +157,7 @@ function buildOverrideDocuments(
       candidate.id !== alias?.id &&
       candidate.id !== sourceNode?.id,
   )) {
-    if (child.type === "comment" || child.type === "documentation_comment") {
+    if (isCommentNode(child)) {
       const isTrailingOverrideComment =
         previousOverride?.node.endPosition.row === child.startPosition.row;
       if (isTrailingOverrideComment && previousOverride) {

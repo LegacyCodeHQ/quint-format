@@ -2,6 +2,7 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { concat, type Doc, group, hardLine, indent, line, text } from "@/formatting/document.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import { hasLineBrokenMultilineValue } from "@/parsing/syntax.js";
 
 export function analyzeLiteralExpression(
@@ -106,9 +107,7 @@ export function analyzeLiteralExpression(
     );
     const reattachedComments = new Map<number, Parser.SyntaxNode>();
     const reattachedCommentIds = new Set<number>();
-    for (const comment of node.namedChildren.filter(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
-    )) {
+    for (const comment of node.namedChildren.filter((child) => isCommentNode(child))) {
       const previousElement = [...directElements]
         .reverse()
         .find((element) => element.endIndex <= comment.startIndex);
@@ -133,7 +132,7 @@ export function analyzeLiteralExpression(
       analysis?: ExpressionAnalysis;
     }> = node.namedChildren.flatMap((element) => {
       if (reattachedCommentIds.has(element.id)) return [];
-      if (element.type === "comment" || element.type === "documentation_comment") {
+      if (isCommentNode(element)) {
         return [{ node: element, document: commentDocument(element) }];
       }
       const value = element.childForFieldName("value");
@@ -169,10 +168,7 @@ export function analyzeLiteralExpression(
         Boolean(lastDirectElement && child.startIndex >= lastDirectElement.endIndex),
     );
     const hasComments =
-      Boolean(trailingClosingComment) ||
-      entries.some(
-        ({ node: entry }) => entry.type === "comment" || entry.type === "documentation_comment",
-      );
+      Boolean(trailingClosingComment) || entries.some(({ node: entry }) => isCommentNode(entry));
     const isExpanded = hasComments || node.startPosition.row < node.endPosition.row;
     const preservesInlineOpening = Boolean(
       isExpanded && !hasComments && entries[0]?.node.startPosition.row === node.startPosition.row,
@@ -184,8 +180,7 @@ export function analyzeLiteralExpression(
     const lineAnchors: Parser.SyntaxNode[] = [];
     if (isExpanded) {
       for (const [index, entry] of entries.entries()) {
-        const isComment =
-          entry.node.type === "comment" || entry.node.type === "documentation_comment";
+        const isComment = isCommentNode(entry.node);
         const previous = entries[index - 1];
         const isTrailingComment =
           isComment &&

@@ -5,7 +5,7 @@ import {
   preservesDefinitionBodyLineBreak,
 } from "@/formatting/definition-body-formatter.js";
 import { defaultFormatPolicy } from "@/formatting/policy.js";
-import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import { type CommentAttachmentIndex, isCommentNode } from "@/parsing/comment-attachments.js";
 
 export function checkDefinitionBody(
   declaration: ModuleDeclaration,
@@ -29,9 +29,7 @@ export function checkDefinitionBody(
     declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;
   const hasRecordComments =
     declaration.valueNode.type === "record_type" &&
-    declaration.valueNode.namedChildren.some(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
-    );
+    declaration.valueNode.namedChildren.some(isCommentNode);
   const isMultilineRecord =
     declaration.valueNode.type === "record_type" &&
     declaration.valueNode.startPosition.row < declaration.valueNode.endPosition.row;

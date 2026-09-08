@@ -1,5 +1,27 @@
 import type Parser from "tree-sitter";
 
+export const commentNodeTypes = ["comment", "documentation_comment"] as const;
+
+export function isCommentNode(node: Parser.SyntaxNode): boolean {
+  return commentNodeTypes.includes(node.type as (typeof commentNodeTypes)[number]);
+}
+
+export function isDocumentationComment(node: Parser.SyntaxNode): boolean {
+  return node.type === "documentation_comment";
+}
+
+export function isOrdinaryComment(node: Parser.SyntaxNode): boolean {
+  return node.type === "comment";
+}
+
+export function isBlockComment(node: Parser.SyntaxNode): boolean {
+  return isOrdinaryComment(node) && node.text.startsWith("/*");
+}
+
+export function isLineComment(node: Parser.SyntaxNode): boolean {
+  return isOrdinaryComment(node) && node.text.startsWith("//");
+}
+
 export type CommentPlacement = "leading" | "trailing" | "dangling";
 
 export interface CommentAttachment {
@@ -56,18 +78,14 @@ export function attachComments(root: Parser.SyntaxNode): CommentAttachmentIndex 
   return index;
 }
 
-function isComment(node: Parser.SyntaxNode): boolean {
-  return node.type === "comment" || node.type === "documentation_comment";
-}
-
 function visitTree(owner: Parser.SyntaxNode, index: CommentAttachmentIndex): void {
   const children = owner.namedChildren;
   for (const [childIndex, child] of children.entries()) {
-    if (!isComment(child)) continue;
+    if (!isCommentNode(child)) continue;
     const previous = [...children.slice(0, childIndex)]
       .reverse()
-      .find((candidate) => !isComment(candidate));
-    const next = children.slice(childIndex + 1).find((candidate) => !isComment(candidate));
+      .find((candidate) => !isCommentNode(candidate));
+    const next = children.slice(childIndex + 1).find((candidate) => !isCommentNode(candidate));
     const trailing = previous?.endPosition.row === child.startPosition.row;
     index.add({
       comment: child,
@@ -77,7 +95,7 @@ function visitTree(owner: Parser.SyntaxNode, index: CommentAttachmentIndex): voi
     });
   }
   for (const child of children) {
-    if (!isComment(child)) visitTree(child, index);
+    if (!isCommentNode(child)) visitTree(child, index);
   }
   if (
     owner.type === "nested_definition_expression" &&

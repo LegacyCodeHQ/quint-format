@@ -4,6 +4,7 @@ import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { matchArmBodyIndentation } from "@/formatting/match-arm-body-formatter.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import { isCompactMatchExpression } from "@/parsing/syntax.js";
 
 export function analyzeMatchExpression(
@@ -25,9 +26,7 @@ export function analyzeMatchExpression(
       if (!variant || !body || !arrow) throw new Error("Unable to locate a match arm");
       const bodyAnalysis = analyzeExpression(body);
       const comments = arm.namedChildren.filter(
-        (child) =>
-          (child.type === "comment" || child.type === "documentation_comment") &&
-          child.endIndex <= body.startIndex,
+        (child) => isCommentNode(child) && child.endIndex <= body.startIndex,
       );
       const inlineArrowComment = comments.find(
         (comment) => comment.startPosition.row === arrow.endPosition.row,
@@ -97,7 +96,7 @@ export function analyzeMatchExpression(
     const contentDocuments: Doc[] = [];
     let previousArm: (typeof armAnalyses)[number] | undefined;
     for (const child of node.namedChildren.filter((candidate) => candidate.id !== value.id)) {
-      if (child.type === "comment" || child.type === "documentation_comment") {
+      if (isCommentNode(child)) {
         const isTrailingArmComment = previousArm?.node.endPosition.row === child.startPosition.row;
         if (isTrailingArmComment) {
           const armDocument = contentDocuments.pop();

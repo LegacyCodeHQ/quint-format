@@ -3,6 +3,7 @@ import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, text } from "@/formatting/document.js";
 import { preservedContinuationPrefix } from "@/formatting/source-spacing.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   isMultilineParenthesizedPostfixReceiver,
   isMultilineUfcsContinuation,
@@ -23,7 +24,7 @@ export function analyzeAccessExpression(
     const analysis = analyzeExpression(object);
     const comments = node.namedChildren.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= object.endIndex &&
         child.endIndex <= field.startIndex,
     );

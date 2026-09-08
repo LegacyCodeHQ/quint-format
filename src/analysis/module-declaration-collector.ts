@@ -6,6 +6,7 @@ import {
   preservesTrailingCommentAlignment,
 } from "@/formatting/comments.js";
 import { concat, hardLine, text } from "@/formatting/document.js";
+import { isBlockComment, isCommentNode, isLineComment } from "@/parsing/comment-attachments.js";
 
 export class ModuleDeclarationCollector {
   readonly declarations: ModuleDeclaration[] = [];
@@ -31,13 +32,13 @@ export class ModuleDeclarationCollector {
   }
 
   consumeComment(node: Parser.SyntaxNode): boolean {
-    if (node.type !== "documentation_comment" && node.type !== "comment") return false;
+    if (!isCommentNode(node)) return false;
 
-    if (node.type === "comment" && node.text.startsWith("/*") && this.attachBoundaryComment(node)) {
+    if (isBlockComment(node) && this.attachBoundaryComment(node)) {
       return true;
     }
 
-    if (node.type === "comment" && node.text.startsWith("//") && this.attachTrailingComment(node)) {
+    if (isLineComment(node) && this.attachTrailingComment(node)) {
       return true;
     }
 

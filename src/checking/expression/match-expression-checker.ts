@@ -2,6 +2,7 @@ import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { indentWidth } from "@/formatting/document.js";
 import { matchArmBodyIndentation } from "@/formatting/match-arm-body-formatter.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   blockCombinatorEntries,
   collectNodes,
@@ -111,9 +112,7 @@ export function checkMatchExpressions(
         patternEnd = closeParen;
       }
       const preBodyComments = arm.namedChildren.filter(
-        (child) =>
-          (child.type === "comment" || child.type === "documentation_comment") &&
-          child.endIndex <= body.startIndex,
+        (child) => isCommentNode(child) && child.endIndex <= body.startIndex,
       );
       const inlineArrowComment = preBodyComments.find(
         (comment) => comment.startPosition.row === arrow.endPosition.row,

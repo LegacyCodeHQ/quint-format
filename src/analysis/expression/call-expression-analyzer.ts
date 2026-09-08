@@ -9,6 +9,7 @@ import {
   maxPreservedLineBreaks,
 } from "@/formatting/policy.js";
 import { preservedContinuationPrefix } from "@/formatting/source-spacing.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   callExpressionTarget,
   callTrailingCommentAlignment,
@@ -49,7 +50,7 @@ export function analyzeCallExpression(
       receiver && method
         ? node.namedChildren.filter(
             (child) =>
-              (child.type === "comment" || child.type === "documentation_comment") &&
+              isCommentNode(child) &&
               child.startIndex >= receiver.endIndex &&
               child.endIndex <= method.startIndex,
           )
@@ -89,9 +90,7 @@ export function analyzeCallExpression(
         child.startIndex >= openParenthesis.endIndex &&
         child.endIndex <= closeParenthesis.startIndex,
     );
-    const hasComments = callContentChildren.some(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
-    );
+    const hasComments = callContentChildren.some((child) => isCommentNode(child));
     const trailingCommentAlignment = callTrailingCommentAlignment(node);
     const multilineLambdaArgument =
       arguments_.length === 1 && isMultilineLambdaExpression(arguments_[0] as Parser.SyntaxNode);
@@ -260,7 +259,7 @@ export function analyzeCallExpression(
     if (hasComments) {
       const argumentDocumentIndexes = new Map<number, number>();
       for (const child of callContentChildren) {
-        if (child.type === "comment" || child.type === "documentation_comment") {
+        if (isCommentNode(child)) {
           const trailingArgument = [...arguments_]
             .reverse()
             .find(

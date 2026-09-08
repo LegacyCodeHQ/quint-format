@@ -1,4 +1,5 @@
 import type Parser from "tree-sitter";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import type { TypeCheckContext } from "./type-check-context.js";
 
 export function checkRecordType(node: Parser.SyntaxNode, context: TypeCheckContext): boolean {
@@ -9,9 +10,7 @@ export function checkRecordType(node: Parser.SyntaxNode, context: TypeCheckConte
   const closeBrace = node.children.find((child) => child.type === "}");
   const fields = node.namedChildren.filter((child) => child.type === "record_type_field");
   const row = node.childForFieldName("row");
-  const hasComments = node.namedChildren.some(
-    (child) => child.type === "comment" || child.type === "documentation_comment",
-  );
+  const hasComments = node.namedChildren.some((child) => isCommentNode(child));
   const isExpanded = hasComments || node.startPosition.row < node.endPosition.row;
   const firstField = fields[0];
   const lastField = fields.at(-1);

@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { defaultFormatPolicy } from "@/formatting/policy.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   callExpressionTarget,
   callTrailingCommentAlignment,
@@ -32,7 +33,7 @@ export function checkCallExpressions(
     }
     const directComments = callExpression.namedChildren.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= openParen.endIndex &&
         child.endIndex <= closeParen.startIndex,
     );

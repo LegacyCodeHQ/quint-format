@@ -1,7 +1,7 @@
 import Quint from "@legacycodehq/tree-sitter-quint";
 import type Parser from "tree-sitter";
 import { continuationIndentLevels, defaultFormatPolicy } from "@/formatting/policy.js";
-import type { CommentAttachmentIndex } from "./comment-attachments.js";
+import { type CommentAttachmentIndex, isCommentNode } from "./comment-attachments.js";
 import { areOnSameLine, hasLineBreakBetween, isMultiline } from "./source-layout.js";
 
 const blockCombinatorSupertype = Quint.nodeTypeInfo.find(
@@ -435,9 +435,7 @@ export function callTrailingCommentAlignment(
 ): Map<number, number> {
   const arguments_ = callExpression.childrenForFieldName("argument");
   const commas = callExpression.children.filter((child) => child.type === ",");
-  const comments = callExpression.namedChildren.filter(
-    (child) => child.type === "comment" || child.type === "documentation_comment",
-  );
+  const comments = callExpression.namedChildren.filter(isCommentNode);
   const entries = comments.flatMap((comment) => {
     const argument = [...arguments_]
       .reverse()

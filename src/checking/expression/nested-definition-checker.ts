@@ -1,7 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { requiresNestedDefinitionResultGap } from "@/formatting/nested-definition-formatter.js";
-import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import { type CommentAttachmentIndex, isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   collectNodes,
   compactNestedBlockExpression,
@@ -26,7 +26,7 @@ export function checkNestedDefinitions(
     const value = definitionBody(definition);
     const leadingBodyComments = nested.namedChildren.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= definition.endIndex &&
         child.endIndex <= body.startIndex &&
         child.startPosition.row !== value?.endPosition.row,

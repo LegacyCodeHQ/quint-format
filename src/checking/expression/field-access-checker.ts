@@ -1,5 +1,6 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   collectNodes,
   isMultilineUfcsContinuation,
@@ -34,7 +35,7 @@ export function checkFieldAccessExpressions(
       : beforeDot === "";
     const comments = fieldAccess.namedChildren.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= object.endIndex &&
         child.endIndex <= field.startIndex,
     );

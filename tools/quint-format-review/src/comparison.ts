@@ -1,4 +1,5 @@
 import type Parser from "tree-sitter";
+import { isCommentNode } from "../../../src/parsing/comment-attachments.js";
 import { parseQuint } from "../../../src/parsing/parser.js";
 import { type ChangeBlock, changedBlocks } from "./changes.js";
 import { type SpacingChanges, spacingChanges } from "./spacing.js";
@@ -30,7 +31,7 @@ function leaves(node: Parser.SyntaxNode): Parser.SyntaxNode[] {
 
 const optionalPunctuation = new Set([";", "(", ")", ","]);
 function normalizedToken(node: Parser.SyntaxNode): string {
-  if (node.type !== "comment" && node.type !== "documentation_comment") return node.text;
+  if (!isCommentNode(node)) return node.text;
   const prefix = " ".repeat(node.startPosition.column);
   return node.text
     .split(/\r\n|\r|\n/)

@@ -5,7 +5,7 @@ import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { lambdaBodyIndentation } from "@/formatting/lambda-body-formatter.js";
 import { formatCommentedTuplePattern, formatPattern } from "@/formatting/pattern-formatter.js";
-import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import { type CommentAttachmentIndex, isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   compactLambdaBlockExpression,
   hasInlineMultilineConditionalLambdaBody,
@@ -30,10 +30,7 @@ export function analyzeLambdaExpression(
           text("("),
           ...parameters.flatMap((parameter, index) => [
             ...(index === 0 ? [] : [text(", ")]),
-            parameter.type === "tuple_pattern" &&
-            parameter.namedChildren.some(
-              (child) => child.type === "comment" || child.type === "documentation_comment",
-            )
+            parameter.type === "tuple_pattern" && parameter.namedChildren.some(isCommentNode)
               ? formatCommentedTuplePattern(parameter)
               : text(formatPattern(parameter)),
           ]),
@@ -43,9 +40,7 @@ export function analyzeLambdaExpression(
     const compactBlockExpression = compactLambdaBlockExpression(node, body, commentAttachments);
     const analysis = analyzeExpression(compactBlockExpression ?? body);
     const comments = node.namedChildren.filter(
-      (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
-        child.endIndex <= body.startIndex,
+      (child) => isCommentNode(child) && child.endIndex <= body.startIndex,
     );
     const isMultilineBody = isMultilineLambdaExpression(node);
     const preservesInlineConditionalHeader = hasInlineMultilineConditionalLambdaBody(node);

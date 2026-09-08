@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { defaultFormatPolicy } from "@/formatting/policy.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import { hasLineBrokenMultilineValue } from "@/parsing/syntax.js";
 
 export function checkRecordLiterals(
@@ -17,9 +18,7 @@ export function checkRecordLiterals(
       (child) => child.type === "record_literal_field",
     );
     const spreads = recordLiteral.namedChildren.filter((child) => child.type === "record_spread");
-    const comments = recordLiteral.namedChildren.filter(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
-    );
+    const comments = recordLiteral.namedChildren.filter((child) => isCommentNode(child));
     const elements = [...fields, ...spreads].sort(
       (left, right) => left.startIndex - right.startIndex,
     );

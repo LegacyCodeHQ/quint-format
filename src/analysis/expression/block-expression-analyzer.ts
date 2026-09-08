@@ -12,7 +12,7 @@ import {
   text,
 } from "@/formatting/document.js";
 import { defaultFormatPolicy, maxPreservedLineBreaks } from "@/formatting/policy.js";
-import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import { type CommentAttachmentIndex, isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   blockCombinatorEntries,
   compactBlockExpression,
@@ -58,7 +58,7 @@ export function analyzeBlockExpression(
     const contentAnchors: Parser.SyntaxNode[] = [];
     let previousContent: Parser.SyntaxNode | undefined;
     for (const child of node.namedChildren) {
-      if (child.type === "comment" || child.type === "documentation_comment") {
+      if (isCommentNode(child)) {
         const isTrailingContentComment =
           previousContent?.endPosition.row === child.startPosition.row;
         if (isTrailingContentComment) {
@@ -137,9 +137,7 @@ export function analyzeBlockExpression(
       throw new Error("Unable to locate the block combinator entries");
     }
     const openingComment = node.namedChildren.find(
-      (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
-        child.startPosition.row === openBrace.endPosition.row,
+      (child) => isCommentNode(child) && child.startPosition.row === openBrace.endPosition.row,
     );
     const analyses = entries.map(analyzeExpression);
     const finalEntry = entries.at(-1) as Parser.SyntaxNode;
@@ -149,9 +147,7 @@ export function analyzeBlockExpression(
         child.startIndex >= finalEntry.endIndex &&
         child.endIndex <= closeBrace.startIndex,
     );
-    const hasComments = node.namedChildren.some(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
-    );
+    const hasComments = node.namedChildren.some(isCommentNode);
     const compactDocument = concat([
       text(`${keyword.text} { `),
       ...analyses.flatMap((analysis, index) => [
@@ -181,7 +177,7 @@ export function analyzeBlockExpression(
     const contentAnchors: Parser.SyntaxNode[] = [];
     let previousEntry: Parser.SyntaxNode | undefined;
     for (const child of node.namedChildren) {
-      if (child.type === "comment" || child.type === "documentation_comment") {
+      if (isCommentNode(child)) {
         if (child.id === openingComment?.id) continue;
         const isTrailingEntryComment = previousEntry?.endPosition.row === child.startPosition.row;
         if (isTrailingEntryComment) {

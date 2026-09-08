@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { defaultFormatPolicy } from "@/formatting/policy.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import { blockCombinatorEntries, collectBlockCombinatorExpressions } from "@/parsing/syntax.js";
 
 export function checkBlockCombinators(
@@ -19,9 +20,7 @@ export function checkBlockCombinators(
       throw new Error("Unable to locate the block combinator layout");
     }
     const rows = entries.map((entry) => entry.startPosition.row);
-    const comments = combinator.namedChildren.filter(
-      (child) => child.type === "comment" || child.type === "documentation_comment",
-    );
+    const comments = combinator.namedChildren.filter((child) => isCommentNode(child));
     const hasCompactLayout =
       openBrace.startPosition.row === closeBrace.startPosition.row &&
       rows.every((row) => row === openBrace.startPosition.row);
@@ -66,9 +65,7 @@ export function checkBlockCombinators(
       }
     }
     const openingComment = combinator.namedChildren.find(
-      (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
-        child.startPosition.row === openBrace.endPosition.row,
+      (child) => isCommentNode(child) && child.startPosition.row === openBrace.endPosition.row,
     );
     const firstContent = combinator.namedChildren.find((child) => child.id !== openingComment?.id);
     const openingAnchor = openingComment ?? openBrace;

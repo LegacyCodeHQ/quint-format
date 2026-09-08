@@ -3,7 +3,7 @@ import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { concat, hardLine, text } from "@/formatting/document.js";
 import { requiresNestedDefinitionResultGap } from "@/formatting/nested-definition-formatter.js";
-import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import { type CommentAttachmentIndex, isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   compactNestedBlockExpression,
   definitionBody,
@@ -38,7 +38,7 @@ export function analyzeNestedDefinitionExpression(
       : null;
     const comments = node.namedChildren.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= definition.endIndex &&
         child.endIndex <= body.startIndex,
     );

@@ -8,7 +8,7 @@ import {
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
 import { formatPattern } from "@/formatting/pattern-formatter.js";
 import { formatType, preservedInlineReturnTypePrefix } from "@/formatting/type-formatter.js";
-import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import { type CommentAttachmentIndex, isCommentNode } from "@/parsing/comment-attachments.js";
 import { definitionBody } from "@/parsing/syntax.js";
 
 function localTrailingCommentDocuments(
@@ -44,9 +44,7 @@ export function analyzeLocalDefinition(
     const valueAnalysis = value ? analyzeExpression(value) : undefined;
     const trailingComments = value
       ? node.namedChildren.filter(
-          (child) =>
-            (child.type === "comment" || child.type === "documentation_comment") &&
-            child.startIndex >= value.endIndex,
+          (child) => isCommentNode(child) && child.startIndex >= value.endIndex,
         )
       : [];
     return {
@@ -92,9 +90,7 @@ export function analyzeLocalDefinition(
     const bodyAnalysis = body ? analyzeExpression(body) : undefined;
     const trailingComments = body
       ? node.namedChildren.filter(
-          (child) =>
-            (child.type === "comment" || child.type === "documentation_comment") &&
-            child.startIndex >= body.endIndex,
+          (child) => isCommentNode(child) && child.startIndex >= body.endIndex,
         )
       : [];
     const head = defKeyword ? `${qualifier ? `${qualifier.text} ` : ""}def` : qualifier?.text;

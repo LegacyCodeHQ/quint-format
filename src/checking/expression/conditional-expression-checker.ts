@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { defaultFormatPolicy } from "@/formatting/policy.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   collectNodes,
   hasInlineMultilineConditionalLambdaBody,
@@ -94,13 +95,13 @@ export function checkConditionalExpressions(
     }
     const consequenceComments = conditional.namedChildren.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= condition.endIndex &&
         child.endIndex <= consequence.startIndex,
     );
     const alternativeComments = conditional.namedChildren.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= consequence.endIndex &&
         child.endIndex <= alternative.startIndex,
     );

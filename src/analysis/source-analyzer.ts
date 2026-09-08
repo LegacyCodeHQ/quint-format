@@ -1,6 +1,6 @@
 import type Parser from "tree-sitter";
 import type { AnalyzedSource } from "@/core/analysis.js";
-import { attachComments } from "@/parsing/comment-attachments.js";
+import { attachComments, isCommentNode } from "@/parsing/comment-attachments.js";
 import { parseQuint } from "@/parsing/parser.js";
 import { indexSourceLayout } from "@/parsing/source-layout.js";
 import { analyzeModuleNode } from "./module-analyzer.js";
@@ -24,7 +24,7 @@ export function analyzeSource(source: string): AnalyzedSource {
       continue;
     }
 
-    if (node.type === "documentation_comment" || node.type === "comment") {
+    if (isCommentNode(node)) {
       pendingComments.push(node);
       continue;
     }

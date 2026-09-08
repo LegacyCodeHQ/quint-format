@@ -4,6 +4,7 @@ import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
 import { planOperatorBreaks } from "@/parsing/break-authority.js";
+import { isCommentNode, isOrdinaryComment } from "@/parsing/comment-attachments.js";
 
 export function analyzeOperatorExpression(
   node: Parser.SyntaxNode,
@@ -39,13 +40,13 @@ export function analyzeOperatorExpression(
 
     const inlineComments = node.children.filter(
       (child) =>
-        child.type === "comment" &&
+        isOrdinaryComment(child) &&
         child.startIndex >= left.endIndex &&
         child.endIndex <= operator.startIndex,
     );
     const rightComments = node.children.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= operator.endIndex &&
         child.endIndex <= right.startIndex,
     );

@@ -1,4 +1,5 @@
 import type Parser from "tree-sitter";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import { commentDocument } from "./comments.js";
 import { concat, type Doc, hardLine, indent, text } from "./document.js";
 
@@ -26,7 +27,7 @@ export function formatPattern(node: Parser.SyntaxNode): string {
 export function formatCommentedTuplePattern(node: Parser.SyntaxNode): Doc {
   const elements = node.childrenForFieldName("element");
   const entries = node.namedChildren.map((child) => {
-    if (child.type === "comment" || child.type === "documentation_comment") {
+    if (isCommentNode(child)) {
       return commentDocument(child);
     }
     const index = elements.findIndex((element) => element.id === child.id);

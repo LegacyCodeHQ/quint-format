@@ -1,4 +1,5 @@
 import type Parser from "tree-sitter";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import { commentDocument } from "./comments.js";
 import { concat, type Doc, hardLine, indent, text } from "./document.js";
 import { formatType } from "./type-formatter.js";
@@ -14,7 +15,7 @@ export function formatExpandedRecordType(node: Parser.SyntaxNode): Doc {
   const entries: Doc[] = [];
   let previousField: Parser.SyntaxNode | undefined;
   for (const child of node.namedChildren) {
-    if (child.type === "comment" || child.type === "documentation_comment") {
+    if (isCommentNode(child)) {
       const isTrailingFieldComment = previousField?.endPosition.row === child.startPosition.row;
       if (isTrailingFieldComment) {
         const fieldDocument = entries.pop();

@@ -1,5 +1,6 @@
 import type { AnalyzedSource } from "@/core/analysis.js";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
+import { commentNodeTypes } from "@/parsing/comment-attachments.js";
 
 export function checkCommentTrailingWhitespace(
   analyzedSource: AnalyzedSource,
@@ -9,7 +10,7 @@ export function checkCommentTrailingWhitespace(
   const comments = [
     ...analyzedSource.modules.flatMap((module) => [
       ...module.leadingComments,
-      ...module.node.descendantsOfType(["comment", "documentation_comment"]),
+      ...module.node.descendantsOfType([...commentNodeTypes]),
     ]),
     ...analyzedSource.trailingComments,
   ];

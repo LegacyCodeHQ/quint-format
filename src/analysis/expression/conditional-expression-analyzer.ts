@@ -2,6 +2,7 @@ import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { concat, hardLine, indent, text } from "@/formatting/document.js";
+import { isCommentNode } from "@/parsing/comment-attachments.js";
 import { isCompactElseIfLadder, isElseIfBranch } from "@/parsing/syntax.js";
 
 export function analyzeConditionalExpression(
@@ -25,13 +26,13 @@ export function analyzeConditionalExpression(
     }
     const consequenceComments = node.namedChildren.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= condition.endIndex &&
         child.endIndex <= consequence.startIndex,
     );
     const alternativeComments = node.namedChildren.filter(
       (child) =>
-        (child.type === "comment" || child.type === "documentation_comment") &&
+        isCommentNode(child) &&
         child.startIndex >= consequence.endIndex &&
         child.endIndex <= alternative.startIndex,
     );
