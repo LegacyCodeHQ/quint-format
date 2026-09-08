@@ -110,6 +110,21 @@ export function hasInlineMultilineConditionalLambdaBody(node: Parser.SyntaxNode)
   );
 }
 
+export function hasInlineMultilineNestedLambdaBody(node: Parser.SyntaxNode): boolean {
+  if (node.type !== "lambda_expression") return false;
+  const arrow = node.children.find((child) => child.type === "=>");
+  const body = node.childForFieldName("body");
+  return Boolean(
+    arrow &&
+      body &&
+      isCallExpression(body) &&
+      areOnSameLine(arrow, body) &&
+      body
+        .childrenForFieldName("argument")
+        .some((argument) => argument.type === "lambda_expression" && isMultiline(argument)),
+  );
+}
+
 const separatedValueShapes = new Map<string, { separator: string; value: string }>([
   ["pair_expression", { separator: "->", value: "right" }],
   ["record_literal_field", { separator: ":", value: "value" }],

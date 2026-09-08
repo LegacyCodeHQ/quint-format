@@ -4,6 +4,7 @@ import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
 import { namedParseTreeSignature } from "../support/parse-tree";
+import { parseQuintAst } from "../support/quint-ast.js";
 
 const parser = new Parser();
 parser.setLanguage(Quint);
@@ -277,7 +278,7 @@ describe("lambdas", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
-  test("propagates multiline layout through nested lambda calls", () => {
+  test("keeps a same-line outer lambda call compact", () => {
     const input = readFileSync(
       new URL("../fixtures/nested-lambda-call.qnt", import.meta.url),
       "utf8",
@@ -285,9 +286,33 @@ describe("lambdas", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      '      lhs.bind(left =>\n          rhs.bind(right =>\n              if (left == right)\n                Ok(left)\n              else\n                Err("different")))',
+      '      lhs.bind(left => rhs.bind(right =>\n          if (left == right)\n            Ok(left)\n          else\n            Err("different")))',
     );
     expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("keeps same-line nested lambda headers compact", () => {
+    const input = readFileSync(
+      new URL("../fixtures/compact-nested-lambda-chain.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toContain(
+      [
+        "  pure def app(op: (int, int) => int, lhs: UIntT, rhs: UIntT, errMsg: str): UIntT =",
+        "      lhs.bind(x => rhs.bind(y =>",
+        "          val res = op(x, y)",
+        "          if (isInRange(res)) Ok(res) else Err(errMsg)))",
+      ].join("\n"),
+    );
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });

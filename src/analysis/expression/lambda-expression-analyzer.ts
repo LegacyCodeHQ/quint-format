@@ -9,6 +9,7 @@ import { type CommentAttachmentIndex, isCommentNode } from "@/parsing/comment-at
 import {
   compactLambdaBlockExpression,
   hasInlineMultilineConditionalLambdaBody,
+  hasInlineMultilineNestedLambdaBody,
   isMultilineLambdaExpression,
 } from "@/parsing/syntax.js";
 
@@ -44,18 +45,21 @@ export function analyzeLambdaExpression(
     );
     const isMultilineBody = isMultilineLambdaExpression(node);
     const preservesInlineConditionalHeader = hasInlineMultilineConditionalLambdaBody(node);
+    const preservesInlineNestedLambdaHeader = hasInlineMultilineNestedLambdaBody(node);
     return {
       document: compactBlockExpression
         ? concat([parameterDocument, text(" => { "), analysis.document, text(" }")])
         : comments.length === 0
           ? isMultilineBody
-            ? preservesInlineConditionalHeader
-              ? concat([parameterDocument, text(" => "), indent(analysis.document)])
-              : concat([
-                  parameterDocument,
-                  text(" =>"),
-                  indentBy(concat([hardLine, analysis.document]), lambdaBodyIndentation(body)),
-                ])
+            ? preservesInlineNestedLambdaHeader
+              ? concat([parameterDocument, text(" => "), analysis.document])
+              : preservesInlineConditionalHeader
+                ? concat([parameterDocument, text(" => "), indent(analysis.document)])
+                : concat([
+                    parameterDocument,
+                    text(" =>"),
+                    indentBy(concat([hardLine, analysis.document]), lambdaBodyIndentation(body)),
+                  ])
             : concat([parameterDocument, text(" => "), analysis.document])
           : concat([
               parameterDocument,

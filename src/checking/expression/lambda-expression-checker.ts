@@ -5,6 +5,7 @@ import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   collectNodes,
   hasInlineMultilineConditionalLambdaBody,
+  hasInlineMultilineNestedLambdaBody,
   isMultilineLambdaExpression,
 } from "@/parsing/syntax.js";
 import { checkPatternSpacing } from "./pattern-checker.js";
@@ -80,7 +81,9 @@ export function checkLambdaExpressions(
     }
     const arrowAnchor = closeParen ?? last;
     const afterArrow = source.slice(arrow.endIndex, body.startIndex);
-    const hasCanonicalBodySeparation = hasInlineMultilineConditionalLambdaBody(lambda)
+    const preservesInlineBody =
+      hasInlineMultilineConditionalLambdaBody(lambda) || hasInlineMultilineNestedLambdaBody(lambda);
+    const hasCanonicalBodySeparation = preservesInlineBody
       ? afterArrow === " "
       : isMultilineLambdaExpression(lambda)
         ? /^(?:\r\n|\r|\n)[\t ]*$/.test(afterArrow)
