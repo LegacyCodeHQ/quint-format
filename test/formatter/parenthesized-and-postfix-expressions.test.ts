@@ -4,6 +4,7 @@ import Quint from "@legacycodehq/tree-sitter-quint";
 import Parser from "tree-sitter";
 import { checkQuint, formatQuint } from "@/index.js";
 import { namedParseTreeSignature } from "../support/parse-tree";
+import { parseQuintAst } from "../support/quint-ast.js";
 
 const parser = new Parser();
 parser.setLanguage(Quint);
@@ -44,7 +45,7 @@ describe("parenthesized and postfix expressions", () => {
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });
 
-  test("attaches postfix access to a multiline parenthesized expression", () => {
+  test("preserves a postfix continuation after a multiline parenthesized expression", () => {
     const input = readFileSync(
       new URL("../fixtures/parenthesized-postfix.qnt", import.meta.url),
       "utf8",
@@ -52,9 +53,34 @@ describe("parenthesized and postfix expressions", () => {
     const output = formatQuint(input);
 
     expect(output).toContain(
-      "      ((x, y) =>\n          val result = x * y\n          if (result > 0) result else 0\n      ).app(lhs, rhs)",
+      "      ((x, y) =>\n          val result = x * y\n          if (result > 0) result else 0)\n          .app(lhs, rhs)",
     );
     expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+  });
+
+  test("preserves an attached lambda close before a postfix continuation", () => {
+    const input = readFileSync(
+      new URL("../fixtures/parenthesized-lambda-postfix.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+
+    expect(output).toContain(
+      [
+        "  pure def saturatingAdd(lhs: UIntT, rhs: UIntT): UIntT =",
+        "      ((x, y) =>",
+        "          val res = x + y",
+        "          if (res < MAX) res else MAX)",
+        '          .app(lhs, rhs, "impossible")',
+      ].join("\n"),
+    );
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(parseQuintAst(output, "formatted.qnt")).toEqual(parseQuintAst(input, "input.qnt"));
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(output, "formatted.qnt")).toEqual([]);
   });

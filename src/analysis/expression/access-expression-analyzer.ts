@@ -4,11 +4,7 @@ import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, text } from "@/formatting/document.js";
 import { preservedContinuationPrefix } from "@/formatting/source-spacing.js";
 import { isCommentNode } from "@/parsing/comment-attachments.js";
-import {
-  isMultilineParenthesizedPostfixReceiver,
-  isMultilineUfcsContinuation,
-  ufcsContinuationIndentation,
-} from "@/parsing/syntax.js";
+import { isMultilineUfcsContinuation, ufcsContinuationIndentation } from "@/parsing/syntax.js";
 
 export function analyzeAccessExpression(
   node: Parser.SyntaxNode,
@@ -28,8 +24,7 @@ export function analyzeAccessExpression(
         child.startIndex >= object.endIndex &&
         child.endIndex <= field.startIndex,
     );
-    const isMultilineContinuation =
-      isMultilineUfcsContinuation(node) && !isMultilineParenthesizedPostfixReceiver(object);
+    const isMultilineContinuation = isMultilineUfcsContinuation(node);
     const continuationDocument = concat([
       ...preservedContinuationPrefix(object, comments, dot),
       text(`.${field.text}`),

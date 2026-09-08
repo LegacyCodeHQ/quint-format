@@ -3,6 +3,7 @@ import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, hardLine, text } from "@/formatting/document.js";
 import { continuationIndentLevels } from "@/formatting/policy.js";
+import { areOnSameLine } from "@/parsing/source-layout.js";
 import {
   isBraceDelimitedExpression,
   isMultilineParenthesizedPostfixReceiver,
@@ -22,12 +23,16 @@ export function analyzeParenthesizedExpression(
   const analysis = analyzeExpression(expression);
   const isPostfixReceiver = isMultilineParenthesizedPostfixReceiver(node);
   const isBraceDelimited = isBraceDelimitedExpression(expression);
+  const closeParenthesis = node.children.find((child) => child.type === ")");
+  const preservesAttachedClose = Boolean(
+    closeParenthesis && areOnSameLine(expression, closeParenthesis),
+  );
   const isExplicitlyExpanded =
     node.startPosition.row < expression.startPosition.row ||
     expression.endPosition.row < node.endPosition.row;
   return {
     document:
-      isPostfixReceiver && isBraceDelimited
+      isPostfixReceiver && (isBraceDelimited || preservesAttachedClose)
         ? concat([text("("), analysis.document, text(")")])
         : isPostfixReceiver
           ? concat([text("("), analysis.document, hardLine, text(")")])
