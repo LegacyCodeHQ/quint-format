@@ -1,4 +1,5 @@
 import type Parser from "tree-sitter";
+import { lineBreaksBetween } from "@/parsing/source-layout.js";
 import { commentDocument } from "./comments.js";
 import { type Doc, hardLine } from "./document.js";
 import { maxPreservedLineBreaks } from "./policy.js";
@@ -9,7 +10,7 @@ export function preservedLineBreaksBetween(
 ): Doc[] {
   const lineBreaks = Math.min(
     maxPreservedLineBreaks,
-    Math.max(1, next.startPosition.row - previous.endPosition.row),
+    Math.max(1, lineBreaksBetween(previous, next)),
   );
   return Array.from({ length: lineBreaks }, () => hardLine);
 }

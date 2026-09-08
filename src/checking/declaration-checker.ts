@@ -6,6 +6,7 @@ import {
   separatesDefinitions,
 } from "@/formatting/declaration-spacing.js";
 import { defaultFormatPolicy } from "@/formatting/policy.js";
+import type { SourceLayoutIndex } from "@/parsing/source-layout.js";
 
 export function checkDeclarationLayout(
   declaration: ModuleDeclaration,
@@ -13,11 +14,13 @@ export function checkDeclarationLayout(
   source: string,
   filePath: string,
   lines: string[],
+  sourceLayout: SourceLayoutIndex,
 ): FormatDiagnostic[] {
   const diagnostics: FormatDiagnostic[] = [];
   const declarationStart = declaration.leadingComments?.[0] ?? declaration.node;
-  const sharesLineWithPrevious =
-    previousDeclaration?.node.endPosition.row === declarationStart.startPosition.row;
+  const sharesLineWithPrevious = Boolean(
+    previousDeclaration && sourceLayout.areOnSameLine(previousDeclaration.node, declarationStart),
+  );
   const previousDeclarationEnd =
     previousDeclaration?.trailingComments?.at(-1) ?? previousDeclaration?.node;
   const groupsCommentedImports = Boolean(
@@ -38,7 +41,7 @@ export function checkDeclarationLayout(
   if (
     requiresCommentedDeclarationSeparation &&
     previousDeclarationEnd &&
-    declarationStart.startPosition.row - previousDeclarationEnd.endPosition.row !== 2
+    sourceLayout.blankLinesBetween(previousDeclarationEnd, declarationStart) !== 1
   ) {
     const row = declarationStart.startPosition.row;
     diagnostics.push({
@@ -55,7 +58,7 @@ export function checkDeclarationLayout(
   if (
     requiresDefinitionSeparation &&
     previousDeclarationEnd &&
-    declarationStart.startPosition.row - previousDeclarationEnd.endPosition.row !== 2
+    sourceLayout.blankLinesBetween(previousDeclarationEnd, declarationStart) !== 1
   ) {
     const row = declarationStart.startPosition.row;
     diagnostics.push({
@@ -88,17 +91,17 @@ export function checkDeclarationLayout(
     const previousTrailingComment = declaration.trailingComments?.[commentIndex - 1];
     const isBoundaryBlockComment =
       comment.text.startsWith("/*") &&
-      comment.startPosition.row === declaration.node.endPosition.row + 1 &&
+      sourceLayout.lineBreaksBetween(declaration.node, comment) === 1 &&
       comment.startPosition.column === declaration.node.startPosition.column;
     const startsIndentedTrailingComment =
       commentIndex === 0 &&
-      comment.startPosition.row === declaration.node.endPosition.row + 1 &&
+      sourceLayout.lineBreaksBetween(declaration.node, comment) === 1 &&
       comment.startPosition.column > declaration.node.startPosition.column;
     if (
       isBoundaryBlockComment ||
       startsIndentedTrailingComment ||
       (previousTrailingComment &&
-        comment.startPosition.row === previousTrailingComment.endPosition.row + 1 &&
+        sourceLayout.lineBreaksBetween(previousTrailingComment, comment) === 1 &&
         comment.startPosition.column === previousTrailingComment.startPosition.column)
     ) {
       continue;

@@ -1,6 +1,7 @@
 import type Parser from "tree-sitter";
 import type { OperatorBreakPlan } from "@/core/analysis.js";
 import { continuationIndentLevels, structuralIndentLevels } from "@/formatting/policy.js";
+import { hasLineBreakBetween } from "./source-layout.js";
 import {
   hasLineBrokenMultilineValue,
   hasPeerMatchOperands,
@@ -76,8 +77,8 @@ export function planOperatorBreaks(
 ): OperatorBreakPlan {
   const operatorReason = operatorBreakReason(node);
   const rightReason = rightBreakReason(node);
-  const brokeBeforeOperator = sites.operator.startPosition.row > sites.left.endPosition.row;
-  const brokeBeforeRight = sites.right.startPosition.row > sites.operator.endPosition.row;
+  const brokeBeforeOperator = hasLineBreakBetween(sites.left, sites.operator);
+  const brokeBeforeRight = hasLineBreakBetween(sites.operator, sites.right);
   const operatorBreak = !sites.hasComments && brokeBeforeOperator && operatorReason !== null;
   const pairValue = hasLineBrokenMultilineValue(node);
   const matchPeers = hasPeerMatchOperands(node);

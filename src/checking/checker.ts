@@ -53,7 +53,14 @@ export function checkAnalyzedSource(
     for (const [index, declaration] of module.declarations.entries()) {
       const previousDeclaration = index > 0 ? module.declarations[index - 1] : undefined;
       diagnostics.push(
-        ...checkDeclarationLayout(declaration, previousDeclaration, source, filePath, lines),
+        ...checkDeclarationLayout(
+          declaration,
+          previousDeclaration,
+          source,
+          filePath,
+          lines,
+          analyzedSource.sourceLayout,
+        ),
       );
       diagnostics.push(...checkImportSpacing(declaration, source, filePath, lines));
       diagnostics.push(...checkModuleInstance(declaration, source, filePath, lines));

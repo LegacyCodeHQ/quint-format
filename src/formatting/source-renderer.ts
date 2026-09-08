@@ -1,16 +1,17 @@
 import type { AnalyzedModule, AnalyzedSource } from "@/core/analysis.js";
+import type { SourceLayoutIndex } from "@/parsing/source-layout.js";
 import { commentDocument, leadingCommentsDocument } from "./comments.js";
 import { groupsCommentedAssumptions, separatesDefinitions } from "./declaration-spacing.js";
 import { concat, hardLine, indent, renderDoc, text } from "./document.js";
 import { maxPreservedLineBreaks } from "./policy.js";
 
-function renderModule(module: AnalyzedModule): string {
+function renderModule(module: AnalyzedModule, sourceLayout: SourceLayoutIndex): string {
   const declarations = module.declarations.flatMap((declaration, index, allDeclarations) => {
     if (index === 0) {
       const firstContent = declaration.leadingComments?.[0] ?? declaration.node;
       const lineBreaks = Math.min(
         maxPreservedLineBreaks,
-        Math.max(1, firstContent.startPosition.row - module.openBrace.endPosition.row),
+        Math.max(1, sourceLayout.lineBreaksBetween(module.openBrace, firstContent)),
       );
       return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
     }
@@ -29,7 +30,7 @@ function renderModule(module: AnalyzedModule): string {
     const lineBreaks =
       separatesCommentedDeclaration || separatesAdjacentDefinitions
         ? maxPreservedLineBreaks
-        : Math.max(1, declarationStart.startPosition.row - previousEnd.endPosition.row);
+        : Math.max(1, sourceLayout.lineBreaksBetween(previousEnd, declarationStart));
     return [...Array.from({ length: lineBreaks }, () => hardLine), declaration.document];
   });
   const danglingComments = module.danglingComments.flatMap((comment, index, allComments) => {
@@ -40,7 +41,7 @@ function renderModule(module: AnalyzedModule): string {
         : allComments[index - 1];
     const lineBreaks = Math.min(
       maxPreservedLineBreaks,
-      Math.max(1, comment.startPosition.row - (previous?.endPosition.row ?? 0)),
+      Math.max(1, previous ? sourceLayout.lineBreaksBetween(previous, comment) : 1),
     );
     return [...Array.from({ length: lineBreaks }, () => hardLine), commentDocument(comment)];
   });
@@ -54,7 +55,7 @@ export function renderSource(source: AnalyzedSource): string {
   const hashbang = source.hashbang ? `${source.hashbang.text}\n` : "";
   const modules = source.modules.map((module) => {
     const leadingComments = renderDoc(leadingCommentsDocument(module.leadingComments, module.node));
-    return `${leadingComments}${renderModule(module)}`;
+    return `${leadingComments}${renderModule(module, source.sourceLayout)}`;
   });
   const renderedModules = modules.join("\n");
   const trailingComments = source.trailingComments

@@ -2,11 +2,13 @@ import type Parser from "tree-sitter";
 import type { AnalyzedSource } from "@/core/analysis.js";
 import { attachComments } from "@/parsing/comment-attachments.js";
 import { parseQuint } from "@/parsing/parser.js";
+import { indexSourceLayout } from "@/parsing/source-layout.js";
 import { analyzeModuleNode } from "./module-analyzer.js";
 
 export function analyzeSource(source: string): AnalyzedSource {
   const root = parseQuint(source);
   const commentAttachments = attachComments(root);
+  const sourceLayout = indexSourceLayout(root);
   let hashbang: Parser.SyntaxNode | undefined;
   let pendingComments: Parser.SyntaxNode[] = [];
   const modules: AnalyzedSource["modules"] = [];
@@ -43,5 +45,5 @@ export function analyzeSource(source: string): AnalyzedSource {
     throw new Error("Formatting this Quint syntax is not implemented yet");
   }
 
-  return { commentAttachments, hashbang, modules, trailingComments: pendingComments };
+  return { commentAttachments, sourceLayout, hashbang, modules, trailingComments: pendingComments };
 }

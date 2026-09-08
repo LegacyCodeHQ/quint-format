@@ -2,6 +2,7 @@ import Quint from "@legacycodehq/tree-sitter-quint";
 import type Parser from "tree-sitter";
 import { continuationIndentLevels, defaultFormatPolicy } from "@/formatting/policy.js";
 import type { CommentAttachmentIndex } from "./comment-attachments.js";
+import { areOnSameLine, hasLineBreakBetween, isMultiline } from "./source-layout.js";
 
 const blockCombinatorSupertype = Quint.nodeTypeInfo.find(
   (node) => node.type === "_block_combinator_expression" && "subtypes" in node,
@@ -56,8 +57,7 @@ export function isCompactNondetSequence(
   body: Parser.SyntaxNode,
 ): boolean {
   return (
-    definition.childForFieldName("qualifier")?.type === "nondet" &&
-    definition.endPosition.row === body.startPosition.row
+    definition.childForFieldName("qualifier")?.type === "nondet" && areOnSameLine(definition, body)
   );
 }
 
@@ -75,8 +75,8 @@ export function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   return Boolean(
     arrow &&
       body &&
-      (body.startPosition.row > arrow.endPosition.row ||
-        (!isBraceDelimitedLambdaBody(body) && body.endPosition.row > arrow.endPosition.row)),
+      (hasLineBreakBetween(arrow, body) ||
+        (!isBraceDelimitedLambdaBody(body) && isMultiline(body))),
   );
 }
 
@@ -86,15 +86,15 @@ export function hasAttachedMultilineLambdaCallClose(node: Parser.SyntaxNode): bo
   const closeParenthesis = [...node.children].reverse().find((child) => child.type === ")");
   return Boolean(
     lambda?.type === "lambda_expression" &&
-      lambda.startPosition.row < lambda.endPosition.row &&
+      isMultiline(lambda) &&
       closeParenthesis &&
-      closeParenthesis.startPosition.row === lambda.endPosition.row,
+      areOnSameLine(lambda, closeParenthesis),
   );
 }
 
 export function hasMultilineLambdaBody(node: Parser.SyntaxNode): boolean {
   const body = node.type === "lambda_expression" ? node.childForFieldName("body") : undefined;
-  return Boolean(body && body.endPosition.row > body.startPosition.row);
+  return Boolean(body && isMultiline(body));
 }
 
 export function hasInlineMultilineConditionalLambdaBody(node: Parser.SyntaxNode): boolean {
@@ -102,10 +102,7 @@ export function hasInlineMultilineConditionalLambdaBody(node: Parser.SyntaxNode)
   const arrow = node.children.find((child) => child.type === "=>");
   const body = node.childForFieldName("body");
   return Boolean(
-    arrow &&
-      body?.type === "if_expression" &&
-      body.startPosition.row === arrow.endPosition.row &&
-      body.endPosition.row > body.startPosition.row,
+    arrow && body?.type === "if_expression" && areOnSameLine(arrow, body) && isMultiline(body),
   );
 }
 
@@ -119,12 +116,7 @@ export function hasLineBrokenMultilineValue(node: Parser.SyntaxNode): boolean {
   if (!shape) return false;
   const separator = node.children.find((child) => child.type === shape.separator);
   const value = node.childForFieldName(shape.value);
-  return Boolean(
-    separator &&
-      value &&
-      value.startPosition.row > separator.endPosition.row &&
-      value.endPosition.row > value.startPosition.row,
-  );
+  return Boolean(separator && value && hasLineBreakBetween(separator, value) && isMultiline(value));
 }
 
 export function isNestedInVerticallyExpandedCall(node: Parser.SyntaxNode): boolean {
@@ -143,7 +135,7 @@ export function isNestedInVerticallyExpandedCall(node: Parser.SyntaxNode): boole
       }
       return arguments_.some((argument, index) => {
         const previous = index === 0 ? openParenthesis : arguments_[index - 1];
-        return Boolean(previous && argument.startPosition.row > previous.endPosition.row);
+        return Boolean(previous && hasLineBreakBetween(previous, argument));
       });
     }
     ancestor = ancestor.parent;
@@ -232,8 +224,7 @@ export function isWithinExpandedConditionalCondition(node: Parser.SyntaxNode): b
         condition.startIndex <= node.startIndex && condition.endIndex >= node.endIndex;
       return (
         containsNode &&
-        (condition.startPosition.row > openParen.endPosition.row ||
-          closeParen.startPosition.row > condition.endPosition.row)
+        (hasLineBreakBetween(openParen, condition) || hasLineBreakBetween(condition, closeParen))
       );
     }
     ancestor = ancestor.parent;
@@ -262,13 +253,11 @@ export function isCompactElseIfLadder(node: Parser.SyntaxNode): boolean {
     const elseKeyword = branch.children.find((child) => child.type === "else");
     if (!condition || !consequence || !alternative || !closeParen || !elseKeyword) return false;
     const breaksBeforeElse =
-      elseKeyword.startPosition.row > consequence.endPosition.row &&
-      alternative.startPosition.row === elseKeyword.endPosition.row;
+      hasLineBreakBetween(consequence, elseKeyword) && areOnSameLine(elseKeyword, alternative);
     const breaksAfterElse =
-      elseKeyword.startPosition.row === consequence.endPosition.row &&
-      alternative.startPosition.row > elseKeyword.endPosition.row;
+      areOnSameLine(consequence, elseKeyword) && hasLineBreakBetween(elseKeyword, alternative);
     if (
-      condition.startPosition.row !== condition.endPosition.row ||
+      isMultiline(condition) ||
       consequence.startPosition.row !== closeParen.endPosition.row ||
       consequence.endPosition.row !== closeParen.endPosition.row ||
       (!breaksBeforeElse && !breaksAfterElse)
@@ -276,7 +265,7 @@ export function isCompactElseIfLadder(node: Parser.SyntaxNode): boolean {
       return false;
     }
     if (alternative.type !== "if_expression") {
-      return alternative.startPosition.row === alternative.endPosition.row;
+      return !isMultiline(alternative);
     }
     branch = alternative;
   }
@@ -289,7 +278,7 @@ export function compactBlockExpression(
 ): Parser.SyntaxNode | null {
   if (
     body.type !== "block_expression" ||
-    body.startPosition.row !== body.endPosition.row ||
+    isMultiline(body) ||
     body.endPosition.column > defaultFormatPolicy.lineWidth ||
     body.childrenForFieldName("binding").length > 0 ||
     commentAttachments.commentsFor(body).length > 0
@@ -305,9 +294,7 @@ export function compactNestedBlockExpression(
   body: Parser.SyntaxNode,
   commentAttachments: CommentAttachmentIndex,
 ): Parser.SyntaxNode | null {
-  return definition.endPosition.row === body.startPosition.row
-    ? compactBlockExpression(body, commentAttachments)
-    : null;
+  return areOnSameLine(definition, body) ? compactBlockExpression(body, commentAttachments) : null;
 }
 
 export function compactLambdaBlockExpression(
@@ -325,11 +312,7 @@ export function isMultilineParenthesizedPostfixReceiver(node: Parser.SyntaxNode)
   if (node.type !== "parenthesized_expression") return false;
   const expression = node.childForFieldName("expression");
   const target = node.parent ? postfixExpressionTarget(node.parent) : null;
-  return Boolean(
-    expression &&
-      expression.startPosition.row < expression.endPosition.row &&
-      target?.receiver.id === node.id,
-  );
+  return Boolean(expression && isMultiline(expression) && target?.receiver.id === node.id);
 }
 
 export function isBraceDelimitedExpression(node: Parser.SyntaxNode): boolean {
@@ -409,7 +392,7 @@ export function ufcsChainRoot(node: Parser.SyntaxNode): Parser.SyntaxNode {
 
 export function isMultilineUfcsContinuation(node: Parser.SyntaxNode): boolean {
   const target = postfixExpressionTarget(node);
-  return Boolean(target && target.dot.startPosition.row > target.receiver.endPosition.row);
+  return Boolean(target && hasLineBreakBetween(target.receiver, target.dot));
 }
 
 export function ufcsContinuationIndentation(): number {
@@ -427,7 +410,7 @@ export function isCompactMatchExpression(node: Parser.SyntaxNode): boolean {
   const arms = node.childrenForFieldName("arm");
   return Boolean(
     arms.length > 0 &&
-      node.startPosition.row === node.endPosition.row &&
+      !isMultiline(node) &&
       node.endPosition.column <= defaultFormatPolicy.lineWidth &&
       collectNodes(node, "comment").length === 0 &&
       collectNodes(node, "documentation_comment").length === 0,
@@ -460,8 +443,7 @@ export function callTrailingCommentAlignment(
       .reverse()
       .find(
         (candidate) =>
-          candidate.endIndex <= comment.startIndex &&
-          candidate.endPosition.row === comment.startPosition.row,
+          candidate.endIndex <= comment.startIndex && areOnSameLine(candidate, comment),
       );
     if (!argument) return [];
     const comma = commas.find(

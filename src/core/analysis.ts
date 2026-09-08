@@ -6,6 +6,7 @@ import type {
   RightIndentKind,
 } from "@/parsing/break-authority.js";
 import type { CommentAttachmentIndex } from "@/parsing/comment-attachments.js";
+import type { SourceLayoutIndex } from "@/parsing/source-layout.js";
 
 export interface ModuleDeclaration {
   node: Parser.SyntaxNode;
@@ -98,6 +99,7 @@ export interface AnalyzedSourceModule extends AnalyzedModule {
 
 export interface AnalyzedSource {
   commentAttachments: CommentAttachmentIndex;
+  sourceLayout: SourceLayoutIndex;
   hashbang?: Parser.SyntaxNode;
   modules: AnalyzedSourceModule[];
   trailingComments: Parser.SyntaxNode[];
