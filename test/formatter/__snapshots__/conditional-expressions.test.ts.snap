@@ -160,19 +160,6 @@ exports[`conditional expressions formats a nested conditional as an else-if chai
 "
 `;
 
-exports[`conditional expressions preserves a vertical else-if ladder with compact block branches 1`] = `
-"module Example {
-  type Ordering = LT | GT | EQ
-
-  pure def intCompare(__a: int, __b: int): Ordering = {
-    if (__a < __b) { LT }
-    else if (__a > __b) { GT }
-    else { EQ }
-  }
-}
-"
-`;
-
 exports[`conditional expressions expands the first result in a conditional chain 1`] = `
 "module Example {
   pure def classify(value: int): str =
@@ -329,6 +316,23 @@ exports[`conditional expressions joins trailing else lines in a compact conditio
     else if (canSetupWin) SetupWin
     else MoveToEmpty(X),
     nextTurn' = O,
+  }
+}
+"
+`;
+
+exports[`conditional expressions expands block branches that start below a vertical else-if ladder 1`] = `
+"module Example {
+  type Ordering = LT | GT | EQ
+
+  pure def intCompare(__a: int, __b: int): Ordering = {
+    if (__a < __b) {
+      LT
+    } else if (__a > __b) {
+      GT
+    } else {
+      EQ
+    }
   }
 }
 "

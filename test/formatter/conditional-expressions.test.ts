@@ -171,7 +171,7 @@ describe("conditional expressions", () => {
     expect(parser.parse(output).rootNode.hasError).toBe(false);
   });
 
-  test("preserves a vertical else-if ladder with compact block branches", () => {
+  test("expands block branches that start below a vertical else-if ladder", () => {
     const input = readFileSync(
       new URL("../fixtures/compact-block-else-if-ladder.qnt", import.meta.url),
       "utf8",
@@ -181,9 +181,13 @@ describe("conditional expressions", () => {
       "  type Ordering = LT | GT | EQ",
       "",
       "  pure def intCompare(__a: int, __b: int): Ordering = {",
-      "    if (__a < __b) { LT }",
-      "    else if (__a > __b) { GT }",
-      "    else { EQ }",
+      "    if (__a < __b) {",
+      "      LT",
+      "    } else if (__a > __b) {",
+      "      GT",
+      "    } else {",
+      "      EQ",
+      "    }",
       "  }",
       "}",
       "",

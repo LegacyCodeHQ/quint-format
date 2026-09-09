@@ -72,6 +72,23 @@ export function isAttachedBraceConditionalBranch(node: Parser.SyntaxNode): boole
   return node.type === "block_expression" || (node.type === "record_literal" && isMultiline(node));
 }
 
+export function isLineBrokenConditionalBlockBranch(node: Parser.SyntaxNode): boolean {
+  const conditional = node.parent;
+  if (node.type !== "block_expression" || conditional?.type !== "if_expression") return false;
+
+  if (conditional.childForFieldName("consequence")?.id === node.id) {
+    const closeParen = conditional.children.find((child) => child.type === ")");
+    return Boolean(closeParen && hasLineBreakBetween(closeParen, node));
+  }
+
+  if (conditional.childForFieldName("alternative")?.id === node.id) {
+    const elseKeyword = conditional.children.find((child) => child.type === "else");
+    return Boolean(elseKeyword && hasLineBreakBetween(elseKeyword, node));
+  }
+
+  return false;
+}
+
 export function isMultilineLambdaExpression(node: Parser.SyntaxNode): boolean {
   if (node.type !== "lambda_expression") return false;
   const arrow = node.children.find((child) => child.type === "=>");
@@ -298,6 +315,7 @@ export function compactBlockExpression(
   if (
     body.type !== "block_expression" ||
     isMultiline(body) ||
+    isLineBrokenConditionalBlockBranch(body) ||
     body.endPosition.column > defaultFormatPolicy.lineWidth ||
     body.childrenForFieldName("binding").length > 0 ||
     commentAttachments.commentsFor(body).length > 0

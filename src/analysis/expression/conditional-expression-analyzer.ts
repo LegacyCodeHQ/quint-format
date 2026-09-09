@@ -7,6 +7,7 @@ import {
   isAttachedBraceConditionalBranch,
   isCompactElseIfLadder,
   isElseIfBranch,
+  isLineBrokenConditionalBlockBranch,
 } from "@/parsing/syntax.js";
 
 export function analyzeConditionalExpression(
@@ -94,6 +95,7 @@ export function analyzeConditionalExpression(
     const preservesCompactBlockLadderBreak =
       consequence.type === "block_expression" &&
       consequence.startPosition.row === consequence.endPosition.row &&
+      !isLineBrokenConditionalBlockBranch(consequence) &&
       formatsConditionalChain &&
       hasSourceElseBreak;
     const preservesElseLineBreak =

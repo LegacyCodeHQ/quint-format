@@ -53,15 +53,30 @@ test/fixtures/multiline-definition-type-separation.qnt:6:19: error[format/condit
 6 |     if (__a < __b)
   |                   ^
   |
+test/fixtures/multiline-definition-type-separation.qnt:7:7: error[format/block-layout]: expected block contents and the closing brace on separate lines
+  |
+7 |       { LT }
+  |       ^
+  |
 test/fixtures/multiline-definition-type-separation.qnt:8:24: error[format/conditional-branch-spacing]: expected one space after ')'
   |
 8 |     else if (__a > __b)
   |                        ^
   |
+test/fixtures/multiline-definition-type-separation.qnt:9:7: error[format/block-layout]: expected block contents and the closing brace on separate lines
+  |
+9 |       { GT }
+  |       ^
+  |
 test/fixtures/multiline-definition-type-separation.qnt:10:5: error[format/conditional-else-spacing]: expected preserved line breaks and indentation around 'else'
    |
 10 |     else
    |     ^^^^
+   |
+test/fixtures/multiline-definition-type-separation.qnt:11:7: error[format/block-layout]: expected block contents and the closing brace on separate lines
+   |
+11 |       { EQ }
+   |       ^
    |
 test/fixtures/multiline-definition-type-separation.qnt:13:3: error[format/definition-separation]: expected exactly one blank line between definitions
    |

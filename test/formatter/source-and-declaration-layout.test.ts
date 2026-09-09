@@ -92,7 +92,7 @@ describe("source and declaration layout", () => {
     );
     const output = formatQuint(input);
 
-    expect(output).toContain("    else { EQ }\n  }\n\n  type NodeIdToCompare = {");
+    expect(output).toContain("    } else {\n      EQ\n    }\n  }\n\n  type NodeIdToCompare = {");
     expect(output).toMatchSnapshot();
     expect(formatQuint(output)).toBe(output);
     expect(checkQuint(input, "input.qnt").map((diagnostic) => diagnostic.rule)).toContain(

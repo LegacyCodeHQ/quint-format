@@ -71,9 +71,13 @@ exports[`source and declaration layout separates a multiline definition from a f
 
   /// Comparison of integers
   pure def intCompare(__a: int, __b: int): Ordering = {
-    if (__a < __b) { LT }
-    else if (__a > __b) { GT }
-    else { EQ }
+    if (__a < __b) {
+      LT
+    } else if (__a > __b) {
+      GT
+    } else {
+      EQ
+    }
   }
 
   type NodeIdToCompare = {
