@@ -93,5 +93,12 @@ describe("checker diagnostics", () => {
       expect(result.kind).toBe("format");
       expect(result.rendered).toMatchSnapshot();
     });
+
+    test("reports a misindented hanging record continuation", () => {
+      const result = checkFixture("hanging-record-continuation.qnt");
+
+      expect(result.kind).toBe("format");
+      expect(result.rendered).toMatchSnapshot();
+    });
   });
 });

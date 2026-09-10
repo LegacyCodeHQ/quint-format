@@ -241,3 +241,12 @@ test/fixtures/commented-record.qnt:3:9: error[format/commented-record-layout]: e
   |
 "
 `;
+
+exports[`checker diagnostics value definitions and literals reports a misindented hanging record continuation 1`] = `
+"test/fixtures/hanging-record-continuation.qnt:6:1: error[format/record-element-indentation]: expected a four-space continuation indent
+  |
+6 |                 orphans: Set() }
+  | ^^^^^^^^^^^^^^^^
+  |
+"
+`;

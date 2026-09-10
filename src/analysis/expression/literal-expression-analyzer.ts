@@ -1,7 +1,9 @@
 import type Parser from "tree-sitter";
 import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
+import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, group, hardLine, indent, line, text } from "@/formatting/document.js";
+import { continuationIndentLevels } from "@/formatting/policy.js";
 import { isCommentNode } from "@/parsing/comment-attachments.js";
 import { hasLineBrokenMultilineValue } from "@/parsing/syntax.js";
 
@@ -253,10 +255,11 @@ export function analyzeLiteralExpression(
               firstGroupedLineDocument,
               ...(remainingGroupedLineDocuments.length > 0
                 ? [
-                    indent(
+                    indentBy(
                       concat(
                         remainingGroupedLineDocuments.flatMap((document) => [hardLine, document]),
                       ),
+                      continuationIndentLevels,
                     ),
                   ]
                 : []),

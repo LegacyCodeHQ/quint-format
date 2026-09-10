@@ -122,6 +122,18 @@ exports[`value definitions and literals preserves a partially expanded record li
 "
 `;
 
+exports[`value definitions and literals uses continuation indentation for a hanging partially expanded record 1`] = `
+"module Example {
+  run test =
+      assert(
+          { nodes: 1, orphans: Set() }
+              == { nodes: 1,
+                  orphans: Set() }
+      )
+}
+"
+`;
+
 exports[`value definitions and literals preserves source-line groups in a multiline record literal 1`] = `
 "module Example {
   pure val message = {

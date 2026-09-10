@@ -144,6 +144,30 @@ export function checkRecordLiterals(
     }
 
     if (isExpandedRecord) {
+      if (preservesInlineOpening) {
+        const recordLine = lines[recordLiteral.startPosition.row] ?? "";
+        const expectedContinuationColumn =
+          recordLine.search(/\S|$/) + defaultFormatPolicy.continuationIndentWidth;
+        for (const [index, element] of elements.entries()) {
+          const previousElement = elements[index - 1];
+          if (
+            previousElement &&
+            element.startPosition.row > previousElement.endPosition.row &&
+            element.startPosition.column !== expectedContinuationColumn
+          ) {
+            const row = element.startPosition.row;
+            diagnostics.push({
+              filePath,
+              line: row + 1,
+              column: 1,
+              length: Math.max(1, element.startPosition.column),
+              rule: "format/record-element-indentation",
+              message: "expected a four-space continuation indent",
+              sourceLine: lines[row] ?? "",
+            });
+          }
+        }
+      }
       for (const [index, element] of elements.entries()) {
         const nextElement = elements[index + 1];
         const comma = commas.find(

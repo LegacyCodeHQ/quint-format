@@ -198,6 +198,26 @@ describe("value definitions and literals", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("uses continuation indentation for a hanging partially expanded record", () => {
+    const input = readFileSync(
+      new URL("../fixtures/hanging-record-continuation.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toEqual([
+      "format/record-element-indentation",
+    ]);
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves source-line groups in a multiline record literal", () => {
     const input = readFileSync(
       new URL("../fixtures/grouped-record-literal.qnt", import.meta.url),
