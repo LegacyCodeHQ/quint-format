@@ -16,3 +16,16 @@ export function matchArmBodyIndentation(body: Parser.SyntaxNode): number {
     ? structuralIndentLevels
     : continuationIndentLevels;
 }
+
+export function preservesMatchArmBodyLineBreak(
+  patternEnd: Parser.SyntaxNode,
+  arrow: Parser.SyntaxNode,
+  body: Parser.SyntaxNode,
+): boolean {
+  return (
+    body.startPosition.row > arrow.endPosition.row ||
+    (body.type === "match_expression" &&
+      body.startPosition.row < body.endPosition.row &&
+      arrow.startPosition.row > patternEnd.endPosition.row)
+  );
+}

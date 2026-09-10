@@ -3,7 +3,10 @@ import type { ExpressionAnalysis } from "@/core/analysis.js";
 import { commentDocument } from "@/formatting/comments.js";
 import { indentBy } from "@/formatting/definition-body-formatter.js";
 import { concat, type Doc, hardLine, indent, text } from "@/formatting/document.js";
-import { matchArmBodyIndentation } from "@/formatting/match-arm-body-formatter.js";
+import {
+  matchArmBodyIndentation,
+  preservesMatchArmBodyLineBreak,
+} from "@/formatting/match-arm-body-formatter.js";
 import { isCommentNode } from "@/parsing/comment-attachments.js";
 import { isCompactMatchExpression } from "@/parsing/syntax.js";
 
@@ -42,7 +45,7 @@ export function analyzeMatchExpression(
         arrow.startPosition.row === patternEnd.endPosition.row && /^ +$/u.test(rawArrowGap)
           ? rawArrowGap
           : " ";
-      const isMultilineBody = body.startPosition.row > arrow.endPosition.row;
+      const preservesBodyLineBreak = preservesMatchArmBodyLineBreak(patternEnd, arrow, body);
       return {
         node: arm,
         body: bodyAnalysis,
@@ -66,7 +69,7 @@ export function analyzeMatchExpression(
               ),
             ])
           : comments.length === 0
-            ? isMultilineBody
+            ? preservesBodyLineBreak
               ? concat([
                   text(`| ${pattern}${arrowGap}=>`),
                   indentBy(

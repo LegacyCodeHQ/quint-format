@@ -22,6 +22,24 @@ exports[`match expressions joins a line-broken match arrow with one space 1`] = 
 "
 `;
 
+exports[`match expressions preserves a multiline nested match body after joining its displaced arrow 1`] = `
+"module Example {
+  type Inner = Child(int) | NoInner
+  type Outer = Parent(Inner) | Empty
+
+  pure def value(outer: Outer): int =
+      match outer {
+        | Parent(inner) =>
+            match inner {
+              | Child(number) => number
+              | NoInner => 0
+            }
+        | Empty => 0
+      }
+}
+"
+`;
+
 exports[`match expressions preserves a compact one-arm default match 1`] = `
 "module Example {
   val expected = match 42 { _ => "default" }

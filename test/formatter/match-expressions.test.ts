@@ -40,6 +40,26 @@ describe("match expressions", () => {
     expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
   });
 
+  test("preserves a multiline nested match body after joining its displaced arrow", () => {
+    const input = readFileSync(
+      new URL("../fixtures/displaced-arrow-nested-match.qnt", import.meta.url),
+      "utf8",
+    );
+    const output = formatQuint(input);
+
+    expect(checkQuint(input, "input.qnt").map(({ rule }) => rule)).toContain(
+      "format/match-arrow-spacing",
+    );
+    expect(output).toMatchSnapshot();
+    expect(formatQuint(output)).toBe(output);
+    expect(checkQuint(output, "formatted.qnt")).toEqual([]);
+    const inputTree = parser.parse(input).rootNode;
+    const outputTree = parser.parse(output).rootNode;
+    expect(inputTree.hasError).toBe(false);
+    expect(outputTree.hasError).toBe(false);
+    expect(namedParseTreeSignature(outputTree)).toEqual(namedParseTreeSignature(inputTree));
+  });
+
   test("preserves a compact one-arm default match", () => {
     const input = readFileSync(
       new URL("../fixtures/compact-default-match.qnt", import.meta.url),

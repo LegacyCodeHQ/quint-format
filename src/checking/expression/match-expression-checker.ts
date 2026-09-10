@@ -1,7 +1,10 @@
 import type Parser from "tree-sitter";
 import type { FormatDiagnostic } from "@/core/diagnostics.js";
 import { indentWidth } from "@/formatting/document.js";
-import { matchArmBodyIndentation } from "@/formatting/match-arm-body-formatter.js";
+import {
+  matchArmBodyIndentation,
+  preservesMatchArmBodyLineBreak,
+} from "@/formatting/match-arm-body-formatter.js";
 import { isCommentNode } from "@/parsing/comment-attachments.js";
 import {
   blockCombinatorEntries,
@@ -160,7 +163,7 @@ export function checkMatchExpressions(
       const indentationColumn = (candidate: Parser.SyntaxNode) =>
         lines[candidate.startPosition.row]?.search(/\S|$/u) ?? candidate.startPosition.column;
       const armColumn = indentationColumn(arm);
-      const lineBrokenBody = body.startPosition.row > arrow.endPosition.row;
+      const lineBrokenBody = preservesMatchArmBodyLineBreak(patternEnd, arrow, body);
       const bodyIndentationLevels = matchArmBodyIndentation(body);
       const expectedLineBrokenBodyColumn = armColumn + bodyIndentationLevels * indentWidth;
       if (lineBrokenBody && indentationColumn(body) !== expectedLineBrokenBodyColumn) {
